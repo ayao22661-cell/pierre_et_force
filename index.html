@@ -1,0 +1,1679 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>De Pierre et de Force — L'Éveil</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --gold:#c8a84a;--gold-dim:#7a6428;--green:#39FF7A;--green-dim:#1a4a20;
+  --blue:#378ADD;--red:#D85A30;--purple:#7F77DD;--dark:#030a06;
+  --surface:#050d08;--border:#1a3a20;--text:#e0d8c0;--muted:#5A8A5A;
+}
+html{font-family:'Segoe UI',system-ui,sans-serif;background:var(--dark);color:var(--text);min-height:100vh}
+body{min-height:100vh;overflow-x:hidden}
+
+/* ===== SCREENS ===== */
+.screen{display:none;flex-direction:column;min-height:100vh}
+.screen.active{display:flex}
+
+/* ===== TITLE ===== */
+#screen-title{
+  background:radial-gradient(ellipse at 50% 60%,#0d2a14 0%,#030a06 70%);
+  align-items:center;justify-content:center;position:relative;gap:0
+}
+.stones-row{display:flex;gap:14px;margin-bottom:28px}
+.stone{width:14px;height:14px;border-radius:50%;animation:pulse 2.4s infinite}
+.stone:nth-child(1){background:var(--green);animation-delay:0s}
+.stone:nth-child(2){background:var(--blue);animation-delay:.48s}
+.stone:nth-child(3){background:#FAC775;animation-delay:.96s}
+.stone:nth-child(4){background:var(--red);animation-delay:1.44s}
+.stone:nth-child(5){background:var(--purple);animation-delay:1.92s}
+@keyframes pulse{0%,100%{opacity:.3;transform:scale(.8)}50%{opacity:1;transform:scale(1.35)}}
+.t-title{font-size:48px;font-weight:700;letter-spacing:6px;color:var(--gold);text-align:center;text-shadow:0 0 40px rgba(200,168,74,.4)}
+.t-sub{font-size:14px;letter-spacing:8px;color:var(--muted);margin-top:8px;text-align:center}
+.t-place{font-size:11px;color:#3a5a3a;letter-spacing:6px;margin-top:4px}
+.t-divider{width:180px;height:1px;background:linear-gradient(90deg,transparent,var(--gold),transparent);margin:28px 0}
+.t-quote{max-width:440px;text-align:center;font-size:12px;color:#4a6a4a;line-height:1.9;font-style:italic;margin-bottom:28px}
+.t-save{font-size:10px;letter-spacing:2px;color:var(--muted);margin-bottom:20px;text-align:center}
+.btn{background:transparent;border:1px solid var(--gold);color:var(--gold);padding:14px 44px;font-size:13px;letter-spacing:4px;cursor:pointer;transition:all .3s;border-radius:2px}
+.btn:hover{background:var(--gold);color:var(--dark)}
+.btn-sm{padding:8px 24px;font-size:11px}
+.btn-red{border-color:var(--red);color:var(--red)}
+.btn-red:hover{background:var(--red);color:#fff}
+
+/* ===== NARRATION CINÉMATIQUE ===== */
+#screen-narration{
+  background:#000;align-items:center;justify-content:center;
+  padding:60px 32px;cursor:pointer
+}
+.narr-chapter{font-size:10px;letter-spacing:6px;color:var(--muted);margin-bottom:32px;text-align:center}
+.narr-lines{max-width:600px;width:100%}
+.narr-line{font-size:16px;color:#c8c0a8;line-height:2;margin-bottom:20px;opacity:0;transform:translateY(12px);transition:opacity .8s,transform .8s;font-style:italic;text-align:center}
+.narr-line.visible{opacity:1;transform:none}
+.narr-continue{font-size:10px;letter-spacing:4px;color:#3a4a3a;margin-top:48px;text-align:center;animation:blink 2s infinite}
+@keyframes blink{0%,100%{opacity:.3}50%{opacity:1}}
+
+/* ===== HUB / CARTE ===== */
+#screen-hub{background:var(--dark);flex-direction:column}
+.hub-header{background:var(--surface);border-bottom:1px solid var(--border);padding:12px 24px;display:flex;align-items:center;justify-content:space-between}
+.hub-acte{font-size:10px;letter-spacing:4px;color:var(--muted)}
+.hub-titre{font-size:14px;letter-spacing:2px;color:var(--gold)}
+.hub-body{flex:1;display:flex;overflow:hidden}
+.hub-map{flex:1;padding:24px;display:flex;flex-direction:column;gap:16px;overflow-y:auto}
+.hub-side{width:280px;border-left:1px solid var(--border);padding:20px;display:flex;flex-direction:column;gap:16px;overflow-y:auto}
+
+/* Missions */
+.acte-section{margin-bottom:8px}
+.acte-label{font-size:9px;letter-spacing:4px;color:var(--muted);margin-bottom:10px}
+.missions-row{display:flex;flex-direction:column;gap:6px}
+.mission-card{background:var(--surface);border:1px solid var(--border);border-radius:4px;padding:12px 16px;cursor:pointer;transition:all .2s;display:flex;align-items:center;gap:12px}
+.mission-card:hover:not(.locked){border-color:var(--gold);background:#0d1a0d}
+.mission-card.locked{opacity:.4;cursor:not-allowed}
+.mission-card.done{border-color:#1a4a20;opacity:.6}
+.mission-card.available{border-color:var(--gold);box-shadow:0 0 12px rgba(200,168,74,.15)}
+.mission-card.active-now{border-color:var(--gold);box-shadow:0 0 20px rgba(200,168,74,.3);animation:glow .2s ease}
+.m-num{font-size:10px;color:var(--gold-dim);width:22px;text-align:center}
+.m-info{flex:1}
+.m-name{font-size:12px;color:var(--text)}
+.m-desc{font-size:10px;color:var(--muted);margin-top:2px}
+.m-status{font-size:9px;letter-spacing:1px}
+.m-status.done{color:#1a6a30}
+.m-status.avail{color:var(--gold)}
+.m-status.lock{color:#2a3a2a}
+
+/* Profil Tarine - hub side */
+.profile-box{background:var(--surface);border:1px solid var(--border);border-radius:4px;padding:14px}
+.profile-name{font-size:14px;color:var(--gold);letter-spacing:1px}
+.profile-title{font-size:10px;color:var(--muted);margin-top:2px}
+.profile-stats{margin-top:12px;display:flex;flex-direction:column;gap:6px}
+.stat-row{display:flex;justify-content:space-between;font-size:11px}
+.stat-label{color:var(--muted)}
+.stat-val{color:var(--text)}
+.xp-bar{height:4px;background:#0d1a0d;border-radius:2px;margin-top:6px;overflow:hidden}
+.xp-fill{height:100%;background:linear-gradient(90deg,var(--gold),var(--green));transition:width .6s}
+
+/* Journal */
+.journal-title{font-size:10px;letter-spacing:3px;color:var(--muted);margin-bottom:10px}
+.journal-entries{display:flex;flex-direction:column;gap:8px;max-height:200px;overflow-y:auto}
+.j-entry{background:#020806;border-left:2px solid var(--green-dim);padding:8px 10px}
+.j-date{font-size:9px;color:var(--muted);margin-bottom:3px}
+.j-text{font-size:11px;color:#8a9a8a;line-height:1.6;font-style:italic}
+
+/* Alliés */
+.allies-title{font-size:10px;letter-spacing:3px;color:var(--muted);margin-bottom:10px}
+.ally-row{display:flex;align-items:center;gap:10px;margin-bottom:8px}
+.ally-img{width:40px;height:40px;object-fit:cover;object-position:top;border-radius:3px;border:1px solid var(--border)}
+.ally-info{flex:1}
+.ally-name{font-size:11px;color:var(--text)}
+.ally-role{font-size:9px;color:var(--muted)}
+.ally-locked{opacity:.3;filter:grayscale(1)}
+.ally-badge{font-size:8px;padding:2px 6px;border-radius:10px;background:#0d2a14;color:var(--green);border:1px solid #1a4a20}
+
+/* ===== SÉLECTION DE DÉPLOIEMENT ===== */
+#screen-deploy{background:var(--surface);flex-direction:column}
+.deploy-header{padding:16px 24px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center}
+.deploy-title{font-size:12px;letter-spacing:4px;color:var(--muted)}
+.deploy-mission{font-size:16px;color:var(--gold)}
+.deploy-body{flex:1;display:flex;overflow:hidden}
+.deploy-allies{flex:1;padding:20px;border-right:1px solid var(--border)}
+.deploy-label{font-size:10px;letter-spacing:3px;color:var(--muted);margin-bottom:12px}
+.deploy-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.deploy-card{border:1px solid var(--border);border-radius:4px;overflow:hidden;cursor:pointer;transition:all .2s;position:relative}
+.deploy-card:hover{border-color:var(--gold)}
+.deploy-card.selected{border:2px solid var(--gold);box-shadow:0 0 12px rgba(200,168,74,.3)}
+.deploy-card.locked{opacity:.3;cursor:not-allowed}
+.deploy-card img{width:100%;aspect-ratio:3/4;object-fit:cover;object-position:top}
+.deploy-card-name{background:rgba(0,0,0,.8);font-size:10px;color:var(--gold);padding:5px 8px;letter-spacing:1px}
+.deploy-card-role{font-size:9px;color:var(--muted);padding:0 8px 6px}
+.deploy-briefing{width:280px;padding:20px;display:flex;flex-direction:column;gap:16px}
+.brief-box{background:var(--dark);border:1px solid var(--border);border-radius:4px;padding:14px}
+.brief-label{font-size:9px;letter-spacing:3px;color:var(--muted);margin-bottom:8px}
+.brief-text{font-size:12px;color:#8aaa8a;line-height:1.7;font-style:italic}
+.brief-ennemis{display:flex;flex-direction:column;gap:4px;margin-top:8px}
+.enemy-preview{display:flex;align-items:center;gap:8px;font-size:11px;color:var(--red)}
+.deploy-footer{padding:14px 24px;border-top:1px solid var(--border);display:flex;justify-content:space-between;align-items:center}
+.team-preview{display:flex;gap:8px;align-items:center;font-size:11px;color:var(--muted)}
+.team-preview span{color:var(--gold)}
+
+/* ===== COMBAT ===== */
+#screen-game{background:#020806;flex-direction:column}
+.game-hud{background:var(--surface);border-bottom:1px solid var(--border);padding:8px 24px;display:flex;align-items:center;justify-content:space-between}
+.hud-left{display:flex;align-items:center;gap:20px}
+.hud-mission{font-size:10px;letter-spacing:3px;color:var(--muted)}
+.hud-timer{font-size:22px;font-weight:700;color:var(--gold);letter-spacing:2px}
+.hud-score{display:flex;gap:20px;align-items:center}
+.score-ally{font-size:20px;font-weight:700;color:var(--green)}
+.score-sep{font-size:14px;color:#2a4a2a}
+.score-enemy{font-size:20px;font-weight:700;color:var(--red)}
+.hud-right{display:flex;flex-direction:column;align-items:flex-end;gap:4px}
+.nexus-label{font-size:9px;letter-spacing:2px;color:var(--muted)}
+.nexus-bar{width:120px;height:5px;background:#0d1a0d;border-radius:2px;overflow:hidden}
+.nexus-fill{height:100%;transition:width .5s;border-radius:2px}
+.nexus-fill.enemy{background:var(--red)}
+.nexus-fill.ally{background:var(--green)}
+
+.narration-box{background:#020806;border-bottom:1px solid var(--border);padding:14px 24px;min-height:64px;display:flex;gap:12px;align-items:flex-start}
+.narr-src{font-size:9px;letter-spacing:3px;color:var(--muted);white-space:nowrap;margin-top:2px;min-width:80px}
+.narr-txt{font-size:13px;color:#9aaa9a;line-height:1.75;font-style:italic}
+.narr-txt .dmg{color:var(--red);font-style:normal;font-weight:600}
+.narr-txt .heal{color:var(--green);font-style:normal}
+.narr-txt .cname{color:var(--gold)}
+.narr-txt .you{color:#9FE1CB}
+
+.battle-zone{flex:1;display:flex;min-height:0}
+.team-side{flex:1;padding:14px;display:flex;flex-direction:column;gap:6px;overflow-y:auto}
+.team-side.ally-side{border-right:1px solid var(--border)}
+.side-label{font-size:9px;letter-spacing:3px;margin-bottom:6px}
+.side-label.a{color:var(--green)}
+.side-label.e{color:var(--red)}
+
+.fighter-card{background:var(--surface);border:1px solid var(--border);border-radius:4px;display:flex;align-items:center;gap:10px;padding:8px;position:relative;overflow:hidden;transition:all .3s}
+.fighter-card.active{border-color:var(--gold);box-shadow:0 0 10px rgba(200,168,74,.2)}
+.fighter-card.dead{opacity:.25;filter:grayscale(1)}
+.fighter-card.attacking{animation:atk .4s ease}
+@keyframes atk{0%{transform:translateX(0)}50%{transform:translateX(14px)}100%{transform:translateX(0)}}
+.fighter-card.hit{animation:hiit .3s ease}
+@keyframes hiit{0%{transform:none}25%{transform:translateX(-8px)}75%{transform:translateX(5px)}100%{transform:none}}
+.fighter-img{width:52px;height:52px;object-fit:cover;object-position:top;border-radius:3px;flex-shrink:0;border:1px solid #1a2a1a}
+.fighter-info{flex:1}
+.fighter-name{font-size:12px;color:var(--gold)}
+.fighter-role{font-size:9px;color:var(--muted);margin-top:1px}
+.hp-bar{height:4px;background:#0d1a0d;border-radius:2px;margin-top:6px;overflow:hidden}
+.hp-fill{height:100%;border-radius:2px;transition:width .5s ease}
+.hp-fill.ally{background:var(--green)}
+.hp-fill.enemy{background:var(--red)}
+.hp-text{font-size:9px;color:#4a6a4a;margin-top:2px}
+.fighter-badge{position:absolute;top:4px;right:4px;font-size:8px;letter-spacing:1px;padding:2px 5px;border-radius:10px}
+.fighter-badge.you{background:#0d2a14;color:var(--green);border:1px solid #1a4a1a}
+.fighter-badge.ia{background:#1a1a0a;color:#6a6a3a}
+
+.action-log{background:var(--surface);border-top:1px solid var(--border);padding:8px 20px;height:80px;overflow-y:auto}
+.log-line{font-size:11px;color:#4a6a4a;line-height:1.8}
+.log-line .dmg{color:var(--red)}
+.log-line .heal{color:var(--green)}
+.log-line .cname{color:var(--gold)}
+.log-line .you{color:#9FE1CB}
+
+.abilities-hud{background:var(--surface);border-top:1px solid var(--border);padding:10px 20px;display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.ab-btn{background:#0d1f10;border:1px solid var(--border);border-radius:3px;padding:7px 12px;cursor:pointer;transition:all .2s;text-align:center;min-width:76px;position:relative}
+.ab-btn:hover:not([disabled]){border-color:var(--green);background:#0d2a14}
+.ab-btn .key{font-size:11px;color:var(--gold);font-weight:600}
+.ab-btn .aname{font-size:9px;color:var(--muted);margin-top:2px}
+.ab-btn .cd{font-size:9px;color:var(--red);margin-top:1px}
+.ab-btn.on-cooldown{opacity:.4;cursor:not-allowed}
+.hud-nexus-group{margin-left:auto;display:flex;flex-direction:column;gap:4px;align-items:flex-end}
+
+/* ===== FIN DE MISSION ===== */
+#screen-end{align-items:center;justify-content:center;background:#020806;flex-direction:column;gap:16px}
+.end-title{font-size:44px;font-weight:700;letter-spacing:6px;text-align:center}
+.end-title.victory{color:var(--gold);text-shadow:0 0 40px rgba(200,168,74,.5)}
+.end-title.defeat{color:var(--red);text-shadow:0 0 40px rgba(216,90,48,.4)}
+.end-subtitle{font-size:11px;letter-spacing:4px;color:var(--muted)}
+.end-narration{max-width:520px;text-align:center;font-size:13px;color:var(--muted);line-height:1.9;font-style:italic;margin:8px 0}
+.end-rewards{background:var(--surface);border:1px solid var(--border);border-radius:4px;padding:16px 24px;max-width:400px;width:100%}
+.reward-title{font-size:9px;letter-spacing:3px;color:var(--muted);margin-bottom:10px}
+.reward-row{display:flex;justify-content:space-between;font-size:12px;margin-bottom:6px}
+.reward-key{color:var(--muted)}
+.reward-val{color:var(--gold)}
+.reward-unlock{color:var(--green);font-size:11px;font-style:italic;margin-top:8px}
+.end-btns{display:flex;gap:12px;margin-top:8px}
+
+/* ===== SCROLLBAR ===== */
+::-webkit-scrollbar{width:4px}
+::-webkit-scrollbar-track{background:#030a06}
+::-webkit-scrollbar-thumb{background:#1a3a20;border-radius:2px}
+
+/* ===== ANIMATIONS ===== */
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+@keyframes glow{0%,100%{box-shadow:0 0 20px rgba(200,168,74,.3)}50%{box-shadow:0 0 30px rgba(200,168,74,.6)}}
+.fade-in{animation:fadeIn .5s ease}
+</style>
+</head>
+<body>
+
+<!-- TITRE -->
+<div id="screen-title" class="screen active">
+  <div class="stones-row">
+    <div class="stone"></div><div class="stone"></div><div class="stone"></div>
+    <div class="stone"></div><div class="stone"></div>
+  </div>
+  <div class="t-title">DE PIERRE ET DE FORCE</div>
+  <div class="t-sub">L ' É V E I L</div>
+  <div class="t-place">ABIDJAN &middot; 1996</div>
+  <div class="t-divider"></div>
+  <div class="t-quote">« Dans le silence de Niani, cinq pierres attendaient depuis sept siècles.<br>Cette nuit, à Abidjan, elles ont choisi leurs gardiens. »</div>
+  <div id="save-status" class="t-save"></div>
+  <button class="btn" id="btn-start">COMMENCER LA PARTIE</button>
+  <button class="btn btn-sm" id="btn-continue" style="margin-top:10px;display:none">CONTINUER</button>
+  <button class="btn btn-sm btn-red" id="btn-reset" style="margin-top:8px;display:none">RECOMMENCER</button>
+</div>
+
+<!-- NARRATION CINÉMATIQUE -->
+<div id="screen-narration" class="screen">
+  <div id="narr-chapter" class="narr-chapter"></div>
+  <div id="narr-lines" class="narr-lines"></div>
+  <div class="narr-continue">CLIQUER POUR CONTINUER</div>
+</div>
+
+<!-- HUB -->
+<div id="screen-hub" class="screen">
+  <div class="hub-header">
+    <div>
+      <div class="hub-acte" id="hub-acte-label">ACTE I</div>
+      <div class="hub-titre" id="hub-acte-titre">LA VIE D'AVANT</div>
+    </div>
+    <div style="font-size:10px;color:var(--muted);letter-spacing:2px">MARCORY · ABIDJAN</div>
+  </div>
+  <div class="hub-body">
+    <div class="hub-map" id="hub-missions"></div>
+    <div class="hub-side">
+      <div class="profile-box">
+        <div class="profile-name">TARINE KEÏTA</div>
+        <div class="profile-title" id="prof-title">L'Éveillé de Marcory</div>
+        <div class="profile-stats">
+          <div class="stat-row"><span class="stat-label">Niveau</span><span class="stat-val" id="prof-lvl">1</span></div>
+          <div class="stat-row"><span class="stat-label">XP</span><span class="stat-val" id="prof-xp">0 / 100</span></div>
+          <div class="xp-bar"><div class="xp-fill" id="xp-fill" style="width:0%"></div></div>
+          <div class="stat-row" style="margin-top:8px"><span class="stat-label">PV</span><span class="stat-val" id="prof-hp">850</span></div>
+          <div class="stat-row"><span class="stat-label">ATK</span><span class="stat-val" id="prof-atk">95</span></div>
+          <div class="stat-row"><span class="stat-label">Pierres actives</span><span class="stat-val" id="prof-pierres">1</span></div>
+        </div>
+      </div>
+      <div>
+        <div class="allies-title">GARDIENS DISPONIBLES</div>
+        <div id="allies-list"></div>
+      </div>
+      <div>
+        <div class="journal-title">JOURNAL DE TARINE</div>
+        <div class="journal-entries" id="journal-entries"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- DÉPLOIEMENT -->
+<div id="screen-deploy" class="screen">
+  <div class="deploy-header">
+    <div>
+      <div class="deploy-title">DÉPLOIEMENT</div>
+      <div class="deploy-mission" id="deploy-mission-name">Mission 1</div>
+    </div>
+    <button class="btn btn-sm" onclick="goTo('screen-hub')">← RETOUR</button>
+  </div>
+  <div class="deploy-body">
+    <div class="deploy-allies">
+      <div class="deploy-label">CHOISIR VOS ALLIÉS (2 max)</div>
+      <div class="deploy-grid" id="deploy-grid"></div>
+    </div>
+    <div class="deploy-briefing">
+      <div class="brief-box">
+        <div class="brief-label">SITUATION</div>
+        <div class="brief-text" id="deploy-brief"></div>
+      </div>
+      <div class="brief-box">
+        <div class="brief-label">ENNEMIS</div>
+        <div class="brief-ennemis" id="deploy-enemies-list"></div>
+      </div>
+    </div>
+  </div>
+  <div class="deploy-footer">
+    <div class="team-preview" id="deploy-team-preview">Équipe : <span>Tarine</span></div>
+    <button class="btn" id="btn-launch">ENTRER EN COMBAT</button>
+  </div>
+</div>
+
+<!-- COMBAT -->
+<div id="screen-game" class="screen">
+  <div class="game-hud">
+    <div class="hud-left">
+      <div class="hud-mission" id="hud-mission-name">Mission</div>
+      <div class="hud-timer" id="hud-timer">00:00</div>
+    </div>
+    <div class="hud-score">
+      <div class="score-ally" id="score-ally">0</div>
+      <div class="score-sep">/</div>
+      <div class="score-enemy" id="score-enemy">0</div>
+    </div>
+    <div class="hud-right">
+      <div class="nexus-label">NEXUS ENNEMI</div>
+      <div class="nexus-bar"><div class="nexus-fill enemy" id="nexus-fill" style="width:100%"></div></div>
+      <div class="nexus-label" style="margin-top:4px">NEXUS ALLIÉ</div>
+      <div class="nexus-bar"><div class="nexus-fill ally" id="ally-nexus-fill" style="width:100%"></div></div>
+    </div>
+  </div>
+  <div class="narration-box">
+    <div class="narr-src" id="narr-source">NARRATEUR</div>
+    <div class="narr-txt" id="narr-text">Les pierres s'éveillent...</div>
+  </div>
+  <div class="battle-zone">
+    <div class="team-side ally-side">
+      <div class="side-label a">GARDIENS DU SUD</div>
+      <div id="ally-fighters"></div>
+    </div>
+    <div class="team-side">
+      <div class="side-label e">EMPIRE DU NORD</div>
+      <div id="enemy-fighters"></div>
+    </div>
+  </div>
+  <div class="action-log" id="action-log"></div>
+  <div class="abilities-hud">
+    <div id="ab-buttons" style="display:flex;gap:8px;flex-wrap:wrap"></div>
+    <div class="hud-nexus-group" style="display:none"></div>
+  </div>
+</div>
+
+<!-- FIN DE MISSION -->
+<div id="screen-end" class="screen">
+  <div class="end-title" id="end-title">VICTOIRE</div>
+  <div class="end-subtitle" id="end-subtitle">MISSION ACCOMPLIE</div>
+  <div class="end-narration" id="end-narration"></div>
+  <div class="end-rewards" id="end-rewards"></div>
+  <div class="end-btns">
+    <button class="btn" id="btn-hub">RETOUR AU HUB</button>
+    <button class="btn btn-red" id="btn-retry">RÉESSAYER</button>
+  </div>
+</div>
+
+<script>
+(function(){
+'use strict';
+
+// ===== IMAGES =====
+var IMGS = {
+  TARINE:"/TARINE.png",
+  KAREN:"/Karen_Keïta.png",
+  FULGENCE:"/Fulgence.png",
+  BABA_TUNDE:"/Baba_Tunde.png",
+  LUNDGREN:"/Lundgren.png",
+  DARK:"/dark.png"
+};
+
+// ===== CHAMPIONS BASE =====
+var BASE_CHAMPIONS = {
+  TARINE:{
+    id:"tarine",key:"TARINE",name:"Tarine Keïta",title:"L'Éveillé de Marcory",role:"DUELLISTE",
+    roleColor:"#1a4a20",roleText:"#39FF7A",
+    hp:850,maxHp:850,atk:95,def:60,
+    abilities:[
+      {key:"Z",name:"Onde d'Éveil",desc:"Bourrasque d'énergie ancestrale",dmg:120,cd:3,curCd:0},
+      {key:"X",name:"Chaleur Ancestrale",desc:"Frappe concentrée ×2",dmg:180,cd:5,curCd:0},
+      {key:"C",name:"Mur de Pierre",desc:"Soin allié",heal:80,cd:6,curCd:0},
+      {key:"R",name:"Cinq Pierres",desc:"Explosion de zone massive",dmg:280,cd:12,curCd:0}
+    ]
+  },
+  KAREN:{
+    id:"karen",key:"KAREN",name:"Karen Keïta",title:"La Sentinelle",role:"SOUTIEN",
+    roleColor:"#0a1a3a",roleText:"#378ADD",
+    hp:680,maxHp:680,atk:55,def:80,
+    abilities:[
+      {key:"Z",name:"Main Tranquille",desc:"Soin allié",heal:120,cd:4,curCd:0},
+      {key:"X",name:"Regard Absolu",desc:"Frappe qui ralentit",dmg:60,cd:5,curCd:0},
+      {key:"C",name:"Présence Apaisante",desc:"Soin de zone",heal:80,cd:7,curCd:0},
+      {key:"R",name:"Veille de Nuit",desc:"Soin massif sur toute l'équipe",heal:200,cd:14,curCd:0}
+    ]
+  },
+  FULGENCE:{
+    id:"fulgence",key:"FULGENCE",name:"Fulgence",title:"Le Roc de Marcory",role:"TANK",
+    roleColor:"#1a0a3a",roleText:"#7F77DD",
+    hp:1200,maxHp:1200,atk:70,def:120,
+    abilities:[
+      {key:"Z",name:"Corps Interposé",desc:"Aura défensive",heal:60,cd:5,curCd:0},
+      {key:"X",name:"Grip de Marcory",desc:"Frappe qui immobilise",dmg:90,cd:4,curCd:0},
+      {key:"C",name:"Présence Constante",desc:"Soin de soutien",heal:60,cd:7,curCd:0},
+      {key:"R",name:"Imperturbable",desc:"Frappe de zone dévastatrice",dmg:200,cd:15,curCd:0}
+    ]
+  },
+  BABA:{
+    id:"baba",key:"BABA_TUNDE",name:"Baba Tunde",title:"Seigneur de la Cour",role:"ASSASSIN",
+    roleColor:"#3a0a0a",roleText:"#D85A30",
+    hp:720,maxHp:720,atk:130,def:45,
+    abilities:[
+      {key:"Z",name:"Mot qui Blesse",desc:"Frappe qui réduit la défense",dmg:100,cd:3,curCd:0},
+      {key:"X",name:"Sourire de Victoire",desc:"Étourdit et frappe",dmg:160,cd:5,curCd:0},
+      {key:"C",name:"Lieutenant",desc:"Attaque fantôme combinée",dmg:120,cd:6,curCd:0},
+      {key:"R",name:"Chez Moi Partout",desc:"Téléportation et attaque surprise",dmg:300,cd:14,curCd:0}
+    ]
+  },
+  LUNDGREN:{
+    id:"lundgren",key:"LUNDGREN",name:"Lundgren",title:"Le Passeur de Pierres",role:"MAGE",
+    roleColor:"#0a1a2a",roleText:"#B5D4F4",
+    hp:780,maxHp:780,atk:140,def:55,
+    abilities:[
+      {key:"Z",name:"Yeux de Glace",desc:"Pétrifie un ennemi",dmg:110,cd:4,curCd:0},
+      {key:"X",name:"Bougainvillier",desc:"Disparaît et frappe",dmg:130,cd:6,curCd:0},
+      {key:"C",name:"Pierres en Orbite",desc:"Les 5 pierres frappent tous",dmg:90,cd:5,curCd:0},
+      {key:"R",name:"Quand Tu Mourras",desc:"Frappe ultime de mort",dmg:350,cd:16,curCd:0}
+    ]
+  },
+  DARK:{
+    id:"dark",key:"DARK",name:"Dark",title:"L'Enfant de l'Abîme",role:"ASSASSIN",
+    roleColor:"#0d0010",roleText:"#C084FC",
+    hp:620,maxHp:620,atk:175,def:35,
+    abilities:[
+      {key:"Z",name:"Lame d'Ombre",desc:"Tranche avec une lame de magie noire",dmg:120,cd:3,curCd:0},
+      {key:"X",name:"Voile Maudit",desc:"Enveloppe l'ennemi de ténèbres",dmg:145,cd:5,curCd:0},
+      {key:"C",name:"Drain d'Âme",desc:"Vole la vie de la cible",dmg:100,cd:6,curCd:0},
+      {key:"R",name:"Néant Absolu",desc:"L'obscurité engloutit tout",dmg:380,cd:18,curCd:0}
+    ]
+  }
+};
+
+// ===== CAMPAGNE : ACTES ET MISSIONS =====
+var CAMPAIGN = [
+  {
+    id:"acte1",label:"ACTE I",titre:"LA VIE D'AVANT",
+    narration_debut:[
+      "Marcory, Abidjan. Décembre 1996.",
+      "Tarine Keïta a treize ans. Son père est mort — assassiné, même si sa mère ne prononce jamais ce mot.",
+      "À la Villoise, on l'appelle le Fantôme. Il porte cette chaleur étrange dans les mains depuis la cour du lycée.",
+      "Quelque chose dans les pierres s'est réveillé. Quelque chose attend."
+    ],
+    missions:[
+      {
+        id:"m1",num:1,name:"La Cour de la Villoise",
+        desc:"Baba Tunde cherche encore quelqu'un à qui se frotter.",
+        brief:"Le lycée de la Villoise. La récréation. Baba Tunde s'avance avec ses deux lieutenants. Cette fois, Tarine ne recule pas.",
+        allies_requis:[],allies_dispo:["KAREN"],
+        ennemis:["BABA"],ennemis_extra:2,
+        xp:60,
+        narr_avant:[
+          "La cour du lycée. La chaleur d'Abidjan écrase tout.",
+          "Baba Tunde traverse la cour avec ses deux lieutenants — ce sourire calculé, cette façon d'occuper l'espace.",
+          "Tarine pose son livre. Se lève. Quelque chose dans ses paumes commence à chauffer."
+        ],
+        narr_victoire:[
+          "La main de Baba ne passe pas. L'air entre eux refuse de se laisser traverser.",
+          "Baba recule d'un pas — il déguise ça en haussement d'épaules.",
+          "— T'es bizarre. C'est tout ce que t'es. Bizarre.",
+          "Il repart. Fulgence ramasse le livre de Tarine sans un mot.",
+          "Dans les paumes de Tarine, une braise qui ne veut pas s'éteindre."
+        ],
+        narr_defaite:[
+          "La cour pivote. Le sol tape.",
+          "La chaleur dans ses mains se retire, honteux.",
+          "Fulgence aide Tarine à se relever. — La prochaine fois, dit-il simplement."
+        ],
+        journal_victoire:"La première fois que j'ai senti que quelque chose en moi était différent. Pas de la magie. Pas encore. Juste une chaleur dans les paumes, une résistance dans l'air. Baba ne comprend pas ce qui s'est passé. Moi non plus."
+      },
+      {
+        id:"m2",num:2,name:"La Forêt du Banco",
+        desc:"Une présence ancienne appelle dans la forêt.",
+        brief:"Les bords de la forêt du Banco, au nord d'Abidjan. La pierre pulsait différemment ce matin. Pas vers l'école. Vers la forêt.",
+        allies_requis:[],allies_dispo:["KAREN","FULGENCE"],
+        ennemis:["DARK"],ennemis_extra:2,
+        xp:80,
+        narr_avant:[
+          "La pierre dans sa poche pulse différemment ce matin.",
+          "Pas vers le lycée. Vers le nord. Vers la forêt du Banco.",
+          "Tarine suit. C'est la première fois qu'il suit quelque chose qu'il ne comprend pas encore."
+        ],
+        narr_victoire:[
+          "Dans la clairière, les ombres reculent.",
+          "Un homme apparaît entre les bougainvilliers — trop grand, trop immobile, les yeux couleur de glace.",
+          "— Sept siècles que j'attendais quelqu'un comme toi, dit Lundgren.",
+          "— Pour quoi faire ? dit Tarine.",
+          "— Pour apprendre à tenir ce que tu portes déjà."
+        ],
+        narr_defaite:[
+          "Les ombres de la forêt reprennent leurs positions.",
+          "Quelque chose se retire — pas vaincu, juste patient.",
+          "La forêt du Banco garde ses secrets pour ce soir."
+        ],
+        journal_victoire:"J'ai rencontré Lundgren dans la forêt. Sept siècles. Il dit ça comme on dit sept ans. Il connaissait mon père. Il dit que les pierres choisissent. Je ne sais pas encore ce que ça signifie, mais la chaleur dans mes mains ne ment pas."
+      },
+      {
+        id:"m3",num:3,name:"Le Carnet du Général",
+        desc:"Des hommes cherchent quelque chose chez vous.",
+        brief:"La maison de Marcory. Karen est au travail. Quelqu'un a forcé le portail du jardin. Ils cherchent le carnet de ton père.",
+        allies_requis:["KAREN"],allies_dispo:["FULGENCE"],
+        ennemis:["BABA","DARK"],ennemis_extra:1,
+        xp:100,
+        narr_avant:[
+          "La maison de Marcory. Karen est de garde à la clinique.",
+          "La pierre brûle d'un coup — avertissement immédiat.",
+          "Tarine entend le portail du jardin forcer.",
+          "Ils cherchent quelque chose. Le carnet de son père."
+        ],
+        narr_victoire:[
+          "Le carnet est sauf. La boîte verte sous le lit n'a pas bougé.",
+          "Karen rentre deux heures plus tard et pose ses sacs sans regarder les traces de combat.",
+          "— T'as mangé quelque chose de vrai ? dit-elle.",
+          "— Oui, dit Tarine.",
+          "Ce n'est pas vrai. Mais certaines choses ne se disent pas encore."
+        ],
+        narr_defaite:[
+          "Le carnet. Ils ont pris le carnet.",
+          "Tarine s'assoit dans la cuisine vide. La lumière jaune au-dessus de lui.",
+          "Karen va rentrer. Il va falloir lui dire."
+        ],
+        journal_victoire:"Ils cherchaient le carnet de Papa. Pourquoi maintenant — treize ans après ? Lundgren dit que les pierres s'éveillent et que ça attire ceux qui veulent les contrôler. Papa savait. Papa cherchait quelque chose. Et quelqu'un l'a tué avant qu'il trouve."
+      }
+    ]
+  },
+  {
+    id:"acte2",label:"ACTE II",titre:"LE ROYAUME DE L'ESSENCE",
+    narration_debut:[
+      "Le portail dans le jardin de derrière s'ouvre sur quelque chose d'autre.",
+      "Sam Grün est assis sur les marches. Il attendait.",
+      "— C'est ce soir ? dit Tarine.",
+      "— C'est ce soir, dit Sam.",
+      "Karen pose une main brève sur l'épaule de son fils — juste une seconde.",
+      "— Prends ton manteau. Les nuits sont fraîches où tu vas."
+    ],
+    missions:[
+      {
+        id:"m4",num:4,name:"Le Miroir de l'Âme",
+        desc:"Première épreuve dans le Royaume de l'Essence.",
+        brief:"Le Royaume de l'Essence. Sam t'a amené ici pour voir ce que tu es vraiment, avant de te montrer ce que tu peux devenir.",
+        allies_requis:[],allies_dispo:["KAREN","FULGENCE"],
+        ennemis:["DARK"],ennemis_extra:2,
+        xp:120,
+        narr_avant:[
+          "Le Royaume de l'Essence. Ce n'est pas un lieu — c'est un état.",
+          "Le sol sous les pieds : quelque chose entre la terre, la pierre et l'eau.",
+          "Sam dit : — Ce que tu vas voir ici n'est pas un ennemi. C'est une version de toi.",
+          "— Une version de moi qui veut me tuer, dit Tarine.",
+          "— Toutes les versions font ça au début."
+        ],
+        narr_victoire:[
+          "Le miroir se brise. Les fragments restent suspendus une seconde — lumière dispersée.",
+          "Dans chaque fragment, Tarine voit quelque chose de différent. Ses peurs. Ses questions.",
+          "Sam ramasse un fragment. Il ne dit rien.",
+          "Tarine comprend sans qu'on lui dise : l'épreuve n'était pas de gagner.",
+          "C'était de rester debout après avoir regardé."
+        ],
+        narr_defaite:[
+          "Le miroir tient. Ce qu'il reflète reste.",
+          "Sam pose une main sur l'épaule de Tarine.",
+          "— Ce que tu n'arrives pas à regarder reviendra. C'est la règle ici.",
+          "— Je sais, dit Tarine.",
+          "Il ne sait pas encore. Mais il commence."
+        ],
+        journal_victoire:"Le Royaume de l'Essence n'est pas là-bas. Il est dedans. L'épreuve du miroir ne m'a pas montré mes ennemis — elle m'a montré ce que je refuse de regarder. La mort de Papa. La solitude à la Villoise. La peur de ne pas être à la hauteur de ce que les pierres semblent me demander. J'ai regardé. Je suis encore debout."
+      },
+      {
+        id:"m5",num:5,name:"L'Épreuve de l'Eau",
+        desc:"Apprendre à tenir sans résister.",
+        brief:"Le lac immobile du Royaume. Lundgren dit : certaines choses ne se combattent pas. Elles se traversent.",
+        allies_requis:["FULGENCE"],allies_dispo:["KAREN"],
+        ennemis:["DARK","BABA"],ennemis_extra:1,
+        xp:140,
+        narr_avant:[
+          "Le lac du Royaume n'a pas de fond visible.",
+          "Lundgren est debout sur le bord, les yeux sur l'eau immobile.",
+          "— L'eau n'a pas de forme, dit-il. Elle prend la forme de ce qui la contient.",
+          "— Et moi je suis le contenant, dit Tarine.",
+          "— Pas encore. Mais tu le deviendras si tu arrêtes de te battre contre ta propre nature."
+        ],
+        narr_victoire:[
+          "L'eau se referme. Tarine remonte — pas indemne, mais différent.",
+          "Il a tenu. Pas en résistant. En acceptant d'être traversé.",
+          "— Deuxième épreuve, dit Lundgren. Il reste le feu.",
+          "La pierre dans sa poche pulse doucement, régulièrement.",
+          "Comme un cœur qui sait ce qu'il fait."
+        ],
+        narr_defaite:[
+          "L'eau ne se bat pas. Elle attend.",
+          "Tarine remonte à la surface en toussant.",
+          "— Tu t'es battu contre elle, dit Lundgren.",
+          "— Qu'est-ce qu'il fallait faire ?",
+          "— La laisser entrer. On recommence."
+        ],
+        journal_victoire:"Fulgence est venu avec moi dans le Royaume. Il ne pose pas de questions — il est juste là. C'est une des rares choses sur lesquelles je peux compter sans avoir à l'expliquer. L'épreuve de l'eau m'a appris à ne pas résister à ce que je ne peux pas contrôler. Mon père était comme ça aussi, je crois. Il savait tenir sans se durcir."
+      },
+      {
+        id:"m6",num:6,name:"L'Épreuve du Feu",
+        desc:"La dernière épreuve. La plus dure.",
+        brief:"La chambre de feu du Royaume. Lundgren dit que cette épreuve ne se passe pas dans un lieu. Elle se passe dans la mémoire.",
+        allies_requis:["KAREN","FULGENCE"],allies_dispo:[],
+        ennemis:["BABA","DARK"],ennemis_extra:2,
+        xp:180,unlock_ally:"LUNDGREN",
+        narr_avant:[
+          "La chambre de feu du Royaume ne brûle pas.",
+          "Elle révèle.",
+          "Les flammes ici ne sont pas de la chaleur — elles sont des souvenirs.",
+          "Et les souvenirs de Tarine Keïta ont des dents."
+        ],
+        narr_victoire:[
+          "Les flammes s'éteignent une par une.",
+          "Ce qui reste : la mémoire nette du Général Keïta. Son rire jeune. Sa façon de serrer les mâchoires.",
+          "Et cette certitude, nouvelle, calme : la promesse qu'il s'est faite à neuf ans était juste.",
+          "Lundgren pose la main sur son épaule — ce geste qu'il a depuis le premier soir dans la forêt.",
+          "— Tu es prêt pour Abidjan, dit-il.",
+          "Tarine hoche la tête. Il n'a pas peur."
+        ],
+        narr_defaite:[
+          "Le feu de la mémoire est différent des autres feux.",
+          "On ne l'éteint pas en soufflant dessus.",
+          "— Reviens quand tu es prêt à te souvenir, dit Lundgren.",
+          "— Je me souviens déjà, dit Tarine.",
+          "— Se souvenir et regarder sont deux choses différentes."
+        ],
+        journal_victoire:"Lundgren dit que je suis prêt. Je ne sais pas si c'est vrai. Mais je sais que je n'ai plus peur de la même façon. La peur d'avant était aveugle. Celle-ci a une forme. Elle s'appelle Schissin-Rouge. Un nom de code dans le carnet de mon père. Quelqu'un qui a su qui il était avant que lui le sache. Je rentre à Abidjan."
+      }
+    ]
+  },
+  {
+    id:"acte3",label:"ACTE III",titre:"LE BORN LAND",
+    narration_debut:[
+      "Il y a des territoires au-delà du Royaume de l'Essence.",
+      "Le Born Land : là où ceux qui refusent les pierres construisent leur propre pouvoir.",
+      "Youri est là-bas. Il surveille quelqu'un depuis des mois.",
+      "Tarine traverse seul. Pour la première fois, la pierre ne guide pas — elle suit."
+    ],
+    missions:[
+      {
+        id:"m7",num:7,name:"La Terre des Borns",
+        desc:"Territoire inconnu. La pierre change ici.",
+        brief:"Le Born Land. Les règles changent ici. Ce que tu portais là-bas ne fonctionne pas de la même façon ici. Mais ce que tu es, oui.",
+        allies_requis:[],allies_dispo:["LUNDGREN"],
+        ennemis:["DARK","BABA"],ennemis_extra:2,
+        xp:160,
+        narr_avant:[
+          "Le Born Land a une odeur qui n'existe pas dans le monde réel.",
+          "Quelque chose entre le fer et le sel et quelque chose de plus ancien.",
+          "La pierre dans la poche de Tarine pulsait autrement depuis qu'il avait franchi la frontière.",
+          "Pas d'avertissement. Pas de direction. Juste une présence silencieuse, comme si elle aussi regardait autour d'elle."
+        ],
+        narr_victoire:[
+          "Les Born reculent — pas défaits, repositionnés.",
+          "Youri sort de l'ombre. Grand, calme, avec cette façon d'observer qu'ont les gens qui attendent depuis longtemps.",
+          "— Bienvenue dans le Born Land, dit-il. Tu es en retard d'environ sept siècles.",
+          "— Mon emploi du temps était chargé, dit Tarine.",
+          "Youri sourit. Pas un grand sourire — juste suffisant."
+        ],
+        narr_defaite:[
+          "Le Born Land repousse.",
+          "Tarine s'appuie contre une surface qui n'existe pas dans le monde ordinaire.",
+          "La pierre dans sa poche est froide pour la première fois.",
+          "Froid de surprise, pas de peur. Elle attend. Lui aussi."
+        ],
+        journal_victoire:"Le Born Land est différent de ce que j'imaginais. Pas hostile — mais pas accueillant non plus. Neutre d'une façon absolue, comme si le lieu lui-même n'avait pas d'opinion sur ce qui s'y passe. J'ai rencontré Youri. Papa parlait de lui dans le carnet — quelqu'un en qui avoir confiance plus qu'en lui-même. Je comprends maintenant."
+      },
+      {
+        id:"m8",num:8,name:"La Veille",
+        desc:"La nuit avant la confrontation.",
+        brief:"Youri a des informations sur Sub et Grob — les émissaires de Sgrün qui opèrent à Abidjan. Cette nuit, on prépare.",
+        allies_requis:["LUNDGREN"],allies_dispo:["KAREN","FULGENCE"],
+        ennemis:["DARK"],ennemis_extra:3,
+        xp:180,
+        narr_avant:[
+          "Youri étale les cartes sur la table.",
+          "— Sub est à Abidjan depuis six mois. Grob passe. Ce sont des opérateurs.",
+          "— Ils travaillent pour Sgrün.",
+          "— Oui. Et ils ont équipé quelqu'un que tu connais de nom.",
+          "Tarine attend.",
+          "— Schissin-Rouge, dit Youri."
+        ],
+        narr_victoire:[
+          "La veille tient. Les positions sont claires.",
+          "Tarine regarde la carte d'Abidjan — sa ville, ses rues, le quartier de Marcory dessiné en rouge.",
+          "Quelque chose s'installe en lui. Pas de la colère. Quelque chose de plus froid et de plus précis.",
+          "— On rentre demain, dit-il.",
+          "— On rentre demain, confirme Lundgren."
+        ],
+        narr_defaite:[
+          "Les lignes ne tiennent pas. Les informations sont incomplètes.",
+          "— On n'est pas prêts, dit Youri.",
+          "— Si, dit Tarine. On n'a juste pas tous les morceaux encore.",
+          "— C'est la même chose.",
+          "— Non. Ce n'est pas la même chose du tout."
+        ],
+        journal_victoire:"Sub et Grob. Deux émissaires d'une entité qui veut les cinq pierres. Pas pour les utiliser comme des outils — pour contrôler les possibilités elles-mêmes. Ce que ça signifie concrètement : quelqu'un décide de ce qui peut arriver et de ce qui ne peut pas. À grande échelle. Pour longtemps. Mon père a senti ça arriver. Il n'a pas eu le temps de nommer la chose. Moi j'ai le temps."
+      },
+      {
+        id:"m9",num:9,name:"Le Rosmog",
+        desc:"Affrontement avec l'émissaire.",
+        brief:"Treichville, Abidjan. La pierre explose d'un coup — avertissement immédiat. L'émissaire est dans la rue. Il cherche quelqu'un.",
+        allies_requis:["LUNDGREN","FULGENCE"],allies_dispo:["KAREN"],
+        ennemis:["DARK","BABA"],ennemis_extra:2,
+        xp:220,unlock_ally:"BABA",
+        narr_avant:[
+          "Treichville. Un après-midi ordinaire.",
+          "La pierre dans la poche de Tarine explose — pas une pulsation. Une alarme.",
+          "Dans la rue, les gens ralentissent sans savoir pourquoi.",
+          "Les oiseaux sur les fils électriques s'envolent dans la direction opposée.",
+          "L'émissaire est là. Forme humaine — une forme qu'il habite, pas une forme qu'il est."
+        ],
+        narr_victoire:[
+          "L'émissaire recule. Pas vaincu — repositionné.",
+          "Dans ses yeux avant qu'il disparaisse : Tu es là. Je te trouverai.",
+          "Tarine tient la pierre dans sa paume. Elle ne pulsait plus.",
+          "Elle brûlait.",
+          "— C'est différent, dit-il à Lundgren.",
+          "— Oui, dit Lundgren. Maintenant ils savent que tu existes."
+        ],
+        narr_defaite:[
+          "L'émissaire disparaît dans la rue de Treichville.",
+          "Pas de victoire. Un message.",
+          "— Il reviendra, dit Lundgren.",
+          "— Je sais, dit Tarine.",
+          "— La prochaine fois, il ne viendra pas seul.",
+          "— Je sais ça aussi."
+        ],
+        journal_victoire:"L'émissaire m'a regardé avec des yeux qui n'ont pas de chaleur — pas de la haine, pas de l'indifférence. Une attention totale, sans autre contenu. Tu es là. Je te trouverai. C'est ce que ses yeux disaient. Comme Sylla dans la vision. Ce n'est pas une coïncidence. Baba Tunde est venu me trouver après le combat. Il a changé, lui aussi. Parfois les ennemis deviennent autre chose."
+      }
+    ]
+  },
+  {
+    id:"acte4",label:"ACTE IV",titre:"L'HOMME EN BLEU",
+    narration_debut:[
+      "Retour à Abidjan. Marcory Résidentiel.",
+      "La cuisine jaune pâle. Karen qui range ses courses.",
+      "Sam Grün est assis sur les marches.",
+      "— Youri m'a contacté hier soir, dit Sam.",
+      "— Je sais, dit Tarine.",
+      "Schissin-Rouge. Un chef de police abidjanais. Un nom de code dans le carnet de son père.",
+      "Son père est mort exactement au bord de ce qu'il cherchait à savoir."
+    ],
+    missions:[
+      {
+        id:"m10",num:10,name:"Retour à Marcory",
+        desc:"La ville a changé pendant votre absence.",
+        brief:"Les rues de Marcory. Depuis votre retour, les opérations dans le quartier ont augmenté. Ils cartographient. Ils cherchent quelqu'un.",
+        allies_requis:["KAREN"],allies_dispo:["FULGENCE","BABA"],
+        ennemis:["DARK","BABA"],ennemis_extra:2,
+        xp:200,
+        narr_avant:[
+          "Les rues de Marcory le matin.",
+          "Le vendeur de journaux passe — Fraternité Matin, Fraternité Matin.",
+          "Tout est pareil. Rien n'est pareil.",
+          "— Depuis trois semaines, dit Sam, les opérations dans le quartier ont augmenté.",
+          "— Ils cherchent l'homme en bleu.",
+          "— Ils me cherchent, dit Tarine.",
+          "— Oui."
+        ],
+        narr_victoire:[
+          "Marcory tient.",
+          "Tarine regarde sa rue depuis le toit de l'immeuble du coin.",
+          "La ville qui continue — les vendeurs, les motos, les femmes avec leurs étals.",
+          "Il connaît ces rues mieux qu'eux.",
+          "C'est l'avantage.",
+          "C'est la seule chose qu'ils n'ont pas et qu'ils ne peuvent pas acheter."
+        ],
+        narr_defaite:[
+          "Ils avancent dans le quartier.",
+          "— Il faut changer de position, dit Sam.",
+          "— Non, dit Tarine. Marcory c'est chez moi.",
+          "— Exactement. C'est pourquoi c'est dangereux.",
+          "Tarine regarde la cuisine jaune pâle par la fenêtre.",
+          "Karen à l'intérieur qui prépare le café.",
+          "Il sait que Sam a raison. Il refuse de le dire."
+        ],
+        journal_victoire:"Je suis rentré à Abidjan et la ville me reconnaît. Pas de façon magique — de façon réelle. Je connais les rues, les habitudes, les chemins que personne d'autre ne prend. C'est ce que les émissaires ne peuvent pas cartographier depuis l'extérieur. Karen ne pose pas de questions sur ce qui s'est passé pendant mon absence. Elle me regarde et elle sait. Elle a toujours su."
+      },
+      {
+        id:"m11",num:11,name:"La Villa de Sylla",
+        desc:"Reconnaissance à Cocody.",
+        brief:"Une villa à Cocody. Sylla — le chef de police — tient quelque chose dans ses mains ce soir. La pierre du feu. La vision est réelle.",
+        allies_requis:["LUNDGREN","BABA"],allies_dispo:["FULGENCE"],
+        ennemis:["DARK","BABA"],ennemis_extra:2,
+        xp:240,
+        narr_avant:[
+          "La villa de Cocody depuis le mur d'enceinte.",
+          "Tarine voit Sylla sur la terrasse.",
+          "La pierre dans sa poche brûle d'une façon nouvelle — pas d'avertissement.",
+          "De la reconnaissance.",
+          "Deux pierres dans le même espace.",
+          "— La pierre du feu, dit-il à voix basse.",
+          "— Oui, dit Lundgren derrière lui. Quinze ans qu'il l'a."
+        ],
+        narr_victoire:[
+          "Ils sortent de la villa sans être vus.",
+          "Dans la nuit d'Abidjan, Tarine tient la vision dans sa tête.",
+          "Les chars. La main de Sylla qui impose une direction.",
+          "— Ce n'est pas un homme ambitieux à qui on a vendu quelque chose qui le dépassait, dit Sam.",
+          "— Il peut réellement la porter.",
+          "— Et il a eu quinze ans pour apprendre à l'utiliser.",
+          "Tarine pense à son père. Au fil. Au bord.",
+          "— On l'expose, dit-il."
+        ],
+        narr_defaite:[
+          "L'alarme. Les gardes qui convergent.",
+          "Ils sortent en courant — Tarine, Lundgren, Baba.",
+          "Dans la course, Tarine voit quand même : la main de Sylla, la façon dont il tient quelque chose.",
+          "La pierre du feu. Réelle.",
+          "— On a ce qu'il faut, dit Baba en courant.",
+          "— Pas encore assez, dit Lundgren.",
+          "— Assez pour commencer, dit Tarine."
+        ],
+        journal_victoire:"J'ai vu Sylla. Pas une vision cette fois — réel, sur sa terrasse, avec la pierre du feu dans sa main. Il tient ça avec la précision de quelqu'un qui a appris. Quinze ans. Pendant que je grandissais à Marcory sans savoir ce que j'étais, il construisait quelque chose avec ce que mon père cherchait à exposer. Papa est mort exactement au bord de ça. Je suis au bord maintenant. Je ne m'arrête pas."
+      },
+      {
+        id:"m12",num:12,name:"L'Émissaire de Treichville",
+        desc:"Protéger Samia Koné.",
+        brief:"Un maquis de Treichville. Samia Koné documente les incidents depuis des mois. Elle a un carnet rouge bordeaux. Il faut la protéger.",
+        allies_requis:["KAREN","BABA"],allies_dispo:["FULGENCE","LUNDGREN"],
+        ennemis:["DARK","BABA"],ennemis_extra:3,
+        xp:260,
+        narr_avant:[
+          "Le maquis de Treichville.",
+          "Samia Koné pose son carnet rouge bordeaux sur la table entre eux.",
+          "— Vous êtes qui exactement ? dit-elle.",
+          "— Quelqu'un qui a entendu parler de votre travail.",
+          "— Tout le monde dit ça.",
+          "La pierre explose dans la poche de Tarine.",
+          "Maintenant. Ici. Immédiatement.",
+          "— Restez ici. Derrière le comptoir si possible."
+        ],
+        narr_victoire:[
+          "L'émissaire disparaît dans la rue.",
+          "Samia Koné sort de derrière le comptoir.",
+          "Elle regarde Tarine. Elle ouvre son carnet rouge bordeaux.",
+          "— C'est quoi votre vrai nom ? dit-elle.",
+          "— Tarine Keïta.",
+          "— Le fils du Général Keïta.",
+          "Ce n'est pas une question.",
+          "— Oui, dit Tarine.",
+          "Elle hoche la tête une fois. Puis elle continue d'écrire."
+        ],
+        narr_defaite:[
+          "L'émissaire repasse.",
+          "Samia Koné est en sécurité derrière le comptoir.",
+          "Mais le carnet est là, sur la table.",
+          "Tarine le ramasse et le lui rend.",
+          "— Il faut changer d'endroit, dit-il.",
+          "— Je sais, dit-elle. Mais j'ai encore des sources qui ne peuvent pas se déplacer.",
+          "— Alors on revient."
+        ],
+        journal_victoire:"Samia Koné. Elle documente tout depuis des mois — les dates, les noms, les montants. Son carnet rouge bordeaux est une arme plus précise que tout ce que je peux faire avec les pierres. Elle sait qui je suis. Je lui ai dit que sa liste serait utilisée. Elle a hoché la tête comme si ça, au moins, était une réponse suffisante."
+      }
+    ]
+  },
+  {
+    id:"acte5",label:"ACTE V",titre:"NOUVEAU DÉPART",
+    narration_debut:[
+      "Schissin-Rouge est exposé. L'article paraît dans La Nuit d'Abidjan.",
+      "Mais Sgrün a d'autres pierres. D'autres transactions.",
+      "Sam dit : il y a une porte au Pôle Nord.",
+      "Tarine se souvient de la vision — la porte debout dans la neige.",
+      "— C'est presque le moment, dit-il.",
+      "— Presque, dit Sam. D'abord la dernière chose à protéger ici."
+    ],
+    missions:[
+      {
+        id:"m13",num:13,name:"L'Adieu",
+        desc:"Protéger les siens avant de partir.",
+        brief:"Marcory. Karen. Fulgence. Samia. Ceux que Sylla cherche maintenant que l'article est publié. On protège d'abord.",
+        allies_requis:["KAREN","FULGENCE"],allies_dispo:["BABA","LUNDGREN"],
+        ennemis:["DARK","BABA"],ennemis_extra:3,
+        xp:280,
+        narr_avant:[
+          "L'article est sorti ce matin.",
+          "Schissin-Rouge, chef de police, pierre du feu, quinze ans de transactions.",
+          "Les hommes de Sylla se positionnent dans Marcory depuis l'aube.",
+          "— Il va tenter quelque chose avant que les arrestations soient prononcées, dit Sam.",
+          "— Il va s'en prendre à ceux qui ont témoigné.",
+          "Tarine pense à Karen dans la cuisine jaune pâle.",
+          "— On protège d'abord."
+        ],
+        narr_victoire:[
+          "Karen est en sécurité. Fulgence aussi. Samia Koné a été escortée vers un endroit que Youri connaît.",
+          "Tarine regarde la cuisine une dernière fois.",
+          "Le jaune des murs. La fissure dans le carrelage du coin gauche. La cafetière sur le feu.",
+          "Des choses qui ont tenu pendant toute sa vie.",
+          "Karen vient se mettre à côté de lui.",
+          "— Tu pars ce soir ? dit-elle.",
+          "— Oui.",
+          "— C'est bien, dit-elle.",
+          "Il lui prend la main. Elle le laisse faire."
+        ],
+        narr_defaite:[
+          "Ils passent à travers les positions.",
+          "Tarine se retrouve entre les gardes et la maison.",
+          "— Tarine, dit Karen depuis la fenêtre. Derrière. Par le jardin.",
+          "Il passe par le jardin. Le portail. Le bananier maigre.",
+          "L'endroit où tout a commencé.",
+          "Il tient. Pour ce soir, il tient."
+        ],
+        journal_victoire:"Karen est en sécurité. Je lui ai dit que je partais. Elle a dit que c'est bien. Pas résignation — quelque chose de plus grand que ça. Elle a attendu ce moment depuis ma naissance. Elle l'a préparé. Elle m'a préparé. La main sur ma joue, une dernière fois. Sa peau chaude. Ses doigts légèrement rugueux. La main de quelqu'un qui a tenu les choses pendant longtemps."
+      },
+      {
+        id:"m14",num:14,name:"Sub & Grob",
+        desc:"Les émissaires de Sgrün. Le combat final à Abidjan.",
+        brief:"Le quartier de Marcory. Sub et Grob sont là tous les deux — ce n'est pas une coïncidence. Ils savent que tu pars. Ils veulent la pierre avant.",
+        allies_requis:["LUNDGREN","BABA","FULGENCE"],allies_dispo:["KAREN"],
+        ennemis:["DARK","BABA"],ennemis_extra:3,
+        xp:320,
+        narr_avant:[
+          "La nuit de Marcory.",
+          "Deux présences dans la rue — Sub et Grob. Formes humaines.",
+          "La pierre dans la poche de Tarine brûle comme jamais.",
+          "— Ils veulent la schismariat, dit Sam.",
+          "— Ils ne l'auront pas, dit Tarine.",
+          "— Non, dit Sam. Je sais."
+        ],
+        narr_victoire:[
+          "Sub et Grob disparaissent. Pas vaincus — ils ne le sont jamais vraiment.",
+          "Mais repoussés.",
+          "La nuit de Marcory retrouve son calme.",
+          "Quelque part dans la rue, une radio joue quelque chose de doux.",
+          "Sam pose la main sur l'épaule de Tarine.",
+          "— Tu sais où on va maintenant.",
+          "— La porte, dit Tarine.",
+          "— La porte."
+        ],
+        narr_defaite:[
+          "Deux émissaires. Trop.",
+          "Sam intervient — une lumière grise dans la nuit d'Abidjan.",
+          "Sub et Grob reculent.",
+          "— La prochaine fois, dit Grob, tu ne seras pas là pour lui, Grün.",
+          "— La prochaine fois, dit Sam, il n'aura pas besoin de moi.",
+          "Tarine regarde sa ville. Ses rues. Sa maison.",
+          "Il pense : je reviendrai."
+        ],
+        journal_victoire:"Sub et Grob. Deux algorithmes qui imitent l'humanité sans en avoir le désordre. Je les ai regardés partir dans la nuit de Marcory. Ils reviendront. Sgrün enverra d'autres choses. Mais pas ce soir. Ce soir, Abidjan est à nous. Demain, la porte au Pôle Nord. Quand tu mourras, elles sauront où aller — c'est ce que Lundgren a dit à Kankou Moussa il y a sept siècles. Je ne mourrai pas ce soir."
+      },
+      {
+        id:"m15",num:15,name:"La Porte",
+        desc:"La fin de l'Éveil. Le début de quelque chose d'autre.",
+        brief:"Le jardin de Marcory. Le portail s'ouvre. Sam étend le bras — pas d'incantation, juste une concentration silencieuse. La porte. L'autre côté.",
+        allies_requis:["LUNDGREN","SAM"],allies_dispo:["KAREN","FULGENCE","BABA"],
+        ennemis:["DARK","BABA"],ennemis_extra:4,
+        xp:400,
+        narr_avant:[
+          "Le jardin de derrière. Le bananier maigre.",
+          "Sam étend le bras, paume vers le bas.",
+          "L'air autour de sa paume change — une densité, une résistance.",
+          "La porte. Ses bords nets, solides.",
+          "De l'autre côté : une lumière qui n'a pas de source, une profondeur qui n'a pas de fond.",
+          "Tarine touche le bracelet à son poignet — le noir, le vert, le doré.",
+          "D'où il vient.",
+          "Il se retourne une dernière fois.",
+          "Karen. Les épaules droites. La tête haute.",
+          "Elle lève la main.",
+          "Ce fut tout. Ce fut suffisant."
+        ],
+        narr_victoire:[
+          "La lumière de l'autre côté.",
+          "Tarine fait un pas.",
+          "Le froid l'enveloppe — pas le froid de la climatisation.",
+          "Un froid qui vient de plus loin que la météo.",
+          "Sam pose une main sur son épaule. Ferme. Stable. Réelle.",
+          "— Respire, dit-il.",
+          "Tarine respire.",
+          "Et la porte devient possible.",
+          ".",
+          ".",
+          "Les cinq pierres. Kankou Moussa. Sept siècles.",
+          "L'Éveil est terminé.",
+          "Ce qui vient après n'a pas encore de nom."
+        ],
+        narr_defaite:[
+          "La porte se referme.",
+          "Pas maintenant — mais bientôt.",
+          "Tarine regarde ses mains dans le noir du jardin.",
+          "La chaleur est toujours là.",
+          "Elle a toujours été là.",
+          "— La porte sera là demain, dit Sam.",
+          "— Et dans sept siècles si nécessaire.",
+          "— C'est une longue attente, dit Tarine.",
+          "— Pour les pierres, dit Sam, non."
+        ],
+        journal_victoire:"Je suis passé. L'autre côté n'est pas ce que j'imaginais — pas un endroit différent. Une façon différente d'être dans les endroits. Sam dit que la porte au Pôle Nord nous attend. Que la prochaine transaction de Sgrün est là-bas. Que comprendre comment neutraliser ce que Sylla porte et protéger ce que je porte — les deux arrivent ensemble. Je porte le bracelet de mon père. Je porte la schismariat. Je porte la promesse que je m'ai faite à neuf ans dans le salon de Marcory. Ce n'est pas du poids. C'est de la direction."
+      }
+    ]
+  }
+];
+
+// ===== ÉTAT DU JEU =====
+function defaultSave(){
+  return{
+    version:2,
+    missions_done:[],
+    xp:0,
+    level:1,
+    allies_unlocked:["KAREN","FULGENCE"],
+    journal:[],
+    hp_bonus:0,atk_bonus:0,
+    current_mission:null
+  };
+}
+
+function loadSave(){
+  try{
+    var s=localStorage.getItem("dpdf_save_v2");
+    if(s){var d=JSON.parse(s);if(d.version===2)return d;}
+  }catch(e){}
+  return defaultSave();
+}
+
+function writeSave(d){
+  try{localStorage.setItem("dpdf_save_v2",JSON.stringify(d));}catch(e){}
+}
+
+var save=loadSave();
+
+// État de combat
+var combat={
+  mission:null,allyTeam:[],enemyTeam:[],fighters:{},
+  gameTime:0,timerInterval:null,nexusHp:100,allyNexusHp:100,
+  allyKills:0,enemyKills:0,lastNarrCd:0
+};
+var tickCount=0;
+
+// ===== UTILS =====
+function pick(arr){return arr[Math.floor(Math.random()*arr.length)];}
+function goTo(id){
+  document.querySelectorAll(".screen").forEach(function(s){s.classList.remove("active");});
+  document.getElementById(id).classList.add("active");
+}
+window.goTo=goTo;
+function cloneChamp(key){
+  var base=BASE_CHAMPIONS[key];
+  if(!base)return null;
+  var c=JSON.parse(JSON.stringify(base));
+  c.abilities.forEach(function(a){a.curCd=0;});
+  // Apply level bonuses for player
+  if(key==="TARINE"){
+    c.hp=Math.round(c.maxHp+save.hp_bonus);
+    c.maxHp=c.hp;
+    c.atk=Math.round(c.atk+save.atk_bonus);
+  }
+  return c;
+}
+function getMission(id){
+  for(var a=0;a<CAMPAIGN.length;a++){
+    for(var m=0;m<CAMPAIGN[a].missions.length;m++){
+      if(CAMPAIGN[a].missions[m].id===id)return CAMPAIGN[a].missions[m];
+    }
+  }
+  return null;
+}
+function getActeFor(missionId){
+  for(var a=0;a<CAMPAIGN.length;a++){
+    for(var m=0;m<CAMPAIGN[a].missions.length;m++){
+      if(CAMPAIGN[a].missions[m].id===missionId)return CAMPAIGN[a];
+    }
+  }
+  return null;
+}
+function isMissionDone(id){return save.missions_done.indexOf(id)>=0;}
+function isMissionAvailable(id){
+  // Find mission index overall
+  var all=[];
+  CAMPAIGN.forEach(function(a){a.missions.forEach(function(m){all.push(m.id);});});
+  var idx=all.indexOf(id);
+  if(idx===0)return true;
+  if(idx<0)return false;
+  return isMissionDone(all[idx-1]);
+}
+function xpForLevel(lvl){return lvl*100;}
+function checkLevelUp(){
+  while(save.xp>=xpForLevel(save.level)){
+    save.xp-=xpForLevel(save.level);
+    save.level++;
+    save.hp_bonus+=50;
+    save.atk_bonus+=8;
+  }
+}
+
+// ===== NARR COMBAT =====
+var NARR_ALLY=[
+  function(a,d,dmg){return '<span class="cname">'+a+'</span> frappe <span class="cname">'+d+'</span> — <span class="dmg">-'+dmg+' PV</span>';},
+  function(a,d,dmg){return "L'énergie de <span class='you'>"+a+"</span> déchire les défenses de <span class='cname'>"+d+"</span> — <span class='dmg'>-"+dmg+' PV</span>';},
+  function(a,d,dmg){return '<span class="you">'+a+'</span> avance. <span class="cname">'+d+'</span> perd <span class="dmg">'+dmg+' PV</span>';}
+];
+var NARR_ENEMY=[
+  function(a,d,dmg){return '<span class="cname">'+a+"</span> riposte sur <span class='you'>"+d+"</span> — <span class='dmg'>-"+dmg+' PV</span>';},
+  function(a,d,dmg){return "L'Empire contre-attaque. <span class='cname'>"+a+"</span> blesse <span class='you'>"+d+"</span> de <span class='dmg'>"+dmg+' PV</span>';}
+];
+var NARR_HEAL=[
+  function(a,v){return '<span class="cname">'+a+'</span> soigne — <span class="heal">+'+v+' PV</span>';}
+];
+
+// ===== ÉCRAN TITRE =====
+function initTitle(){
+  var hasSave=save.missions_done.length>0;
+  document.getElementById("save-status").textContent=hasSave?
+    "Sauvegarde : "+save.missions_done.length+"/15 missions — Niveau "+save.level:"";
+  document.getElementById("btn-continue").style.display=hasSave?"block":"none";
+  document.getElementById("btn-reset").style.display=hasSave?"block":"none";
+}
+
+document.getElementById("btn-start").addEventListener("click",function(){
+  save=defaultSave();
+  writeSave(save);
+  showNarration(CAMPAIGN[0].narration_debut,function(){goTo("screen-hub");buildHub();});
+});
+document.getElementById("btn-continue").addEventListener("click",function(){
+  goTo("screen-hub");buildHub();
+});
+document.getElementById("btn-reset").addEventListener("click",function(){
+  if(confirm("Recommencer depuis le début ?")){
+    save=defaultSave();writeSave(save);initTitle();
+  }
+});
+
+// ===== NARRATION CINÉMATIQUE =====
+function showNarration(lines,callback,chapterLabel){
+  goTo("screen-narration");
+  document.getElementById("narr-chapter").textContent=chapterLabel||"";
+  var container=document.getElementById("narr-lines");
+  container.innerHTML=lines.map(function(l){
+    return '<div class="narr-line">'+l+'</div>';
+  }).join("");
+  var els=container.querySelectorAll(".narr-line");
+  var i=0;
+  function showNext(){
+    if(i<els.length){els[i].classList.add("visible");i++;setTimeout(showNext,700);}
+  }
+  setTimeout(showNext,300);
+  document.getElementById("screen-narration").onclick=null;
+  setTimeout(function(){
+    document.getElementById("screen-narration").onclick=function(){
+      if(callback)callback();
+    };
+  },1200);
+}
+
+// ===== HUB =====
+function buildHub(){
+  // Update header
+  var currentActe=null;
+  var lastDone=save.missions_done[save.missions_done.length-1];
+  if(lastDone){
+    var a=getActeFor(lastDone);
+    if(a)currentActe=a;
+  }
+  if(!currentActe)currentActe=CAMPAIGN[0];
+  document.getElementById("hub-acte-label").textContent=currentActe.label;
+  document.getElementById("hub-acte-titre").textContent=currentActe.titre;
+
+  // Profil
+  checkLevelUp();
+  var nextLvlXp=xpForLevel(save.level);
+  document.getElementById("prof-lvl").textContent=save.level;
+  document.getElementById("prof-xp").textContent=save.xp+" / "+nextLvlXp;
+  document.getElementById("xp-fill").style.width=Math.round(save.xp/nextLvlXp*100)+"%";
+  var tBase=BASE_CHAMPIONS.TARINE;
+  document.getElementById("prof-hp").textContent=tBase.maxHp+save.hp_bonus;
+  document.getElementById("prof-atk").textContent=tBase.atk+save.atk_bonus;
+  document.getElementById("prof-pierres").textContent=Math.min(5,1+Math.floor(save.level/3));
+
+  // Missions
+  var mDiv=document.getElementById("hub-missions");
+  mDiv.innerHTML="";
+  CAMPAIGN.forEach(function(acte){
+    var sec=document.createElement("div");
+    sec.className="acte-section";
+    sec.innerHTML='<div class="acte-label">'+acte.label+' — '+acte.titre+'</div><div class="missions-row" id="row-'+acte.id+'"></div>';
+    mDiv.appendChild(sec);
+    var row=document.getElementById("row-"+acte.id);
+    acte.missions.forEach(function(m){
+      var done=isMissionDone(m.id);
+      var avail=isMissionAvailable(m.id);
+      var cls="mission-card"+(done?" done":avail?" available":" locked");
+      var statusTxt=done?"✓ TERMINÉE":avail?"DISPONIBLE":"VERROUILLÉE";
+      var statusCls=done?"done":avail?"avail":"lock";
+      var card=document.createElement("div");
+      card.className=cls;
+      card.innerHTML=
+        '<div class="m-num">'+m.num+'</div>'+
+        '<div class="m-info">'+
+          '<div class="m-name">'+m.name+'</div>'+
+          '<div class="m-desc">'+m.desc+'</div>'+
+        '</div>'+
+        '<div class="m-status '+statusCls+'">'+statusTxt+'</div>';
+      if(avail&&!done){
+        card.addEventListener("click",function(){openDeploy(m.id);});
+      }
+      row.appendChild(card);
+    });
+  });
+
+  // Alliés
+  var aDiv=document.getElementById("allies-list");
+  aDiv.innerHTML="";
+  var allAllies=["KAREN","FULGENCE","LUNDGREN","BABA","DARK"];
+  allAllies.forEach(function(k){
+    var unlocked=save.allies_unlocked.indexOf(k)>=0;
+    var c=BASE_CHAMPIONS[k];
+    if(!c)return;
+    var row=document.createElement("div");
+    row.className="ally-row"+(unlocked?"":" ally-locked");
+    row.innerHTML=
+      '<img class="ally-img" src="'+IMGS[c.key]+'" alt="'+c.name+'">'+
+      '<div class="ally-info">'+
+        '<div class="ally-name">'+c.name+'</div>'+
+        '<div class="ally-role">'+c.role+'</div>'+
+      '</div>'+
+      (unlocked?'<span class="ally-badge">ACTIF</span>':'');
+    aDiv.appendChild(row);
+  });
+
+  // Journal
+  var jDiv=document.getElementById("journal-entries");
+  jDiv.innerHTML="";
+  if(save.journal.length===0){
+    jDiv.innerHTML='<div class="j-entry"><div class="j-text">Les premières pages sont vides. Quelque chose commence ce soir.</div></div>';
+  }else{
+    var entries=save.journal.slice().reverse();
+    entries.forEach(function(e){
+      var el=document.createElement("div");
+      el.className="j-entry";
+      el.innerHTML='<div class="j-date">Mission '+e.mission+' — Acte '+e.acte+'</div><div class="j-text">'+e.text+'</div>';
+      jDiv.appendChild(el);
+    });
+  }
+
+  writeSave(save);
+}
+
+// ===== DÉPLOIEMENT =====
+var deploySelected=[];
+var currentDeployMission=null;
+
+function openDeploy(missionId){
+  var m=getMission(missionId);
+  if(!m)return;
+  currentDeployMission=m;
+  deploySelected=[];
+
+  document.getElementById("deploy-mission-name").textContent=m.num+". "+m.name;
+  document.getElementById("deploy-brief").textContent=m.brief;
+
+  // Afficher infos ennemis
+  var eList=document.getElementById("deploy-enemies-list");
+  eList.innerHTML="";
+  var ennemisNames=m.ennemis.map(function(k){return BASE_CHAMPIONS[k]?BASE_CHAMPIONS[k].name:k;});
+  if(m.ennemis_extra>0)ennemisNames.push(m.ennemis_extra+" soldats");
+  ennemisNames.forEach(function(n){
+    var el=document.createElement("div");
+    el.className="enemy-preview";
+    el.innerHTML='⚔ '+n;
+    eList.appendChild(el);
+  });
+
+  // Grille alliés dispo
+  var grid=document.getElementById("deploy-grid");
+  grid.innerHTML="";
+  var available=m.allies_dispo.filter(function(k){return save.allies_unlocked.indexOf(k)>=0;});
+
+  // Requis auto-sélectionnés
+  m.allies_requis.forEach(function(k){
+    if(save.allies_unlocked.indexOf(k)>=0&&deploySelected.indexOf(k)<0)deploySelected.push(k);
+  });
+
+  var toShow=["KAREN","FULGENCE","LUNDGREN","BABA"];
+  toShow.forEach(function(k){
+    if(k==="TARINE")return;
+    var c=BASE_CHAMPIONS[k];if(!c)return;
+    var unlocked=save.allies_unlocked.indexOf(k)>=0;
+    var inDispo=available.indexOf(k)>=0;
+    var requis=m.allies_requis.indexOf(k)>=0;
+    var card=document.createElement("div");
+    card.className="deploy-card"+((!unlocked||(!inDispo&&!requis))?" locked":"");
+    card.dataset.key=k;
+    card.innerHTML=
+      '<img src="'+IMGS[c.key]+'" alt="'+c.name+'">'+
+      '<div class="deploy-card-name">'+c.name+'</div>'+
+      '<div class="deploy-card-role">'+c.role+(requis?" · REQUIS":"")+'</div>';
+    if(unlocked&&(inDispo||requis)){
+      if(requis){card.classList.add("selected");}
+      card.addEventListener("click",function(){toggleDeploy(k,card);});
+    }
+    grid.appendChild(card);
+  });
+
+  updateDeployFooter();
+  goTo("screen-deploy");
+}
+
+function toggleDeploy(key,card){
+  var m=currentDeployMission;
+  if(m.allies_requis.indexOf(key)>=0)return;
+  var idx=deploySelected.indexOf(key);
+  if(idx>=0){
+    deploySelected.splice(idx,1);
+    card.classList.remove("selected");
+  }else{
+    if(deploySelected.length>=2)return;
+    deploySelected.push(key);
+    card.classList.add("selected");
+  }
+  updateDeployFooter();
+}
+
+function updateDeployFooter(){
+  var names=["Tarine"].concat(deploySelected.map(function(k){return BASE_CHAMPIONS[k]?BASE_CHAMPIONS[k].name:k;}));
+  document.getElementById("deploy-team-preview").innerHTML='Équipe : '+names.map(function(n){return '<span>'+n+'</span>';}).join(', ');
+}
+
+document.getElementById("btn-launch").addEventListener("click",function(){
+  if(!currentDeployMission)return;
+  var m=currentDeployMission;
+  showNarration(m.narr_avant,function(){startCombat(m.id,deploySelected);},m.num+". "+m.name);
+});
+
+// ===== COMBAT =====
+function startCombat(missionId,selectedAllies){
+  var m=getMission(missionId);
+  if(!m){return;}
+  combat.mission=m;
+  combat.allyKills=0;combat.enemyKills=0;
+  combat.nexusHp=100;combat.allyNexusHp=100;
+  combat.gameTime=0;tickCount=0;
+  combat.fighters={};
+
+  // Équipe alliée
+  var player=cloneChamp("TARINE");
+  player.isPlayer=true;
+  combat.allyTeam=[player];
+  selectedAllies.forEach(function(k){
+    var c=cloneChamp(k);
+    if(c)combat.allyTeam.push(c);
+  });
+
+  // Équipe ennemie
+  combat.enemyTeam=[];
+  m.ennemis.forEach(function(k){
+    var c=cloneChamp(k);
+    if(c)combat.enemyTeam.push(c);
+  });
+  // Soldats supplémentaires
+  var extraPool=["DARK","BABA"];
+  for(var i=0;i<(m.ennemis_extra||0);i++){
+    var k=extraPool[i%extraPool.length];
+    var c=cloneChamp(k);
+    if(c){
+      c.id=c.id+"_extra"+i;
+      c.name=c.name+" (Ombre)";
+      c.hp=Math.round(c.maxHp*0.5);c.maxHp=c.hp;
+      c.atk=Math.round(c.atk*0.6);
+      combat.enemyTeam.push(c);
+    }
+  }
+
+  // Init fighters HP
+  combat.allyTeam.concat(combat.enemyTeam).forEach(function(c){
+    combat.fighters[c.id]={hp:c.hp,maxHp:c.maxHp,dead:false};
+  });
+  player.abilities.forEach(function(a){a.curCd=0;});
+
+  document.getElementById("hud-mission-name").textContent=m.num+". "+m.name;
+  document.getElementById("score-ally").textContent="0";
+  document.getElementById("score-enemy").textContent="0";
+  document.getElementById("nexus-fill").style.width="100%";
+  document.getElementById("ally-nexus-fill").style.width="100%";
+  document.getElementById("action-log").innerHTML="";
+
+  renderFighters();
+  renderAbilityButtons();
+  setNarration("ABIDJAN","Les pierres s'éveillent dans la nuit chaude de Marcory.");
+  goTo("screen-game");
+  combat.timerInterval=setInterval(gameTick,1000);
+  document.addEventListener("keydown",onKeyDown);
+}
+
+function gameTick(){
+  combat.gameTime++;tickCount++;
+  var s=combat.gameTime;
+  document.getElementById("hud-timer").textContent=
+    String(Math.floor(s/60)).padStart(2,"0")+":"+String(s%60).padStart(2,"0");
+  var player=combat.allyTeam[0];
+  if(player)player.abilities.forEach(function(a){if(a.curCd>0)a.curCd--;});
+  renderAbilityButtons();
+  if(tickCount%3===0)iaEnemyAction();
+  if(tickCount%4===0)iaAllyAction();
+  checkGameEnd();
+}
+
+function iaEnemyAction(){
+  var alive=combat.enemyTeam.filter(function(e){return !combat.fighters[e.id]||!combat.fighters[e.id].dead;});
+  var allyAlive=combat.allyTeam.filter(function(a){return !combat.fighters[a.id]||!combat.fighters[a.id].dead;});
+  if(!alive.length||!allyAlive.length)return;
+  var att=pick(alive),tgt=pick(allyAlive);
+  var dmg=Math.max(5,Math.floor(att.atk*(0.7+Math.random()*0.6)-(tgt.def||40)*0.3));
+  dealDamage(tgt.id,dmg,false);
+  addLog(pick(NARR_ENEMY)(att.name,tgt.name,dmg));
+  anim(att.id,"attacking");anim(tgt.id,"hit");
+}
+
+function iaAllyAction(){
+  var allies=combat.allyTeam.slice(1).filter(function(a){return !combat.fighters[a.id]||!combat.fighters[a.id].dead;});
+  var enemies=combat.enemyTeam.filter(function(e){return !combat.fighters[e.id]||!combat.fighters[e.id].dead;});
+  if(!allies.length||!enemies.length)return;
+  var att=pick(allies),tgt=pick(enemies);
+  var dmg=Math.max(5,Math.floor(att.atk*(0.6+Math.random()*0.5)));
+  dealDamage(tgt.id,dmg,true);
+  addLog(pick(NARR_ALLY)(att.name,tgt.name,dmg));
+  anim(att.id,"attacking");anim(tgt.id,"hit");
+}
+
+function onKeyDown(e){
+  var keys={"z":0,"x":1,"c":2,"r":3,"Z":0,"X":1,"C":2,"R":3};
+  if(keys[e.key]!==undefined)useAbility(keys[e.key]);
+}
+
+function useAbility(idx){
+  var player=combat.allyTeam[0];
+  if(!player||combat.fighters[player.id].dead)return;
+  var ab=player.abilities[idx];
+  if(!ab||ab.curCd>0)return;
+  var enemies=combat.enemyTeam.filter(function(e){return !combat.fighters[e.id].dead;});
+  var allies=combat.allyTeam.filter(function(a){return !combat.fighters[a.id].dead;});
+  if(ab.dmg&&!enemies.length)return;
+  ab.curCd=ab.cd;
+  if(ab.dmg){
+    var tgt=pick(enemies);
+    var dmg=Math.max(8,Math.floor(ab.dmg*(0.9+Math.random()*0.3)));
+    dealDamage(tgt.id,dmg,true);
+    setNarration(player.name.toUpperCase(),"<em>"+ab.name+"</em> — "+ab.desc+". <span class='dmg'>-"+dmg+" PV</span> sur <span class='cname'>"+tgt.name+"</span>.");
+    addLog("<span class='you'>Tu</span> utilises <span class='cname'>"+ab.name+"</span> sur <span class='cname'>"+tgt.name+"</span> — <span class='dmg'>-"+dmg+" PV</span>");
+    anim(player.id,"attacking");anim(tgt.id,"hit");
+  }
+  if(ab.heal){
+    var htgt=pick(allies);
+    healFighter(htgt.id,ab.heal);
+    setNarration(player.name.toUpperCase(),"<em>"+ab.name+"</em> — "+ab.desc+". <span class='heal'>+"+ab.heal+" PV</span> pour <span class='cname'>"+htgt.name+"</span>.");
+    addLog(pick(NARR_HEAL)(player.name,ab.heal));
+  }
+  renderAbilityButtons();
+  checkGameEnd();
+}
+
+function dealDamage(id,dmg,isAlly){
+  var f=combat.fighters[id];if(!f||f.dead)return;
+  f.hp=Math.max(0,f.hp-dmg);
+  if(f.hp===0){
+    f.dead=true;
+    var c=combat.allyTeam.concat(combat.enemyTeam).find(function(x){return x.id===id;});
+    if(isAlly){combat.allyKills++;document.getElementById("score-ally").textContent=combat.allyKills;}
+    else{combat.enemyKills++;document.getElementById("score-enemy").textContent=combat.enemyKills;}
+    addLog("<span class='cname'>"+(c?c.name:id)+"</span> est éliminé.");
+    if(!isAlly){combat.nexusHp=Math.max(0,combat.nexusHp-20);document.getElementById("nexus-fill").style.width=combat.nexusHp+"%";}
+    else{combat.allyNexusHp=Math.max(0,combat.allyNexusHp-20);document.getElementById("ally-nexus-fill").style.width=combat.allyNexusHp+"%";}
+  }
+  renderFighters();
+}
+
+function healFighter(id,val){
+  var f=combat.fighters[id];if(!f||f.dead)return;
+  f.hp=Math.min(f.maxHp,f.hp+val);
+  renderFighters();
+}
+
+function anim(id,cls){
+  var el=document.getElementById("fighter-"+id);if(!el)return;
+  el.classList.add(cls);setTimeout(function(){el.classList.remove(cls);},500);
+}
+
+function setNarration(src,txt){
+  document.getElementById("narr-source").textContent=src;
+  document.getElementById("narr-text").innerHTML=txt;
+}
+
+function addLog(txt){
+  var log=document.getElementById("action-log");
+  var line=document.createElement("div");
+  line.className="log-line";
+  line.innerHTML=txt;
+  log.appendChild(line);
+  log.scrollTop=log.scrollHeight;
+}
+
+function renderFighters(){
+  document.getElementById("ally-fighters").innerHTML=combat.allyTeam.map(function(c){
+    var f=combat.fighters[c.id];if(!f)return"";
+    var pct=Math.round((f.hp/f.maxHp)*100);
+    return '<div class="fighter-card'+(f.dead?" dead":"")+(c.isPlayer?" active":"")+'" id="fighter-'+c.id+'">'+
+      '<img class="fighter-img" src="'+IMGS[c.key]+'" alt="'+c.name+'">'+
+      '<div class="fighter-info">'+
+        '<div class="fighter-name">'+c.name+'</div>'+
+        '<div class="fighter-role">'+c.role+'</div>'+
+        '<div class="hp-bar"><div class="hp-fill ally" style="width:'+pct+'%"></div></div>'+
+        '<div class="hp-text">'+f.hp+' / '+f.maxHp+' PV</div>'+
+      '</div>'+
+      '<span class="fighter-badge '+(c.isPlayer?"you":"ia")+'">'+(c.isPlayer?"TOI":"IA")+'</span>'+
+    '</div>';
+  }).join("");
+  document.getElementById("enemy-fighters").innerHTML=combat.enemyTeam.map(function(c){
+    var f=combat.fighters[c.id];if(!f)return"";
+    var pct=Math.round((f.hp/f.maxHp)*100);
+    return '<div class="fighter-card'+(f.dead?" dead":"")+'" id="fighter-'+c.id+'">'+
+      '<img class="fighter-img" src="'+IMGS[c.key]+'" alt="'+c.name+'">'+
+      '<div class="fighter-info">'+
+        '<div class="fighter-name">'+c.name+'</div>'+
+        '<div class="fighter-role">'+c.role+'</div>'+
+        '<div class="hp-bar"><div class="hp-fill enemy" style="width:'+pct+'%"></div></div>'+
+        '<div class="hp-text">'+f.hp+' / '+f.maxHp+' PV</div>'+
+      '</div>'+
+      '<span class="fighter-badge ia">IA</span>'+
+    '</div>';
+  }).join("");
+}
+
+function renderAbilityButtons(){
+  var player=combat.allyTeam[0];if(!player)return;
+  var isDead=combat.fighters[player.id]?combat.fighters[player.id].dead:false;
+  document.getElementById("ab-buttons").innerHTML=player.abilities.map(function(ab,i){
+    var onCd=ab.curCd>0||isDead;
+    return '<div class="ab-btn'+(onCd?" on-cooldown":"")+'" data-idx="'+i+'">'+
+      '<div class="key">'+ab.key+'</div>'+
+      '<div class="aname">'+ab.name+'</div>'+
+      (ab.curCd>0?'<div class="cd">'+ab.curCd+'s</div>':'')+
+    '</div>';
+  }).join("");
+  document.getElementById("ab-buttons").querySelectorAll(".ab-btn").forEach(function(btn){
+    btn.addEventListener("click",function(){useAbility(parseInt(btn.dataset.idx));});
+  });
+}
+
+function checkGameEnd(){
+  var allEnemDead=combat.enemyTeam.every(function(e){return combat.fighters[e.id]&&combat.fighters[e.id].dead;});
+  var allAllyDead=combat.allyTeam.every(function(a){return combat.fighters[a.id]&&combat.fighters[a.id].dead;});
+  if(allEnemDead||combat.nexusHp<=0)endMission(true);
+  else if(allAllyDead||combat.allyNexusHp<=0)endMission(false);
+}
+
+// ===== FIN DE MISSION =====
+function endMission(victory){
+  clearInterval(combat.timerInterval);
+  document.removeEventListener("keydown",onKeyDown);
+  var m=combat.mission;
+  setTimeout(function(){
+    var narr=victory?m.narr_victoire:m.narr_defaite;
+    showNarration(narr,function(){
+      goTo("screen-end");
+      showEndScreen(victory,m);
+    },m.num+". "+m.name);
+  },600);
+}
+
+function showEndScreen(victory,m){
+  var titleEl=document.getElementById("end-title");
+  var subtitleEl=document.getElementById("end-subtitle");
+  var narrEl=document.getElementById("end-narration");
+  var rewardsEl=document.getElementById("end-rewards");
+
+  if(victory){
+    titleEl.textContent="VICTOIRE";titleEl.className="end-title victory";
+    subtitleEl.textContent=m.name.toUpperCase();
+    narrEl.textContent="Mission accomplie. Les pierres brillent dans la nuit d'Abidjan.";
+
+    // Sauvegarder progression
+    if(!isMissionDone(m.id)){
+      save.missions_done.push(m.id);
+      var xpGained=m.xp;
+      var prevLevel=save.level;
+      save.xp+=xpGained;
+      checkLevelUp();
+
+      // Débloquer allié
+      if(m.unlock_ally&&save.allies_unlocked.indexOf(m.unlock_ally)<0){
+        save.allies_unlocked.push(m.unlock_ally);
+      }
+
+      // Journal
+      if(m.journal_victoire){
+        save.journal.push({
+          mission:m.num,
+          acte:getActeFor(m.id)?getActeFor(m.id).label:"I",
+          text:m.journal_victoire
+        });
+      }
+
+      // Vérifier début acte suivant
+      var acteActuel=getActeFor(m.id);
+      var nextActeNarr=null;
+      CAMPAIGN.forEach(function(a,idx){
+        if(a.id===acteActuel.id&&idx+1<CAMPAIGN.length){
+          var nextActe=CAMPAIGN[idx+1];
+          var isFirstOfNext=nextActe.missions[0].id===m.id+"_next"||false;
+          // Check if this was last mission of current acte
+          var lastMOfActe=acteActuel.missions[acteActuel.missions.length-1];
+          if(lastMOfActe.id===m.id){
+            nextActeNarr=nextActe.narration_debut;
+            nextActeNarr._acteLabel=nextActe.label+" — "+nextActe.titre;
+          }
+        }
+      });
+
+      writeSave(save);
+
+      // Rewards UI
+      var unlockTxt="";
+      if(m.unlock_ally&&BASE_CHAMPIONS[m.unlock_ally])
+        unlockTxt=BASE_CHAMPIONS[m.unlock_ally].name+" rejoint les Gardiens du Sud";
+
+      rewardsEl.innerHTML=
+        '<div class="reward-title">RÉCOMPENSES</div>'+
+        '<div class="reward-row"><span class="reward-key">XP gagné</span><span class="reward-val">+'+xpGained+' XP</span></div>'+
+        (save.level>prevLevel?'<div class="reward-row"><span class="reward-key">Niveau</span><span class="reward-val">'+prevLevel+' → '+save.level+'</span></div>':'')+
+        (unlockTxt?'<div class="reward-unlock">✦ '+unlockTxt+'</div>':'')+
+        '<div class="reward-row" style="margin-top:8px"><span class="reward-key">Missions terminées</span><span class="reward-val">'+save.missions_done.length+' / 15</span></div>';
+
+      document.getElementById("btn-hub").onclick=function(){
+        if(nextActeNarr){
+          showNarration(nextActeNarr,function(){goTo("screen-hub");buildHub();},nextActeNarr._acteLabel||"");
+        }else{
+          goTo("screen-hub");buildHub();
+        }
+      };
+    }else{
+      rewardsEl.innerHTML='<div class="reward-title">DÉJÀ TERMINÉE</div><div class="reward-row"><span class="reward-key">Cette mission était déjà complétée.</span></div>';
+      document.getElementById("btn-hub").onclick=function(){goTo("screen-hub");buildHub();};
+    }
+  }else{
+    titleEl.textContent="DÉFAITE";titleEl.className="end-title defeat";
+    subtitleEl.textContent="LES PIERRES S'ASSOMBRISSENT";
+    narrEl.textContent="Elles n'ont pas dit leur dernier mot. Elles attendent depuis sept siècles. Elles peuvent attendre encore.";
+    rewardsEl.innerHTML='<div class="reward-title">SANS PROGRESSION</div><div class="reward-row"><span class="reward-key">Réessayez pour continuer l\'histoire.</span></div>';
+    document.getElementById("btn-hub").onclick=function(){goTo("screen-hub");buildHub();};
+  }
+
+  document.getElementById("btn-retry").onclick=function(){
+    openDeploy(m.id);
+  };
+}
+
+// ===== INIT =====
+initTitle();
+
+})();
+</script>
+</body>
+</html>
