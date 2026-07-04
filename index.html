@@ -1120,7 +1120,464 @@ var CAMPAIGN = [
         journal_victoire:"Je suis passé. L'autre côté n'est pas ce que j'imaginais — pas un endroit différent. Une façon différente d'être dans les endroits. Sam dit que la porte au Pôle Nord nous attend. Que la prochaine transaction de Sgrün est là-bas. Que comprendre comment neutraliser ce que Sylla porte et protéger ce que je porte — les deux arrivent ensemble. Je porte le bracelet de mon père. Je porte la schismariat. Je porte la promesse que je m'ai faite à neuf ans dans le salon de Marcory. Ce n'est pas du poids. C'est de la direction."
       }
     ]
+  },
+   {
+    id:"acte6",label:"ACTE VI",titre:"LE PÔLE NORD",
+    narration_debut:[
+      "La porte s'est refermée derrière eux. L'air d'Abidjan a disparu.",
+      "Le froid n'est pas une température ici. C'est une présence.",
+      "Sam marche dans la neige sans laisser d'empreintes.",
+      "— Sgrün ne vit pas ici, dit-il. Mais c'est ici qu'il fait ses transactions.",
+      "Lundgren regarde l'horizon blanc. Sept siècles qu'il n'avait pas vu de glace."
+    ],
+    missions:[
+      {
+        id:"m16",num:16,name:"La Base Sgrün",
+        desc:"Infiltrer le point de transaction.",
+        brief:"Une structure noire au milieu du blanc absolu. La schismariat pulse dans ta main pour se réchauffer. Il y a des gardes. Pas des humains.",
+        allies_requis:["SAM"],allies_dispo:["LUNDGREN"],
+        ennemis:["DARK"],ennemis_extra:4,
+        xp:450,
+        narr_avant:[
+          "Le bâtiment n'a pas de fenêtres. Pas de portes visibles.",
+          "Juste un bloc d'obsidienne posé sur la banquise.",
+          "— Des Construits, dit Sam en désignant les gardes.",
+          "Des armures vides tenues par de la volonté.",
+          "La pierre de Tarine devient brûlante. Elle déteste cet endroit."
+        ],
+        narr_victoire:[
+          "Les armures tombent. Juste de la ferraille dans la neige.",
+          "Sam pose sa main sur le mur d'obsidienne. Le mur s'ouvre comme de l'eau.",
+          "— Facile, dit Tarine.",
+          "— Trop facile, corrige Lundgren.",
+          "Dans le couloir sombre, quelque chose les attendait déjà."
+        ],
+        narr_defaite:[
+          "Les Construits ne se fatiguent pas. Pas de muscles. Pas de poumons.",
+          "Tarine recule dans la neige, le souffle court.",
+          "— On ne passe pas en force, dit Sam.",
+          "La neige commence à recouvrir leurs traces. Le bloc noir reste impassible."
+        ],
+        journal_victoire:"Les Construits de Sgrün ne sont pas vivants, mais ils ne sont pas morts non plus. C'est le pouvoir de Sgrün : retirer l'essence des choses pour n'en garder que la fonction. C'est ce qu'il veut faire avec nos pierres. Je commence à comprendre pourquoi mon père était terrifié. Ce n'est pas un ennemi qui veut nous détruire. C'est un ennemi qui veut nous ranger."
+      },
+      {
+        id:"m17",num:17,name:"L'Archive des Possibles",
+        desc:"Trouver ce que Sgrün cherche.",
+        brief:"Le cœur de la base. Sgrün stocke des futurs possibles ici. Il faut trouver celui qui concerne Abidjan.",
+        allies_requis:["LUNDGREN"],allies_dispo:["SAM"],
+        ennemis:["DARK","BABA"],ennemis_extra:3,
+        xp:500,
+        narr_avant:[
+          "Des milliers de filaments lumineux flottent dans une salle immense.",
+          "Chaque filament est un futur. Un choix.",
+          "Lundgren marche parmi eux. — Ne les touchez pas, dit-il. Ils s'accrochent.",
+          "Mais un filament rouge vif se dirige tout droit vers Tarine."
+        ],
+        narr_victoire:[
+          "Tarine attrape le filament rouge.",
+          "Une explosion d'images : Abidjan en flammes. Sylla riant. Une tombe sans nom.",
+          "Il serre le poing. Le filament éclate en poussière.",
+          "— Ce n'était qu'un possible, dit Sam doucement.",
+          "— C'en est un que je viens d'annuler, répond Tarine."
+        ],
+        narr_defaite:[
+          "Le filament le touche. Les visions sont trop fortes.",
+          "Tarine tombe à genoux. Le poids de mille futurs s'écrase sur lui.",
+          "Lundgren le tire en arrière.",
+          "— Ton esprit n'est pas fait pour voir demain, dit le vieux guerrier."
+        ],
+        journal_victoire:"J'ai vu le plan de Sylla. Il ne veut pas juste le pouvoir militaire. Il veut utiliser la pierre du feu pour réécrire la volonté des gens d'Abidjan. Sgrün lui fournit la technologie pour amplifier la pierre. Il faut rentrer. Vite."
+      },
+      {
+        id:"m18",num:18,name:"La Fissure de Glace",
+        desc:"Fuir le Pôle Nord.",
+        brief:"La base s'effondre. Sgrün sait que vous êtes là. Une anomalie géante vous bloque le chemin de la porte.",
+        allies_requis:["SAM","LUNDGREN"],allies_dispo:[],
+        ennemis:["DARK"],ennemis_extra:5,
+        xp:600,
+        narr_avant:[
+          "Les murs d'obsidienne hurlent.",
+          "Une faille s'ouvre dans le sol. Une entité en sort. Pas humaine. Pas machine.",
+          "Un concept pur de destruction.",
+          "— On ne tue pas ça, crie Sam. On le retarde !"
+        ],
+        narr_victoire:[
+          "La porte s'ouvre. Sam passe. Lundgren passe.",
+          "Tarine se retourne. L'entité n'a pas de visage, mais elle a un regard.",
+          "Il lève sa pierre, libère un flash aveuglant, et plonge dans la porte.",
+          "Le froid disparaît. L'odeur de la terre d'Afrique revient d'un coup."
+        ],
+        narr_defaite:[
+          "L'entité bloque la porte.",
+          "Son froid brûle plus que le feu.",
+          "La porte se referme. Piégés dans le blanc absolu.",
+          "Ils vont devoir trouver un autre chemin."
+        ],
+        journal_victoire:"Nous avons survécu au Pôle Nord. Mais Sgrün nous a vus. Il connaît mon visage. Sam est inquiet, bien qu'il ne le montre pas. Lundgren, lui, regarde sa propre main. Il a vieilli. Juste un peu. Mais je l'ai vu. L'immortalité a ses limites quand on sort du Royaume de l'Essence."
+      }
+    ]
+  },
+  {
+    id:"acte7",label:"ACTE VII",titre:"L'HÉRITAGE DE MALI",
+    narration_debut:[
+      "Retour en Afrique, mais pas à Abidjan.",
+      "La porte s'est ouverte sur le désert du Mali. Le sable rouge.",
+      "— Pourquoi ici ? demande Tarine.",
+      "— Parce que c'est ici que Kankou Moussa a divisé les pierres, répond Lundgren.",
+      "Il faut comprendre le passé pour ne pas le rater demain."
+    ],
+    missions:[
+      {
+        id:"m19",num:19,name:"Les Ruines de Niani",
+        desc:"L'ancienne capitale de l'Empire du Mali.",
+        brief:"Des pillards opèrent dans les ruines. Mais ils ne cherchent pas de l'or. Ils cherchent des résonances.",
+        allies_requis:["LUNDGREN"],allies_dispo:["FULGENCE"],
+        ennemis:["BABA"],ennemis_extra:3,
+        xp:400,
+        narr_avant:[
+          "Les murs de briques de terre cuite à moitié effacés par le vent.",
+          "Des hommes armés fouillent la zone avec des compteurs géiger étranges.",
+          "— Les hommes de Sylla, souffle Fulgence.",
+          "Tarine serre les poings. Ils profanent l'histoire."
+        ],
+        narr_victoire:[
+          "Les hommes de Sylla fuient dans le désert.",
+          "Tarine ramasse un de leurs appareils. L'écran clignote en approchant de lui.",
+          "— Ils cherchent les échos des autres pierres, dit Lundgren.",
+          "Sous le sable, une vieille porte en pierre apparaît."
+        ],
+        narr_defaite:[
+          "Les tirs de suppression sont trop denses.",
+          "Le sable vole, aveuglant.",
+          "— On se replie ! crie Fulgence.",
+          "Les ruines de Niani gardent leurs secrets."
+        ],
+        journal_victoire:"Sylla ne se contente pas de la pierre du feu. Il cherche les quatre autres. Mon père avait essayé de cacher leurs emplacements. Lundgren dit que sous ces ruines se trouve la Chambre des Poids, là où l'Empereur a pris sa décision il y a sept siècles."
+      },
+      {
+        id:"m20",num:20,name:"La Chambre des Poids",
+        desc:"Résoudre l'énigme de l'Empereur.",
+        brief:"Une salle souterraine. Des gardiens spectraux protègent le savoir de l'Empereur. Ils testent ton droit d'être ici.",
+        allies_requis:[],allies_dispo:["LUNDGREN","FULGENCE"],
+        ennemis:["DARK"],ennemis_extra:3,
+        xp:450,
+        narr_avant:[
+          "Il fait frais sous le sable.",
+          "Des torches s'allument toutes seules en lumière bleue.",
+          "Des silhouettes de guerriers mandingues se lèvent des murs.",
+          "Ils ne portent pas d'armes. Ils portent de la gravité."
+        ],
+        narr_victoire:[
+          "Tarine ne frappe pas. Il laisse sa pierre résonner avec les spectres.",
+          "Les guerriers s'inclinent en silence et retournent dans la pierre.",
+          "Au centre de la pièce, un piédestal vide.",
+          "— C'est là que reposait ta pierre, Tarine. La Pierre de l'Équilibre."
+        ],
+        narr_defaite:[
+          "La gravité de la pièce augmente.",
+          "Les genoux de Tarine cèdent. Impossible de se tenir debout.",
+          "Les spectres jugent : indigne.",
+          "La porte de pierre commence à se refermer."
+        ],
+        journal_victoire:"L'Équilibre. C'est le nom de ma pierre. Elle ne détruit pas, elle ne crée pas. Elle stabilise. C'est pour ça que Baba ne pouvait pas me toucher dans la cour du lycée. C'est pour ça que la magie des autres s'éteint près de moi. Je suis le point d'ancrage."
+      },
+      {
+        id:"m21",num:21,name:"Le Poids de l'Or",
+        desc:"L'écho de Kankou Moussa.",
+        brief:"Une projection de l'Empereur apparaît. Il a un message pour le porteur de l'Équilibre.",
+        allies_requis:["LUNDGREN"],allies_dispo:[],
+        ennemis:["DARK"],ennemis_extra:4,
+        xp:550,
+        narr_avant:[
+          "L'air scintille.",
+          "Un homme couvert d'or, mais dont le visage est triste, se forme devant eux.",
+          "Kankou Moussa. Le plus riche des rois.",
+          "Mais l'image est corrompue. Un virus du Born Land tente d'effacer le message."
+        ],
+        narr_victoire:[
+          "Le virus est détruit.",
+          "L'Empereur parle d'une voix qui résonne dans les os.",
+          "« Le feu consume. L'eau noie. La terre écrase. Le vent disperse. Seul l'équilibre tient le monde. »",
+          "Il regarde Tarine. « Ne laisse pas le Feu prendre la tête. »"
+        ],
+        narr_defaite:[
+          "Le virus ronge la projection.",
+          "L'Empereur se fragmente, son message perdu dans des grésillements.",
+          "Lundgren hurle de rage. Une part d'histoire vient de mourir."
+        ],
+        journal_victoire:"Le message est clair. Sylla, avec la pierre du Feu, est la menace ultime. S'il n'est pas arrêté, il ne va pas juste gouverner Abidjan. Il va la réduire en cendres pour reconstruire dessus. Le vrai nom de la schismariat est l'Équilibre. Il est temps de rentrer à la maison et de rééquilibrer les choses."
+      }
+    ]
+  },
+  {
+    id:"acte8",label:"ACTE VIII",titre:"LA VÉRITÉ SUR LE GÉNÉRAL",
+    narration_debut:[
+      "Abidjan. Le retour.",
+      "La ville est sous tension. La police patrouille partout.",
+      "Karen attendait Tarine dans la pénombre du salon.",
+      "— Il est temps de parler de ton père, dit-elle.",
+      "Elle sort une vieille boîte à chaussures verte de sous le canapé."
+    ],
+    missions:[
+      {
+        id:"m22",num:22,name:"Le Fichier Rouge",
+        desc:"Déchiffrer les dernières notes du Général.",
+        brief:"La boîte contient des disquettes et des notes cryptées. Les hommes de Sylla ont repéré l'activation des données et lancent un raid sur la maison.",
+        allies_requis:["KAREN"],allies_dispo:["FULGENCE"],
+        ennemis:["BABA"],ennemis_extra:4,
+        xp:450,
+        narr_avant:[
+          "L'écran du vieil ordinateur clignote.",
+          "Les données défilent. Noms, dates, assassinats couverts par la police.",
+          "Soudain, la porte du jardin vole en éclats.",
+          "GIGN Ivoirien. Ou du moins, des hommes qui portent leur uniforme."
+        ],
+        narr_victoire:[
+          "La maison est ravagée, mais les assaillants sont à terre.",
+          "Le transfert de données finit à 100%.",
+          "Karen sort l'arme de service de son mari du tiroir.",
+          "— On ne peut plus rester ici, Tarine."
+        ],
+        narr_defaite:[
+          "Ils sont trop nombreux.",
+          "L'ordinateur est détruit par une balle perdue.",
+          "Tarine tire Karen par le bras. Il faut fuir avant de tout perdre."
+        ],
+        journal_victoire:"Ma mère savait tirer. Elle n'a même pas cligné des yeux. Les données de Papa sont accablantes. Sylla n'a pas seulement tué mon père. Il a éliminé toute la chaîne de commandement qui s'opposait à son utilisation des Pierres. Papa est mort dans un hangar du Port Autonome."
+      },
+      {
+        id:"m23",num:23,name:"Le Traître de la Garde",
+        desc:"Trouver l'homme qui a vendu le Général.",
+        brief:"Les dossiers pointent vers un certain 'Ousmane'. Un ancien ami du Général, aujourd'hui bras droit de Sylla. Il gère la sécurité du Port.",
+        allies_requis:["FULGENCE"],allies_dispo:["BABA"],
+        ennemis:["DARK","BABA"],ennemis_extra:3,
+        xp:500,
+        narr_avant:[
+          "Le Port Autonome d'Abidjan la nuit.",
+          "Ousmane fume un cigare près des conteneurs.",
+          "Tarine s'avance hors de l'ombre. L'air autour de lui crépite.",
+          "Ousmane lâche son cigare. Il a reconnu les yeux de son ancien ami."
+        ],
+        narr_victoire:[
+          "Ousmane tremble à terre.",
+          "— Sylla m'a forcé ! Il l'aurait fait sans moi de toute façon !",
+          "Tarine lève la main, la chaleur au maximum.",
+          "Puis il baisse le bras. Il n'est pas un assassin. L'Équilibre, pas la vengeance."
+        ],
+        narr_defaite:[
+          "Les snipers d'Ousmane étaient en position.",
+          "Tarine est cloué derrière un conteneur.",
+          "Ousmane s'enfuit dans une berline noire. L'occasion est manquée."
+        ],
+        journal_victoire:"J'ai épargné Ousmane. Baba Tunde ne comprend pas. Il m'a dit que j'étais faible. Mais Lundgren a souri dans l'ombre. Tuer Ousmane ne ramènerait pas mon père, ça ne ferait que nourrir le chaos que Sylla installe. Ousmane a parlé avant de fuir : Sylla prépare l'Incandescence ce soir au Plateau."
+      },
+      {
+        id:"m24",num:24,name:"La Tombe Vide",
+        desc:"Le dernier secret du Général.",
+        brief:"Avant d'attaquer Sylla, Tarine doit vérifier une dernière chose au cimetière de Williamsville. Une intuition terrible.",
+        allies_requis:[],allies_dispo:["KAREN"],
+        ennemis:["DARK"],ennemis_extra:4,
+        xp:600,
+        narr_avant:[
+          "Le cimetière est silencieux.",
+          "La tombe du Général Keïta. Le marbre est froid.",
+          "Mais la pierre dans la poche de Tarine résonne... avec le sol.",
+          "Des ombres du Born Land gardent la stèle."
+        ],
+        narr_victoire:[
+          "Les ombres se dissipent.",
+          "Tarine utilise la pierre pour déplacer la dalle.",
+          "Le cercueil est vide. Pas d'ossements.",
+          "Juste un message gravé au fond : 'Je t'attends de l'autre côté'."
+        ],
+        narr_defaite:[
+          "Les ombres sont trop denses. Elles protègent le secret.",
+          "Tarine est forcé de quitter le cimetière, le doute rongeant son esprit.",
+          "Le Général repose-t-il vraiment ici ?"
+        ],
+        journal_victoire:"Mon père n'est pas mort. Ou plutôt, il n'est pas mort dans ce monde. 'L'autre côté'... Le Royaume de l'Essence ? Le Born Land ? Il a simulé sa mort pour protéger l'Équilibre et m'a laissé grandir loin de tout ça. Je n'ai plus le temps d'être en colère. Sylla va brûler le Plateau ce soir."
+      }
+    ]
+  },
+  {
+    id:"acte9",label:"ACTE IX",titre:"LA GUERRE D'ABIDJAN",
+    narration_debut:[
+      "La sirène du couvre-feu hurle sur tout Abidjan.",
+      "Sylla a déclaré la loi martiale. Les chars sont dans les rues.",
+      "Mais ce ne sont pas des chars normaux. Leurs moteurs crachent des flammes bleues.",
+      "Le feu de la Pierre alimente l'armée.",
+      "Tarine, Karen, Fulgence, Baba et Lundgren regardent la ville depuis les toits."
+    ],
+    missions:[
+      {
+        id:"m25",num:25,name:"Le Pont HKB",
+        desc:"Bloquer l'avancée des blindés de Sylla.",
+        brief:"Les blindés magiques tentent de traverser le pont Henri Konan Bédié. Il faut tenir la ligne pour protéger le Sud d'Abidjan.",
+        allies_requis:["BABA","FULGENCE"],allies_dispo:["LUNDGREN"],
+        ennemis:["BABA","DARK"],ennemis_extra:5,
+        xp:500,
+        narr_avant:[
+          "Le pont s'étire au-dessus de la lagune Ébrié.",
+          "Les phares des blindés déchirent la nuit.",
+          "Baba Tunde craque ses phalanges. — Comme à la récréation, Tarine ?",
+          "— En un peu plus bruyant."
+        ],
+        narr_victoire:[
+          "Tarine pose les deux mains sur l'asphalte du pont.",
+          "L'Équilibre s'étend. Les flammes bleues des moteurs s'éteignent instantanément.",
+          "Les chars s'arrêtent, morts. De simples blocs de métal sans magie.",
+          "Les soldats fuient à pied."
+        ],
+        narr_defaite:[
+          "Le feu des blindés est trop puissant.",
+          "Le pont tremble. Les barricades cèdent.",
+          "L'équipe doit sauter dans la lagune pour échapper aux flammes."
+        ],
+        journal_victoire:"Baba Tunde a combattu à mes côtés comme un frère. Le pont est bloqué avec les carcasses des blindés. Le Sud d'Abidjan est sauf pour le moment. Mais Sylla est dans la Tour Postel au Plateau. Il observe."
+      },
+      {
+        id:"m26",num:26,name:"La Défense de la Villoise",
+        desc:"Protéger le lycée de l'attaque.",
+        brief:"Sylla attaque les lieux symboliques. Le lycée la Villoise est pris d'assaut par les Émissaires de Sgrün pour briser le moral.",
+        allies_requis:["FULGENCE"],allies_dispo:["KAREN"],
+        ennemis:["DARK"],ennemis_extra:4,
+        xp:550,
+        narr_avant:[
+          "La cour du lycée. Là où Tarine a ressenti la pierre pour la première fois.",
+          "Sub est de retour. Il flotte au-dessus du terrain de basket.",
+          "— Sentimentalisme, dit Sub. Une faille humaine prévisible."
+        ],
+        narr_victoire:[
+          "L'Équilibre de Tarine frappe Sub en plein vol.",
+          "L'émissaire s'écrase sur le bitume, son enveloppe humaine se fracturant comme du verre.",
+          "Fulgence sourit. — Il était temps qu'on nettoie la cour."
+        ],
+        narr_defaite:[
+          "Sub est trop rapide. Des parties du lycée prennent feu.",
+          "La bibliothèque brûle.",
+          "Tarine sent un morceau de son enfance partir en fumée."
+        ],
+        journal_victoire:"Nous avons sauvé la Villoise. Sub a fui, grièvement endommagé. Fulgence m'a regardé au milieu de la cour défoncée et m'a dit que Papa serait fier. C'est la première fois que quelqu'un d'autre que ma mère parle de mon père avec cette fierté."
+      },
+      {
+        id:"m27",num:27,name:"Le Siège de Marcory",
+        desc:"Protéger la maison familiale.",
+        brief:"Un commando d'élite fond sur la maison jaune pâle. C'est personnel. Karen refuse de quitter les lieux.",
+        allies_requis:["KAREN"],allies_dispo:["BABA","LUNDGREN"],
+        ennemis:["BABA","DARK"],ennemis_extra:5,
+        xp:600,
+        narr_avant:[
+          "La rue de Marcory est vide. Les voisins sont barricadés.",
+          "Des lasers rouges balaient la façade de la maison.",
+          "Karen recharge le fusil du Général.",
+          "— C'est chez moi, dit-elle. Ils n'entreront pas."
+        ],
+        narr_victoire:[
+          "La rue est un champ de bataille.",
+          "Tarine a dressé un dôme d'Équilibre pur autour de la maison.",
+          "Les balles s'arrêtent en plein air et tombent. Les flammes meurent.",
+          "La maison jaune pâle reste debout, intacte."
+        ],
+        narr_defaite:[
+          "La défense cède.",
+          "Le mur du salon s'effondre.",
+          "Tarine doit arracher sa mère de la maison en flammes. Marcory est perdu."
+        ],
+        journal_victoire:"Ma mère est la personne la plus forte que je connaisse. Elle n'a pas cillé une seule fois. La maison tient debout. Marcory est sécurisé. Mais on ne peut pas rester sur la défensive éternellement. C'est le moment. On va au Plateau. On va chercher Sylla."
+      }
+    ]
+  },
+  {
+    id:"acte10",label:"ACTE X",titre:"LA PIERRE DU FEU",
+    narration_debut:[
+      "Le Plateau, centre des affaires d'Abidjan.",
+      "La Tour Postel brille d'une lueur rouge maladive.",
+      "Le ciel au-dessus du bâtiment tourbillonne.",
+      "Sylla prépare l'Incandescence : lier la pierre du Feu à l'esprit de tous les habitants.",
+      "C'est la fin du chemin. Le combat final."
+    ],
+    missions:[
+      {
+        id:"m28",num:28,name:"L'Ascension de la Tour",
+        desc:"Combattre étage par étage.",
+        brief:"Monter les 26 étages de la Tour Postel. L'ascenseur est détruit. Les escaliers sont remplis de gardes sous l'influence du feu.",
+        allies_requis:["BABA","FULGENCE"],allies_dispo:["SAM"],
+        ennemis:["BABA","DARK"],ennemis_extra:6,
+        xp:700,
+        narr_avant:[
+          "L'air dans les escaliers est étouffant. Ça sent le soufre.",
+          "Des hommes aux yeux rougis barrent le chemin.",
+          "— Ne les tuez pas, dit Tarine. Ils sont sous l'emprise de la Pierre.",
+          "Baba soupire. — Ça complique toujours tout."
+        ],
+        narr_victoire:[
+          "Étage 26. Les gardes sont assommés mais vivants.",
+          "Les muscles de Tarine hurlent de fatigue.",
+          "Mais la porte du bureau de Sylla est juste là.",
+          "Elle est faite de bois massif. Elle fume légèrement."
+        ],
+        narr_defaite:[
+          "La chaleur et le nombre ont raison d'eux.",
+          "Pris au piège au 15ème étage, ils doivent briser une vitre et sauter sur un toit adjacent pour survivre."
+        ],
+        journal_victoire:"Nous y sommes. Le dernier palier. Baba Tunde saigne, Fulgence est épuisé, mais on l'a fait. Derrière cette porte, l'homme qui a brisé ma famille et qui veut maintenant briser ma ville."
+      },
+      {
+        id:"m29",num:29,name:"L'Incandescence",
+        desc:"Arrêter le rituel de Sylla.",
+        brief:"Le bureau est un vaste espace vitré. Sylla lévite au centre, la Pierre du Feu brillant comme un soleil miniature dans son torse.",
+        allies_requis:["LUNDGREN","SAM"],allies_dispo:[],
+        ennemis:["DARK"],ennemis_extra:7,
+        xp:900,
+        narr_avant:[
+          "Sylla ouvre les yeux. Ils sont devenus de la lave pure.",
+          "— Tarine Keïta. Le fils du Général.",
+          "Il sourit.",
+          "— Ton père n'a pas su voir le potentiel de ce monde. Je vais le purifier.",
+          "Tarine fait un pas en avant. L'Équilibre gronde dans ses paumes."
+        ],
+        narr_victoire:[
+          "L'onde de choc brise toutes les vitres de la Tour Postel.",
+          "L'Équilibre percute le Feu.",
+          "Sylla hurle alors que la magie rouge est aspirée, éteinte, neutralisée.",
+          "La Pierre du Feu s'échappe de sa poitrine et tombe sur la moquette, éteinte."
+        ],
+        narr_defaite:[
+          "La Pierre du Feu est trop puissante.",
+          "Une vague de chaleur rejette Tarine contre le mur, brisant ses côtes.",
+          "Sylla rit, intouchable."
+        ],
+        journal_victoire:"Sylla est à terre. Il a vieilli de vingt ans en une seconde quand la pierre l'a quitté. C'est ça le prix. Mais il n'est pas mort. Je ramasse la Pierre du Feu. Elle est froide. Soumise. Je tiens maintenant deux des Cinq Pierres."
+      },
+      {
+        id:"m30",num:30,name:"Le Choix de Tarine",
+        desc:"L'ultime décision pour Abidjan.",
+        brief:"Grob, le dernier Émissaire, apparaît dans le bureau dévasté. Sgrün propose un marché : donne-nous le Feu, et on laisse l'Afrique tranquille.",
+        allies_requis:[],allies_dispo:["KAREN","LUNDGREN"],
+        ennemis:["DARK"],ennemis_extra:8,
+        xp:1000,
+        narr_avant:[
+          "Grob marche sur le verre brisé.",
+          "— Un échange raisonnable, Keïta. Sgrün te laisse Abidjan. On prend juste le Feu.",
+          "Lundgren lève son épée. — Ne l'écoute pas, Tarine.",
+          "Tarine regarde les deux pierres dans sa main."
+        ],
+        narr_victoire:[
+          "Tarine lève les yeux vers l'Émissaire.",
+          "— Dis à Sgrün que je viens chercher les trois autres.",
+          "Grob perd son sourire parfait.",
+          "Tarine libère la puissance combinée du Feu et de l'Équilibre. L'Émissaire est oblitéré."
+        ],
+        narr_defaite:[
+          "Grob manipule l'esprit de Tarine, exploitant sa fatigue extrême.",
+          "La Pierre du Feu lui échappe des mains.",
+          "L'Émissaire disparaît avec elle. Une victoire au goût très amer."
+        ],
+        journal_victoire:"C'est fini. Pour l'instant. Abidjan respire sous un ciel clair. Sylla est en prison. Ma mère dort enfin paisiblement à Marcory. J'ai deux pierres. Sgrün en a peut-être une autre. L'Empereur a dit de ne pas laisser le Feu prendre la tête. Maintenant, c'est moi qui mène. S'il faut traverser tous les Royaumes pour trouver les autres pierres, c'est ce que je ferai."
+      }
+    ]
   }
+];
 ];
 
 // ===== ÉTAT DU JEU =====
