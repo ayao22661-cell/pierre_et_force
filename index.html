@@ -140,9 +140,26 @@ body::before {
 .m-name { font-size: 16px; color: var(--hex-gold-light); font-weight: bold; }
 .m-desc { font-size: 12px; color: var(--hex-text); margin-top: 5px; }
 
-.deploy-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; }
+/* ===== GRILLE & IMAGES RESPONSIVES ===== */
+.deploy-grid { 
+  display: grid; 
+  grid-template-columns: repeat(auto-fit, minmax(100px, 1fr)); /* Adaptation 100% automatique */
+  gap: 15px; 
+}
 .deploy-card { flex-direction: column; padding: 0; align-items: stretch; }
-.deploy-card img { width: 100%; aspect-ratio: 1; object-fit: cover; }
+
+/* Images des cartes (carrées et bien cadrées) */
+.deploy-card img, .mission-card img, .ally-img {
+  width: 100%;
+  max-width: 100%;
+  height: auto;
+  aspect-ratio: 1 / 1;
+  object-fit: cover;
+  object-position: top;
+  display: block;
+  border-bottom: 1px solid var(--hex-border);
+}
+
 .deploy-card-name { padding: 10px; text-align: center; font-size: 13px; font-weight: bold; color: var(--hex-gold-light); background: #010a13;}
 .deploy-card.selected { border: 2px solid var(--hex-magic); box-shadow: inset 0 0 15px rgba(10, 200, 185, 0.3); }
 
@@ -309,7 +326,7 @@ body::before {
   .hub-body, .deploy-body, .battle-zone { flex-direction: column; overflow-y: auto; }
   .hub-side, .deploy-briefing { width: 100%; border-left: none; border-top: 1px solid var(--hex-border); height: auto; flex: none;}
   .hub-map { flex: none; height: 50vh; }
-  .deploy-grid { grid-template-columns: repeat(2, 1fr); }
+  /* La ligne grid-template-columns a été retirée d'ici car gérée automatiquement par auto-fit en haut */
   .team-side { width: 100%; align-items: center; padding: 20px 0; }
   .team-side.ally-side .fighter-card:nth-child(n), .team-side.enemy-side .fighter-card:nth-child(n) { transform: none; width: 95%; max-width: 400px;}
   .abilities-hud { flex-wrap: wrap; gap: 10px;}
