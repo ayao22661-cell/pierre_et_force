@@ -56,11 +56,13 @@ body::before {
 @keyframes hexFadeIn { from { opacity: 0; filter: brightness(2); transform: scale(1.02); } to { opacity: 1; filter: brightness(1); transform: scale(1); } }
 
 /* =========================================
-   ===== BOUTONS (LEAGUE OF LEGENDS) =======
+   ===== BOUTONS (STYLE JEU MOBILE) ========
    ========================================= */
 .btn {
-  background: linear-gradient(180deg, #1e2328 0%, #091428 100%);
+  background: linear-gradient(180deg, #2c333d 0%, #131c2b 100%);
   border: 2px solid var(--hex-gold-dark);
+  border-bottom: 5px solid #5c451c;
+  border-radius: 16px;
   color: var(--hex-gold-light);
   padding: 14px 40px;
   font-family: 'Cinzel', serif;
@@ -69,22 +71,23 @@ body::before {
   letter-spacing: 2px;
   cursor: pointer;
   position: relative;
-  transition: all 0.2s;
-  /* Bords coupés façon Hextech */
-  clip-path: polygon(10px 0, 100% 0, 100% calc(100% - 10px), calc(100% - 10px) 100%, 0 100%, 0 10px);
+  transition: all 0.12s ease;
   text-shadow: 0 2px 4px rgba(0,0,0,0.8);
-  box-shadow: inset 0 0 10px rgba(0,0,0,0.8);
+  box-shadow: 0 4px 10px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.08);
 }
 .btn:hover {
   border-color: var(--hex-gold);
-  background: linear-gradient(180deg, #1e282d 0%, #112240 100%);
+  background: linear-gradient(180deg, #333c47 0%, #172846 100%);
   color: #fff;
   text-shadow: 0 0 8px var(--hex-gold-light);
-  box-shadow: inset 0 0 20px rgba(200, 155, 60, 0.3);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 14px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.12);
 }
-.btn:active { transform: scale(0.97); }
-.btn-red { border-color: var(--hex-red); color: var(--hex-red); }
-.btn-red:hover { border-color: #ff6677; box-shadow: inset 0 0 20px rgba(228, 63, 90, 0.4); color: #fff; text-shadow: 0 0 8px #ff6677;}
+.btn:active { transform: translateY(3px); border-bottom-width: 2px; box-shadow: 0 1px 4px rgba(0,0,0,0.5); }
+.btn-red { border-color: var(--hex-red); border-bottom-color: #6b1522; color: var(--hex-red); }
+.btn-red:hover { border-color: #ff6677; box-shadow: 0 6px 14px rgba(228,63,90,0.25), inset 0 1px 0 rgba(255,255,255,0.1); color: #fff; text-shadow: 0 0 8px #ff6677;}
+.btn-sm { padding: 9px 24px; font-size: 13px; border-radius: 12px; border-bottom-width: 4px; }
+
 
 /* =========================================
    ===== ÉCRAN TITRE =======================
@@ -118,24 +121,63 @@ body::before {
    ========================================= */
 .hub-header, .deploy-header, .game-hud {
   background: var(--hex-panel); border-bottom: 2px solid var(--hex-gold-dark);
-  box-shadow: 0 5px 25px rgba(0,0,0,0.8); padding: 15px 30px; display: flex; justify-content: space-between; align-items: center;
+  box-shadow: 0 5px 25px rgba(0,0,0,0.8); padding: 15px 30px; display: flex; justify-content: space-between; align-items: center; flex-shrink: 0;
 }
 .hub-body, .deploy-body { display: flex; flex: 1; overflow: hidden; }
-.hub-map, .deploy-allies { flex: 1; padding: 30px; overflow-y: auto; display: flex; flex-direction: column; gap: 15px;}
-.hub-side, .deploy-briefing { width: 300px; background: rgba(9, 20, 40, 0.5); border-left: 1px solid var(--hex-border); padding: 20px; overflow-y: auto; display: flex; flex-direction: column; gap: 20px;}
+.deploy-allies { flex: 1; padding: 30px; overflow-y: auto; display: flex; flex-direction: column; gap: 15px;}
+.deploy-briefing { width: 300px; background: rgba(9, 20, 40, 0.5); border-left: 1px solid var(--hex-border); padding: 20px; overflow-y: auto; display: flex; flex-direction: column; gap: 20px;}
+
+/* =========================================
+   ===== NAVIGATION HUB (STYLE APP MOBILE) =
+   ========================================= */
+.hub-body { flex-direction: column; overflow: hidden; min-height: 0; }
+.hub-panel { display: none; flex: 1; min-height: 0; overflow-y: auto; padding: 20px 30px; flex-direction: column; gap: 15px; }
+.hub-panel.active { display: flex; }
+#screen-hub.screen.active { height: 100vh; max-height: 100vh; }
+.hub-tabs {
+  display: flex;
+  gap: 6px;
+  border-top: 1px solid var(--hex-gold-dark);
+  background: linear-gradient(180deg, #0a1628 0%, var(--hex-panel) 100%);
+  box-shadow: 0 -4px 12px rgba(0,0,0,0.5);
+  flex-shrink: 0;
+  padding: 8px 10px;
+}
+.hub-tab-btn {
+  flex: 1;
+  background: none;
+  border: none;
+  border-radius: 14px;
+  color: var(--hex-text);
+  font-family: 'Roboto Condensed', sans-serif;
+  padding: 8px 4px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.hub-tab-btn .tab-icon { font-size: 19px; line-height: 1; filter: grayscale(1) opacity(0.65); transition: all 0.2s; }
+.hub-tab-btn .tab-label { font-size: 9px; letter-spacing: 1px; text-transform: uppercase; }
+.hub-tab-btn:hover { color: var(--hex-gold-light); background: rgba(255,255,255,0.03); }
+.hub-tab-btn.active { color: var(--hex-gold-light); background: linear-gradient(180deg, rgba(200,155,60,0.18), rgba(200,155,60,0.06)); box-shadow: inset 0 0 0 1px rgba(200,155,60,0.4); text-shadow: 0 0 8px rgba(200,155,60,0.5); }
+.hub-tab-btn.active .tab-icon { filter: grayscale(0) opacity(1); }
+.hub-map { flex: 1; display: flex; flex-direction: column; gap: 15px; }
 
 .hub-titre { color: var(--hex-gold-light); font-size: 18px; }
 .hub-acte { color: var(--hex-text); letter-spacing: 2px; font-size: 12px; }
 
 /* Cartes de Mission / Déploiement */
 .mission-card, .deploy-card {
-  background: var(--hex-panel); border: 1px solid var(--hex-border); padding: 15px;
+  background: linear-gradient(135deg, rgba(30,40,60,0.55), var(--hex-panel));
+  border: 1px solid var(--hex-border); border-radius: 14px; padding: 14px;
   position: relative; transition: 0.2s ease; display: flex; align-items: center; gap: 15px; cursor: pointer;
-  clip-path: polygon(8px 0, 100% 0, 100% calc(100% - 8px), calc(100% - 8px) 100%, 0 100%, 0 8px);
+  box-shadow: 0 4px 10px rgba(0,0,0,0.35), inset 0 1px 0 rgba(255,255,255,0.03);
 }
-.mission-card:hover:not(.locked), .deploy-card:hover { border: 1px solid var(--hex-gold); background: rgba(30, 40, 60, 0.8); transform: translateX(5px); }
+.mission-card:hover:not(.locked), .deploy-card:hover { border-color: var(--hex-gold); background: linear-gradient(135deg, rgba(40,52,74,0.75), rgba(30,40,60,0.9)); transform: translateY(-2px); box-shadow: 0 8px 16px rgba(0,0,0,0.45); }
 .mission-card.locked { opacity: 0.4; filter: grayscale(1); cursor: not-allowed; }
-.mission-card.available { border-color: var(--hex-magic); box-shadow: inset 0 0 15px rgba(10, 200, 185, 0.1); }
+.mission-card.available { border-color: var(--hex-magic); box-shadow: 0 0 0 1px rgba(10,200,185,0.15), 0 4px 10px rgba(0,0,0,0.35); }
 .mission-card.done { border-color: var(--hex-green); opacity: 0.7; }
 .m-name { font-size: 16px; color: var(--hex-gold-light); font-weight: bold; }
 .m-desc { font-size: 12px; color: var(--hex-text); margin-top: 5px; }
@@ -146,10 +188,10 @@ body::before {
   grid-template-columns: repeat(auto-fit, minmax(100px, 1fr)); /* Adaptation 100% automatique */
   gap: 15px; 
 }
-.deploy-card { flex-direction: column; padding: 0; align-items: stretch; }
+.deploy-card { flex-direction: column; padding: 0; align-items: stretch; overflow: hidden; }
 
 /* Images des cartes (carrées et bien cadrées) */
-.deploy-card img, .mission-card img, .ally-img {
+.deploy-card img, .mission-card img {
   width: 100%;
   max-width: 100%;
   height: auto;
@@ -164,11 +206,51 @@ body::before {
 .deploy-card.selected { border: 2px solid var(--hex-magic); box-shadow: inset 0 0 15px rgba(10, 200, 185, 0.3); }
 
 /* Profil & Boîtes */
-.profile-box, .brief-box { background: var(--hex-panel); border: 1px solid var(--hex-border); padding: 15px; border-radius: 4px; }
+.profile-box, .brief-box { background: linear-gradient(160deg, rgba(30,40,60,0.5), var(--hex-panel)); border: 1px solid var(--hex-border); padding: 16px; border-radius: 14px; box-shadow: 0 4px 10px rgba(0,0,0,0.3); }
 .profile-name { color: var(--hex-gold); font-size: 16px; }
 .stat-val { color: var(--hex-magic); font-weight: bold; }
 .xp-bar { background: #000; height: 6px; border-radius: 3px; border: 1px solid #111; margin-top: 8px; overflow: hidden; }
 .xp-fill { background: var(--hex-gold); height: 100%; width: 50%; box-shadow: 0 0 10px var(--hex-gold); }
+
+/* Liste des missions (par acte) */
+.acte-section { margin-bottom: 22px; }
+.acte-label { font-family: 'Cinzel', serif; font-size: 12px; letter-spacing: 2px; color: var(--hex-gold); text-transform: uppercase; margin-bottom: 10px; padding-bottom: 6px; border-bottom: 1px solid var(--hex-border); }
+.missions-row { display: flex; flex-direction: column; gap: 10px; }
+.m-num {
+  width: 36px; height: 36px; border-radius: 50%; flex-shrink: 0;
+  background: linear-gradient(145deg, #232b38, #0c1420); border: 2px solid var(--hex-gold-dark);
+  display: flex; align-items: center; justify-content: center;
+  font-family: 'Cinzel', serif; font-weight: 900; font-size: 14px; color: var(--hex-gold-light);
+}
+.mission-card.available .m-num { border-color: var(--hex-magic); color: var(--hex-magic); box-shadow: 0 0 8px rgba(10,200,185,0.3); }
+.mission-card.done .m-num { border-color: var(--hex-green); color: var(--hex-green); }
+.m-status { font-size: 9px; font-weight: 700; letter-spacing: 1px; padding: 5px 10px; border-radius: 20px; text-transform: uppercase; white-space: nowrap; flex-shrink: 0; }
+.m-status.avail { background: rgba(10, 200, 185, 0.12); color: var(--hex-magic); border: 1px solid var(--hex-magic); }
+.m-status.done { background: rgba(19, 137, 85, 0.12); color: var(--hex-green); border: 1px solid var(--hex-green); }
+.m-status.lock { background: rgba(160, 155, 140, 0.06); color: var(--hex-text); border: 1px solid var(--hex-border); }
+
+/* Alliés disponibles */
+.allies-title, .journal-title {
+  font-family: 'Cinzel', serif; font-size: 12px; letter-spacing: 2px; color: var(--hex-gold-light);
+  text-transform: uppercase; margin-bottom: 10px; padding-bottom: 6px; border-bottom: 1px solid var(--hex-border);
+}
+.ally-row {
+  display: flex; align-items: center; gap: 12px;
+  background: linear-gradient(135deg, rgba(30,40,60,0.5), var(--hex-panel));
+  border: 1px solid var(--hex-border); border-radius: 12px; padding: 8px 12px; margin-bottom: 8px; position: relative;
+  box-shadow: 0 3px 8px rgba(0,0,0,0.3);
+}
+.ally-row.ally-locked { opacity: 0.4; filter: grayscale(0.7); }
+.ally-img { width: 44px; height: 44px; border-radius: 50%; object-fit: cover; object-position: top; border: 2px solid var(--hex-gold-dark); flex-shrink: 0; }
+.ally-info { flex: 1; overflow: hidden; }
+.ally-name { font-size: 14px; font-weight: 700; color: var(--hex-gold-light); white-space: nowrap; text-overflow: ellipsis; overflow: hidden; }
+.ally-role { font-size: 11px; color: var(--hex-magic); letter-spacing: 0.5px; }
+.ally-badge { font-size: 9px; font-weight: 700; letter-spacing: 1px; color: var(--hex-green); border: 1px solid var(--hex-green); padding: 3px 9px; border-radius: 20px; background: rgba(19, 137, 85, 0.12); flex-shrink: 0; }
+
+/* Journal de Tarine */
+.j-entry { background: var(--hex-panel); border-left: 3px solid var(--hex-gold-dark); border-radius: 0 12px 12px 0; padding: 10px 14px; margin-bottom: 10px; box-shadow: 0 3px 8px rgba(0,0,0,0.25); }
+.j-date { font-size: 10px; letter-spacing: 1px; color: var(--hex-gold); text-transform: uppercase; margin-bottom: 4px; }
+.j-text { font-size: 13px; line-height: 1.45; color: var(--hex-text); }
 
 /* Footer de déploiement */
 .deploy-footer { background: var(--hex-panel); padding: 15px 30px; border-top: 1px solid var(--hex-border); display: flex; justify-content: space-between; align-items: center; }
@@ -176,10 +258,11 @@ body::before {
 /* =========================================
    ===== ARÈNE DE COMBAT (STYLE TFT/LOL) ===
    ========================================= */
+#screen-game.screen.active { height: 100vh; max-height: 100vh; }
 .battle-zone {
-  flex: 1; display: flex; justify-content: space-between; align-items: center;
+  flex: 1; min-height: 0; display: flex; justify-content: space-between; align-items: center;
   background: radial-gradient(ellipse at center, #0f1c2e 0%, var(--hex-bg) 80%);
-  position: relative; overflow: hidden; padding: 0 5%;
+  position: relative; overflow-y: auto; padding: 16px 5%;
 }
 /* Le cercle magique au centre de l'arène */
 .battle-zone::before {
@@ -195,25 +278,38 @@ body::before {
 .team-side.enemy-side .fighter-card:nth-child(2) { transform: translateX(-30px); }
 .team-side.enemy-side .fighter-card:nth-child(3) { transform: translateX(-60px); }
 
+/* Étiquettes d'équipe */
+.side-label {
+  font-size: 12px; letter-spacing: 3px; display: flex; align-items: center; gap: 8px;
+  padding-bottom: 8px; margin-bottom: 4px; border-bottom: 1px solid var(--hex-border);
+}
+.side-label::before { content: ""; width: 8px; height: 8px; transform: rotate(45deg); flex-shrink: 0; }
+.side-label.a { color: var(--hex-green); text-shadow: 0 0 8px rgba(19, 137, 85, 0.4); }
+.side-label.a::before { background: var(--hex-green); box-shadow: 0 0 8px var(--hex-green); }
+.side-label.e { color: var(--hex-red); text-shadow: 0 0 8px rgba(228, 63, 90, 0.35); }
+.side-label.e::before { background: var(--hex-red); box-shadow: 0 0 8px var(--hex-red); }
+
 /* =========================================
    ===== CARTES DES COMBATTANTS (HUD) ======
    ========================================= */
 .fighter-card {
-  background: rgba(1, 10, 19, 0.85); border: 1px solid var(--hex-border);
+  background: linear-gradient(135deg, rgba(9,20,40,0.9), rgba(1,10,19,0.92));
+  border: 1px solid var(--hex-border);
   display: flex; align-items: center; gap: 15px; padding: 8px 15px 8px 8px;
   border-radius: 40px; /* HUD arrondi LoL */ width: 100%; max-width: 320px;
   position: relative; transition: all 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
-  box-shadow: 0 10px 15px rgba(0,0,0,0.6);
+  box-shadow: 0 10px 15px rgba(0,0,0,0.6), inset 0 1px 0 rgba(255,255,255,0.04);
 }
-.fighter-card.active { border-color: var(--hex-gold); box-shadow: 0 0 20px rgba(200, 155, 60, 0.3); }
+.fighter-card.active { border-color: var(--hex-gold); box-shadow: 0 0 20px rgba(200, 155, 60, 0.3), inset 0 1px 0 rgba(255,255,255,0.06); }
 .fighter-card.dead { filter: grayscale(1) opacity(0.3); }
 
 /* Avatar du Champion */
 .fighter-img {
   width: 60px; height: 60px; border-radius: 50%; border: 2px solid var(--hex-gold-dark);
   object-fit: cover; object-position: top; background: var(--hex-panel); flex-shrink: 0;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.6);
 }
-.fighter-card.active .fighter-img { border-color: var(--hex-gold); }
+.fighter-card.active .fighter-img { border-color: var(--hex-gold); box-shadow: 0 0 10px rgba(200,155,60,0.5); }
 
 /* Barres de Vie façon MOBA */
 .hp-bar { background: #000; height: 8px; width: 100%; border: 1px solid #000; border-radius: 4px; overflow: hidden; margin-top: 5px; }
@@ -233,28 +329,48 @@ body::before {
 .fighter-badge.ia { color: var(--hex-red); }
 
 /* HUD Top Bar (Timer, Scores, Nexus) */
+.hud-left { display: flex; flex-direction: column; gap: 2px; }
+.hud-mission { font-family: 'Cinzel', serif; font-size: 13px; letter-spacing: 2px; color: var(--hex-gold-light); text-transform: uppercase; }
 .hud-timer { font-family: 'Cinzel', serif; font-size: 32px; font-weight: 900; color: var(--hex-gold-light); text-shadow: 0 0 10px var(--hex-gold); }
 .hud-score { font-size: 24px; font-weight: bold; }
 .score-ally { color: var(--hex-green); }
 .score-enemy { color: var(--hex-red); }
 .score-sep { color: var(--hex-text); margin: 0 10px; }
+.hud-right { display: flex; flex-direction: column; align-items: flex-end; gap: 2px; }
+.nexus-label { font-size: 9px; letter-spacing: 2px; color: var(--hex-text); text-transform: uppercase; }
 .nexus-bar { width: 150px; height: 10px; background: #000; border: 1px solid var(--hex-border); border-radius: 5px; overflow: hidden; }
 .nexus-fill { height: 100%; transition: width 0.5s; }
-.nexus-fill.ally { background: var(--hex-green); }
-.nexus-fill.enemy { background: var(--hex-red); }
+.nexus-fill.ally { background: linear-gradient(90deg, #094a28, var(--hex-green)); }
+.nexus-fill.enemy { background: linear-gradient(90deg, #601010, var(--hex-red)); }
+
+/* Boîte de narration (façon sous-titres cinématiques) */
+.narration-box {
+  flex-shrink: 0; display: flex; align-items: baseline; gap: 14px;
+  background: linear-gradient(180deg, rgba(9,20,40,0.92), rgba(1,10,19,0.96));
+  border-top: 1px solid var(--hex-gold-dark); border-bottom: 1px solid var(--hex-border);
+  padding: 10px 30px; box-shadow: inset 0 0 20px rgba(0,0,0,0.5);
+}
+.narr-src {
+  font-family: 'Cinzel', serif; font-size: 11px; letter-spacing: 2px; color: var(--hex-gold);
+  text-transform: uppercase; flex-shrink: 0; text-shadow: 0 0 6px rgba(200, 155, 60, 0.4);
+}
+.narr-txt { font-size: 14px; line-height: 1.4; color: var(--hex-gold-light); font-style: italic; }
 
 /* =========================================
    ===== HUD DE COMPÉTENCES (SORTS) ========
    ========================================= */
 .abilities-hud {
-  background: var(--hex-panel); border-top: 2px solid var(--hex-gold-dark);
-  padding: 15px 30px; display: flex; justify-content: center; gap: 20px;
+  flex-shrink: 0;
+  background: linear-gradient(180deg, #0a1628 0%, var(--hex-panel) 100%);
+  border-top: 2px solid var(--hex-gold-dark);
+  padding: 12px 30px; display: flex; justify-content: center; align-items: center; gap: 16px;
   box-shadow: 0 -5px 25px rgba(0,0,0,0.9);
 }
 .ab-btn {
-  background: #010a13; border: 1px solid var(--hex-border); width: 75px; height: 75px; /* Boutons carrés LoL */
+  background: linear-gradient(180deg, #131c2c 0%, #010a13 100%); border: 1px solid var(--hex-gold-dark); width: 70px; height: 70px; /* Boutons carrés LoL */
   display: flex; flex-direction: column; justify-content: center; align-items: center;
-  cursor: pointer; transition: 0.2s; position: relative; box-shadow: inset 0 0 10px rgba(0,0,0,1);
+  cursor: pointer; transition: 0.2s; position: relative; box-shadow: inset 0 0 10px rgba(0,0,0,0.9);
+  clip-path: polygon(6px 0, 100% 0, 100% calc(100% - 6px), calc(100% - 6px) 100%, 0 100%, 0 6px);
 }
 .ab-btn:hover:not([disabled]) { border-color: var(--hex-magic); box-shadow: inset 0 0 15px rgba(10, 200, 185, 0.4); transform: translateY(-2px);}
 .ab-btn .key { font-family: 'Cinzel', serif; font-size: 18px; color: var(--hex-gold); font-weight: 900; }
@@ -263,7 +379,7 @@ body::before {
 .ab-btn .cd { position: absolute; font-size: 24px; font-weight: bold; color: var(--hex-red); text-shadow: 0 2px 4px #000; }
 
 /* Journal d'actions (Le Chat) */
-.action-log { background: rgba(1, 10, 19, 0.95); border-top: 1px solid var(--hex-border); padding: 10px 30px; height: 120px; overflow-y: auto; font-size: 14px; }
+.action-log { flex-shrink: 0; background: rgba(1, 10, 19, 0.95); border-top: 1px solid var(--hex-border); padding: 8px 30px; height: 84px; overflow-y: auto; font-size: 13px; }
 .log-line { margin-bottom: 6px; color: var(--hex-text); }
 .log-line .cname { color: var(--hex-gold-light); font-weight: bold; }
 .log-line .dmg { color: var(--hex-red); font-weight: bold; }
@@ -323,16 +439,24 @@ body::before {
    ========================================= */
 @media (max-width: 900px) {
   .t-title { font-size: 40px; }
-  .hub-body, .deploy-body, .battle-zone { flex-direction: column; overflow-y: auto; }
-  .hub-side, .deploy-briefing { width: 100%; border-left: none; border-top: 1px solid var(--hex-border); height: auto; flex: none;}
-  .hub-map { flex: none; height: 50vh; }
+  .deploy-body, .battle-zone { flex-direction: column; overflow-y: auto; }
+  .deploy-briefing { width: 100%; border-left: none; border-top: 1px solid var(--hex-border); height: auto; flex: none;}
+  .hub-panel { padding: 16px 18px; }
+  .hub-tab-btn .tab-label { font-size: 9px; }
   /* La ligne grid-template-columns a été retirée d'ici car gérée automatiquement par auto-fit en haut */
-  .team-side { width: 100%; align-items: center; padding: 20px 0; }
+  .team-side { width: 100%; align-items: center; padding: 12px 0; }
   .team-side.ally-side .fighter-card:nth-child(n), .team-side.enemy-side .fighter-card:nth-child(n) { transform: none; width: 95%; max-width: 400px;}
-  .abilities-hud { flex-wrap: wrap; gap: 10px;}
-  .ab-btn { width: 65px; height: 65px; }
-  .game-hud { flex-direction: column; gap: 15px; text-align: center; }
-  .hud-right { align-items: center; }
+  .abilities-hud { flex-wrap: wrap; gap: 10px; padding: 8px 16px;}
+  .ab-btn { width: 58px; height: 58px; }
+  .game-hud { flex-direction: row; flex-wrap: wrap; gap: 10px 16px; text-align: center; padding: 10px 16px; row-gap: 8px; }
+  .hud-left { align-items: flex-start; }
+  .hud-timer { font-size: 22px; }
+  .hud-score { font-size: 18px; }
+  .hud-right { align-items: flex-end; }
+  .nexus-bar { width: 100px; }
+  .narration-box { padding: 8px 16px; }
+  .narr-txt { font-size: 13px; }
+  .action-log { height: 60px; padding: 6px 16px; font-size: 12px; }
   .battle-zone::before { width: 250px; height: 250px; }
 }
 </style>
@@ -373,8 +497,10 @@ body::before {
     <div style="font-size:10px;color:var(--muted);letter-spacing:2px">MARCORY · ABIDJAN</div>
   </div>
   <div class="hub-body">
-    <div class="hub-map" id="hub-missions"></div>
-    <div class="hub-side">
+    <div class="hub-panel active" id="panel-missions" data-panel="missions">
+      <div class="hub-map" id="hub-missions"></div>
+    </div>
+    <div class="hub-panel" id="panel-profile" data-panel="profile">
       <div class="profile-box">
         <div class="profile-name">TARINE KEÏTA</div>
         <div class="profile-title" id="prof-title">L'Éveillé de Marcory</div>
@@ -387,15 +513,29 @@ body::before {
           <div class="stat-row"><span class="stat-label">Pierres actives</span><span class="stat-val" id="prof-pierres">1</span></div>
         </div>
       </div>
-      <div>
-        <div class="allies-title">GARDIENS DISPONIBLES</div>
-        <div id="allies-list"></div>
-      </div>
-      <div>
-        <div class="journal-title">JOURNAL DE TARINE</div>
-        <div class="journal-entries" id="journal-entries"></div>
-      </div>
     </div>
+    <div class="hub-panel" id="panel-allies" data-panel="allies">
+      <div class="allies-title">GARDIENS DISPONIBLES</div>
+      <div id="allies-list"></div>
+    </div>
+    <div class="hub-panel" id="panel-journal" data-panel="journal">
+      <div class="journal-title">JOURNAL DE TARINE</div>
+      <div class="journal-entries" id="journal-entries"></div>
+    </div>
+  </div>
+  <div class="hub-tabs">
+    <button class="hub-tab-btn active" data-tab="missions" onclick="switchHubTab('missions')">
+      <span class="tab-icon">🗺️</span><span class="tab-label">Missions</span>
+    </button>
+    <button class="hub-tab-btn" data-tab="profile" onclick="switchHubTab('profile')">
+      <span class="tab-icon">🛡️</span><span class="tab-label">Profil</span>
+    </button>
+    <button class="hub-tab-btn" data-tab="allies" onclick="switchHubTab('allies')">
+      <span class="tab-icon">⚔️</span><span class="tab-label">Alliés</span>
+    </button>
+    <button class="hub-tab-btn" data-tab="journal" onclick="switchHubTab('journal')">
+      <span class="tab-icon">📜</span><span class="tab-label">Journal</span>
+    </button>
   </div>
 </div>
 
@@ -2195,6 +2335,11 @@ function goTo(id){
   document.getElementById(id).classList.add("active");
 }
 window.goTo=goTo;
+function switchHubTab(tab){
+  document.querySelectorAll(".hub-panel").forEach(function(p){p.classList.toggle("active",p.dataset.panel===tab);});
+  document.querySelectorAll(".hub-tab-btn").forEach(function(b){b.classList.toggle("active",b.dataset.tab===tab);});
+}
+window.switchHubTab=switchHubTab;
 function cloneChamp(key){
   var base=BASE_CHAMPIONS[key];
   if(!base)return null;
