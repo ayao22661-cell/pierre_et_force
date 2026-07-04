@@ -1577,7 +1577,579 @@ var CAMPAIGN = [
       }
     ]
   }
-];
+   // ===== SAISON 2 : LA QUÊTE DES PIERRES =====
+  ,
+  {
+    id:"acte11",label:"ACTE XI",titre:"LE POIDS DE LA TERRE",
+    narration_debut:[
+      "Deux pierres sur cinq. Le compte à rebours est lancé.",
+      "Lundgren pointe une carte sur la table de la cuisine à Marcory.",
+      "— Les Gorges de Bandiagara, au Mali. Le pays Dogon.",
+      "— C'est là qu'est la Pierre de la Terre ? demande Fulgence.",
+      "— C'est là qu'elle dort, corrige Sam. Et Sgrün a déjà commencé à creuser."
+    ],
+    missions:[
+      {
+        id:"m31",num:31,name:"La Faille Rouge",
+        desc:"Infiltrer le site de fouille de Sgrün.",
+        brief:"Les falaises de Bandiagara. Sgrün utilise des Construits miniers pour éventrer la roche sacrée. Il faut les arrêter avant qu'ils ne trouvent l'entrée.",
+        allies_requis:["LUNDGREN"],allies_dispo:["BABA","FULGENCE"],
+        ennemis:["DARK"],ennemis_extra:4,
+        xp:750,
+        narr_avant:[
+          "La poussière rouge s'élève dans l'air sec.",
+          "Des machines qui ne font aucun bruit de moteur dévorent la falaise.",
+          "— Ils ne cherchent pas la porte, dit Lundgren. Ils essaient de casser le mur.",
+          "Tarine sent la Pierre de l'Équilibre vibrer. La roche a mal."
+        ],
+        narr_victoire:[
+          "Les Construits tombent en poussière.",
+          "Le silence revient dans les gorges.",
+          "Baba Tunde donne un coup de pied dans une carcasse métallique.",
+          "— Même leur métal n'a pas de sang. C'est ennuyeux."
+        ],
+        narr_defaite:[
+          "Les foreuses continuent. Le sol tremble.",
+          "La falaise menace de s'effondrer sur eux.",
+          "— Repli ! crie Sam. La pierre cède !"
+        ],
+        journal_victoire:"Sgrün n'a aucun respect pour le temps. Là où l'Équilibre demande de la patience, lui utilise la force brute pour effacer l'histoire. La falaise est sauvée, mais l'entrée du sanctuaire est exposée. Nous descendons."
+      },
+      {
+        id:"m32",num:32,name:"Le Puits des Anciens",
+        desc:"Descendre dans les ténèbres.",
+        brief:"Un réseau de grottes plonge vers le centre de la terre. La gravité devient oppressante. Quelque chose garde le passage.",
+        allies_requis:["BABA"],allies_dispo:["LUNDGREN"],
+        ennemis:["DARK","BABA"],ennemis_extra:5,
+        xp:800,
+        narr_avant:[
+          "Plus ils descendent, plus l'air est lourd.",
+          "Ce n'est pas un manque d'oxygène. C'est le poids de la terre elle-même.",
+          "Des ombres d'argile se détachent des parois.",
+          "— Les gardiens d'origine, dit Sam. Ils ne feront pas la différence entre nous et Sgrün."
+        ],
+        narr_victoire:[
+          "Les ombres d'argile se figent, redevenant de simples statues.",
+          "Tarine respire fort. Chaque pas pèse cent kilos.",
+          "— Tu portes l'Équilibre, dit Lundgren. Dis à la terre que tu as le droit d'être ici.",
+          "Tarine ferme les yeux. La pression diminue."
+        ],
+        narr_defaite:[
+          "La gravité est trop forte.",
+          "Tarine est plaqué au sol, incapable de lever le bras.",
+          "La terre refuse de le laisser passer."
+        ],
+        journal_victoire:"L'Équilibre n'est pas qu'une arme, c'est un laissez-passer. J'ai dû convaincre la montagne que je n'étais pas là pour la piller. Baba a eu du mal à respirer, mais il n'a pas reculé. Il y a un cœur qui bat, tout en bas."
+      },
+      {
+        id:"m33",num:33,name:"Krag, l'Émissaire",
+        desc:"Affronter la masse.",
+        brief:"Krag. Un Émissaire de Sgrün conçu spécifiquement pour résister à la pression des profondeurs. Il a trouvé la porte de la Pierre.",
+        allies_requis:["SAM","BABA"],allies_dispo:[],
+        ennemis:["DARK","BABA"],ennemis_extra:6,
+        xp:900,
+        narr_avant:[
+          "La caverne centrale est éclairée par des cristaux verts.",
+          "Krag est là. Il n'a pas de visage, juste une plaque d'obsidienne.",
+          "— Sgrün veut l'inertie, dit Krag. Une voix qui sonne comme un éboulement.",
+          "— Sgrün ne l'aura pas, répond Tarine."
+        ],
+        narr_victoire:[
+          "Krag encaisse des coups qui auraient pulvérisé un tank.",
+          "Mais l'Équilibre trouve toujours la faille.",
+          "Tarine utilise le propre poids de l'Émissaire contre lui.",
+          "Krag s'effondre, se fissurant en deux. Une statue brisée."
+        ],
+        narr_defaite:[
+          "Krag est invincible.",
+          "Chaque coup rebondit sur lui. La caverne tremble sous ses poings.",
+          "Ils sont repoussés vers la surface, vaincus par la masse pure."
+        ],
+        journal_victoire:"Krag était fait de la même matière que la base du Pôle Nord. Sgrün s'adapte. Il construit des monstres sur mesure. Mais la masse sans intelligence a une faiblesse : elle ne sait pas changer de direction. Krag est mort. La porte du sanctuaire s'ouvre."
+      },
+      {
+        id:"m34",num:34,name:"L'Épreuve de l'Immobilité",
+        desc:"Prouver sa valeur à la Pierre.",
+        brief:"La Pierre de la Terre exige une chose : ne pas bouger face à l'inévitable. Une épreuve mentale et physique absolue.",
+        allies_requis:[],allies_dispo:["LUNDGREN","SAM"],
+        ennemis:["DARK"],ennemis_extra:7,
+        xp:1000,
+        narr_avant:[
+          "Le piédestal est au centre de la salle.",
+          "Dès que Tarine s'approche, le plafond entier commence à s'effondrer.",
+          "— Bouge ! hurle Baba.",
+          "— Non, dit Sam. C'est l'épreuve."
+        ],
+        narr_victoire:[
+          "Le plafond s'écrase sur Tarine.",
+          "Mais il lève la main, tenant l'Équilibre.",
+          "Des milliers de tonnes de roche s'arrêtent à un millimètre de sa tête.",
+          "La Pierre de la Terre, verte et brute, glisse dans sa main libre."
+        ],
+        narr_defaite:[
+          "L'instinct de survie l'emporte.",
+          "Tarine plonge sur le côté pour éviter la roche.",
+          "La Pierre de la Terre disparaît dans le sol. Refus."
+        ],
+        journal_victoire:"Trois pierres. Équilibre. Feu. Terre. La puissance que je ressens maintenant est terrifiante. J'aurais pu pulvériser Krag d'un seul regard si je l'avais eue plus tôt. Mon père avait raison de s'enfuir avec les secrets. Si un homme normal possède ça, il cesse d'être humain."
+      },
+      {
+        id:"m35",num:35,name:"L'Ascension",
+        desc:"S'échapper avant l'effondrement.",
+        brief:"La montagne se referme. Sgrün, furieux d'avoir perdu, a ordonné la destruction du site depuis l'orbite ou le Born Land.",
+        allies_requis:["BABA","FULGENCE","LUNDGREN","SAM"],allies_dispo:[],
+        ennemis:["DARK","BABA"],ennemis_extra:8,
+        xp:1200,
+        narr_avant:[
+          "La roche pleure de la poussière.",
+          "— Sgrün efface la zone, dit Sam calmement. Le protocole d'annihilation.",
+          "— On remonte, ordonne Tarine.",
+          "Pour la première fois, ce n'est pas une suggestion. C'est un ordre de chef."
+        ],
+        narr_victoire:[
+          "Ils jaillissent du puits juste au moment où la gorge implose.",
+          "Tarine utilise la Pierre de la Terre pour solidifier l'air sous leurs pieds.",
+          "Ils atterrissent dans le désert, couverts de poussière.",
+          "Le soleil se lève sur le Mali."
+        ],
+        narr_defaite:[
+          "La vitesse de l'effondrement est trop grande.",
+          "L'obscurité les engloutit.",
+          "Le poids du monde se referme sur eux."
+        ],
+        journal_victoire:"J'ai donné un ordre et ils ont obéi. Même Lundgren, même Sam. Ce n'est plus un entraînement. Je ne suis plus le gamin de Marcory qui se défend dans la cour du lycée. Je suis le gardien de trois pierres. La prochaine étape est sous l'eau."
+      }
+    ]
+  },
+  {
+    id:"acte12",label:"ACTE XII",titre:"LE MURMURE DE L'EAU",
+    narration_debut:[
+      "Le Golfe de Guinée. Au large de São Tomé-et-Príncipe.",
+      "Un bateau de pêche tangue sur l'océan noir.",
+      "Tarine regarde l'eau. Elle n'a pas de fond visible.",
+      "— La Pierre de l'Eau est la plus traître, dit Lundgren.",
+      "— Pourquoi ? demande Fulgence, malade à cause du mal de mer.",
+      "— Parce qu'elle se nourrit de vos regrets."
+    ],
+    missions:[
+      {
+        id:"m36",num:36,name:"La Fosse Noire",
+        desc:"Plonger dans l'anomalie.",
+        brief:"L'océan s'ouvre. Une bulle d'Essence permet de respirer sous l'eau, mais les gardiens marins de Sgrün patrouillent.",
+        allies_requis:["SAM"],allies_dispo:["LUNDGREN"],
+        ennemis:["DARK"],ennemis_extra:5,
+        xp:800,
+        narr_avant:[
+          "Tarine plonge. La bulle générée par Sam repousse la pression.",
+          "À trois mille mètres de fond, il n'y a pas de lumière.",
+          "Seulement les yeux jaunes des drones aquatiques de Sgrün.",
+          "— Ils ressemblent à des requins de métal, murmure Tarine."
+        ],
+        narr_victoire:[
+          "L'Équilibre et le Feu font bouillir l'eau autour des drones.",
+          "Les machines fondent et coulent dans les abysses.",
+          "— Le sanctuaire est juste en dessous, indique Sam.",
+          "Une faible lueur bleue pulse dans les ténèbres."
+        ],
+        narr_defaite:[
+          "L'eau est trop froide. La bulle de Sam vacille.",
+          "Les drones percent leurs défenses.",
+          "Tarine est forcé de remonter d'urgence avant l'asphyxie."
+        ],
+        journal_victoire:"Le feu fonctionne même sous l'eau quand il est pur. Sgrün utilise des machines pour tout, mais les machines ne comprennent pas la magie, elles ne font que la calculer. Je commence à voir les limites de son intelligence artificielle dimensionnelle."
+      },
+      {
+        id:"m37",num:37,name:"Les Noyés de la Mémoire",
+        desc:"Affronter les illusions du passé.",
+        brief:"Le sanctuaire de l'Eau utilise vos propres souvenirs comme armes. Des visages familiers apparaissent pour vous arrêter.",
+        allies_requis:["FULGENCE"],allies_dispo:["BABA"],
+        ennemis:["BABA","DARK"],ennemis_extra:6,
+        xp:900,
+        narr_avant:[
+          "Le temple est fait de corail et d'épaves.",
+          "Une silhouette avance vers Tarine. C'est Baba Tunde, tel qu'il était à treize ans.",
+          "Puis Karen. Puis le Général Keïta.",
+          "— Ce ne sont pas eux, crie Fulgence. C'est l'eau qui lit ton esprit !"
+        ],
+        narr_victoire:[
+          "Tarine refuse de combattre son père.",
+          "Il utilise la Pierre de la Terre pour ancrer son esprit au présent.",
+          "Les illusions se liquéfient, redevenant de l'eau de mer salée.",
+          "La tristesse est là, mais elle ne le contrôle plus."
+        ],
+        narr_defaite:[
+          "Le visage du Général est trop réel.",
+          "Tarine hésite. Il baisse sa garde.",
+          "L'eau s'engouffre dans ses poumons et dans son esprit. Il se noie dans ses regrets."
+        ],
+        journal_victoire:"La Pierre de l'Eau teste notre capacité à lâcher prise. J'ai revu mon père. Pas l'homme en bleu des notes de police, mais mon papa. J'ai failli abandonner juste pour rester avec cette illusion. Fulgence m'a sauvé la vie en me rappelant qui j'étais aujourd'hui."
+      },
+      {
+        id:"m38",num:38,name:"Murk, l'Émissaire Abyssal",
+        desc:"Combattre le maître des profondeurs.",
+        brief:"Murk n'a pas de forme fixe. C'est un Émissaire liquide. Il peut se glisser partout et geler instantanément.",
+        allies_requis:["LUNDGREN","SAM"],allies_dispo:[],
+        ennemis:["DARK"],ennemis_extra:7,
+        xp:1000,
+        narr_avant:[
+          "L'eau autour d'eux devient glaciale.",
+          "Murk n'apparaît pas : il est l'eau elle-même.",
+          "— Il va essayer de geler le sang dans vos veines, prévient Sam.",
+          "Tarine fait appel à la Pierre du Feu. Le combat d'éléments primordiaux commence."
+        ],
+        narr_victoire:[
+          "L'eau bout. La vapeur explose.",
+          "Tarine enferme l'Émissaire dans une sphère de roche créée avec la Pierre de la Terre.",
+          "Murk est scellé, incapable de s'écouler.",
+          "— Tu maîtrises les synergies, constate Lundgren avec admiration."
+        ],
+        narr_defaite:[
+          "Le froid est instantané.",
+          "Les membres de Tarine se figent. Le gel attaque ses organes.",
+          "Murk a gagné. L'océan réclame son dû."
+        ],
+        journal_victoire:"J'ai combiné la Terre et le Feu. L'Équilibre me permet de faire ça sans que les éléments ne s'annulent. Murk est emprisonné pour l'éternité dans une prison de roche au fond de l'océan. La quatrième pierre est juste derrière."
+      },
+      {
+        id:"m39",num:39,name:"La Larme de l'Océan",
+        desc:"Récupérer la Quatrième Pierre.",
+        brief:"La Pierre de l'Eau flotte au-dessus d'un autel de nacre. Mais elle est piégée dans une stase temporelle de Sgrün.",
+        allies_requis:[],allies_dispo:["FULGENCE"],
+        ennemis:["DARK","BABA"],ennemis_extra:6,
+        xp:1100,
+        narr_avant:[
+          "La Pierre est bleue, lumineuse, douce.",
+          "Mais un cube de lumière rouge de Sgrün l'enserre.",
+          "— Un cadenas dimensionnel, dit Sam. Si on force, la pierre se téléporte chez lui.",
+          "— Alors on ne force pas. On dissout."
+        ],
+        narr_victoire:[
+          "Tarine utilise l'Équilibre avec une précision chirurgicale.",
+          "Fil après fil, il détricote le cube rouge de l'Émissaire suprême.",
+          "La Pierre de l'Eau tombe dans sa paume.",
+          "Un sentiment de paix absolue envahit son esprit."
+        ],
+        narr_defaite:[
+          "Le cube rouge clignote plus vite.",
+          "Tarine a fait une erreur de calcul. L'Équilibre vacille.",
+          "La pierre disparaît dans un flash. Sgrün l'a prise."
+        ],
+        journal_victoire:"Quatre pierres. Eau, Terre, Feu, Équilibre. La voix de ma mère me manque. Je sens que je m'éloigne de l'humanité à chaque fois qu'une de ces reliques fusionne avec moi. L'eau m'a donné une clarté mentale terrifiante. Il n'en reste qu'une. L'Air."
+      },
+      {
+        id:"m40",num:40,name:"L'Éruption",
+        desc:"Remonter à la surface.",
+        brief:"Sgrün déclenche un volcan sous-marin pour vous éliminer. La bulle de protection ne tiendra pas contre la lave.",
+        allies_requis:["LUNDGREN","BABA","SAM"],allies_dispo:[],
+        ennemis:["DARK"],ennemis_extra:8,
+        xp:1200,
+        narr_avant:[
+          "Le fond de l'océan se déchire.",
+          "La croûte terrestre crache du magma.",
+          "— Sgrün est un mauvais perdant, lâche Baba.",
+          "— L'Eau et le Feu, dit Tarine. On va surfer."
+        ],
+        narr_victoire:[
+          "Tarine utilise la Pierre de l'Eau pour créer un courant ascendant massif.",
+          "La bulle est propulsée vers la surface à une vitesse folle.",
+          "Ils jaillissent hors de l'océan et retombent sur le pont du bateau de pêche.",
+          "Sains et saufs."
+        ],
+        narr_defaite:[
+          "Le magma heurte la bulle.",
+          "L'eau devient une prison bouillante.",
+          "Il n'y a pas d'échappatoire dans les abysses."
+        ],
+        journal_victoire:"Nous avons survécu à un volcan sous-marin en nous servant de la mer comme d'un canon. Je suis épuisé. Baba a ri à gorge déployée une fois sur le pont. Sam est resté silencieux. Il regarde le ciel. Il sait que la dernière pierre n'est pas sur Terre. Elle est déjà entre les mains de Sgrün."
+      }
+    ]
+  },
+  {
+    id:"acte13",label:"ACTE XIII",titre:"LE SOUFFLE DU VIDE",
+    narration_debut:[
+      "Les Montagnes de l'Aïr, au Niger.",
+      "Le vent souffle en continu, soulevant le sable du Sahara.",
+      "Mais le sanctuaire de l'Air est déjà vide.",
+      "— Il a pris la dernière pierre, constate Lundgren, amer.",
+      "— Sgrün a l'Air. L'espace, le mouvement, le vide, dit Sam. Il peut ouvrir la Faille."
+    ],
+    missions:[
+      {
+        id:"m41",num:41,name:"La Tempête d'Éclats",
+        desc:"Survivre au piège de l'Air.",
+        brief:"Sgrün a laissé une surprise dans le sanctuaire vide : un ouragan d'air tranchant comme des lames de rasoir.",
+        allies_requis:["BABA"],allies_dispo:["FULGENCE"],
+        ennemis:["DARK"],ennemis_extra:6,
+        xp:900,
+        narr_avant:[
+          "Le vent change de ton.",
+          "Il ne siffle plus, il hurle.",
+          "Les rochers sont coupés net. Des lames invisibles.",
+          "— Baissez-vous ! crie Baba en tirant Fulgence à terre."
+        ],
+        narr_victoire:[
+          "Tarine dresse un dôme de Terre et d'Eau.",
+          "Les lames de vent s'écrasent et rebondissent.",
+          "Il avance pas à pas, jusqu'au centre du sanctuaire.",
+          "Il détruit la balise de Sgrün qui générait la tempête."
+        ],
+        narr_defaite:[
+          "Les lames de vent sont trop rapides.",
+          "Le dôme de Tarine est taillé en pièces.",
+          "La montagne devient un abattoir invisible."
+        ],
+        journal_victoire:"Il ne reste rien de la Pierre de l'Air. Sgrün savait qu'on viendrait ici. Il a laissé cette tempête pour nous ralentir pendant qu'il prépare la Convergence. L'Air, c'est le lien. S'il l'utilise avec sa technologie, il peut réécrire les règles de notre monde à distance."
+      },
+      {
+        id:"m42",num:42,name:"Vael, la Lame Invisible",
+        desc:"Le gardien de Sgrün.",
+        brief:"Vael, l'Émissaire de l'Air. Il est resté pour s'assurer que vous ne suiviez pas Sgrün. Il est plus rapide que le son.",
+        allies_requis:["LUNDGREN","SAM"],allies_dispo:[],
+        ennemis:["DARK","BABA"],ennemis_extra:7,
+        xp:1000,
+        narr_avant:[
+          "Une silhouette se dessine dans la poussière.",
+          "Fine, presque transparente.",
+          "— Quatre pierres contre moi. C'est presque injuste, dit Vael.",
+          "— Alors rends-toi, répond Tarine.",
+          "— Je parlais pour vous."
+        ],
+        narr_victoire:[
+          "Vael bouge si vite qu'il est impossible à cibler.",
+          "Mais Tarine ne le cible pas. Il enflamme tout l'air autour de lui.",
+          "Le Feu aspire l'oxygène. Vael étouffe et perd sa vitesse.",
+          "Lundgren l'achève avec son épée, un geste net vieux de sept siècles."
+        ],
+        narr_defaite:[
+          "Trop rapide.",
+          "Tarine sent des entailles s'ouvrir sur son corps sans voir l'arme.",
+          "Vael les découpe méthodiquement, un jeu d'enfant."
+        ],
+        journal_victoire:"Lundgren a tué Vael. Il y avait de la tristesse dans son geste. Il m'a expliqué plus tard que Vael n'était pas une machine, mais un ancien héros corrompu par Sgrün. Un avertissement sur ce qui arrive à ceux qui perdent face à lui. Je ne perdrai pas."
+      },
+      {
+        id:"m43",num:43,name:"La Trace de Sgrün",
+        desc:"Pister la Faille.",
+        brief:"Vael portait un compas dimensionnel. Sam doit le pirater pour ouvrir un chemin vers le QG de Sgrün.",
+        allies_requis:["SAM"],allies_dispo:["FULGENCE"],
+        ennemis:["DARK"],ennemis_extra:5,
+        xp:1100,
+        narr_avant:[
+          "Sam tient l'appareil brisé de Vael.",
+          "— Ce n'est pas de la magie. C'est des mathématiques pures.",
+          "Des ombres sortent des rochers. Les renforts automatiques.",
+          "— Protégez Sam. Laissez-lui le temps d'ouvrir la porte."
+        ],
+        narr_victoire:[
+          "Les ombres sont repoussées.",
+          "Le compas émet un clic.",
+          "Une déchirure verticale apparaît dans l'air. Pas une porte fluide comme celle de Sam.",
+          "Une plaie ouverte dans la réalité, aux bords rouges et agressifs."
+        ],
+        narr_defaite:[
+          "Les ombres submergent Sam.",
+          "Le compas est détruit dans la mêlée.",
+          "Sans ce chemin, Sgrün est intouchable."
+        ],
+        journal_victoire:"La déchirure dans l'air sent le métal brûlé et l'ozone. C'est l'entrée vers le domaine de Sgrün. Le Nexus de l'Ordre, comme il l'appelle. Sam dit que le temps ne s'y écoule pas de la même façon. On pourrait y passer un jour, et dix ans se seraient écoulés à Abidjan. J'ai appelé Karen. Juste pour entendre sa voix."
+      },
+      {
+        id:"m44",num:44,name:"Le Passage du Vide",
+        desc:"Traverser sans se perdre.",
+        brief:"Entre notre monde et celui de Sgrün, il y a le Vide. Un espace où vos pierres pèsent des tonnes et où l'air manque.",
+        allies_requis:["LUNDGREN","BABA"],allies_dispo:["FULGENCE"],
+        ennemis:["DARK","BABA"],ennemis_extra:7,
+        xp:1300,
+        narr_avant:[
+          "Ils franchissent la déchirure.",
+          "Aucun son. La lumière est absente. Le sol n'existe pas.",
+          "— Restez groupés ! crie Tarine dans sa tête, la télépathie s'imposant.",
+          "Des créatures parasites flottent autour d'eux, attirées par les Pierres."
+        ],
+        narr_victoire:[
+          "L'Équilibre crée un tunnel stable.",
+          "Ils marchent sur un sol de pure volonté.",
+          "Les parasites sont brûlés par le Feu.",
+          "Au bout du tunnel, une forteresse métallique immense flotte dans le néant."
+        ],
+        narr_defaite:[
+          "Le Vide est trop vaste.",
+          "Le tunnel d'Équilibre s'effondre.",
+          "L'équipe est séparée, dérivant pour toujours dans le néant absolu."
+        ],
+        journal_victoire:"Nous sommes arrivés. La Forteresse de Sgrün. C'est pire que ce que j'imaginais. C'est une horloge géante, froide, parfaite. Il veut que l'univers ressemble à ça. Plus de guerre, plus de douleur, mais plus de choix non plus. Plus de liberté. Il veut transformer l'humanité en Construits."
+      },
+      {
+        id:"m45",num:45,name:"La Porte du Maître",
+        desc:"Forcer l'entrée du Nexus.",
+        brief:"La porte principale de la forteresse est scellée par la Pierre de l'Air. Il faut forcer l'entrée en utilisant les quatre autres pierres.",
+        allies_requis:["LUNDGREN","SAM","BABA","FULGENCE"],allies_dispo:[],
+        ennemis:["DARK"],ennemis_extra:10,
+        xp:1500,
+        narr_avant:[
+          "Un sas blindé gigantesque.",
+          "Il est protégé par une barrière de vent cyclonique impénétrable.",
+          "L'armée personnelle de Sgrün, la Légion Parfaite, les attend sur le parvis.",
+          "— On y va tous, dit Tarine. On ne retient rien."
+        ],
+        narr_victoire:[
+          "La Légion Parfaite est balayée par un tsunami d'Eau et de Feu.",
+          "Tarine concentre la Terre pour fracasser la barrière de vent.",
+          "Le sas géant s'ouvre avec un gémissement métallique.",
+          "L'intérieur est aveuglant de lumière blanche."
+        ],
+        narr_defaite:[
+          "La barrière de l'Air est parfaite.",
+          "La Légion Parfaite avance au même rythme, implacable.",
+          "Le parvis de la forteresse devient leur tombeau."
+        ],
+        journal_victoire:"Nous sommes à l'intérieur. Sgrün sait qu'on est là. Mais l'ironie, c'est qu'il ne peut pas nous tuer instantanément. Il veut les pierres intactes, et s'il me détruit brutalement, l'Équilibre pourrait se dissiper et se réincarner dans cent ans. Il est obligé de nous affronter face à face. On a nos chances."
+      }
+    ]
+  },
+  {
+    id:"acte14",label:"ACTE XIV",titre:"LA CONVERGENCE",
+    narration_debut:[
+      "Le cœur du Nexus de l'Ordre.",
+      "Des couloirs blancs à l'infini. Aucune ombre.",
+      "Sgrün n'est pas un homme. C'est une conscience téléchargée dans un avatar parfait.",
+      "Mais avant d'atteindre le trône, quelqu'un les attend dans l'Anti-chambre.",
+      "Quelqu'un que Tarine pensait avoir enterré."
+    ],
+    missions:[
+      {
+        id:"m46",num:46,name:"Le Fantôme de l'Essence",
+        desc:"Combattre le protecteur personnel de Sgrün.",
+        brief:"Un homme en uniforme se tient devant la salle du trône. Ses yeux brillent du bleu de Sgrün, mais son visage... C'est le Général Keïta.",
+        allies_requis:[],allies_dispo:["LUNDGREN","BABA","FULGENCE","SAM"],
+        ennemis:["DARK"],ennemis_extra:5,
+        xp:1200,
+        narr_avant:[
+          "Tarine s'arrête net.",
+          "— Papa ?",
+          "L'homme lève une arme familière. L'arme de service.",
+          "— Ce n'est pas ton père, dit Sam, livide. C'est un écho de son esprit que Sgrün a capturé à sa mort."
+        ],
+        narr_victoire:[
+          "Tarine désarme le Général sans le blesser gravement.",
+          "L'Équilibre chasse la lueur bleue de Sgrün de ses yeux.",
+          "Le Général tombe à genoux, clignant des yeux.",
+          "— Tarine... Tu es devenu grand."
+        ],
+        narr_defaite:[
+          "L'hésitation de Tarine lui coûte le combat.",
+          "L'écho du Général est impitoyable. Il tire pour tuer.",
+          "L'ironie d'être abattu par le fantôme de son propre père est totale."
+        ],
+        journal_victoire:"C'était lui. Une partie de lui. Sgrün a volé son âme à sa mort pour en faire son garde du corps ultime, sachant que je ne pourrais pas le tuer. J'ai utilisé l'Équilibre pour libérer son esprit. Papa m'a regardé. Il m'a souri. 'Ne laisse pas l'ordre étouffer le monde', a-t-il dit. Puis il a disparu en poussière de lumière."
+      },
+      {
+        id:"m47",num:47,name:"La Salle des Engrenages",
+        desc:"Détruire la source d'énergie.",
+        brief:"Avant d'affronter Sgrün, il faut désactiver l'Horloge, la machine qui lui permet de réécrire le temps et l'espace.",
+        allies_requis:["FULGENCE","SAM"],allies_dispo:["BABA","LUNDGREN"],
+        ennemis:["DARK","BABA"],ennemis_extra:8,
+        xp:1300,
+        narr_avant:[
+          "Une salle remplie de mécanismes flottants.",
+          "Des milliers d'engrenages de la taille d'une maison.",
+          "— Si l'Horloge tourne, il peut annuler nos attaques, dit Sam.",
+          "— Alors on la casse, tranche Fulgence."
+        ],
+        narr_victoire:[
+          "La Terre et le Feu fondent les engrenages principaux.",
+          "L'Horloge s'arrête avec un hurlement atroce.",
+          "La perfection mathématique de Sgrün est brisée.",
+          "— C'est l'heure, dit Tarine. Plus de retours en arrière."
+        ],
+        narr_defaite:[
+          "L'Horloge accélère.",
+          "L'équipe est prise dans une boucle temporelle, revivant les mêmes minutes en boucle.",
+          "Sgrün les a piégés dans l'éternité."
+        ],
+        journal_victoire:"Fulgence a été incroyable. Il a calculé les trajectoires des engrenages pour que je puisse tous les détruire d'un seul coup. La magie n'est rien sans l'intelligence. Sgrün est maintenant vulnérable. Il est enfermé dans le présent avec nous. C'est l'heure du combat final."
+      },
+      {
+        id:"m48",num:48,name:"L'Avant-Garde Parfaite",
+        desc:"Les derniers défenseurs.",
+        brief:"Les Prétoriens de Sgrün, trois Émissaires d'élite, bloquent la porte finale. C'est un combat de force pure.",
+        allies_requis:["LUNDGREN","BABA"],allies_dispo:["SAM","FULGENCE"],
+        ennemis:["DARK","BABA"],ennemis_extra:9,
+        xp:1500,
+        narr_avant:[
+          "Trois statues dorées s'animent.",
+          "— Je prends le gros, crie Baba Tunde.",
+          "— Je prends celui avec l'épée, dit Lundgren, souriant presque.",
+          "— On prend le reste, ajoute Tarine. Pour Abidjan."
+        ],
+        narr_victoire:[
+          "Baba Tunde écrase la tête de son adversaire avec un rire sauvage.",
+          "Lundgren décapite le sien d'un geste élégant.",
+          "Tarine réduit le dernier en cendres.",
+          "La grande porte s'ouvre d'elle-même."
+        ],
+        narr_defaite:[
+          "Les Prétoriens sont trop coordonnés.",
+          "Baba tombe le premier. Puis Lundgren.",
+          "Tarine est submergé. La porte reste close."
+        ],
+        journal_victoire:"Baba et Lundgren. Le voyou de Marcory et le guerrier de sept siècles. Ils ont combattu côte à côte avec une synchronisation parfaite. Je suis fier de mes frères d'armes. La porte s'est ouverte. La salle du trône est là. Sgrün nous attend."
+      },
+      {
+        id:"m49",num:49,name:"L'Architecte",
+        desc:"Sgrün et la Pierre de l'Air.",
+        brief:"Sgrün lévite. Il contrôle l'Air. Il veut vos quatre pierres. Il n'attaquera pas : il va essayer d'aspirer votre énergie.",
+        allies_requis:["SAM","LUNDGREN","BABA","FULGENCE"],allies_dispo:[],
+        ennemis:["DARK","BABA"],ennemis_extra:10,
+        xp:2000,
+        narr_avant:[
+          "Sgrün est aveuglant. Une entité d'énergie pure en costume croisé.",
+          "— Rendez-les moi, Tarine. Le chaos de l'humanité me fatigue.",
+          "— Le chaos, c'est la vie, répond Tarine.",
+          "Sgrün soupire. Et le vide se fait dans la pièce."
+        ],
+        narr_victoire:[
+          "Tarine utilise la Terre pour s'ancrer, le Feu pour attaquer, l'Eau pour se soigner, et l'Équilibre pour contrer l'Air.",
+          "Sgrün est acculé.",
+          "La Pierre de l'Air se détache de son torse.",
+          "Sgrün s'effondre, son corps d'énergie se dissipant."
+        ],
+        narr_defaite:[
+          "Sgrün crée un vide parfait.",
+          "Les poumons de l'équipe explosent. La magie est aspirée.",
+          "L'ordre absolu gagne."
+        ],
+        journal_victoire:"J'ai la Pierre de l'Air. J'ai les Cinq Pierres. Kankou Moussa les avait séparées pour une bonne raison : la puissance est insoutenable. Mon corps brûle, gèle, se solidifie et s'envole en même temps. Sgrün est à terre, mais il rit. 'Tu crois que c'est fini ?', crache-t-il."
+      },
+      {
+        id:"m50",num:50,name:"Le Choix de l'Éveillé",
+        desc:"Maîtriser l'Omnipotence.",
+        brief:"Avec les Cinq Pierres réunies, la réalité s'effondre. Vous avez le pouvoir de tout réécrire. Sgrün veut que vous fassiez la même erreur que lui.",
+        allies_requis:[],allies_dispo:["LUNDGREN","SAM","BABA","FULGENCE","KAREN"],
+        ennemis:["DARK"],ennemis_extra:12,
+        xp:3000,
+        narr_avant:[
+          "L'univers clignote.",
+          "Tarine flotte. Il voit Abidjan. Il voit le passé. Il voit la mort de son père annulable d'une simple pensée.",
+          "— Fais-le ! crie Sgrün. Sois un Dieu !",
+          "Lundgren le regarde. — Tarine, rappelle-toi l'eau. Ne résiste pas au deuil. Accepte-le."
+        ],
+        narr_victoire:[
+          "Tarine ferme les yeux.",
+          "Il ne réécrit rien. Il refuse d'être un Dieu.",
+          "Il utilise les Cinq Pierres pour sceller définitivement la Faille.",
+          "Sgrün hurle alors que son existence est effacée, non pas par la force, mais par le refus de son pouvoir.",
+          "Tarine relâche les pierres. Elles s'éparpillent dans les étoiles."
+        ],
+        narr_defaite:[
+          "Tarine cède à la tentation. Il réécrit la mort de son père.",
+          "L'univers se brise. Les paradoxes dévorent la réalité.",
+          "Il est devenu exactement ce qu'il combattait."
+        ],
+        journal_victoire:"C'est fini. J'ai laissé partir les Pierres. Elles trouveront de nouveaux porteurs dans cent ans, ou dans mille ans. Lundgren a souri, il a dit que c'était sa dernière bataille et qu'il pouvait enfin se reposer. Baba Tunde est retourné à la Villoise en légende. Fulgence veut étudier l'Essence. Sam a disparu. Et moi ? Je suis rentré à Marcory. Ma mère préparait le café dans la cuisine jaune pâle. J'ai treize ans, et je viens de sauver le monde."
+      }
+    ]
+  }
 ];
 
 // ===== ÉTAT DU JEU =====
