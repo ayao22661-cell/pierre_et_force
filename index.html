@@ -1908,6 +1908,30 @@ function showEndScreen(victory,m){
 initTitle();
 
 })();
+  /* =========================================================
+   ===== FONCTION D'ANIMATION DE COMBAT (STYLE LOL/TFT) ====
+   ========================================================= */
+function animerAttaque(carteAttaquant, carteCible, estUnSort = false) {
+    if (!carteAttaquant || !carteCible) return;
+
+    // 1. L'attaquant lance son animation (Dash ou Incantation magique)
+    if (estUnSort) {
+        carteAttaquant.classList.add('casting');
+    } else {
+        carteAttaquant.classList.add('attacking');
+    }
+
+    // 2. La cible reçoit le coup (avec un décalage de 200ms pour simuler le temps d'impact du dash)
+    setTimeout(() => {
+        carteCible.classList.add('hit');
+    }, 200);
+
+    // 3. On nettoie les animations après 600ms pour qu'elles puissent rejouer au prochain tour
+    setTimeout(() => {
+        carteAttaquant.classList.remove('attacking', 'casting');
+        carteCible.classList.remove('hit');
+    }, 600);
+}
 </script>
 </body>
 </html>
