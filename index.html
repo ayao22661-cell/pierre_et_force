@@ -1712,6 +1712,7 @@ function useAbility(idx){
 function dealDamage(id,dmg,isAlly){
   var f=combat.fighters[id];if(!f||f.dead)return;
   f.hp=Math.max(0,f.hp-dmg);
+  
   if(f.hp===0){
     f.dead=true;
     var c=combat.allyTeam.concat(combat.enemyTeam).find(function(x){return x.id===id;});
@@ -1721,7 +1722,22 @@ function dealDamage(id,dmg,isAlly){
     if(!isAlly){combat.nexusHp=Math.max(0,combat.nexusHp-20);document.getElementById("nexus-fill").style.width=combat.nexusHp+"%";}
     else{combat.allyNexusHp=Math.max(0,combat.allyNexusHp-20);document.getElementById("ally-nexus-fill").style.width=combat.allyNexusHp+"%";}
   }
+  
+  // 1. On met à jour l'affichage d'abord
   renderFighters();
+
+  // ==========================================
+  // 2. ANIMATION DE DÉGÂTS SUR LA CIBLE
+  // ==========================================
+  var divCible = document.getElementById("fighter-" + id);
+  if (divCible) {
+      divCible.classList.add('hit'); // Ajoute l'effet de tremblement et flash rouge
+      
+      // On retire l'animation après 400ms pour le prochain coup
+      setTimeout(function() {
+          divCible.classList.remove('hit');
+      }, 400);
+  }
 }
 
 function healFighter(id,val){
