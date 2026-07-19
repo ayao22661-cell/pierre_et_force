@@ -133,10 +133,45 @@ body::after {
    ===== NARRATION =========================
    ========================================= */
 #screen-narration { background: #000; justify-content: center; align-items: center; padding: 40px; cursor: pointer; }
-.narr-line { font-size: 18px; color: var(--hex-gold-light); text-align: center; margin-bottom: 20px; opacity: 0; transform: translateY(10px); transition: 0.8s ease; }
-.narr-line.visible { opacity: 1; transform: none; }
+.narr-chapter {
+  font-family: 'Cinzel', serif; font-size: 12px; letter-spacing: 4px; color: var(--hex-magic);
+  text-transform: uppercase; margin-bottom: 26px; padding: 6px 18px; border: 1px solid rgba(10,200,185,0.4);
+  border-radius: 20px; background: rgba(10,200,185,0.08); box-shadow: 0 0 16px rgba(10,200,185,0.15);
+  opacity: 0; animation: cardEnter .6s ease forwards;
+}
+.narr-lines { display: flex; flex-direction: column; align-items: center; gap: 14px; max-width: 680px; }
+.narr-line {
+  font-size: 18px; color: var(--hex-gold-light); text-align: center; line-height: 1.5;
+  opacity: 0; transform: translateY(16px) scale(.97); filter: blur(3px);
+  transition: opacity .8s ease, transform .8s cubic-bezier(.2,.8,.3,1), filter .8s ease;
+  background: linear-gradient(160deg, rgba(30,40,60,0.55), rgba(9,20,40,0.7));
+  border: 1px solid var(--hex-border); border-left: 3px solid var(--hex-gold);
+  border-radius: 4px 16px 16px 4px; padding: 16px 24px;
+  box-shadow: 0 8px 20px rgba(0,0,0,0.45), inset 0 1px 0 rgba(255,255,255,0.04);
+}
+.narr-line.visible { opacity: 1; transform: none; filter: blur(0); }
 .narr-continue { margin-top: 50px; font-size: 12px; color: var(--hex-magic); letter-spacing: 4px; text-transform: uppercase; animation: pulse 2s infinite; }
 @keyframes pulse { 0%, 100% { opacity: 0.4; } 50% { opacity: 1; } }
+
+/* ===== ANIMATION UTILITAIRE : entrée en cascade pour listes de cartes ===== */
+@keyframes cardEnter {
+  0% { opacity: 0; transform: translateY(16px) scale(.96); }
+  100% { opacity: 1; transform: translateY(0) scale(1); }
+}
+/* ===== ANIMATION UTILITAIRE : entrée en cascade pour listes de cartes ===== */
+@keyframes cardEnter {
+  from { opacity: 0; transform: translateY(16px) scale(.96); }
+  to   { opacity: 1; transform: translateY(0)  scale(1); }
+}
+/* stagger-in : les cartes available ont déjà leur propre animation (cardGlow),
+   on utilise donc une classe intermédiaire .card-hidden supprimée par JS après le délai */
+.card-hidden { opacity: 0 !important; transform: translateY(16px) scale(.96) !important; transition: none !important; }
+.card-reveal { transition: opacity .45s cubic-bezier(.2,.8,.3,1), transform .45s cubic-bezier(.2,.8,.3,1) !important; opacity: 1; transform: none; }
+.stagger-in {
+  opacity: 0;
+  animation: cardEnter .45s cubic-bezier(.2,.8,.3,1) forwards;
+  animation-delay: calc(var(--i, 0) * 70ms);
+}
 
 /* =========================================
    ===== PANNEAUX UI (HUB & DEPLOY) ========
@@ -215,6 +250,7 @@ body::after {
 .mission-card:hover::after, .deploy-card:hover::after { left: 130%; }
 .mission-card:hover:not(.locked), .deploy-card:hover { border-color: var(--hex-gold); background: linear-gradient(135deg, rgba(40,52,74,0.75), rgba(30,40,60,0.9)); transform: translateY(-2px); box-shadow: 0 8px 16px rgba(0,0,0,0.45); }
 .mission-card.locked { opacity: 0.4; filter: grayscale(1); cursor: not-allowed; }
+.deploy-card.locked { opacity: 0.4; filter: grayscale(1); cursor: not-allowed; }
 .mission-card.available { border-color: var(--hex-magic); box-shadow: 0 0 0 1px rgba(10,200,185,0.15), 0 4px 10px rgba(0,0,0,0.35); animation: cardGlow 2.4s ease-in-out infinite; }
 .mission-card.done { border-color: var(--hex-green); opacity: 0.7; }
 @keyframes cardGlow {
@@ -287,16 +323,24 @@ body::after {
   background: linear-gradient(135deg, rgba(30,40,60,0.5), var(--hex-panel));
   border: 1px solid var(--hex-border); border-radius: 12px; padding: 8px 12px; margin-bottom: 8px; position: relative;
   box-shadow: 0 3px 8px rgba(0,0,0,0.3);
+  transition: transform .18s ease, border-color .18s ease, box-shadow .18s ease;
 }
+.ally-row:not(.ally-locked):hover { transform: translateY(-2px); border-color: var(--hex-gold); box-shadow: 0 8px 16px rgba(0,0,0,0.4); }
 .ally-row.ally-locked { opacity: 0.4; filter: grayscale(0.7); }
-.ally-img { width: 44px; height: 44px; border-radius: 50%; object-fit: cover; object-position: top; border: 2px solid var(--hex-gold-dark); flex-shrink: 0; }
+.ally-img { width: 44px; height: 44px; border-radius: 50%; object-fit: cover; object-position: top; border: 2px solid var(--hex-gold-dark); flex-shrink: 0; transition: box-shadow .2s ease; }
+.ally-row:not(.ally-locked):hover .ally-img { box-shadow: 0 0 12px rgba(200,155,60,0.5); }
 .ally-info { flex: 1; overflow: hidden; }
 .ally-name { font-size: 14px; font-weight: 700; color: var(--hex-gold-light); white-space: nowrap; text-overflow: ellipsis; overflow: hidden; }
 .ally-role { font-size: 11px; color: var(--hex-magic); letter-spacing: 0.5px; }
 .ally-badge { font-size: 9px; font-weight: 700; letter-spacing: 1px; color: var(--hex-green); border: 1px solid var(--hex-green); padding: 3px 9px; border-radius: 20px; background: rgba(19, 137, 85, 0.12); flex-shrink: 0; }
 
 /* Journal de Tarine */
-.j-entry { background: var(--hex-panel); border-left: 3px solid var(--hex-gold-dark); border-radius: 0 12px 12px 0; padding: 10px 14px; margin-bottom: 10px; box-shadow: 0 3px 8px rgba(0,0,0,0.25); }
+.j-entry {
+  background: linear-gradient(135deg, rgba(30,40,60,0.4), var(--hex-panel));
+  border-left: 3px solid var(--hex-gold-dark); border-radius: 4px 12px 12px 4px; padding: 12px 16px; margin-bottom: 10px;
+  box-shadow: 0 3px 8px rgba(0,0,0,0.25); transition: transform .18s ease, border-color .18s ease;
+}
+.j-entry:hover { transform: translateX(3px); border-left-color: var(--hex-gold); }
 .j-date { font-size: 10px; letter-spacing: 1px; color: var(--hex-gold); text-transform: uppercase; margin-bottom: 4px; }
 .j-text { font-size: 13px; line-height: 1.45; color: var(--hex-text); }
 
@@ -427,14 +471,36 @@ body::after {
 
 /* ---- Télégraphe d'attaque (zone de danger) ---- */
 .fx-telegraph {
-  position: absolute; width: 70px; height: 70px; transform: translate(-50%,-50%);
-  border-radius: 50%; border: 3px dashed var(--hex-red); background: rgba(228,63,90,0.12); pointer-events: none;
-  animation: telegraphPulse .9s ease-in forwards; z-index: 4;
+  position: absolute; width: 130px; height: 130px; transform: translate(-50%,-50%);
+  border-radius: 50%; border: 4px dashed #ff3d3d; background: rgba(228,63,90,0.16); pointer-events: none;
+  animation: telegraphPulse .9s ease-in forwards; z-index: 45;
+  box-shadow: 0 0 0 2px rgba(0,0,0,0.5), 0 0 26px 6px rgba(255,61,61,0.55), inset 0 0 20px rgba(255,61,61,0.4);
 }
+.fx-telegraph::before {
+  content: "⚠"; position: absolute; inset: 0; display: flex; align-items: center; justify-content: center;
+  font-size: 30px; color: #ff8a3d; text-shadow: 0 0 10px #000, 0 0 16px #ff3d3d;
+  animation: telegraphWarnBlink .35s steps(1) infinite;
+}
+@keyframes telegraphWarnBlink { 0%,49% { opacity: 1; } 50%,100% { opacity: .25; } }
 @keyframes telegraphPulse {
-  0% { opacity: .9; transform: translate(-50%,-50%) scale(.35); }
-  70% { opacity: .95; transform: translate(-50%,-50%) scale(1); }
-  100% { opacity: 0; transform: translate(-50%,-50%) scale(1.2); }
+  0% { opacity: 0; transform: translate(-50%,-50%) scale(.2); }
+  15% { opacity: 1; transform: translate(-50%,-50%) scale(1.05); }
+  25% { transform: translate(-50%,-50%) scale(.92); }
+  85% { opacity: 1; transform: translate(-50%,-50%) scale(1); }
+  100% { opacity: 0; transform: translate(-50%,-50%) scale(1.15); }
+}
+
+/* ---- Verrouillage de cible : le jeton visé clignote distinctement des soldats ---- */
+.token.telegraph-target { z-index: 46; }
+.token.telegraph-target .token-avatar-wrap {
+  animation: telegraphTargetFlash .35s steps(1) infinite;
+}
+.token.telegraph-target .token-avatar {
+  box-shadow: 0 0 0 4px #ff3d3d, 0 0 22px 6px rgba(255,61,61,0.85) !important;
+}
+@keyframes telegraphTargetFlash {
+  0%,49% { filter: brightness(1.35) saturate(1.3); }
+  50%,100% { filter: brightness(0.9); }
 }
 
 /* =========================================
@@ -794,6 +860,8 @@ body::after {
   text-transform: uppercase; flex-shrink: 0; text-shadow: 0 0 6px rgba(200, 155, 60, 0.4);
 }
 .narr-txt { font-size: 14px; line-height: 1.4; color: var(--hex-gold-light); font-style: italic; }
+.narr-txt.flash, .narr-src.flash { animation: narrFlash .4s ease; }
+@keyframes narrFlash { 0% { opacity: .2; transform: translateX(-6px); } 100% { opacity: 1; transform: translateX(0); } }
 
 /* =========================================
    ===== HUD DE COMPÉTENCES (SORTS) ========
@@ -819,7 +887,12 @@ body::after {
 
 /* Journal d'actions (Le Chat) */
 .action-log { flex-shrink: 0; background: rgba(1, 10, 19, 0.95); border-top: 1px solid var(--hex-border); padding: 8px 30px; height: 84px; overflow-y: auto; font-size: 13px; }
-.log-line { margin-bottom: 6px; color: var(--hex-text); }
+.log-line {
+  margin-bottom: 6px; color: var(--hex-text); padding: 3px 10px; border-radius: 3px 8px 8px 3px;
+  border-left: 2px solid var(--hex-gold-dark); background: rgba(255,255,255,0.025);
+  opacity: 0; transform: translateX(-10px); animation: logSlideIn .3s ease forwards;
+}
+@keyframes logSlideIn { to { opacity: 1; transform: translateX(0); } }
 .log-line .cname { color: var(--hex-gold-light); font-weight: bold; }
 .log-line .dmg { color: var(--hex-red); font-weight: bold; }
 .log-line .heal { color: var(--hex-green); font-weight: bold; }
@@ -871,12 +944,25 @@ body::after {
 .lu-stat-label { font-size: 10px; letter-spacing: 2px; color: var(--hex-text); }
 .lu-stat-val { font-family: 'Cinzel', serif; font-size: 20px; color: var(--hex-green); text-shadow: 0 0 10px rgba(19,137,85,0.6); opacity: 0; animation: luStatIn .4s ease-out .5s forwards; }
 @keyframes luStatIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
-.end-title { font-size: 60px; letter-spacing: 8px; text-shadow: 0 5px 20px rgba(0,0,0,0.8); margin-bottom: 10px;}
-.end-title.victory { color: var(--hex-magic); }
+.end-title { font-size: 60px; letter-spacing: 8px; text-shadow: 0 5px 20px rgba(0,0,0,0.8); margin-bottom: 10px; position: relative; opacity: 0; animation: endTitlePop .55s cubic-bezier(.2,1.4,.4,1) .1s forwards; }
+.end-title.victory { color: var(--hex-magic); background: linear-gradient(100deg, var(--hex-magic) 40%, #fff 50%, var(--hex-magic) 60%); background-size: 300% 100%; -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; animation: endTitlePop .55s cubic-bezier(.2,1.4,.4,1) .1s forwards, shimmerSweep 2.4s linear 0.8s infinite; }
 .end-title.defeat { color: var(--hex-red); }
-.end-subtitle { font-size: 16px; color: var(--hex-gold); letter-spacing: 4px; margin-bottom: 20px;}
-.end-rewards { background: rgba(1, 10, 19, 0.8); border: 1px solid var(--hex-border); padding: 20px; width: 400px; max-width: 90%; margin: 20px 0; border-radius: 8px;}
-.reward-row { display: flex; justify-content: space-between; margin-bottom: 10px; font-size: 14px;}
+@keyframes endTitlePop { 0% { opacity: 0; transform: scale(.7) translateY(10px); } 100% { opacity: 1; transform: scale(1) translateY(0); } }
+@keyframes shimmerSweep { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
+.end-subtitle { font-size: 16px; color: var(--hex-gold); letter-spacing: 4px; margin-bottom: 20px; opacity: 0; animation: cardEnter .5s ease .25s forwards; }
+.end-rewards { background: rgba(1, 10, 19, 0.8); border: 1px solid var(--hex-border); padding: 20px; width: 400px; max-width: 90%; margin: 20px 0; border-radius: 8px; opacity: 0; animation: cardEnter .5s ease .35s forwards; }
+.reward-title { opacity: 0; animation: cardEnter .4s ease .4s forwards; }
+.reward-row {
+  display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; font-size: 14px;
+  padding: 8px 12px; border-radius: 4px 10px 10px 4px; border-left: 2px solid var(--hex-gold-dark);
+  background: linear-gradient(135deg, rgba(200,155,60,0.06), transparent);
+  opacity: 0; animation: cardEnter .4s ease forwards;
+}
+.reward-unlock {
+  margin: 10px 0; padding: 10px 14px; border-radius: 4px 10px 10px 4px; border-left: 2px solid var(--hex-magic);
+  background: linear-gradient(135deg, rgba(10,200,185,0.1), transparent); color: var(--hex-magic); font-weight: bold;
+  opacity: 0; animation: cardEnter .4s ease forwards;
+}
 .reward-key { color: var(--hex-text); }
 .reward-val { color: var(--hex-gold-light); font-weight: bold; }
 .end-btns { display: flex; gap: 20px; }
@@ -3470,6 +3556,7 @@ function buildHub(){
   // Missions
   var mDiv=document.getElementById("hub-missions");
   mDiv.innerHTML="";
+  var missionCardIdx=0;
   CAMPAIGN.forEach(function(acte){
     var sec=document.createElement("div");
     sec.className="acte-section";
@@ -3484,6 +3571,9 @@ function buildHub(){
       var statusCls=done?"done":avail?"avail":"lock";
       var card=document.createElement("div");
       card.className=cls;
+      var delay=Math.min(missionCardIdx++,8)*70;
+      // On cache la carte et on la révèle après le délai (sans toucher à sa propriété animation)
+      card.style.cssText="opacity:0;transform:translateY(16px) scale(.96);transition:none";
       card.innerHTML=
         '<div class="m-num">'+m.num+'</div>'+
         '<div class="m-info">'+
@@ -3495,6 +3585,14 @@ function buildHub(){
         card.addEventListener("click",function(){openDeploy(m.id);});
       }
       row.appendChild(card);
+      // Révélation par transition JS pour ne pas interférer avec cardGlow
+      setTimeout(function(el){
+        el.style.transition="opacity .45s cubic-bezier(.2,.8,.3,1), transform .45s cubic-bezier(.2,.8,.3,1)";
+        el.style.opacity="";
+        el.style.transform="";
+        // Après la transition, on retire tous les styles inline pour laisser le CSS libre
+        setTimeout(function(){ el.style.cssText=""; }, 500);
+      }.bind(null,card), delay);
     });
   });
 
@@ -3502,12 +3600,13 @@ function buildHub(){
   var aDiv=document.getElementById("allies-list");
   aDiv.innerHTML="";
   var allAllies=["KAREN","FULGENCE","LUNDGREN","BABA","DARK"];
-  allAllies.forEach(function(k){
+  allAllies.forEach(function(k,idx){
     var unlocked=save.allies_unlocked.indexOf(k)>=0;
     var c=BASE_CHAMPIONS[k];
     if(!c)return;
     var row=document.createElement("div");
-    row.className="ally-row"+(unlocked?"":" ally-locked");
+    row.className="ally-row stagger-in"+(unlocked?"":" ally-locked");
+    row.style.setProperty("--i",idx);
     row.innerHTML=
       '<img class="ally-img" src="'+IMGS[c.key]+'" alt="'+c.name+'">'+
       '<div class="ally-info">'+
@@ -3522,16 +3621,18 @@ function buildHub(){
   var jDiv=document.getElementById("journal-entries");
   jDiv.innerHTML="";
   if(save.journal.length===0){
-    jDiv.innerHTML='<div class="j-entry"><div class="j-text">Les premières pages sont vides. Quelque chose commence ce soir.</div></div>';
+    jDiv.innerHTML='<div class="j-entry stagger-in"><div class="j-text">Les premières pages sont vides. Quelque chose commence ce soir.</div></div>';
   }else{
     var entries=save.journal.slice().reverse();
-    entries.forEach(function(e){
+    entries.forEach(function(e,idx){
       var el=document.createElement("div");
-      el.className="j-entry";
+      el.className="j-entry stagger-in";
+      el.style.setProperty("--i",Math.min(idx,8));
       el.innerHTML='<div class="j-date">Mission '+e.mission+' — Acte '+e.acte+'</div><div class="j-text">'+e.text+'</div>';
       jDiv.appendChild(el);
     });
   }
+
 
   writeSave(save);
 }
@@ -3558,9 +3659,10 @@ function openDeploy(missionId){
   var lvlCls=lvlDiff>=3?"lvl-danger":lvlDiff>=0?"lvl-even":"lvl-safe";
   var ennemisNames=m.ennemis.map(function(k){return BASE_CHAMPIONS[k]?BASE_CHAMPIONS[k].name:k;});
   if(m.ennemis_extra>0)ennemisNames.push(m.ennemis_extra+" soldats");
-  ennemisNames.forEach(function(n){
+  ennemisNames.forEach(function(n,idx){
     var el=document.createElement("div");
-    el.className="enemy-preview";
+    el.className="enemy-preview stagger-in";
+    el.style.setProperty("--i",idx);
     el.innerHTML='⚔ '+n+' <span class="enemy-lvl '+lvlCls+'">Nv. '+m.num+'</span>';
     eList.appendChild(el);
   });
@@ -3576,14 +3678,15 @@ function openDeploy(missionId){
   });
 
   var toShow=["KAREN","FULGENCE","LUNDGREN","BABA"];
-  toShow.forEach(function(k){
+  toShow.forEach(function(k,idx){
     if(k==="TARINE")return;
     var c=BASE_CHAMPIONS[k];if(!c)return;
     var unlocked=save.allies_unlocked.indexOf(k)>=0;
     var inDispo=available.indexOf(k)>=0;
     var requis=m.allies_requis.indexOf(k)>=0;
     var card=document.createElement("div");
-    card.className="deploy-card"+((!unlocked||(!inDispo&&!requis))?" locked":"");
+    card.className="deploy-card stagger-in"+((!unlocked||(!inDispo&&!requis))?" locked":"");
+    card.style.setProperty("--i",idx);
     card.dataset.key=k;
     card.innerHTML=
       '<img src="'+IMGS[c.key]+'" alt="'+c.name+'">'+
@@ -3866,10 +3969,15 @@ function bossTelegraphAttack(boss,ab,allyAlive){
   ab.curCd=ab.cd;
   var lockX=ft.x,lockY=ft.y;
   addLog("<b style='color:#ff8a3d'>"+boss.name+"</b> charge <em>"+ab.name+"</em> !");
-  setNarration(boss.name.toUpperCase(),"⚠ <em>"+ab.name+"</em> se prépare — écarte-toi de la zone !");
+  setNarration(boss.name.toUpperCase(),"⚠ <em>"+ab.name+"</em> vise "+tgt.name+" — écarte-toi de la zone !");
   spawnTelegraphRing(lockX,lockY);
+  // Le jeton visé clignote distinctement (au-dessus des soldats) pour qu'on sache
+  // immédiatement QUI est ciblé, même si plusieurs unités se chevauchent à l'écran.
+  var tgtEl=document.getElementById("fighter-"+tgt.id);
+  if(tgtEl)tgtEl.classList.add("telegraph-target");
   haptic([10,60,10]);
   setTimeout(function(){
+    if(tgtEl)tgtEl.classList.remove("telegraph-target");
     if(!combat.fighters[boss.id]||combat.fighters[boss.id].dead)return;
     if(!combat.fighters[tgt.id]||combat.fighters[tgt.id].dead)return;
     var stillThere=distPct(combat.fighters[tgt.id],{x:lockX,y:lockY})<14;
@@ -4082,8 +4190,12 @@ function healFighter(id,val){
 }
 
 function setNarration(src,txt){
-  document.getElementById("narr-source").textContent=src;
-  document.getElementById("narr-text").innerHTML=txt;
+  var srcEl=document.getElementById("narr-source"), txtEl=document.getElementById("narr-text");
+  srcEl.textContent=src;
+  txtEl.innerHTML=txt;
+  srcEl.classList.remove("flash");txtEl.classList.remove("flash");
+  void srcEl.offsetWidth; // force reflow pour rejouer l'animation
+  srcEl.classList.add("flash");txtEl.classList.add("flash");
 }
 
 function addLog(txt){
@@ -4227,10 +4339,10 @@ function showEndScreen(victory,m){
 
       rewardsEl.innerHTML=
         '<div class="reward-title">RÉCOMPENSES</div>'+
-        '<div class="reward-row"><span class="reward-key">XP gagné</span><span class="reward-val">+'+xpGained+' XP</span></div>'+
-        (save.level>prevLevel?'<div class="reward-row"><span class="reward-key">Niveau</span><span class="reward-val">'+prevLevel+' → '+save.level+'</span></div>':'')+
-        (unlockTxt?'<div class="reward-unlock">✦ '+unlockTxt+'</div>':'')+
-        '<div class="reward-row" style="margin-top:8px"><span class="reward-key">Missions terminées</span><span class="reward-val">'+save.missions_done.length+' / '+totalMissionsCount()+'</span></div>';
+        '<div class="reward-row" style="animation-delay:.5s"><span class="reward-key">XP gagné</span><span class="reward-val">+'+xpGained+' XP</span></div>'+
+        (save.level>prevLevel?'<div class="reward-row" style="animation-delay:.6s"><span class="reward-key">Niveau</span><span class="reward-val">'+prevLevel+' → '+save.level+'</span></div>':'')+
+        (unlockTxt?'<div class="reward-unlock" style="animation-delay:.7s">✦ '+unlockTxt+'</div>':'')+
+        '<div class="reward-row" style="margin-top:8px;animation-delay:.8s"><span class="reward-key">Missions terminées</span><span class="reward-val">'+save.missions_done.length+' / '+totalMissionsCount()+'</span></div>';
 
       document.getElementById("btn-hub").onclick=function(){
         function proceed(){
@@ -4259,6 +4371,19 @@ function showEndScreen(victory,m){
     openDeploy(m.id);
   };
 }
+
+// Une fois l'animation d'entrée jouée, on retire la classe utilitaire pour laisser
+// les états statiques (verrouillé, terminé, etc.) reprendre pleinement la main sur le style.
+document.addEventListener("animationend",function(e){
+  if(e.animationName==="cardEnter"&&e.target.classList&&e.target.classList.contains("stagger-in")){
+    var el=e.target;
+    // Retirer la classe ET nettoyer le style inline pour que .locked / .ally-locked reprennent la main
+    el.style.opacity="";
+    el.style.transform="";
+    el.style.animation="";
+    el.classList.remove("stagger-in");
+  }
+});
 
 // ===== INIT =====
 syncLives();
