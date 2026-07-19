@@ -290,17 +290,73 @@ body::before {
 .battle-zone { flex: 1; min-height: 0; position: relative; padding: 8px 10px; display: flex; }
 .arena {
   position: relative; flex: 1; border-radius: 22px; overflow: hidden;
-  background: radial-gradient(ellipse at 50% 50%, #10203a 0%, #050b16 75%);
+  background:
+    radial-gradient(ellipse 60% 50% at 12% 88%, rgba(19,137,85,0.30) 0%, transparent 60%),
+    radial-gradient(ellipse 60% 50% at 88% 12%, rgba(228,63,90,0.24) 0%, transparent 60%),
+    linear-gradient(160deg, #0e2a1c 0%, #0a1c28 38%, #16130c 62%, #241a0c 100%);
   border: 2px solid var(--hex-gold-dark);
   box-shadow: inset 0 0 60px rgba(0,0,0,0.7), 0 0 25px rgba(0,0,0,0.5);
   touch-action: none;
 }
+/* Texture "terrain" : grain subtil + vignettage façon Faille de l'Invocateur */
 .arena::before {
-  content: ""; position: absolute; inset: 0; pointer-events: none;
+  content: ""; position: absolute; inset: 0; pointer-events: none; z-index: 1;
   background-image:
-    repeating-linear-gradient(90deg, rgba(255,255,255,0.025) 0 1px, transparent 1px 46px),
-    repeating-linear-gradient(0deg, rgba(255,255,255,0.025) 0 1px, transparent 1px 46px);
+    radial-gradient(ellipse at 50% 50%, transparent 40%, rgba(0,0,0,0.45) 100%),
+    repeating-linear-gradient(60deg, rgba(200,155,60,0.035) 0 1px, transparent 1px 34px),
+    repeating-linear-gradient(-60deg, rgba(200,155,60,0.035) 0 1px, transparent 1px 34px);
 }
+/* Rivière diagonale animée : ligne d'énergie mystique traversant le plateau */
+.arena-river {
+  position: absolute; z-index: 1; pointer-events: none;
+  left: -10%; right: -10%; top: 46%; height: 15%;
+  transform: rotate(-9deg);
+  background: linear-gradient(180deg,
+    transparent 0%, rgba(10,200,185,0.05) 15%,
+    rgba(10,200,185,0.16) 50%, rgba(10,200,185,0.05) 85%, transparent 100%);
+  filter: blur(2px);
+}
+.arena-river::after {
+  content: ""; position: absolute; inset: 0;
+  background: repeating-linear-gradient(100deg, transparent 0 24px, rgba(159,216,255,0.14) 24px 26px);
+  animation: riverFlow 5s linear infinite;
+  opacity: .7;
+}
+@keyframes riverFlow { 0% { transform: translateX(0); } 100% { transform: translateX(50px); } }
+/* Buissons : touffes verte façon "brush" LoL, cachettes tactiques */
+.arena-brush {
+  position: absolute; z-index: 1; pointer-events: none; border-radius: 50%;
+  background: radial-gradient(circle, rgba(19,137,85,0.38) 0%, rgba(19,137,85,0.12) 55%, transparent 75%);
+  filter: blur(1px);
+}
+.arena-brush.b1 { left: 6%; top: 60%; width: 20%; height: 16%; }
+.arena-brush.b2 { right: 6%; top: 24%; width: 20%; height: 16%; }
+.arena-brush.b3 { left: 42%; top: 8%; width: 16%; height: 12%; }
+/* Cristaux de nexus aux coins : remplace les anciens halos flous par des joyaux hextech */
+.arena-zone {
+  position: absolute; top: 6%; bottom: 6%; width: 20%; pointer-events: none; z-index: 1;
+}
+.arena-zone::before {
+  content: ""; position: absolute; width: 46px; height: 46px;
+  clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
+  animation: hexPulse 2.6s ease-in-out infinite;
+}
+.arena-zone.a-side { left: -6%; background: radial-gradient(circle, rgba(19,137,85,0.30), transparent 70%); }
+.arena-zone.a-side::before { left: 22%; bottom: 14%; background: linear-gradient(180deg, #39FF7A, #138955); box-shadow: 0 0 22px rgba(19,137,85,0.85); }
+.arena-zone.e-side { right: -6%; background: radial-gradient(circle, rgba(228,63,90,0.28), transparent 70%); }
+.arena-zone.e-side::before { right: 22%; top: 14%; background: linear-gradient(180deg, #ff8a8a, var(--hex-red)); box-shadow: 0 0 22px rgba(228,63,90,0.85); }
+@keyframes hexPulse { 0%,100% { transform: scale(1); opacity: .85; } 50% { transform: scale(1.12); opacity: 1; } }
+/* Joyaux dorés hextech aux 4 coins de l'arène, en écho au style du client LoL */
+.arena-corner-gem {
+  position: absolute; z-index: 2; width: 16px; height: 16px; pointer-events: none;
+  background: linear-gradient(135deg, var(--hex-gold-light), var(--hex-gold) 60%, var(--hex-gold-dark));
+  clip-path: polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%);
+  box-shadow: 0 0 10px rgba(200,155,60,0.7);
+}
+.arena-corner-gem.tl { top: 10px; left: 10px; }
+.arena-corner-gem.tr { top: 10px; right: 10px; }
+.arena-corner-gem.bl { bottom: 10px; left: 10px; }
+.arena-corner-gem.br { bottom: 10px; right: 10px; }
 .arena-mid {
   position: absolute; left: 50%; top: 6%; bottom: 6%; width: 2px; transform: translateX(-50%);
   background: linear-gradient(180deg, transparent, rgba(200,155,60,0.35), transparent); pointer-events: none;
@@ -980,6 +1036,14 @@ body::before {
   </div>
   <div class="battle-zone">
     <div class="arena" id="arena">
+      <div class="arena-river"></div>
+      <div class="arena-brush b1"></div>
+      <div class="arena-brush b2"></div>
+      <div class="arena-brush b3"></div>
+      <div class="arena-corner-gem tl"></div>
+      <div class="arena-corner-gem tr"></div>
+      <div class="arena-corner-gem bl"></div>
+      <div class="arena-corner-gem br"></div>
       <div class="arena-zone a-side"></div>
       <div class="arena-zone e-side"></div>
       <div class="arena-mid"></div>
@@ -1064,9 +1128,9 @@ var BASE_CHAMPIONS = {
     hp:850, maxHp:850, atk:95, def:60,
     abilities:[
       {key:"Z",name:"Onde d'Éveil",desc:"Bourrasque d'énergie",dmg:120,cd:3,curCd:0},
-      {key:"X",name:"Chaleur Ancestrale",desc:"Frappe concentrée ×2",dmg:180,cd:5,curCd:0},
+      {key:"X",name:"Chaleur Ancestrale",desc:"Frappe concentrée ×2",dmg:180,cd:6,curCd:0},
       {key:"C",name:"Mur de Pierre",desc:"Soin allié",heal:80,cd:6,curCd:0},
-      {key:"R",name:"Cinq Pierres",desc:"Explosion massive",dmg:280,cd:12,curCd:0}
+      {key:"R",name:"Cinq Pierres",desc:"Explosion massive",dmg:280,cd:16,curCd:0}
     ]
   },
   KAREN:{
@@ -1074,10 +1138,10 @@ var BASE_CHAMPIONS = {
     roleColor:"#0a1a3a", roleText:"#378ADD", img:"KarenKeïta.png",
     hp:680, maxHp:680, atk:55, def:80,
     abilities:[
-      {key:"Z",name:"Main Tranquille",desc:"Soin allié",heal:120,cd:4,curCd:0},
+      {key:"Z",name:"Main Tranquille",desc:"Soin allié",heal:120,cd:5,curCd:0},
       {key:"X",name:"Regard Absolu",desc:"Ralentit l'ennemi",dmg:60,cd:5,curCd:0},
       {key:"C",name:"Présence Apaisante",desc:"Soin de zone",heal:80,cd:7,curCd:0},
-      {key:"R",name:"Veille de Nuit",desc:"Soin d'équipe",heal:200,cd:14,curCd:0}
+      {key:"R",name:"Veille de Nuit",desc:"Soin d'équipe",heal:200,cd:18,curCd:0}
     ]
   },
   FULGENCE:{
@@ -1086,9 +1150,9 @@ var BASE_CHAMPIONS = {
     hp:1200, maxHp:1200, atk:70, def:120,
     abilities:[
       {key:"Z",name:"Corps Interposé",desc:"Aura défensive",heal:60,cd:5,curCd:0},
-      {key:"X",name:"Grip de Marcory",desc:"Frappe immobilisante",dmg:90,cd:4,curCd:0},
+      {key:"X",name:"Grip de Marcory",desc:"Frappe immobilisante",dmg:90,cd:5,curCd:0},
       {key:"C",name:"Présence Constante",desc:"Soin soutien",heal:60,cd:7,curCd:0},
-      {key:"R",name:"Imperturbable",desc:"Frappe de zone",dmg:200,cd:15,curCd:0}
+      {key:"R",name:"Imperturbable",desc:"Frappe de zone",dmg:200,cd:19,curCd:0}
     ]
   },
   BABA:{
@@ -1097,9 +1161,9 @@ var BASE_CHAMPIONS = {
     hp:720, maxHp:720, atk:130, def:45,
     abilities:[
       {key:"Z",name:"Mot qui Blesse",desc:"Réduit la défense",dmg:100,cd:3,curCd:0},
-      {key:"X",name:"Sourire de Victoire",desc:"Étourdit et frappe",dmg:160,cd:5,curCd:0},
+      {key:"X",name:"Sourire de Victoire",desc:"Étourdit et frappe",dmg:160,cd:6,curCd:0},
       {key:"C",name:"Lieutenant",desc:"Attaque fantôme",dmg:120,cd:6,curCd:0},
-      {key:"R",name:"Chez Moi Partout",desc:"Téléportation surprise",dmg:300,cd:14,curCd:0}
+      {key:"R",name:"Chez Moi Partout",desc:"Téléportation surprise",dmg:300,cd:18,curCd:0}
     ]
   },
   LUNDGREN:{
@@ -1108,9 +1172,9 @@ var BASE_CHAMPIONS = {
     hp:780, maxHp:780, atk:140, def:55,
     abilities:[
       {key:"Z",name:"Yeux de Glace",desc:"Pétrifie un ennemi",dmg:110,cd:4,curCd:0},
-      {key:"X",name:"Bougainvillier",desc:"Disparaît et frappe",dmg:130,cd:6,curCd:0},
+      {key:"X",name:"Bougainvillier",desc:"Disparaît et frappe",dmg:130,cd:7,curCd:0},
       {key:"C",name:"Pierres en Orbite",desc:"Frappe tous",dmg:90,cd:5,curCd:0},
-      {key:"R",name:"Quand Tu Mourras",desc:"Frappe ultime",dmg:350,cd:16,curCd:0}
+      {key:"R",name:"Quand Tu Mourras",desc:"Frappe ultime",dmg:350,cd:20,curCd:0}
     ]
   },
   DARK:{
@@ -1119,9 +1183,9 @@ var BASE_CHAMPIONS = {
     hp:620, maxHp:620, atk:175, def:35,
     abilities:[
       {key:"Z",name:"Lame d'Ombre",desc:"Lame de magie noire",dmg:120,cd:3,curCd:0},
-      {key:"X",name:"Voile Maudit",desc:"Enveloppe de ténèbres",dmg:145,cd:5,curCd:0},
+      {key:"X",name:"Voile Maudit",desc:"Enveloppe de ténèbres",dmg:145,cd:6,curCd:0},
       {key:"C",name:"Drain d'Âme",desc:"Vole la vie",dmg:100,cd:6,curCd:0},
-      {key:"R",name:"Néant Absolu",desc:"Obscurité engloutit tout",dmg:380,cd:18,curCd:0}
+      {key:"R",name:"Néant Absolu",desc:"Obscurité engloutit tout",dmg:380,cd:22,curCd:0}
     ]
   }
 };
@@ -3212,15 +3276,16 @@ function isMissionAvailable(id){
   return isMissionDone(all[idx-1]);
 }
 function xpForLevel(lvl){return lvl*100;}
-function enemyScaleFactor(missionNum){
+function enemyScaleFactor(missionNum,playerLevel){
   var n=Math.max(0,missionNum-1);
-  // Courbe renforcée côté PV (combats plus longs) mais ATK plus mesuré (moins de burst mortel).
-  // Mission 1  → ×1.80 HP / ×1.05 ATK
-  // Mission 5  → ×2.36 HP / ×1.29 ATK
-  // Mission 10 → ×3.06 HP / ×1.59 ATK
-  // Mission 20 → ×4.46 HP / ×2.19 ATK
-  // Mission 30 → ×5.86 HP / ×2.79 ATK
-  return { hp: 1.8+n*0.14, atk: 1.05+n*0.06 };
+  var lvl=Math.max(0,(playerLevel||1)-1);
+  // Base liée à la mission (progression de la campagne)
+  var missionHp=1.8+n*0.14, missionAtk=1.05+n*0.06;
+  // Multiplicateur additionnel lié au niveau du joueur : plus Tarine monte en niveau,
+  // plus les ennemis (même sur une mission déjà faite) deviennent costauds — évite que
+  // le jeu devienne trivial une fois le personnage bien monté en puissance.
+  var lvlHp=1+lvl*0.09, lvlAtk=1+lvl*0.06;
+  return { hp: missionHp*lvlHp, atk: missionAtk*lvlAtk };
 }
 function showLevelUp(prevLevel,newLevel,hpGain,atkGain,onDone){
   var overlay=document.getElementById("levelup-overlay");
@@ -3531,10 +3596,17 @@ function startCombat(missionId,selectedAllies){
     var c=cloneChamp(k);
     if(c)combat.allyTeam.push(c);
   });
+  // Barres de vie alliées (joueur + IA alliées) rallongées : combats moins expéditifs,
+  // plus de marge pour réagir et repositionner l'équipe.
+  var ALLY_HP_MULT=1.55;
+  combat.allyTeam.forEach(function(c){
+    c.maxHp=Math.round(c.maxHp*ALLY_HP_MULT);
+    c.hp=c.maxHp;
+  });
 
   // Équipe ennemie
   combat.enemyTeam=[];
-  var eScale=enemyScaleFactor(m.num);
+  var eScale=enemyScaleFactor(m.num,save.level);
   var acteInfo=getActeFor(m.id);
   var isBossMission=acteInfo&&acteInfo.missions[acteInfo.missions.length-1].id===m.id;
   var bossAssigned=false;
