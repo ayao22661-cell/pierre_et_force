@@ -393,13 +393,207 @@ body::before {
 .token.enemy .token-lvl { border-color: var(--hex-red); }
 .token.ally .token-lvl, .token.player .token-lvl { border-color: var(--hex-green); }
 
-/* Animations de jetons façon LoL */
-.token.attacking .token-avatar-wrap { animation: tokenAtk .26s ease; }
-@keyframes tokenAtk { 50% { filter: brightness(1.6); transform: scale(1.12); } }
+/* =====================================================
+   === ANIMATIONS DE COMBAT PAR RÔLE & TYPE D'ACTION ===
+   ===================================================== */
+
+/* --- Attaque basique : DUELLISTE (Tarine) — lunge rapide vers l'avant + flash doré --- */
+.token.atk-duelliste .token-avatar-wrap {
+  animation: atkDuelliste .28s cubic-bezier(.2,1.4,.4,1);
+}
+@keyframes atkDuelliste {
+  0%   { transform: translateX(0) scale(1); filter: none; }
+  30%  { transform: translateX(8px) scale(1.08); filter: brightness(1.8) drop-shadow(0 0 10px var(--hex-gold)); }
+  60%  { transform: translateX(14px) scale(1.14); filter: brightness(2) drop-shadow(0 0 16px var(--hex-gold-light)); }
+  100% { transform: translateX(0) scale(1); filter: none; }
+}
+
+/* --- Attaque basique : ASSASSIN (Baba, Dark) — slash diagonal + blur de vitesse --- */
+.token.atk-assassin .token-avatar-wrap {
+  animation: atkAssassin .22s cubic-bezier(.1,1.5,.4,1);
+}
+@keyframes atkAssassin {
+  0%   { transform: translate(0,0) rotate(0deg) scale(1); filter: none; opacity: 1; }
+  20%  { transform: translate(12px,-8px) rotate(-12deg) scale(1.1); filter: brightness(2) drop-shadow(0 0 8px var(--hex-red)); opacity: .85; }
+  50%  { transform: translate(18px,-12px) rotate(-20deg) scale(1.18); filter: brightness(2.5) blur(1px) drop-shadow(0 0 14px var(--hex-red)); opacity: .7; }
+  100% { transform: translate(0,0) rotate(0deg) scale(1); filter: none; opacity: 1; }
+}
+
+/* --- Attaque basique : TANK (Fulgence) — frappe lente et lourde, tremblement --- */
+.token.atk-tank .token-avatar-wrap {
+  animation: atkTank .38s cubic-bezier(.4,0,.2,1);
+}
+@keyframes atkTank {
+  0%   { transform: scale(1) translateY(0); filter: none; }
+  25%  { transform: scale(.92) translateY(3px); filter: none; }
+  55%  { transform: scale(1.18) translateY(-4px); filter: brightness(1.7) drop-shadow(0 0 14px var(--hex-green)); }
+  75%  { transform: scale(1.1) translateY(2px); filter: brightness(1.4); }
+  100% { transform: scale(1) translateY(0); filter: none; }
+}
+
+/* --- Attaque basique : MAGE (Lundgren) — pulsation magique concentrique --- */
+.token.atk-mage .token-avatar-wrap {
+  animation: atkMage .45s ease;
+}
+@keyframes atkMage {
+  0%   { transform: scale(1); filter: none; }
+  20%  { transform: scale(.95); filter: brightness(.8) drop-shadow(0 0 6px var(--hex-magic)); }
+  55%  { transform: scale(1.2); filter: brightness(2) drop-shadow(0 0 20px var(--hex-magic)); }
+  80%  { transform: scale(1.06); filter: brightness(1.3) drop-shadow(0 0 10px var(--hex-magic)); }
+  100% { transform: scale(1); filter: none; }
+}
+
+/* --- Attaque basique : SOUTIEN (Karen) — aura dorée rayonnante --- */
+.token.atk-soutien .token-avatar-wrap {
+  animation: atkSoutien .4s ease;
+}
+@keyframes atkSoutien {
+  0%   { transform: scale(1); filter: none; }
+  40%  { transform: scale(1.15); filter: brightness(1.9) drop-shadow(0 0 18px var(--hex-gold)) drop-shadow(0 0 30px rgba(200,155,60,0.5)); }
+  70%  { transform: scale(1.08); filter: brightness(1.4) drop-shadow(0 0 10px var(--hex-gold)); }
+  100% { transform: scale(1); filter: none; }
+}
+
+/* --- Capacité (cast) générique — garde pour fallback --- */
 .token.casting .token-avatar-wrap { animation: tokenCast .5s ease; }
 @keyframes tokenCast { 0%,100% { filter: none; } 50% { filter: brightness(1.6) drop-shadow(0 0 12px var(--hex-magic)); transform: scale(1.16); } }
-.token.hit .token-avatar-wrap { animation: tokenHit .3s ease; }
-@keyframes tokenHit { 0%,100% { transform: translateX(0); filter: none; } 30% { transform: translateX(-4px); filter: brightness(1.8) drop-shadow(0 0 8px var(--hex-red)); } 60% { transform: translateX(4px); } }
+
+/* --- Cast : ULTIMATE (R) — charge longue, éruption --- */
+.token.casting-ult .token-avatar-wrap {
+  animation: castUlt .6s cubic-bezier(.2,1.6,.3,1);
+}
+@keyframes castUlt {
+  0%   { transform: scale(1); filter: none; }
+  15%  { transform: scale(.88); filter: brightness(.5); }
+  50%  { transform: scale(1.32); filter: brightness(3) drop-shadow(0 0 28px #fff) drop-shadow(0 0 40px var(--hex-gold)); }
+  75%  { transform: scale(1.14); filter: brightness(2) drop-shadow(0 0 16px var(--hex-gold)); }
+  100% { transform: scale(1); filter: none; }
+}
+
+/* --- Cast : SOIN — lueur verte douce --- */
+.token.casting-heal .token-avatar-wrap {
+  animation: castHeal .5s ease;
+}
+@keyframes castHeal {
+  0%,100% { filter: none; transform: scale(1); }
+  50% { filter: brightness(1.5) drop-shadow(0 0 16px var(--hex-green)) drop-shadow(0 0 8px rgba(19,137,85,0.7)); transform: scale(1.12); }
+}
+
+/* --- Réception de coup : choc frontal + flash rouge --- */
+.token.hit .token-avatar-wrap {
+  animation: tokenHit .3s ease;
+}
+@keyframes tokenHit {
+  0%,100% { transform: translateX(0); filter: none; }
+  30%  { transform: translateX(-5px); filter: brightness(2) drop-shadow(0 0 10px var(--hex-red)) saturate(2); }
+  60%  { transform: translateX(4px); filter: brightness(1.5); }
+}
+
+/* --- Réception d'un CRITIQUE — secousse plus violente --- */
+.token.hit-crit .token-avatar-wrap {
+  animation: tokenHitCrit .36s ease;
+}
+@keyframes tokenHitCrit {
+  0%   { transform: translate(0,0) scale(1); filter: none; }
+  20%  { transform: translate(-8px,-3px) scale(.94); filter: brightness(3) drop-shadow(0 0 16px #ff3d3d) saturate(3); }
+  45%  { transform: translate(7px,2px) scale(1.06); filter: brightness(2) drop-shadow(0 0 12px #ff8a3d); }
+  70%  { transform: translate(-4px,0) scale(.98); filter: brightness(1.5); }
+  100% { transform: translate(0,0) scale(1); filter: none; }
+}
+
+/* --- Réception d'un SOIN — rebond vert positif --- */
+.token.hit-heal .token-avatar-wrap {
+  animation: tokenHitHeal .4s ease;
+}
+@keyframes tokenHitHeal {
+  0%,100% { transform: scale(1); filter: none; }
+  40%  { transform: scale(1.1); filter: brightness(1.6) drop-shadow(0 0 14px var(--hex-green)); }
+  70%  { transform: scale(1.04); filter: brightness(1.2) drop-shadow(0 0 6px var(--hex-green)); }
+}
+
+/* ===============================================
+   === FX PROJECTILES & EFFETS SPÉCIAUX CSS ====
+   =============================================== */
+
+/* Slash (DUELLISTE / ASSASSIN) */
+.fx-slash {
+  position: absolute; pointer-events: none; z-index: 48;
+  width: 60px; height: 3px;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.9), transparent);
+  border-radius: 2px;
+  transform-origin: left center;
+  animation: slashAnim .22s ease-out forwards;
+}
+.fx-slash.dark { background: linear-gradient(90deg, transparent, rgba(100,0,200,0.9), rgba(228,63,90,0.6)); }
+@keyframes slashAnim {
+  0%   { opacity: 1; scaleX(0); }
+  40%  { opacity: 1; transform: scaleX(1); }
+  100% { opacity: 0; transform: scaleX(1.2) translateY(-8px); }
+}
+
+/* Onde / projectile magique (MAGE) */
+.fx-orb {
+  position: absolute; pointer-events: none; z-index: 48;
+  width: 14px; height: 14px; border-radius: 50%;
+  background: radial-gradient(circle, #fff 0%, var(--hex-magic) 60%, transparent 100%);
+  box-shadow: 0 0 12px var(--hex-magic), 0 0 24px rgba(10,200,185,0.5);
+  animation: orbFly .35s ease-out forwards;
+}
+@keyframes orbFly {
+  0%   { opacity: 1; transform: translate(-50%,-50%) scale(.4); }
+  60%  { opacity: 1; transform: translate(-50%,-50%) scale(1); }
+  100% { opacity: 0; transform: translate(-50%,-50%) scale(1.8); }
+}
+
+/* Ombres / ténèbres (DARK) */
+.fx-shadow {
+  position: absolute; pointer-events: none; z-index: 48;
+  width: 50px; height: 50px; border-radius: 50%;
+  background: radial-gradient(circle, rgba(80,0,130,0.8) 0%, rgba(228,63,90,0.4) 50%, transparent 80%);
+  animation: shadowBurst .4s ease-out forwards;
+}
+@keyframes shadowBurst {
+  0%   { opacity: 0; transform: translate(-50%,-50%) scale(.2); }
+  30%  { opacity: 1; transform: translate(-50%,-50%) scale(1); }
+  100% { opacity: 0; transform: translate(-50%,-50%) scale(2); }
+}
+
+/* Frappe de pierre (TARINE Cinq Pierres / Ultime) */
+.fx-stone-burst {
+  position: absolute; pointer-events: none; z-index: 48;
+  width: 8px; height: 8px; border-radius: 2px;
+  background: var(--hex-gold); box-shadow: 0 0 8px var(--hex-gold);
+  animation: stoneFly .5s ease-out forwards;
+}
+@keyframes stoneFly {
+  0%   { opacity: 1; transform: translate(-50%,-50%) scale(1); }
+  100% { opacity: 0; transform: translate(var(--tx,30px), var(--ty,-40px)) scale(.3); }
+}
+
+/* Soin pluie de lumière */
+.fx-heal-beam {
+  position: absolute; pointer-events: none; z-index: 48;
+  width: 4px; height: 28px; border-radius: 2px;
+  background: linear-gradient(180deg, rgba(19,137,85,0), var(--hex-green), rgba(19,137,85,0));
+  animation: healBeam .5s ease-out forwards;
+}
+@keyframes healBeam {
+  0%   { opacity: 0; transform: translate(-50%,-50%) scaleY(0); }
+  30%  { opacity: 1; transform: translate(-50%,-50%) scaleY(1); }
+  100% { opacity: 0; transform: translate(-50%,-120%) scaleY(.5); }
+}
+
+/* Impact lourd TANK */
+.fx-shockwave {
+  position: absolute; pointer-events: none; z-index: 47;
+  width: 20px; height: 20px; border-radius: 50%;
+  border: 3px solid var(--hex-green); opacity: .9;
+  animation: shockwave .4s ease-out forwards;
+}
+@keyframes shockwave {
+  0%   { transform: translate(-50%,-50%) scale(.2); opacity: .9; }
+  100% { transform: translate(-50%,-50%) scale(4); opacity: 0; }
+}
 
 .fx-layer { position: absolute; inset: 0; pointer-events: none; z-index: 50; }
 .fx-dmg {
@@ -2651,42 +2845,218 @@ function spawnFxText(x,y,text,isHeal,isCrit){
     haptic(isCrit?[30,20,60]:20);
   }
 }
-function dashAttack(attId,tgtId){
+// Mappe chaque rôle vers sa classe CSS d'animation d'attaque basique
+function roleAtkClass(champ){
+  if(!champ)return"atk-duelliste";
+  var r=(champ.role||"").toUpperCase();
+  if(r==="ASSASSIN")return"atk-assassin";
+  if(r==="TANK")return"atk-tank";
+  if(r==="MAGE")return"atk-mage";
+  if(r==="SOUTIEN")return"atk-soutien";
+  return"atk-duelliste"; // DUELLISTE par défaut
+}
+
+// Spawn FX de slash selon le rôle, entre l'attaquant et la cible
+function spawnRoleFx(attChamp,fx,tx,fy,ty){
+  var layer=document.getElementById("fx-layer");if(!layer)return;
+  var role=(attChamp&&attChamp.role||"").toUpperCase();
+  var mx=(fx+tx)/2, my=(fy+ty)/2; // point médian
+
+  if(role==="DUELLISTE"){
+    // Slash lumineux doré : 2 traits croisés
+    [0,-18,18].forEach(function(angle){
+      var sl=document.createElement("div");
+      sl.className="fx-slash";
+      sl.style.left=mx+"%"; sl.style.top=my+"%";
+      var dx=tx-fx, dy=ty-fy;
+      var baseAngle=Math.atan2(dy,dx)*180/Math.PI+angle;
+      sl.style.transform="translate(-50%,-50%) rotate("+baseAngle+"deg)";
+      layer.appendChild(sl);
+      setTimeout(function(){sl.remove();},260);
+    });
+  } else if(role==="ASSASSIN"){
+    // Slash sombre + traînée rouge-violette
+    var sl=document.createElement("div");
+    sl.className="fx-slash dark";
+    sl.style.left=mx+"%"; sl.style.top=my+"%";
+    var dx=tx-fx,dy=ty-fy;
+    sl.style.transform="translate(-50%,-50%) rotate("+(Math.atan2(dy,dx)*180/Math.PI-45)+"deg)";
+    sl.style.width="80px";
+    layer.appendChild(sl);
+    var sl2=document.createElement("div");
+    sl2.className="fx-slash dark";
+    sl2.style.left=mx+"%"; sl2.style.top=my+"%";
+    sl2.style.transform="translate(-50%,-50%) rotate("+(Math.atan2(dy,dx)*180/Math.PI+45)+"deg)";
+    sl2.style.width="60px";
+    layer.appendChild(sl2);
+    // Nuage d'ombres
+    var sh=document.createElement("div");
+    sh.className="fx-shadow";
+    sh.style.left=tx+"%"; sh.style.top=ty+"%";
+    layer.appendChild(sh);
+    setTimeout(function(){sl.remove();sl2.remove();sh.remove();},420);
+  } else if(role==="TANK"){
+    // Shockwave verte à l'impact
+    var sw=document.createElement("div");
+    sw.className="fx-shockwave";
+    sw.style.left=tx+"%"; sw.style.top=ty+"%";
+    layer.appendChild(sw);
+    setTimeout(function(){sw.remove();},420);
+  } else if(role==="MAGE"){
+    // Orbe magique cyan
+    var orb=document.createElement("div");
+    orb.className="fx-orb";
+    orb.style.left=tx+"%"; orb.style.top=ty+"%";
+    layer.appendChild(orb);
+    setTimeout(function(){orb.remove();},380);
+  } else if(role==="SOUTIEN"){
+    // Rayon de soin doré (même sur attaque — le soutien frappe avec de la lumière)
+    var sl=document.createElement("div");
+    sl.className="fx-slash";
+    sl.style.left=mx+"%"; sl.style.top=my+"%";
+    sl.style.background="linear-gradient(90deg, transparent, rgba(200,155,60,0.95), transparent)";
+    var dx=tx-fx,dy=ty-fy;
+    sl.style.transform="translate(-50%,-50%) rotate("+(Math.atan2(dy,dx)*180/Math.PI)+"deg)";
+    layer.appendChild(sl);
+    setTimeout(function(){sl.remove();},300);
+  }
+}
+
+function dashAttack(attId,tgtId,isCrit){
   var aEl=document.getElementById("fighter-"+attId),tEl=document.getElementById("fighter-"+tgtId);
   var af=combat.fighters[attId],tf=combat.fighters[tgtId];
   if(!af||!tf)return;
   var origX=af.x,origY=af.y;
   var layer=document.getElementById("fx-layer");
   var avatarSrc=aEl?(aEl.querySelector(".token-avatar")||{}).src:null;
-  // Afterimages laissées derrière le dash
+
+  // Identifier le personnage attaquant pour la classe CSS
+  var attChamp=combat.allyTeam.concat(combat.enemyTeam).find(function(c){return c.id===attId;});
+  var atkClass=roleAtkClass(attChamp);
+
+  // Afterimages laissées derrière le dash (toujours présentes)
   if(layer&&avatarSrc){
-    [0.3,0.55,0.8].forEach(function(t){
-      var gx=origX+(tf.x-origX)*0.65*t, gy=origY+(tf.y-origY)*0.65*t;
-      var ghost=document.createElement("img");
-      ghost.src=avatarSrc; ghost.className="fx-trail";
-      ghost.style.left=gx+"%";ghost.style.top=gy+"%";
-      layer.appendChild(ghost);
-      (function(g){setTimeout(function(){g.remove();},320);})(ghost);
-    });
+    var trailCount=(attChamp&&attChamp.role==="ASSASSIN")?4:3;
+    for(var t=0;t<trailCount;t++){
+      (function(ratio){
+        var gx=origX+(tf.x-origX)*0.65*ratio, gy=origY+(tf.y-origY)*0.65*ratio;
+        var ghost=document.createElement("img");
+        ghost.src=avatarSrc; ghost.className="fx-trail";
+        ghost.style.left=gx+"%";ghost.style.top=gy+"%";
+        // Les assassins laissent des traînées plus sombres
+        if(attChamp&&attChamp.role==="ASSASSIN"){
+          ghost.style.filter="hue-rotate(270deg) brightness(0.6)";
+          ghost.style.opacity="0.7";
+        }
+        layer.appendChild(ghost);
+        (function(g){setTimeout(function(){g.remove();},320);})(ghost);
+      })(0.25+(t*0.25));
+    }
   }
+
+  // Déplacement dash
   af.x=clamp(origX+(tf.x-origX)*0.65,ARENA_X_MIN,ARENA_X_MAX);
   af.y=clamp(origY+(tf.y-origY)*0.65,ARENA_Y_MIN,ARENA_Y_MAX);
   updateFighterPos(attId);
-  if(aEl)aEl.classList.add("attacking");
+
+  // Animation token rôle-spécifique
+  if(aEl){
+    aEl.classList.add(atkClass);
+    setTimeout(function(){aEl.classList.remove(atkClass);},380);
+  }
+
+  // FX à l'impact sur la cible (timing légèrement décalé = lisibilité)
+  setTimeout(function(){
+    spawnRoleFx(attChamp, origX, tf.x, origY, tf.y);
+    // Animation de réception sur la cible
+    if(tEl){
+      var hitClass=isCrit?"hit-crit":"hit";
+      tEl.classList.add(hitClass);
+      setTimeout(function(){tEl.classList.remove(hitClass);},380);
+    }
+  },140);
+
+  // Retour à la position d'origine
   setTimeout(function(){
     af.x=origX;af.y=origY;updateFighterPos(attId);
-    if(aEl)aEl.classList.remove("attacking");
-  },260);
-  setTimeout(function(){
-    if(tEl){tEl.classList.add("hit");setTimeout(function(){tEl.classList.remove("hit");},300);}
-  },150);
+  },280);
 }
-function castFx(id){
+function castFx(id, abilityKey, isHeal, isUlt){
   var el=document.getElementById("fighter-"+id);if(!el)return;
   var f=combat.fighters[id];
+  var layer=document.getElementById("fx-layer");
+  var champ=combat.allyTeam.concat(combat.enemyTeam).find(function(c){return c.id===id;});
+  var role=(champ&&champ.role||"").toUpperCase();
+
   if(f)spawnCastRing(f.x,f.y);
-  el.classList.add("casting");setTimeout(function(){el.classList.remove("casting");},500);
-  haptic(15);
+
+  // Choisir la classe CSS selon type
+  var castClass="casting";
+  if(isUlt||abilityKey==="R"){castClass="casting-ult";haptic([10,30,80,30,10]);}
+  else if(isHeal){castClass="casting-heal";haptic(15);}
+  else{haptic(20);}
+
+  el.classList.add(castClass);
+  setTimeout(function(){el.classList.remove(castClass);},600);
+
+  if(!f||!layer)return;
+
+  // FX spéciaux selon rôle + capacité
+  if(role==="MAGE"){
+    // 3 orbes en éventail pour Lundgren
+    [-15,0,15].forEach(function(off){
+      var orb=document.createElement("div");
+      orb.className="fx-orb";
+      orb.style.left=(f.x+off*0.3)+"%"; orb.style.top=(f.y-4)+"%";
+      layer.appendChild(orb);
+      setTimeout(function(){orb.remove();},400);
+    });
+  } else if(role==="DUELLISTE"&&(abilityKey==="R"||isUlt)){
+    // Cinq pierres : 5 éclats
+    for(var i=0;i<5;i++){
+      (function(idx){
+        var stone=document.createElement("div");
+        stone.className="fx-stone-burst";
+        stone.style.left=f.x+"%"; stone.style.top=f.y+"%";
+        var angle=idx*(360/5);
+        var tx=Math.cos(angle*Math.PI/180)*28;
+        var ty=Math.sin(angle*Math.PI/180)*28;
+        stone.style.setProperty("--tx",tx+"px");
+        stone.style.setProperty("--ty",ty+"px");
+        layer.appendChild(stone);
+        setTimeout(function(){stone.remove();},540);
+      })(i);
+    }
+  } else if(role==="ASSASSIN"){
+    // Dark / Baba : explosion d'ombres
+    var sh=document.createElement("div");
+    sh.className="fx-shadow";
+    sh.style.left=f.x+"%"; sh.style.top=f.y+"%";
+    sh.style.width="70px"; sh.style.height="70px";
+    layer.appendChild(sh);
+    setTimeout(function(){sh.remove();},420);
+  } else if(isHeal||role==="SOUTIEN"){
+    // Rayons de soin verticaux
+    [-8,0,8].forEach(function(ox){
+      var beam=document.createElement("div");
+      beam.className="fx-heal-beam";
+      beam.style.left=(f.x+ox*0.2)+"%"; beam.style.top=f.y+"%";
+      layer.appendChild(beam);
+      setTimeout(function(){beam.remove();},520);
+    });
+  } else if(role==="TANK"&&isUlt){
+    // Imperturbable : deux shockwaves consécutives
+    [0,160].forEach(function(delay){
+      setTimeout(function(){
+        var sw=document.createElement("div");
+        sw.className="fx-shockwave";
+        sw.style.left=f.x+"%"; sw.style.top=f.y+"%";
+        sw.style.width="24px"; sw.style.height="24px";
+        layer.appendChild(sw);
+        setTimeout(function(){sw.remove();},420);
+      },delay);
+    });
+  }
 }
 function initArenaPositions(){
   var allyPos=[[16,50],[11,28],[11,72]];
@@ -3277,7 +3647,7 @@ function bossTelegraphAttack(boss,ab,allyAlive){
     if(!combat.fighters[tgt.id]||combat.fighters[tgt.id].dead)return;
     var stillThere=distPct(combat.fighters[tgt.id],{x:lockX,y:lockY})<14;
     var dmg=Math.max(10,Math.round(ab.dmg*(0.9+Math.random()*0.2)*(stillThere?1:0.4)));
-    castFx(boss.id);
+    castFx(boss.id, "R", false, true);
     attackWithDodge(tgt.id,dmg,false,stillThere,boss.level);
     addLog(stillThere?
       "<span class='you'>"+tgt.name+"</span> est frappé de plein fouet — <span class='dmg'>-"+dmg+" PV</span>":
@@ -3311,16 +3681,16 @@ function enemyAct(att,allyAlive){
   if(ab){
     ab.curCd=ab.cd;
     var dmg=Math.max(8,Math.floor(ab.dmg*(0.9+Math.random()*0.3)*(eCrit?1.6:1)));
-    castFx(att.id);
+    castFx(att.id, ab.key, !!ab.heal, ab.key==="R");
     setNarration(att.name.toUpperCase(),"<em>"+ab.name+"</em> — "+ab.desc+".");
     attackWithDodge(tgt.id,dmg,false,eCrit,att.level);
     addLog("<span class='cname'>"+att.name+"</span> utilise <em>"+ab.name+"</em> sur <span class='you'>"+tgt.name+"</span>.");
-    dashAttack(att.id,tgt.id);
+    dashAttack(att.id,tgt.id,eCrit);
   }else{
     var dmg=Math.max(5,Math.floor((att.atk*(0.7+Math.random()*0.6)-(tgt.def||40)*0.3)*(eCrit?1.6:1)));
     attackWithDodge(tgt.id,dmg,false,eCrit,att.level);
     addLog(pick(NARR_ENEMY)(att.name,tgt.name,dmg));
-    dashAttack(att.id,tgt.id);
+    dashAttack(att.id,tgt.id,eCrit);
   }
 }
 
@@ -3350,7 +3720,7 @@ function iaAllyAction(){
   var dmg=Math.max(5,Math.floor(att.atk*(0.6+Math.random()*0.5)*(aCrit?1.6:1)));
   attackWithDodge(tgt.id,dmg,true,aCrit,save.level);
   addLog(pick(NARR_ALLY)(att.name,tgt.name,dmg));
-  dashAttack(att.id,tgt.id);
+  dashAttack(att.id,tgt.id,aCrit);
 }
 
 // ===== CONTRÔLES : CLAVIER =====
@@ -3409,7 +3779,7 @@ function playerBasicAttack(targetId){
   var dmg=Math.max(5,Math.floor(player.atk*(0.40+Math.random()*0.22)*(isCrit?1.65:1)));  // légèrement réduit
   var landed=attackWithDodge(tgt.id,dmg,true,isCrit,save.level);
   if(landed)addLog("<span class='you'>Tu</span> frappes <span class='cname'>"+tgt.name+"</span>"+(isCrit?" <b style='color:#ff8a3d'>(CRITIQUE)</b>":"")+" — <span class='dmg'>-"+dmg+" PV</span>");
-  dashAttack(player.id,tgt.id);
+  dashAttack(player.id,tgt.id,isCrit);
   checkGameEnd();
 }
 
@@ -3430,8 +3800,8 @@ function useAbility(idx){
     attackWithDodge(tgt.id,dmg,true,abCrit,save.level);
     setNarration(player.name.toUpperCase(),"<em>"+ab.name+"</em> — "+ab.desc+". <span class='dmg'>-"+dmg+" PV</span> sur <span class='cname'>"+tgt.name+"</span>.");
     addLog("<span class='you'>Tu</span> utilises <span class='cname'>"+ab.name+"</span> sur <span class='cname'>"+tgt.name+"</span> — <span class='dmg'>-"+dmg+" PV</span>");
-    castFx(player.id);
-    dashAttack(player.id,tgt.id);
+    castFx(player.id, ab.key, false, ab.key==="R");
+    dashAttack(player.id,tgt.id,abCrit);
   }
   if(ab.heal){
     ab.curCd=ab.cd;
@@ -3439,7 +3809,7 @@ function useAbility(idx){
     healFighter(htgt.id,ab.heal);
     setNarration(player.name.toUpperCase(),"<em>"+ab.name+"</em> — "+ab.desc+". <span class='heal'>+"+ab.heal+" PV</span> pour <span class='cname'>"+htgt.name+"</span>.");
     addLog(pick(NARR_HEAL)(player.name,ab.heal));
-    castFx(player.id);
+    castFx(player.id, ab.key, true, ab.key==="R");
   }
   renderAbilityButtons();
   checkGameEnd();
@@ -3467,6 +3837,9 @@ function healFighter(id,val){
   var f=combat.fighters[id];if(!f||f.dead)return;
   f.hp=Math.min(f.maxHp,f.hp+val);
   spawnFxText(f.x,f.y,"+"+val,true);
+  // Animation de soin sur le token cible
+  var el=document.getElementById("fighter-"+id);
+  if(el){el.classList.add("hit-heal");setTimeout(function(){el.classList.remove("hit-heal");},420);}
   updateFighterHp(id);
 }
 
