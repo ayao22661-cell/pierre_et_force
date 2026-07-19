@@ -181,6 +181,15 @@ body::before {
 .hub-titre { color: var(--hex-gold-light); font-size: 18px; }
 .hub-acte { color: var(--hex-text); letter-spacing: 2px; font-size: 12px; }
 
+/* ===== SYSTÈME DE VIES (ÉNERGIE) ===== */
+.lives-box { display: flex; flex-direction: column; align-items: flex-end; gap: 4px; }
+.lives-display { display: flex; gap: 4px; font-size: 16px; line-height: 1; }
+.life-heart { color: var(--hex-red); text-shadow: 0 0 6px rgba(228,63,90,0.6); }
+.life-heart.empty { color: var(--hex-border); text-shadow: none; opacity: 0.5; }
+.lives-timer { font-size: 10px; color: var(--hex-text); letter-spacing: 1px; min-height: 12px; }
+.btn:disabled, .btn[disabled] { opacity: 0.35; filter: grayscale(1); cursor: not-allowed; transform: none !important; box-shadow: none !important; }
+.no-lives-msg { font-size: 12px; color: var(--hex-red); text-align: center; margin-top: 8px; letter-spacing: 0.5px; }
+
 /* Cartes de Mission / Déploiement */
 .mission-card, .deploy-card {
   background: linear-gradient(135deg, rgba(30,40,60,0.55), var(--hex-panel));
@@ -861,7 +870,11 @@ body::before {
       <div class="hub-acte" id="hub-acte-label">ACTE I</div>
       <div class="hub-titre" id="hub-acte-titre">LA VIE D'AVANT</div>
     </div>
-    <div style="font-size:10px;color:var(--muted);letter-spacing:2px">MARCORY · ABIDJAN</div>
+    <div class="lives-box">
+      <div style="font-size:10px;color:var(--muted);letter-spacing:2px;text-align:right;margin-bottom:2px">MARCORY · ABIDJAN</div>
+      <div class="lives-display"></div>
+      <div class="lives-timer"></div>
+    </div>
   </div>
   <div class="hub-body">
     <div class="hub-panel active" id="panel-missions" data-panel="missions">
@@ -913,7 +926,11 @@ body::before {
       <div class="deploy-title">DÉPLOIEMENT</div>
       <div class="deploy-mission" id="deploy-mission-name">Mission 1</div>
     </div>
-    <button class="btn btn-sm" onclick="goTo('screen-hub')">← RETOUR</button>
+    <div class="lives-box">
+      <div class="lives-display"></div>
+      <div class="lives-timer"></div>
+      <button class="btn btn-sm" onclick="goTo('screen-hub')" style="margin-top:6px">← RETOUR</button>
+    </div>
   </div>
   <div class="deploy-body">
     <div class="deploy-allies">
@@ -934,6 +951,7 @@ body::before {
   <div class="deploy-footer">
     <div class="team-preview" id="deploy-team-preview">Équipe : <span>Tarine</span></div>
     <button class="btn" id="btn-launch">ENTRER EN COMBAT</button>
+    <div class="no-lives-msg" id="no-lives-msg" style="display:none">Plus de vies — attends la régénération pour repartir en mission.</div>
   </div>
 </div>
 
@@ -2699,6 +2717,13 @@ var CAMPAIGN = [
 ];
 
 // ===== ÉTAT DU JEU =====
+// ---- Système de vies (énergie) : limite le nombre de missions jouables sur une période ----
+// Ajuste ces deux valeurs pour changer le rythme : nombre de vies max et minutes pour regagner 1 vie.
+// Ex: LIFE_REGEN_MINUTES=1 → régénération à la minute (test) ; 60 → une vie par heure.
+var LIFE_MAX=5;
+var LIFE_REGEN_MINUTES=20;
+var LIFE_REGEN_MS=LIFE_REGEN_MINUTES*60*1000;
+
 function defaultSave(){
   return{
     version:2,
@@ -2708,7 +2733,10 @@ function defaultSave(){
     allies_unlocked:["KAREN","FULGENCE"],
     journal:[],
     hp_bonus:0,atk_bonus:0,
-    current_mission:null
+    current_mission:null,
+    lives:LIFE_MAX,
+    lives_max:LIFE_MAX,
+    next_life_ts:null
   };
 }
 
@@ -2725,6 +2753,63 @@ function writeSave(d){
 }
 
 var save=loadSave();
+
+// ===== GESTION DES VIES (ÉNERGIE) =====
+// Recalcule save.lives en fonction du temps écoulé depuis la dernière régénération connue.
+// Fonctionne même si le joueur a fermé le jeu (basé sur un timestamp, pas sur un minuteur actif).
+function syncLives(){
+  if(save.lives===undefined||save.lives===null)save.lives=LIFE_MAX;
+  if(!save.lives_max)save.lives_max=LIFE_MAX;
+  if(save.lives<save.lives_max){
+    if(!save.next_life_ts)save.next_life_ts=Date.now()+LIFE_REGEN_MS;
+    var now=Date.now();
+    var changed=false;
+    while(save.next_life_ts&&now>=save.next_life_ts&&save.lives<save.lives_max){
+      save.lives++;
+      save.next_life_ts+=LIFE_REGEN_MS;
+      changed=true;
+    }
+    if(save.lives>=save.lives_max)save.next_life_ts=null;
+    if(changed)writeSave(save);
+  }else{
+    save.next_life_ts=null;
+  }
+}
+
+function consumeLife(){
+  syncLives();
+  if(save.lives<=0)return false;
+  save.lives--;
+  if(!save.next_life_ts)save.next_life_ts=Date.now()+LIFE_REGEN_MS;
+  writeSave(save);
+  return true;
+}
+
+function formatCountdown(ms){
+  if(ms<=0)return"00:00";
+  var totalSec=Math.ceil(ms/1000);
+  var m=Math.floor(totalSec/60),s=totalSec%60;
+  return String(m).padStart(2,"0")+":"+String(s).padStart(2,"0");
+}
+
+function updateLivesUI(){
+  syncLives();
+  var hearts="";
+  for(var i=0;i<save.lives_max;i++){
+    hearts+='<span class="life-heart'+(i<save.lives?"":" empty")+'">♥</span>';
+  }
+  document.querySelectorAll(".lives-display").forEach(function(el){el.innerHTML=hearts;});
+  var timerTxt=(save.lives<save.lives_max&&save.next_life_ts)?
+    "Prochaine vie : "+formatCountdown(save.next_life_ts-Date.now()):"";
+  document.querySelectorAll(".lives-timer").forEach(function(el){el.textContent=timerTxt;});
+  var launchBtn=document.getElementById("btn-launch");
+  var noLivesMsg=document.getElementById("no-lives-msg");
+  if(launchBtn&&document.getElementById("screen-deploy").classList.contains("active")){
+    launchBtn.disabled=save.lives<=0;
+    if(noLivesMsg)noLivesMsg.style.display=save.lives<=0?"block":"none";
+  }
+}
+setInterval(updateLivesUI,1000);
 
 // État de combat
 var combat={
@@ -3129,12 +3214,14 @@ function isMissionAvailable(id){
 function xpForLevel(lvl){return lvl*100;}
 function enemyScaleFactor(missionNum){
   var n=Math.max(0,missionNum-1);
-  // Courbe douce et progressive : ressentie dès la mission 5, conséquente à partir de la mission 15
-  // Mission 5  → ×1.28 HP / ×1.22 ATK
-  // Mission 10 → ×1.63 HP / ×1.50 ATK
-  // Mission 20 → ×2.33 HP / ×2.05 ATK
-  // Mission 30 → ×3.03 HP / ×2.60 ATK
-  return { hp: 1+n*0.07, atk: 1+n*0.055 };
+  // Courbe renforcée : un socle plus haut dès la mission 1 + progression plus marquée.
+  // Objectif : des combats qui durent plusieurs minutes, pas quelques secondes.
+  // Mission 1  → ×1.80 HP / ×1.15 ATK
+  // Mission 5  → ×2.36 HP / ×1.51 ATK
+  // Mission 10 → ×3.06 HP / ×1.96 ATK
+  // Mission 20 → ×4.46 HP / ×2.86 ATK
+  // Mission 30 → ×5.86 HP / ×3.76 ATK
+  return { hp: 1.8+n*0.14, atk: 1.15+n*0.09 };
 }
 function showLevelUp(prevLevel,newLevel,hpGain,atkGain,onDone){
   var overlay=document.getElementById("levelup-overlay");
@@ -3238,6 +3325,7 @@ function showNarration(lines,callback,chapterLabel){
 
 // ===== HUB =====
 function buildHub(){
+  updateLivesUI();
   // Update header
   var currentActe=null;
   var lastDone=save.missions_done[save.missions_done.length-1];
@@ -3391,6 +3479,7 @@ function openDeploy(missionId){
 
   updateDeployFooter();
   goTo("screen-deploy");
+  updateLivesUI();
 }
 
 function toggleDeploy(key,card){
@@ -3415,6 +3504,12 @@ function updateDeployFooter(){
 
 document.getElementById("btn-launch").addEventListener("click",function(){
   if(!currentDeployMission)return;
+  if(!consumeLife()){
+    updateLivesUI();
+    toast("Plus de vies — reviens plus tard !");
+    return;
+  }
+  updateLivesUI();
   var m=currentDeployMission;
   showNarration(m.narr_avant,function(){startCombat(m.id,deploySelected);},m.num+". "+m.name);
 });
@@ -3518,8 +3613,10 @@ function gameTick(){
     c.abilities.forEach(function(a){if(a.curCd>0)a.curCd--;});
   });
   renderAbilityButtons();
-  // Ennemis agissent toutes les ~2s, alliés toutes les ~4s — pression constante mais lisible
+  // Ennemis agissent toutes les ~2s, alliés toutes les ~4s — pression de base.
+  // + une chance d'action supplémentaire hors cadence pour casser le rythme prévisible.
   if(tickCount%2===0)iaEnemyAction();
+  else if(Math.random()<0.22)iaEnemyAction();
   if(tickCount%4===0)iaAllyAction();
   checkGameEnd();
 }
@@ -3546,9 +3643,9 @@ function gameLoop(ts){
 
 function enemyAbilityChance(){
   var num=combat.mission?combat.mission.num:1;
-  // Montée progressive : 20% mission 1 → 55% mission 30
+  // Montée progressive : 28% mission 1 → 68% mission 30
   // Ennemis utilisent leurs capacités de plus en plus souvent au fil des actes
-  return Math.min(0.55,0.20+num*0.012);
+  return Math.min(0.68,0.28+num*0.0135);
 }
 
 function findChampById(id){
@@ -3655,11 +3752,11 @@ function bossTelegraphAttack(boss,ab,allyAlive){
   },900);
 }
 
-function enemyAct(att,allyAlive){
+function enemyAct(att,allyAlive,forcedTarget){
   var fa=combat.fighters[att.id];
   if(!fa||fa.dead)return;
   checkBossEnrage(att.isBoss?att:null);
-  var tgt=pick(allyAlive);
+  var tgt=forcedTarget||pick(allyAlive);
   var ft=combat.fighters[tgt.id];
   if(!ft)return;
 
@@ -3680,14 +3777,15 @@ function enemyAct(att,allyAlive){
   var eCrit=Math.random()<0.15;
   if(ab){
     ab.curCd=ab.cd;
-    var dmg=Math.max(8,Math.floor(ab.dmg*(0.9+Math.random()*0.3)*(eCrit?1.6:1)));
+    var dmg=Math.max(8,Math.floor(ab.dmg*(0.85+Math.random()*0.45)*(eCrit?1.6:1)));
     castFx(att.id, ab.key, !!ab.heal, ab.key==="R");
     setNarration(att.name.toUpperCase(),"<em>"+ab.name+"</em> — "+ab.desc+".");
     attackWithDodge(tgt.id,dmg,false,eCrit,att.level);
     addLog("<span class='cname'>"+att.name+"</span> utilise <em>"+ab.name+"</em> sur <span class='you'>"+tgt.name+"</span>.");
     dashAttack(att.id,tgt.id,eCrit);
   }else{
-    var dmg=Math.max(5,Math.floor((att.atk*(0.7+Math.random()*0.6)-(tgt.def||40)*0.3)*(eCrit?1.6:1)));
+    // Variance élargie (0.55–1.45 au lieu de 0.7–1.3) : les coups sont moins prévisibles en intensité
+    var dmg=Math.max(5,Math.floor((att.atk*(0.55+Math.random()*0.9)-(tgt.def||40)*0.3)*(eCrit?1.6:1)));
     attackWithDodge(tgt.id,dmg,false,eCrit,att.level);
     addLog(pick(NARR_ENEMY)(att.name,tgt.name,dmg));
     dashAttack(att.id,tgt.id,eCrit);
@@ -3706,7 +3804,17 @@ function iaEnemyAction(){
   var soldiers=alive.filter(function(c){return !c.isBoss;});
   var activeCount=soldiers.length<=3?1:Math.ceil(soldiers.length/2);
   var shuffled=soldiers.slice().sort(function(){return Math.random()-0.5;});
-  shuffled.slice(0,activeCount).forEach(function(att){enemyAct(att,allyAlive);});
+  // Salve surprise : ~28% du temps, les soldats actifs concentrent leurs coups sur l'allié
+  // le plus affaibli au lieu de cibler au hasard — pic de danger imprévisible pour le joueur.
+  var focusFire=activeCount>1&&Math.random()<0.28;
+  var focusTarget=null;
+  if(focusFire){
+    focusTarget=allyAlive.slice().sort(function(a,b){
+      var fa=combat.fighters[a.id],fb=combat.fighters[b.id];
+      return (fa.hp/fa.maxHp)-(fb.hp/fb.maxHp);
+    })[0];
+  }
+  shuffled.slice(0,activeCount).forEach(function(att){enemyAct(att,allyAlive,focusTarget);});
 }
 
 function iaAllyAction(){
@@ -3717,7 +3825,7 @@ function iaAllyAction(){
   var fa=combat.fighters[att.id],ft=combat.fighters[tgt.id];
   if(distPct(fa,ft)>ATTACK_RANGE){moveToward(fa,ft,11);updateFighterPos(att.id);return;}
   var aCrit=Math.random()<0.15;
-  var dmg=Math.max(5,Math.floor(att.atk*(0.6+Math.random()*0.5)*(aCrit?1.6:1)));
+  var dmg=Math.max(5,Math.floor((att.atk*(0.6+Math.random()*0.5)-(tgt.def||0)*0.22)*(aCrit?1.6:1)));
   attackWithDodge(tgt.id,dmg,true,aCrit,save.level);
   addLog(pick(NARR_ALLY)(att.name,tgt.name,dmg));
   dashAttack(att.id,tgt.id,aCrit);
@@ -3776,7 +3884,7 @@ function playerBasicAttack(targetId){
   if(distPct(fp,combat.fighters[tgt.id])>ATTACK_RANGE){toast("Trop loin — rapproche-toi !");return;}
   combat.playerAtkCd=0.70;  // 0.55s → 0.70s : attaque fluide mais plus mesurée
   var isCrit=Math.random()<0.15;  // 18% → 15%
-  var dmg=Math.max(5,Math.floor(player.atk*(0.40+Math.random()*0.22)*(isCrit?1.65:1)));  // légèrement réduit
+  var dmg=Math.max(5,Math.floor((player.atk*(0.40+Math.random()*0.22)-(tgt.def||0)*0.22)*(isCrit?1.65:1)));  // la défense ennemie mitige désormais les dégâts
   var landed=attackWithDodge(tgt.id,dmg,true,isCrit,save.level);
   if(landed)addLog("<span class='you'>Tu</span> frappes <span class='cname'>"+tgt.name+"</span>"+(isCrit?" <b style='color:#ff8a3d'>(CRITIQUE)</b>":"")+" — <span class='dmg'>-"+dmg+" PV</span>");
   dashAttack(player.id,tgt.id,isCrit);
@@ -3796,7 +3904,7 @@ function useAbility(idx){
     if(!tgt){toast("Hors de portée — rapproche-toi !");return;}
     ab.curCd=ab.cd;
     var abCrit=Math.random()<0.22;
-    var dmg=Math.max(8,Math.floor(ab.dmg*(0.9+Math.random()*0.3)*(abCrit?1.6:1)));
+    var dmg=Math.max(8,Math.floor((ab.dmg*(0.9+Math.random()*0.3)-(tgt.def||0)*0.12)*(abCrit?1.6:1)));
     attackWithDodge(tgt.id,dmg,true,abCrit,save.level);
     setNarration(player.name.toUpperCase(),"<em>"+ab.name+"</em> — "+ab.desc+". <span class='dmg'>-"+dmg+" PV</span> sur <span class='cname'>"+tgt.name+"</span>.");
     addLog("<span class='you'>Tu</span> utilises <span class='cname'>"+ab.name+"</span> sur <span class='cname'>"+tgt.name+"</span> — <span class='dmg'>-"+dmg+" PV</span>");
