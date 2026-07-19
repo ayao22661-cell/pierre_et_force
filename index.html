@@ -2759,7 +2759,12 @@ function isMissionAvailable(id){
 function xpForLevel(lvl){return lvl*100;}
 function enemyScaleFactor(missionNum){
   var n=Math.max(0,missionNum-1);
-  return { hp: 1+n*0.055, atk: 1+n*0.045 };
+  // Courbe douce et progressive : ressentie dès la mission 5, conséquente à partir de la mission 15
+  // Mission 5  → ×1.28 HP / ×1.22 ATK
+  // Mission 10 → ×1.63 HP / ×1.50 ATK
+  // Mission 20 → ×2.33 HP / ×2.05 ATK
+  // Mission 30 → ×3.03 HP / ×2.60 ATK
+  return { hp: 1+n*0.07, atk: 1+n*0.055 };
 }
 function showLevelUp(prevLevel,newLevel,hpGain,atkGain,onDone){
   var overlay=document.getElementById("levelup-overlay");
@@ -3096,11 +3101,11 @@ function startCombat(missionId,selectedAllies){
       c.id=c.id+"_extra"+i;
       c.name=c.name+" (Ombre)";
       c.level=m.num;
-      c.hp=Math.round(c.maxHp*0.5*eScale.hp);c.maxHp=c.hp;
-      c.atk=Math.round(c.atk*0.6*eScale.atk);
+      c.hp=Math.round(c.maxHp*0.65*eScale.hp);c.maxHp=c.hp;
+      c.atk=Math.round(c.atk*0.70*eScale.atk);
       c.abilities.forEach(function(a){
-        if(a.dmg)a.dmg=Math.round(a.dmg*0.6*eScale.atk);
-        if(a.heal)a.heal=Math.round(a.heal*0.5*eScale.hp);
+        if(a.dmg)a.dmg=Math.round(a.dmg*0.70*eScale.atk);
+        if(a.heal)a.heal=Math.round(a.heal*0.65*eScale.hp);
       });
       combat.enemyTeam.push(c);
     }
@@ -3143,7 +3148,8 @@ function gameTick(){
     c.abilities.forEach(function(a){if(a.curCd>0)a.curCd--;});
   });
   renderAbilityButtons();
-  if(tickCount%3===0)iaEnemyAction();
+  // Ennemis agissent toutes les ~2s, alliés toutes les ~4s — pression constante mais lisible
+  if(tickCount%2===0)iaEnemyAction();
   if(tickCount%4===0)iaAllyAction();
   checkGameEnd();
 }
@@ -3170,7 +3176,9 @@ function gameLoop(ts){
 
 function enemyAbilityChance(){
   var num=combat.mission?combat.mission.num:1;
-  return Math.min(0.55,0.18+num*0.007);
+  // Montée progressive : 20% mission 1 → 55% mission 30
+  // Ennemis utilisent leurs capacités de plus en plus souvent au fil des actes
+  return Math.min(0.55,0.20+num*0.012);
 }
 
 function findChampById(id){
@@ -3321,9 +3329,14 @@ function iaEnemyAction(){
   var allyAlive=combat.allyTeam.filter(aliveFilter);
   if(!alive.length||!allyAlive.length)return;
   var boss=alive.find(function(c){return c.isBoss;});
+  // Le boss agit toujours
   if(boss)enemyAct(boss,allyAlive);
-  var att=pick(alive);
-  if(!boss||att.id!==boss.id)enemyAct(att,allyAlive);
+  // Parmi les soldats : en early (≤3 ennemis) 1 agit, en late (4+) la moitié agit
+  // → pression qui monte naturellement avec le nombre d'ennemis sans submerger le joueur
+  var soldiers=alive.filter(function(c){return !c.isBoss;});
+  var activeCount=soldiers.length<=3?1:Math.ceil(soldiers.length/2);
+  var shuffled=soldiers.slice().sort(function(){return Math.random()-0.5;});
+  shuffled.slice(0,activeCount).forEach(function(att){enemyAct(att,allyAlive);});
 }
 
 function iaAllyAction(){
@@ -3391,9 +3404,9 @@ function playerBasicAttack(targetId){
   if(!tgt)tgt=nearestInRange(fp,enemies,ATTACK_RANGE);
   if(!tgt){toast("Trop loin — rapproche-toi !");return;}
   if(distPct(fp,combat.fighters[tgt.id])>ATTACK_RANGE){toast("Trop loin — rapproche-toi !");return;}
-  combat.playerAtkCd=0.55;
-  var isCrit=Math.random()<0.18;
-  var dmg=Math.max(6,Math.floor(player.atk*(0.45+Math.random()*0.25)*(isCrit?1.7:1)));
+  combat.playerAtkCd=0.70;  // 0.55s → 0.70s : attaque fluide mais plus mesurée
+  var isCrit=Math.random()<0.15;  // 18% → 15%
+  var dmg=Math.max(5,Math.floor(player.atk*(0.40+Math.random()*0.22)*(isCrit?1.65:1)));  // légèrement réduit
   var landed=attackWithDodge(tgt.id,dmg,true,isCrit,save.level);
   if(landed)addLog("<span class='you'>Tu</span> frappes <span class='cname'>"+tgt.name+"</span>"+(isCrit?" <b style='color:#ff8a3d'>(CRITIQUE)</b>":"")+" — <span class='dmg'>-"+dmg+" PV</span>");
   dashAttack(player.id,tgt.id);
@@ -3443,8 +3456,8 @@ function dealDamage(id,dmg,isAlly,isCrit){
     if(isAlly){combat.allyKills++;document.getElementById("score-ally").textContent=combat.allyKills;}
     else{combat.enemyKills++;document.getElementById("score-enemy").textContent=combat.enemyKills;}
     addLog("<span class='cname'>"+(c?c.name:id)+"</span> est éliminé.");
-    if(!isAlly){combat.nexusHp=Math.max(0,combat.nexusHp-20);document.getElementById("nexus-fill").style.width=combat.nexusHp+"%";}
-    else{combat.allyNexusHp=Math.max(0,combat.allyNexusHp-20);document.getElementById("ally-nexus-fill").style.width=combat.allyNexusHp+"%";}
+    if(!isAlly){combat.nexusHp=Math.max(0,combat.nexusHp-12);document.getElementById("nexus-fill").style.width=combat.nexusHp+"%";}
+    else{combat.allyNexusHp=Math.max(0,combat.allyNexusHp-12);document.getElementById("ally-nexus-fill").style.width=combat.allyNexusHp+"%";}
   }
 
   updateFighterHp(id);
