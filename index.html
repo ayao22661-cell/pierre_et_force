@@ -50,10 +50,19 @@ body, html {
 }
 #app, .app-root { height: 100%; }
 
-/* Texture de fond générale (Bruit subtil et lueur au centre) */
+/* Texture de fond générale (Bruit subtil et lueur au centre + trame hexagonale) */
 body::before {
   content: ""; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
-  background: radial-gradient(circle at 50% 30%, rgba(10, 20, 40, 0.8) 0%, var(--hex-bg) 70%);
+  background:
+    radial-gradient(circle at 50% 30%, rgba(10, 20, 40, 0.8) 0%, var(--hex-bg) 70%);
+  pointer-events: none; z-index: -1;
+}
+body::after {
+  content: ""; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+  background-image:
+    repeating-linear-gradient(60deg, rgba(200,155,60,0.02) 0 1px, transparent 1px 58px),
+    repeating-linear-gradient(-60deg, rgba(200,155,60,0.02) 0 1px, transparent 1px 58px),
+    repeating-linear-gradient(0deg, rgba(200,155,60,0.015) 0 1px, transparent 1px 58px);
   pointer-events: none; z-index: -1;
 }
 
@@ -196,11 +205,22 @@ body::before {
   border: 1px solid var(--hex-border); border-radius: 14px; padding: 14px;
   position: relative; transition: 0.2s ease; display: flex; align-items: center; gap: 15px; cursor: pointer;
   box-shadow: 0 4px 10px rgba(0,0,0,0.35), inset 0 1px 0 rgba(255,255,255,0.03);
+  overflow: hidden;
 }
+.mission-card::after, .deploy-card::after {
+  content: ""; position: absolute; top: -60%; left: -30%; width: 40%; height: 220%;
+  background: linear-gradient(120deg, transparent, rgba(255,255,255,0.06), transparent);
+  transform: rotate(20deg); pointer-events: none; transition: left .5s ease;
+}
+.mission-card:hover::after, .deploy-card:hover::after { left: 130%; }
 .mission-card:hover:not(.locked), .deploy-card:hover { border-color: var(--hex-gold); background: linear-gradient(135deg, rgba(40,52,74,0.75), rgba(30,40,60,0.9)); transform: translateY(-2px); box-shadow: 0 8px 16px rgba(0,0,0,0.45); }
 .mission-card.locked { opacity: 0.4; filter: grayscale(1); cursor: not-allowed; }
-.mission-card.available { border-color: var(--hex-magic); box-shadow: 0 0 0 1px rgba(10,200,185,0.15), 0 4px 10px rgba(0,0,0,0.35); }
+.mission-card.available { border-color: var(--hex-magic); box-shadow: 0 0 0 1px rgba(10,200,185,0.15), 0 4px 10px rgba(0,0,0,0.35); animation: cardGlow 2.4s ease-in-out infinite; }
 .mission-card.done { border-color: var(--hex-green); opacity: 0.7; }
+@keyframes cardGlow {
+  0%,100% { box-shadow: 0 0 0 1px rgba(10,200,185,0.15), 0 4px 10px rgba(0,0,0,0.35); }
+  50% { box-shadow: 0 0 0 1px rgba(10,200,185,0.4), 0 0 18px rgba(10,200,185,0.25), 0 4px 10px rgba(0,0,0,0.35); }
+}
 .m-name { font-size: 16px; color: var(--hex-gold-light); font-weight: bold; }
 .m-desc { font-size: 12px; color: var(--hex-text); margin-top: 5px; }
 
@@ -2821,9 +2841,42 @@ var save=loadSave();
 // ===== GESTION DES VIES (ÉNERGIE) =====
 // Recalcule save.lives en fonction du temps écoulé depuis la dernière régénération connue.
 // Fonctionne même si le joueur a fermé le jeu (basé sur un timestamp, pas sur un minuteur actif).
+
+// ---- Sauvegarde redondante (cookie) en plus du localStorage ----
+// Objectif : si le joueur efface le localStorage (ou recharge dans un contexte qui le réinitialise)
+// pour tenter de regagner des vies gratuitement, le cookie garde une trace de l'état le plus
+// restrictif connu et on la réapplique. Ce n'est pas infaillible (un effacement complet des
+// données de navigation efface les deux), mais ça bloque la triche "reload rapide" la plus courante.
+function writeLifeCookie(){
+  try{
+    var snap={lives:save.lives,lives_max:save.lives_max,next_life_ts:save.next_life_ts,t:Date.now()};
+    document.cookie="dpdf_lives="+encodeURIComponent(JSON.stringify(snap))+";max-age=31536000;path=/";
+  }catch(e){}
+}
+function readLifeCookie(){
+  try{
+    var m=document.cookie.match(/(?:^|; )dpdf_lives=([^;]*)/);
+    if(!m)return null;
+    return JSON.parse(decodeURIComponent(m[1]));
+  }catch(e){return null;}
+}
+function reconcileLives(){
+  var snap=readLifeCookie();
+  if(!snap||typeof snap.lives!=="number")return;
+  if(snap.lives<save.lives){
+    // Le cookie indique moins de vies que le localStorage : on garde le plus restrictif.
+    save.lives=snap.lives;
+    save.next_life_ts=snap.next_life_ts;
+  }else if(snap.lives===save.lives&&snap.next_life_ts&&save.next_life_ts&&snap.next_life_ts>save.next_life_ts){
+    // Même nombre de vies mais régénération plus tardive côté cookie : on garde la plus tardive.
+    save.next_life_ts=snap.next_life_ts;
+  }
+}
+
 function syncLives(){
   if(save.lives===undefined||save.lives===null)save.lives=LIFE_MAX;
   if(!save.lives_max)save.lives_max=LIFE_MAX;
+  reconcileLives();
   if(save.lives<save.lives_max){
     if(!save.next_life_ts)save.next_life_ts=Date.now()+LIFE_REGEN_MS;
     var now=Date.now();
@@ -2834,10 +2887,11 @@ function syncLives(){
       changed=true;
     }
     if(save.lives>=save.lives_max)save.next_life_ts=null;
-    if(changed)writeSave(save);
+    if(changed){writeSave(save);writeLifeCookie();}
   }else{
     save.next_life_ts=null;
   }
+  writeLifeCookie();
 }
 
 function consumeLife(){
@@ -2846,6 +2900,7 @@ function consumeLife(){
   save.lives--;
   if(!save.next_life_ts)save.next_life_ts=Date.now()+LIFE_REGEN_MS;
   writeSave(save);
+  writeLifeCookie();
   return true;
 }
 
@@ -4206,6 +4261,7 @@ function showEndScreen(victory,m){
 }
 
 // ===== INIT =====
+syncLives();
 initTitle();
 
 })();
