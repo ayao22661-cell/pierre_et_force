@@ -508,25 +508,53 @@ body::after {
 .battle-zone { flex: 1; min-height: 0; position: relative; padding: 8px 10px; display: flex; }
 .arena {
   position: relative; flex: 1; border-radius: 18px; overflow: hidden;
+  /* Fond riche : sol de pierre ancienne style Faille de l'Invocateur */
   background:
-    radial-gradient(ellipse 55% 45% at 10% 90%, rgba(15,90,50,0.28) 0%, transparent 55%),
-    radial-gradient(ellipse 55% 45% at 90% 10%, rgba(180,30,30,0.20) 0%, transparent 55%),
-    radial-gradient(ellipse 40% 30% at 50% 50%, rgba(10,30,60,0.4) 0%, transparent 70%),
-    linear-gradient(160deg, #0a1e12 0%, #060f1e 40%, #0d100a 65%, #1a120a 100%);
+    /* Pavés : grille subtile diagonale */
+    repeating-linear-gradient(45deg,  rgba(0,0,0,0.08) 0px, rgba(0,0,0,0.08) 1px, transparent 1px, transparent 28px),
+    repeating-linear-gradient(-45deg, rgba(0,0,0,0.08) 0px, rgba(0,0,0,0.08) 1px, transparent 1px, transparent 28px),
+    /* Zones de couleur latérales */
+    radial-gradient(ellipse 60% 50% at 5% 85%,  rgba(15,100,55,0.38) 0%, transparent 60%),
+    radial-gradient(ellipse 60% 50% at 95% 15%, rgba(180,30,30,0.30) 0%, transparent 60%),
+    /* Lueur magique centrale */
+    radial-gradient(ellipse 45% 35% at 50% 50%, rgba(10,40,80,0.55) 0%, transparent 75%),
+    /* Liseré de terrain vert sombre en bas, rouge sombre en haut */
+    linear-gradient(175deg,
+      #110a0a 0%, #0f1408 12%, #081a10 28%,
+      #061220 45%, #0a1008 62%,
+      #141005 78%, #0d080a 92%, #1a0a0a 100%);
   border: 1px solid var(--hex-gold-trim);
   box-shadow:
-    inset 0 0 80px rgba(0,0,0,0.8),
-    0 0 0 1px rgba(200,155,60,0.06),
-    0 4px 20px rgba(0,0,0,0.7);
+    inset 0 0 100px rgba(0,0,0,0.75),
+    inset 0 0 30px rgba(200,155,60,0.04),
+    0 0 0 1px rgba(200,155,60,0.08),
+    0 6px 30px rgba(0,0,0,0.8);
   touch-action: none;
 }
-/* Texture "terrain" : grain subtil + vignettage façon Faille de l'Invocateur */
+/* Texture "terrain" : grain + vignettage + nervures pierres façon Faille de l'Invocateur */
 .arena::before {
   content: ""; position: absolute; inset: 0; pointer-events: none; z-index: 1;
   background-image:
-    radial-gradient(ellipse at 50% 50%, transparent 40%, rgba(0,0,0,0.45) 100%),
-    repeating-linear-gradient(60deg, rgba(200,155,60,0.035) 0 1px, transparent 1px 34px),
-    repeating-linear-gradient(-60deg, rgba(200,155,60,0.035) 0 1px, transparent 1px 34px);
+    /* Vignette bords */
+    radial-gradient(ellipse at 50% 50%, transparent 35%, rgba(0,0,0,0.6) 100%),
+    /* Nervures pierre hextech (or très subtil) */
+    repeating-linear-gradient(60deg,  rgba(200,155,60,0.028) 0 1px, transparent 1px 34px),
+    repeating-linear-gradient(-60deg, rgba(200,155,60,0.028) 0 1px, transparent 1px 34px),
+    /* Craquelures horizontales très subtiles */
+    repeating-linear-gradient(0deg,   rgba(0,0,0,0.06) 0 1px, transparent 1px 18px);
+}
+/* Couche "ambiance magique" par-dessus tout le terrain */
+.arena::after {
+  content: ""; position: absolute; inset: 0; pointer-events: none; z-index: 1;
+  /* Lueur centrale magique cyan très douce */
+  background:
+    radial-gradient(ellipse 70% 30% at 50% 48%,
+      rgba(10,200,185,0.045) 0%, transparent 70%),
+    /* Coins sombres pour délimiter le terrain */
+    radial-gradient(ellipse 30% 30% at 0% 0%,   rgba(0,0,0,0.35) 0%, transparent 60%),
+    radial-gradient(ellipse 30% 30% at 100% 0%,  rgba(0,0,0,0.35) 0%, transparent 60%),
+    radial-gradient(ellipse 30% 30% at 0% 100%,  rgba(0,0,0,0.35) 0%, transparent 60%),
+    radial-gradient(ellipse 30% 30% at 100% 100%,rgba(0,0,0,0.35) 0%, transparent 60%);
 }
 /* Rivière diagonale animée : ligne d'énergie mystique traversant le plateau */
 .arena-river {
@@ -582,6 +610,36 @@ body::after {
 .arena-mid {
   position: absolute; left: 50%; top: 6%; bottom: 6%; width: 2px; transform: translateX(-50%);
   background: linear-gradient(180deg, transparent, rgba(200,155,60,0.35), transparent); pointer-events: none;
+}
+/* Runes gravées au sol : cercles archaïques décoratifs */
+.arena-rune {
+  position: absolute; pointer-events: none; z-index: 1; border-radius: 50%;
+  border: 1px solid rgba(200,155,60,0.08);
+  animation: runePulse 6s ease-in-out infinite;
+}
+.arena-rune::after {
+  content: ""; position: absolute; inset: 6px; border-radius: 50%;
+  border: 1px solid rgba(10,200,185,0.07);
+}
+.arena-rune.r1 {
+  width: 80px; height: 80px; left: 18%; top: 55%;
+  background: radial-gradient(circle, rgba(200,155,60,0.04) 0%, transparent 70%);
+  animation-delay: 0s;
+}
+.arena-rune.r2 {
+  width: 60px; height: 60px; right: 20%; bottom: 28%;
+  background: radial-gradient(circle, rgba(10,200,185,0.04) 0%, transparent 70%);
+  border-color: rgba(10,200,185,0.08); animation-delay: 2s;
+}
+.arena-rune.r2::after { border-color: rgba(200,155,60,0.06); }
+.arena-rune.r3 {
+  width: 50px; height: 50px; left: 46%; top: 20%;
+  background: radial-gradient(circle, rgba(200,155,60,0.035) 0%, transparent 70%);
+  animation-delay: 4s;
+}
+@keyframes runePulse {
+  0%,100% { opacity: 0.6; transform: scale(1); }
+  50% { opacity: 1; transform: scale(1.06); }
 }
 .arena-zone { position: absolute; top: 6%; bottom: 6%; width: 18%; border-radius: 50%; filter: blur(24px); pointer-events: none; opacity: .55; }
 .arena-zone.a-side { left: -6%; background: radial-gradient(circle, rgba(19,137,85,0.35), transparent 70%); }
@@ -1043,21 +1101,49 @@ body::after {
    ===== CONTRÔLES (CLAVIER / TACTILE) =====
    ========================================= */
 .arena-controls { position: absolute; bottom: calc(10px + env(safe-area-inset-bottom)); left: 0; right: 0; display: flex; justify-content: space-between; align-items: flex-end; padding: 0 14px; pointer-events: none; z-index: 60; }
-.dpad { display: grid; grid-template-columns: 42px 42px 42px; grid-template-rows: 42px 42px 42px; gap: 3px; pointer-events: auto; }
-.dpad button {
-  background: linear-gradient(180deg,#232b38,#0e1826); border: 1px solid var(--hex-gold-dark); border-radius: 10px;
-  color: var(--hex-gold-light); font-size: 15px; display: flex; align-items: center; justify-content: center;
-  box-shadow: 0 3px 6px rgba(0,0,0,0.6); touch-action: none;
+.dpad {
+  display: grid; grid-template-columns: 44px 44px 44px; grid-template-rows: 44px 44px 44px;
+  gap: 2px; pointer-events: auto;
+  filter: drop-shadow(0 4px 12px rgba(0,0,0,0.7));
 }
-.dpad button:active, .dpad button.pressed { background: linear-gradient(180deg,#333c47,#172846); border-color: var(--hex-gold); }
+.dpad button {
+  background: linear-gradient(160deg, #1a2438 0%, #0b1220 100%);
+  border: 1px solid var(--hex-gold-dark);
+  /* Coins coupés Hextech */
+  clip-path: polygon(8px 0%, 100% 0%, 100% calc(100% - 8px), calc(100% - 8px) 100%, 0% 100%, 0% 8px);
+  color: var(--hex-gold);
+  font-size: 14px;
+  display: flex; align-items: center; justify-content: center;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.06);
+  touch-action: none;
+  transition: all 0.1s ease;
+}
+.dpad button:active, .dpad button.pressed {
+  background: linear-gradient(160deg, #243044 0%, #101e30 100%);
+  border-color: var(--hex-gold);
+  color: var(--hex-gold-bright);
+  box-shadow: 0 0 12px rgba(200,155,60,0.3), inset 0 1px 0 rgba(255,255,255,0.1);
+}
 .dpad .dp-up { grid-column: 2; grid-row: 1; } .dpad .dp-left { grid-column: 1; grid-row: 2; }
 .dpad .dp-right { grid-column: 3; grid-row: 2; } .dpad .dp-down { grid-column: 2; grid-row: 3; }
 .btn-atk {
-  pointer-events: auto; width: 60px; height: 60px; border-radius: 50%;
-  background: radial-gradient(circle, #3a1414, #1a0808); border: 2px solid var(--hex-red); color: #fff;
-  font-size: 20px; box-shadow: 0 4px 10px rgba(0,0,0,0.6); flex-shrink: 0;
+  pointer-events: auto; width: 64px; height: 64px; border-radius: 50%;
+  background: radial-gradient(circle at 40% 35%, #4a1a1a, #1a0808);
+  border: 2px solid var(--hex-red); color: #fff;
+  font-size: 22px;
+  box-shadow:
+    0 0 0 1px rgba(200,48,45,0.15),
+    0 0 18px rgba(200,48,45,0.25),
+    0 6px 14px rgba(0,0,0,0.7),
+    inset 0 1px 0 rgba(255,150,150,0.15);
+  flex-shrink: 0;
+  transition: all 0.1s ease;
 }
-.btn-atk:active { background: radial-gradient(circle, #601010, #2a0a0a); }
+.btn-atk:active {
+  background: radial-gradient(circle at 40% 35%, #701818, #2a0808);
+  box-shadow: 0 0 24px rgba(232,64,87,0.5), inset 0 2px 4px rgba(0,0,0,0.4);
+  transform: scale(0.95);
+}
 .arena-hint { position: absolute; bottom: 8px; left: 50%; transform: translateX(-50%); font-size: 9px; letter-spacing: 1px; color: var(--hex-text); opacity: .55; z-index: 30; text-transform: uppercase; }
 @media (min-width: 901px) { .arena-controls { display: none; } }
 @media (max-width: 900px) { .arena-hint { display: none; } }
@@ -1504,6 +1590,10 @@ body::after {
       <div class="arena-brush b1"></div>
       <div class="arena-brush b2"></div>
       <div class="arena-brush b3"></div>
+      <!-- Pierres/ruines décoratives au sol -->
+      <div class="arena-rune r1"></div>
+      <div class="arena-rune r2"></div>
+      <div class="arena-rune r3"></div>
       <div class="arena-corner-gem tl"></div>
       <div class="arena-corner-gem tr"></div>
       <div class="arena-corner-gem bl"></div>
