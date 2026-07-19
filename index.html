@@ -3173,12 +3173,12 @@ function cloneChamp(key){
   if(!base)return null;
   var c=JSON.parse(JSON.stringify(base));
   c.abilities.forEach(function(a){a.curCd=0;});
+  c.level=save.level; // niveau de référence par défaut (utilisé pour l'esquive), réécrit pour les ennemis en combat
   // Apply level bonuses for player
   if(key==="TARINE"){
     c.hp=Math.round(c.maxHp+save.hp_bonus);
     c.maxHp=c.hp;
     c.atk=Math.round(c.atk+save.atk_bonus);
-    c.level=save.level;
   }
   return c;
 }
@@ -3214,14 +3214,13 @@ function isMissionAvailable(id){
 function xpForLevel(lvl){return lvl*100;}
 function enemyScaleFactor(missionNum){
   var n=Math.max(0,missionNum-1);
-  // Courbe renforcée : un socle plus haut dès la mission 1 + progression plus marquée.
-  // Objectif : des combats qui durent plusieurs minutes, pas quelques secondes.
-  // Mission 1  → ×1.80 HP / ×1.15 ATK
-  // Mission 5  → ×2.36 HP / ×1.51 ATK
-  // Mission 10 → ×3.06 HP / ×1.96 ATK
-  // Mission 20 → ×4.46 HP / ×2.86 ATK
-  // Mission 30 → ×5.86 HP / ×3.76 ATK
-  return { hp: 1.8+n*0.14, atk: 1.15+n*0.09 };
+  // Courbe renforcée côté PV (combats plus longs) mais ATK plus mesuré (moins de burst mortel).
+  // Mission 1  → ×1.80 HP / ×1.05 ATK
+  // Mission 5  → ×2.36 HP / ×1.29 ATK
+  // Mission 10 → ×3.06 HP / ×1.59 ATK
+  // Mission 20 → ×4.46 HP / ×2.19 ATK
+  // Mission 30 → ×5.86 HP / ×2.79 ATK
+  return { hp: 1.8+n*0.14, atk: 1.05+n*0.06 };
 }
 function showLevelUp(prevLevel,newLevel,hpGain,atkGain,onDone){
   var overlay=document.getElementById("levelup-overlay");
@@ -3616,7 +3615,7 @@ function gameTick(){
   // Ennemis agissent toutes les ~2s, alliés toutes les ~4s — pression de base.
   // + une chance d'action supplémentaire hors cadence pour casser le rythme prévisible.
   if(tickCount%2===0)iaEnemyAction();
-  else if(Math.random()<0.22)iaEnemyAction();
+  else if(Math.random()<0.12)iaEnemyAction();
   if(tickCount%4===0)iaAllyAction();
   checkGameEnd();
 }
@@ -3654,11 +3653,15 @@ function findChampById(id){
 
 function dodgeChance(defenderId,attackerLevel){
   var c=findChampById(defenderId);
-  if(!c||!c.level)return 0;
+  if(!c)return 0;
   var isEnemy=combat.enemyTeam.some(function(e){return e.id===defenderId;});
-  if(!isEnemy)return 0;
-  var diff=c.level-(attackerLevel||1);
-  return clamp(0.04+diff*0.025,0,0.32);
+  var defLevel=c.level||1;
+  var diff=defLevel-(attackerLevel||1);
+  // Les ennemis esquivent selon leur niveau ; le joueur et ses alliés ont désormais
+  // une esquive de base + bonus de niveau eux aussi — plus personne n'est totalement
+  // impuissant face aux coups adverses.
+  if(isEnemy)return clamp(0.04+diff*0.025,0,0.32);
+  return clamp(0.10+diff*0.02,0,0.30);
 }
 
 function spawnDodgeFx(x,y){
@@ -3777,15 +3780,15 @@ function enemyAct(att,allyAlive,forcedTarget){
   var eCrit=Math.random()<0.15;
   if(ab){
     ab.curCd=ab.cd;
-    var dmg=Math.max(8,Math.floor(ab.dmg*(0.85+Math.random()*0.45)*(eCrit?1.6:1)));
+    var dmg=Math.max(8,Math.floor(ab.dmg*(0.85+Math.random()*0.3)*(eCrit?1.6:1)));
     castFx(att.id, ab.key, !!ab.heal, ab.key==="R");
     setNarration(att.name.toUpperCase(),"<em>"+ab.name+"</em> — "+ab.desc+".");
     attackWithDodge(tgt.id,dmg,false,eCrit,att.level);
     addLog("<span class='cname'>"+att.name+"</span> utilise <em>"+ab.name+"</em> sur <span class='you'>"+tgt.name+"</span>.");
     dashAttack(att.id,tgt.id,eCrit);
   }else{
-    // Variance élargie (0.55–1.45 au lieu de 0.7–1.3) : les coups sont moins prévisibles en intensité
-    var dmg=Math.max(5,Math.floor((att.atk*(0.55+Math.random()*0.9)-(tgt.def||40)*0.3)*(eCrit?1.6:1)));
+    // Variance modérée (0.65–1.25) : moins de coups extrêmes qu'avant, mais toujours vivant
+    var dmg=Math.max(5,Math.floor((att.atk*(0.65+Math.random()*0.6)-(tgt.def||40)*0.3)*(eCrit?1.6:1)));
     attackWithDodge(tgt.id,dmg,false,eCrit,att.level);
     addLog(pick(NARR_ENEMY)(att.name,tgt.name,dmg));
     dashAttack(att.id,tgt.id,eCrit);
@@ -3804,9 +3807,9 @@ function iaEnemyAction(){
   var soldiers=alive.filter(function(c){return !c.isBoss;});
   var activeCount=soldiers.length<=3?1:Math.ceil(soldiers.length/2);
   var shuffled=soldiers.slice().sort(function(){return Math.random()-0.5;});
-  // Salve surprise : ~28% du temps, les soldats actifs concentrent leurs coups sur l'allié
-  // le plus affaibli au lieu de cibler au hasard — pic de danger imprévisible pour le joueur.
-  var focusFire=activeCount>1&&Math.random()<0.28;
+  // Salve surprise : ~15% du temps, les soldats actifs concentrent leurs coups sur l'allié
+  // le plus affaibli au lieu de cibler au hasard — pic de danger occasionnel, pas systématique.
+  var focusFire=activeCount>1&&Math.random()<0.15;
   var focusTarget=null;
   if(focusFire){
     focusTarget=allyAlive.slice().sort(function(a,b){
