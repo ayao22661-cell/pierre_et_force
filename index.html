@@ -19,17 +19,29 @@
 * { box-sizing: border-box; margin: 0; padding: 0; }
 
 :root {
-  /* La vraie palette League of Legends (Client & In-game) */
-  --hex-bg: #010a13;         /* Noir profond bleuté */
-  --hex-panel: #091428;      /* Fond des panneaux métalliques */
-  --hex-border: #1e2328;     /* Bordure sombre */
-  --hex-gold: #c89b3c;       /* Or Hextech (Primaire) */
-  --hex-gold-light: #f0e6d2; /* Or clair (Texte/Titres) */
-  --hex-gold-dark: #785a28;  /* Or sombre (Bordures inactives) */
-  --hex-magic: #0ac8b9;      /* Cyan magique (Effets) */
-  --hex-red: #e43f5a;        /* Rouge vif (Ennemis/Dégâts) */
-  --hex-green: #138955;      /* Vert (Soin/Alliés) */
-  --hex-text: #a09b8c;       /* Gris chaud pour le texte standard */
+  /* ── Palette Hextech authentique ── */
+  --hex-bg:          #010a13;
+  --hex-panel:       #0a1628;
+  --hex-panel-light: #0f1f38;
+  --hex-border:      #1e2d3d;
+  --hex-border-glow: #2a3f5c;
+  --hex-gold:        #c89b3c;
+  --hex-gold-light:  #f0e6d2;
+  --hex-gold-bright: #f8d878;
+  --hex-gold-dark:   #785a28;
+  --hex-gold-trim:   #463714;
+  --hex-magic:       #0ac8b9;
+  --hex-magic-dim:   #0a7a72;
+  --hex-magic-glow:  rgba(10,200,185,0.35);
+  --hex-red:         #c8302d;
+  --hex-red-bright:  #e84057;
+  --hex-green:       #1ea35a;
+  --hex-green-dim:   #0d5a31;
+  --hex-text:        #a09b8c;
+  --hex-text-dim:    #5c574e;
+  --shadow-deep:     0 8px 32px rgba(0,0,0,0.85);
+  --shadow-panel:    0 4px 16px rgba(0,0,0,0.6);
+  --inset-dark:      inset 0 1px 0 rgba(255,255,255,0.05), inset 0 -1px 0 rgba(0,0,0,0.4);
 }
 
 html { height: 100%; height: 100dvh; }
@@ -80,54 +92,166 @@ body::after {
 /* =========================================
    ===== BOUTONS (STYLE JEU MOBILE) ========
    ========================================= */
+/* ── BOUTONS HEXTECH ── coins coupés + liseré doré + reflet subtil */
 .btn {
-  background: linear-gradient(180deg, #2c333d 0%, #131c2b 100%);
-  border: 2px solid var(--hex-gold-dark);
-  border-bottom: 5px solid #5c451c;
-  border-radius: 16px;
-  color: var(--hex-gold-light);
-  padding: 14px 40px;
-  font-family: 'Cinzel', serif;
-  font-size: 16px;
-  font-weight: 700;
-  letter-spacing: 2px;
-  cursor: pointer;
   position: relative;
-  transition: all 0.12s ease;
-  text-shadow: 0 2px 4px rgba(0,0,0,0.8);
-  box-shadow: 0 4px 10px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.08);
+  background: linear-gradient(180deg, #1a2438 0%, #0d1520 100%);
+  border: 1px solid var(--hex-gold-dark);
+  color: var(--hex-gold-light);
+  padding: 13px 38px;
+  font-family: 'Cinzel', serif;
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  text-shadow: 0 1px 6px rgba(0,0,0,0.9);
+  /* Coins coupés LoL */
+  clip-path: polygon(10px 0%, 100% 0%, 100% calc(100% - 10px), calc(100% - 10px) 100%, 0% 100%, 0% 10px);
+  box-shadow: 0 4px 20px rgba(0,0,0,0.7), inset 0 1px 0 rgba(255,255,255,0.07);
+}
+/* Liseré doré décoratif via ::before */
+.btn::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  clip-path: polygon(10px 0%, 100% 0%, 100% calc(100% - 10px), calc(100% - 10px) 100%, 0% 100%, 0% 10px);
+  border: 1px solid rgba(200,155,60,0.15);
+  pointer-events: none;
+}
+/* Reflet haut */
+.btn::after {
+  content: "";
+  position: absolute;
+  top: 0; left: 10%; right: 10%; height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(240,230,210,0.25), transparent);
+  pointer-events: none;
 }
 .btn:hover {
   border-color: var(--hex-gold);
-  background: linear-gradient(180deg, #333c47 0%, #172846 100%);
-  color: #fff;
-  text-shadow: 0 0 8px var(--hex-gold-light);
+  background: linear-gradient(180deg, #243044 0%, #111e30 100%);
+  color: var(--hex-gold-bright);
+  text-shadow: 0 0 12px rgba(200,155,60,0.6);
   transform: translateY(-2px);
-  box-shadow: 0 6px 14px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.12);
+  box-shadow: 0 6px 28px rgba(0,0,0,0.8), 0 0 20px rgba(200,155,60,0.12), inset 0 1px 0 rgba(255,255,255,0.1);
 }
-.btn:active { transform: translateY(3px); border-bottom-width: 2px; box-shadow: 0 1px 4px rgba(0,0,0,0.5); }
-.btn-red { border-color: var(--hex-red); border-bottom-color: #6b1522; color: var(--hex-red); }
-.btn-red:hover { border-color: #ff6677; box-shadow: 0 6px 14px rgba(228,63,90,0.25), inset 0 1px 0 rgba(255,255,255,0.1); color: #fff; text-shadow: 0 0 8px #ff6677;}
-.btn-sm { padding: 9px 24px; font-size: 13px; border-radius: 12px; border-bottom-width: 4px; }
+.btn:active { transform: translateY(1px); box-shadow: 0 2px 8px rgba(0,0,0,0.6); }
+.btn:disabled, .btn[disabled] { opacity: 0.3; filter: grayscale(1); cursor: not-allowed; transform: none !important; box-shadow: none !important; }
+
+/* Bouton principal cyan (action gameplay LoL) */
+.btn-primary {
+  background: linear-gradient(180deg, #0d3a36 0%, #061c1a 100%);
+  border-color: var(--hex-magic-dim);
+  color: var(--hex-magic);
+}
+.btn-primary:hover {
+  border-color: var(--hex-magic);
+  background: linear-gradient(180deg, #104844 0%, #082220 100%);
+  color: #fff;
+  text-shadow: 0 0 12px var(--hex-magic);
+  box-shadow: 0 6px 28px rgba(0,0,0,0.8), 0 0 24px rgba(10,200,185,0.2);
+}
+
+.btn-red {
+  border-color: #5c2020;
+  color: #c87070;
+  background: linear-gradient(180deg, #1e1014 0%, #0e080a 100%);
+}
+.btn-red:hover {
+  border-color: var(--hex-red-bright);
+  color: #fff;
+  text-shadow: 0 0 10px var(--hex-red-bright);
+  box-shadow: 0 6px 28px rgba(0,0,0,0.8), 0 0 20px rgba(200,48,45,0.2);
+}
+.btn-sm { padding: 9px 22px; font-size: 12px; letter-spacing: 2px;
+  clip-path: polygon(8px 0%, 100% 0%, 100% calc(100% - 8px), calc(100% - 8px) 100%, 0% 100%, 0% 8px); }
 
 
 /* =========================================
    ===== ÉCRAN TITRE =======================
    ========================================= */
-#screen-title { justify-content: center; align-items: center; }
-.t-title { font-size: 70px; color: var(--hex-gold-light); text-shadow: 0 4px 15px rgba(200, 155, 60, 0.5); letter-spacing: 6px; text-align: center; }
-.t-sub { font-size: 20px; color: var(--hex-magic); letter-spacing: 10px; margin-top: 10px; text-transform: uppercase; text-align: center; }
-.t-place { font-size: 14px; color: var(--hex-text); letter-spacing: 4px; margin-top: 10px; text-transform: uppercase; text-align: center;}
-.t-divider { width: 300px; height: 1px; background: linear-gradient(90deg, transparent, var(--hex-gold), transparent); margin: 30px 0; }
-.t-quote { max-width: 600px; text-align: center; font-size: 15px; font-style: italic; color: #888; margin-bottom: 40px; }
-.stones-row { display: flex; gap: 20px; margin-bottom: 40px; }
-.stone { width: 14px; height: 14px; transform: rotate(45deg); background: var(--hex-border); border: 1px solid var(--hex-gold-dark); animation: floatStones 3s infinite alternate ease-in-out; }
-.stone:nth-child(1) { box-shadow: 0 0 15px var(--hex-green); background: var(--hex-green); animation-delay: 0s;}
-.stone:nth-child(2) { box-shadow: 0 0 15px var(--hex-magic); background: var(--hex-magic); animation-delay: 0.2s;}
-.stone:nth-child(3) { box-shadow: 0 0 15px var(--hex-gold); background: var(--hex-gold); animation-delay: 0.4s;}
-.stone:nth-child(4) { box-shadow: 0 0 15px var(--hex-red); background: var(--hex-red); animation-delay: 0.6s;}
-.stone:nth-child(5) { box-shadow: 0 0 15px #9b59b6; background: #9b59b6; animation-delay: 0.8s;}
-@keyframes floatStones { 0% { transform: translateY(0) rotate(45deg) scale(1); } 100% { transform: translateY(-10px) rotate(45deg) scale(1.2); } }
+/* ── ÉCRAN TITRE ── */
+#screen-title {
+  justify-content: center; align-items: center;
+  background:
+    radial-gradient(ellipse 80% 60% at 50% 30%, rgba(10,25,50,0.9) 0%, var(--hex-bg) 70%);
+}
+/* Lueur d'ambiance dorée centrale */
+#screen-title::before {
+  content: ""; position: absolute; width: 600px; height: 300px;
+  top: 15%; left: 50%; transform: translateX(-50%);
+  background: radial-gradient(ellipse, rgba(200,155,60,0.07) 0%, transparent 70%);
+  pointer-events: none;
+}
+
+.t-eyebrow {
+  font-family: 'Cinzel', serif; font-size: 10px; letter-spacing: 6px;
+  color: var(--hex-magic); text-transform: uppercase;
+  border: 1px solid var(--hex-magic-dim);
+  padding: 5px 20px; border-radius: 2px;
+  background: rgba(10,200,185,0.06);
+  margin-bottom: 24px;
+  opacity: 0; animation: cardEnter .6s ease .1s forwards;
+}
+.t-title {
+  font-size: 62px; color: var(--hex-gold-light);
+  text-shadow: 0 2px 0 var(--hex-gold-dark), 0 6px 30px rgba(200,155,60,0.35);
+  letter-spacing: 5px; text-align: center; line-height: 1;
+  opacity: 0; animation: cardEnter .7s ease .25s forwards;
+}
+.t-sub {
+  font-size: 17px; color: var(--hex-magic); letter-spacing: 12px;
+  margin-top: 8px; text-transform: uppercase; text-align: center;
+  text-shadow: 0 0 20px rgba(10,200,185,0.5);
+  opacity: 0; animation: cardEnter .6s ease .4s forwards;
+}
+.t-place {
+  font-size: 11px; color: var(--hex-text-dim); letter-spacing: 5px;
+  margin-top: 8px; text-transform: uppercase; text-align: center;
+  opacity: 0; animation: cardEnter .6s ease .5s forwards;
+}
+
+/* Diviseur Hextech : ligne + diamants */
+.t-divider {
+  display: flex; align-items: center; gap: 12px;
+  margin: 28px 0; width: 340px;
+  opacity: 0; animation: cardEnter .6s ease .55s forwards;
+}
+.t-divider::before, .t-divider::after {
+  content: ""; flex: 1; height: 1px;
+  background: linear-gradient(90deg, transparent, var(--hex-gold-dark), transparent);
+}
+.t-divider-gem {
+  width: 10px; height: 10px; transform: rotate(45deg);
+  background: var(--hex-gold); box-shadow: 0 0 10px rgba(200,155,60,0.6);
+  flex-shrink: 0;
+}
+
+.t-quote {
+  max-width: 520px; text-align: center; font-size: 14px;
+  font-style: italic; color: var(--hex-text-dim); margin-bottom: 36px;
+  line-height: 1.7;
+  opacity: 0; animation: cardEnter .6s ease .65s forwards;
+}
+.t-save { font-size: 11px; color: var(--hex-text); letter-spacing: 1px; margin-bottom: 16px; text-align: center; }
+
+/* Pierres — identité visuelle du jeu */
+.stones-row {
+  display: flex; gap: 16px; margin-bottom: 36px;
+  opacity: 0; animation: cardEnter .6s ease .45s forwards;
+}
+.stone {
+  width: 13px; height: 13px; transform: rotate(45deg);
+  background: var(--hex-border); border: 1px solid var(--hex-gold-dark);
+  animation: floatStones 3s infinite alternate ease-in-out;
+}
+.stone:nth-child(1) { background: var(--hex-green); box-shadow: 0 0 12px var(--hex-green), 0 0 24px rgba(30,163,90,0.3); animation-delay:0s;}
+.stone:nth-child(2) { background: var(--hex-magic); box-shadow: 0 0 12px var(--hex-magic), 0 0 24px rgba(10,200,185,0.3); animation-delay:.2s;}
+.stone:nth-child(3) { background: var(--hex-gold); box-shadow: 0 0 12px var(--hex-gold), 0 0 24px rgba(200,155,60,0.3); animation-delay:.4s;}
+.stone:nth-child(4) { background: var(--hex-red-bright); box-shadow: 0 0 12px var(--hex-red-bright), 0 0 24px rgba(232,64,87,0.3); animation-delay:.6s;}
+.stone:nth-child(5) { background: #8e44ad; box-shadow: 0 0 12px #8e44ad, 0 0 24px rgba(142,68,173,0.3); animation-delay:.8s;}
+@keyframes floatStones { 0% { transform: translateY(0) rotate(45deg) scale(1); } 100% { transform: translateY(-9px) rotate(45deg) scale(1.15); } }
 
 /* =========================================
    ===== NARRATION =========================
@@ -176,10 +300,20 @@ body::after {
 /* =========================================
    ===== PANNEAUX UI (HUB & DEPLOY) ========
    ========================================= */
-.hub-header, .deploy-header, .game-hud {
-  background: var(--hex-panel); border-bottom: 2px solid var(--hex-gold-dark);
-  box-shadow: 0 5px 25px rgba(0,0,0,0.8); padding: 15px 30px; display: flex; justify-content: space-between; align-items: center; flex-shrink: 0;
+.hub-header, .deploy-header {
+  background: linear-gradient(180deg, #080f1e 0%, var(--hex-panel) 100%);
+  border-bottom: 1px solid var(--hex-gold-trim);
+  box-shadow: 0 4px 20px rgba(0,0,0,0.8);
+  padding: 14px 24px;
+  display: flex; justify-content: space-between; align-items: center; flex-shrink: 0;
+  position: relative;
 }
+.hub-header::after, .deploy-header::after {
+  content: "";
+  position: absolute; bottom: 0; left: 0; right: 0; height: 1px;
+  background: linear-gradient(90deg, transparent, var(--hex-gold-dark) 20%, var(--hex-gold) 50%, var(--hex-gold-dark) 80%, transparent);
+}
+.game-hud { position: relative; }
 .hub-body, .deploy-body { display: flex; flex: 1; overflow: hidden; }
 .deploy-allies { flex: 1; padding: 30px; overflow-y: auto; display: flex; flex-direction: column; gap: 15px;}
 .deploy-briefing { width: 300px; background: rgba(9, 20, 40, 0.5); border-left: 1px solid var(--hex-border); padding: 20px; overflow-y: auto; display: flex; flex-direction: column; gap: 20px;}
@@ -192,34 +326,40 @@ body::after {
 .hub-panel.active { display: flex; }
 #screen-hub.screen.active { height: 100vh; height: 100dvh; max-height: 100vh; max-height: 100dvh; }
 .hub-tabs {
-  display: flex;
-  gap: 6px;
-  border-top: 1px solid var(--hex-gold-dark);
-  background: linear-gradient(180deg, #0a1628 0%, var(--hex-panel) 100%);
-  box-shadow: 0 -4px 12px rgba(0,0,0,0.5);
+  display: flex; gap: 4px;
+  border-top: 1px solid var(--hex-gold-trim);
+  background: linear-gradient(0deg, #050d1a 0%, #080f1e 100%);
+  box-shadow: 0 -6px 20px rgba(0,0,0,0.7);
   flex-shrink: 0;
-  padding: 8px 10px calc(8px + env(safe-area-inset-bottom));
+  padding: 6px 8px calc(6px + env(safe-area-inset-bottom));
+  position: relative;
+}
+.hub-tabs::before {
+  content: "";
+  position: absolute; top: 0; left: 0; right: 0; height: 1px;
+  background: linear-gradient(90deg, transparent, var(--hex-gold-dark) 20%, var(--hex-gold-dark) 80%, transparent);
 }
 .hub-tab-btn {
-  flex: 1;
-  background: none;
-  border: none;
-  border-radius: 14px;
-  color: var(--hex-text);
+  flex: 1; background: none; border: none;
+  color: var(--hex-text-dim);
   font-family: 'Roboto Condensed', sans-serif;
   padding: 8px 4px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 3px;
-  cursor: pointer;
-  transition: all 0.2s;
+  display: flex; flex-direction: column; align-items: center; gap: 3px;
+  cursor: pointer; transition: all 0.2s;
+  position: relative;
 }
-.hub-tab-btn .tab-icon { font-size: 19px; line-height: 1; filter: grayscale(1) opacity(0.65); transition: all 0.2s; }
-.hub-tab-btn .tab-label { font-size: 9px; letter-spacing: 1px; text-transform: uppercase; }
-.hub-tab-btn:hover { color: var(--hex-gold-light); background: rgba(255,255,255,0.03); }
-.hub-tab-btn.active { color: var(--hex-gold-light); background: linear-gradient(180deg, rgba(200,155,60,0.18), rgba(200,155,60,0.06)); box-shadow: inset 0 0 0 1px rgba(200,155,60,0.4); text-shadow: 0 0 8px rgba(200,155,60,0.5); }
+.hub-tab-btn .tab-icon { font-size: 17px; line-height: 1; filter: grayscale(1) opacity(0.5); transition: all 0.2s; }
+.hub-tab-btn .tab-label { font-size: 8px; letter-spacing: 1.5px; text-transform: uppercase; }
+.hub-tab-btn:hover { color: var(--hex-text); }
+.hub-tab-btn:hover .tab-icon { filter: grayscale(0.3) opacity(0.8); }
+.hub-tab-btn.active { color: var(--hex-gold-light); }
 .hub-tab-btn.active .tab-icon { filter: grayscale(0) opacity(1); }
+/* Indicateur actif : liseré doré haut */
+.hub-tab-btn.active::before {
+  content: ""; position: absolute; top: -6px; left: 20%; right: 20%; height: 2px;
+  background: linear-gradient(90deg, transparent, var(--hex-gold), transparent);
+  box-shadow: 0 0 8px rgba(200,155,60,0.6);
+}
 .hub-map { flex: 1; display: flex; flex-direction: column; gap: 15px; }
 
 .hub-titre { color: var(--hex-gold-light); font-size: 18px; }
@@ -236,26 +376,40 @@ body::after {
 
 /* Cartes de Mission / Déploiement */
 .mission-card, .deploy-card {
-  background: linear-gradient(135deg, rgba(30,40,60,0.55), var(--hex-panel));
-  border: 1px solid var(--hex-border); border-radius: 14px; padding: 14px;
-  position: relative; transition: 0.2s ease; display: flex; align-items: center; gap: 15px; cursor: pointer;
-  box-shadow: 0 4px 10px rgba(0,0,0,0.35), inset 0 1px 0 rgba(255,255,255,0.03);
-  overflow: hidden;
+  background: linear-gradient(145deg, rgba(15,31,56,0.7), rgba(8,18,36,0.9));
+  border: 1px solid var(--hex-border);
+  padding: 13px 16px;
+  position: relative; transition: 0.18s ease;
+  display: flex; align-items: center; gap: 14px; cursor: pointer;
+  /* Coins coupés Hextech */
+  clip-path: polygon(8px 0, 100% 0, 100% calc(100% - 8px), calc(100% - 8px) 100%, 0 100%, 0 8px);
+  box-shadow: 0 4px 16px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.03);
+  overflow: visible;
 }
+/* Reflet diagonal au hover */
 .mission-card::after, .deploy-card::after {
-  content: ""; position: absolute; top: -60%; left: -30%; width: 40%; height: 220%;
-  background: linear-gradient(120deg, transparent, rgba(255,255,255,0.06), transparent);
-  transform: rotate(20deg); pointer-events: none; transition: left .5s ease;
+  content: ""; position: absolute; top: -60%; left: -30%; width: 35%; height: 220%;
+  background: linear-gradient(120deg, transparent, rgba(255,255,255,0.04), transparent);
+  transform: rotate(20deg); pointer-events: none; transition: left .4s ease;
 }
 .mission-card:hover::after, .deploy-card:hover::after { left: 130%; }
-.mission-card:hover:not(.locked), .deploy-card:hover { border-color: var(--hex-gold); background: linear-gradient(135deg, rgba(40,52,74,0.75), rgba(30,40,60,0.9)); transform: translateY(-2px); box-shadow: 0 8px 16px rgba(0,0,0,0.45); }
-.mission-card.locked { opacity: 0.4; filter: grayscale(1); cursor: not-allowed; }
-.deploy-card.locked { opacity: 0.4; filter: grayscale(1); cursor: not-allowed; }
-.mission-card.available { border-color: var(--hex-magic); box-shadow: 0 0 0 1px rgba(10,200,185,0.15), 0 4px 10px rgba(0,0,0,0.35); animation: cardGlow 2.4s ease-in-out infinite; }
-.mission-card.done { border-color: var(--hex-green); opacity: 0.7; }
+.mission-card:hover:not(.locked), .deploy-card:hover {
+  border-color: var(--hex-gold-dark);
+  background: linear-gradient(145deg, rgba(22,40,70,0.8), rgba(12,24,44,0.95));
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(0,0,0,0.6), 0 0 0 1px rgba(200,155,60,0.12);
+}
+.mission-card.locked { opacity: 0.35; filter: grayscale(1) brightness(0.7); cursor: not-allowed; }
+.deploy-card.locked { opacity: 0.35; filter: grayscale(1) brightness(0.7); cursor: not-allowed; }
+.mission-card.available {
+  border-color: var(--hex-magic-dim);
+  box-shadow: 0 0 0 1px rgba(10,200,185,0.1), 0 4px 16px rgba(0,0,0,0.5);
+  animation: cardGlow 2.6s ease-in-out infinite;
+}
+.mission-card.done { border-color: rgba(30,163,90,0.35); opacity: 0.65; }
 @keyframes cardGlow {
-  0%,100% { box-shadow: 0 0 0 1px rgba(10,200,185,0.15), 0 4px 10px rgba(0,0,0,0.35); }
-  50% { box-shadow: 0 0 0 1px rgba(10,200,185,0.4), 0 0 18px rgba(10,200,185,0.25), 0 4px 10px rgba(0,0,0,0.35); }
+  0%,100% { box-shadow: 0 0 0 1px rgba(10,200,185,0.1), 0 4px 16px rgba(0,0,0,0.5); }
+  50% { box-shadow: 0 0 0 1px rgba(10,200,185,0.35), 0 0 20px rgba(10,200,185,0.15), 0 4px 16px rgba(0,0,0,0.5); }
 }
 .m-name { font-size: 16px; color: var(--hex-gold-light); font-weight: bold; }
 .m-desc { font-size: 12px; color: var(--hex-text); margin-top: 5px; }
@@ -353,13 +507,17 @@ body::after {
 #screen-game.screen.active { height: 100vh; height: 100dvh; max-height: 100vh; max-height: 100dvh; }
 .battle-zone { flex: 1; min-height: 0; position: relative; padding: 8px 10px; display: flex; }
 .arena {
-  position: relative; flex: 1; border-radius: 22px; overflow: hidden;
+  position: relative; flex: 1; border-radius: 18px; overflow: hidden;
   background:
-    radial-gradient(ellipse 60% 50% at 12% 88%, rgba(19,137,85,0.30) 0%, transparent 60%),
-    radial-gradient(ellipse 60% 50% at 88% 12%, rgba(228,63,90,0.24) 0%, transparent 60%),
-    linear-gradient(160deg, #0e2a1c 0%, #0a1c28 38%, #16130c 62%, #241a0c 100%);
-  border: 2px solid var(--hex-gold-dark);
-  box-shadow: inset 0 0 60px rgba(0,0,0,0.7), 0 0 25px rgba(0,0,0,0.5);
+    radial-gradient(ellipse 55% 45% at 10% 90%, rgba(15,90,50,0.28) 0%, transparent 55%),
+    radial-gradient(ellipse 55% 45% at 90% 10%, rgba(180,30,30,0.20) 0%, transparent 55%),
+    radial-gradient(ellipse 40% 30% at 50% 50%, rgba(10,30,60,0.4) 0%, transparent 70%),
+    linear-gradient(160deg, #0a1e12 0%, #060f1e 40%, #0d100a 65%, #1a120a 100%);
+  border: 1px solid var(--hex-gold-trim);
+  box-shadow:
+    inset 0 0 80px rgba(0,0,0,0.8),
+    0 0 0 1px rgba(200,155,60,0.06),
+    0 4px 20px rgba(0,0,0,0.7);
   touch-action: none;
 }
 /* Texture "terrain" : grain subtil + vignettage façon Faille de l'Invocateur */
@@ -446,14 +604,39 @@ body::after {
 .side-label.e::before { background: var(--hex-red); box-shadow: 0 0 8px var(--hex-red); }
 
 /* ---- Barre de vie du boss ---- */
-.boss-hpbar { position: absolute; top: 8px; left: 50%; transform: translateX(-50%); width: min(78%, 420px); z-index: 35; pointer-events: none; }
-.boss-hp-top { display: flex; align-items: center; justify-content: center; gap: 8px; margin-bottom: 4px; }
-.boss-name { font-family: 'Cinzel', serif; font-size: 12px; letter-spacing: 3px; color: var(--hex-red); text-shadow: 0 1px 4px #000; text-transform: uppercase; }
-.boss-tag { font-family: 'Cinzel', serif; font-size: 9px; letter-spacing: 2px; color: #ff8a3d; opacity: 0; text-shadow: 0 0 8px #ff8a3d; }
+.boss-hpbar {
+  position: absolute; top: 10px; left: 50%; transform: translateX(-50%);
+  width: min(72%, 380px); z-index: 35; pointer-events: none;
+  background: rgba(1,6,14,0.88);
+  border: 1px solid rgba(200,48,45,0.3);
+  padding: 6px 10px;
+  clip-path: polygon(8px 0, 100% 0, 100% calc(100% - 8px), calc(100% - 8px) 100%, 0 100%, 0 8px);
+  box-shadow: 0 4px 20px rgba(200,48,45,0.15);
+}
+.boss-hp-top { display: flex; align-items: center; justify-content: center; gap: 8px; margin-bottom: 5px; }
+.boss-name {
+  font-family: 'Cinzel', serif; font-size: 11px; letter-spacing: 4px;
+  color: #e08080; text-shadow: 0 1px 4px #000; text-transform: uppercase;
+}
+.boss-tag {
+  font-family: 'Cinzel', serif; font-size: 8px; letter-spacing: 2px;
+  color: #ff8a3d; opacity: 0; text-shadow: 0 0 8px #ff8a3d;
+  border: 1px solid rgba(255,138,61,0.5); padding: 1px 6px;
+}
 .boss-tag.show { opacity: 1; animation: luNewPulse 1s ease-in-out infinite; }
-.boss-hp-track { height: 10px; background: #000; border: 1px solid var(--hex-red); border-radius: 5px; overflow: hidden; box-shadow: 0 0 12px rgba(228,63,90,0.4); }
-.boss-hp-fill { height: 100%; width: 100%; background: linear-gradient(90deg,#601010,var(--hex-red)); transition: width .35s ease; }
-.boss-hp-fill.enraged { background: linear-gradient(90deg,#7a1b00,#ff8a3d); }
+.boss-hp-track {
+  height: 8px; background: rgba(0,0,0,0.9);
+  border: 1px solid rgba(200,48,45,0.4);
+  overflow: hidden;
+  box-shadow: 0 0 8px rgba(200,48,45,0.3), inset 0 1px 0 rgba(0,0,0,0.6);
+}
+.boss-hp-fill {
+  height: 100%; width: 100%;
+  background: linear-gradient(90deg, #4a0808, var(--hex-red-bright));
+  transition: width .4s ease;
+  box-shadow: inset 0 1px 0 rgba(255,150,150,0.3);
+}
+.boss-hp-fill.enraged { background: linear-gradient(90deg, #5c1e00, #ff8a3d); }
 
 /* ---- Jeton du boss ---- */
 .token.boss { width: 78px; z-index: 20; }
@@ -506,43 +689,88 @@ body::after {
 /* =========================================
    ===== JETONS DE COMBATTANTS (TOKENS) ====
    ========================================= */
+/* ── JETONS COMBATTANTS ── */
 .token {
-  position: absolute; width: 62px; transform: translate(-50%, -50%);
-  display: flex; flex-direction: column; align-items: center; gap: 3px;
+  position: absolute; width: 64px; transform: translate(-50%, -50%);
+  display: flex; flex-direction: column; align-items: center; gap: 2px;
   z-index: 5; cursor: pointer; user-select: none;
 }
 .token.player { z-index: 25; }
-.token-avatar-wrap { position: relative; width: 50px; height: 50px; }
+.token-avatar-wrap { position: relative; width: 52px; height: 52px; }
 .token-avatar {
-  width: 50px; height: 50px; border-radius: 50%; object-fit: cover; object-position: top;
-  background: #141d2d; border: 2px solid var(--hex-gold-dark); box-shadow: 0 3px 10px rgba(0,0,0,0.6); display: block;
+  width: 52px; height: 52px; border-radius: 50%; object-fit: cover; object-position: top;
+  background: #0d1624;
+  border: 2px solid var(--hex-gold-dark);
+  box-shadow: 0 4px 14px rgba(0,0,0,0.8); display: block;
+  transition: box-shadow .2s ease;
 }
-.token.ally .token-avatar { border-color: var(--hex-green); }
-.token.enemy .token-avatar { border-color: var(--hex-red); }
-.token.player .token-avatar { border-color: var(--hex-gold); box-shadow: 0 0 14px rgba(200,155,60,0.6); }
-.token-ring { position: absolute; inset: -4px; border-radius: 50%; border: 2px solid transparent; pointer-events: none; }
-.token.player .token-ring { border-color: rgba(200,155,60,0.55); animation: ringPulse 1.6s infinite; }
-@keyframes ringPulse { 0%,100% { transform: scale(1); opacity: .7; } 50% { transform: scale(1.14); opacity: .15; } }
-.token-name { font-size: 9px; letter-spacing: .5px; color: var(--hex-gold-light); text-shadow: 0 1px 3px #000; white-space: nowrap; max-width: 74px; overflow: hidden; text-overflow: ellipsis; }
-.token-hpbar { width: 50px; height: 5px; background: #000; border: 1px solid #000; border-radius: 3px; overflow: hidden; }
+.token.ally .token-avatar {
+  border-color: var(--hex-green);
+  box-shadow: 0 0 0 1px rgba(30,163,90,0.25), 0 4px 14px rgba(0,0,0,0.8);
+}
+.token.enemy .token-avatar {
+  border-color: #7a2020;
+  box-shadow: 0 0 0 1px rgba(200,48,45,0.2), 0 4px 14px rgba(0,0,0,0.8);
+}
+.token.player .token-avatar {
+  border-color: var(--hex-gold);
+  box-shadow: 0 0 0 1px rgba(200,155,60,0.3), 0 0 18px rgba(200,155,60,0.45), 0 4px 14px rgba(0,0,0,0.8);
+}
+/* Ring de sélection / pulsation joueur */
+.token-ring {
+  position: absolute; inset: -5px; border-radius: 50%;
+  border: 1px solid transparent; pointer-events: none;
+}
+.token.player .token-ring {
+  border-color: rgba(200,155,60,0.4);
+  animation: ringPulse 1.8s ease-in-out infinite;
+}
+@keyframes ringPulse {
+  0%,100% { transform: scale(1); opacity: .6; box-shadow: 0 0 8px rgba(200,155,60,0.3); }
+  50% { transform: scale(1.18); opacity: 0; box-shadow: 0 0 20px rgba(200,155,60,0); }
+}
+.token-name {
+  font-size: 9px; letter-spacing: .5px; color: rgba(240,230,210,0.9);
+  text-shadow: 0 1px 4px rgba(0,0,0,0.9), 0 0 8px rgba(0,0,0,0.6);
+  white-space: nowrap; max-width: 76px; overflow: hidden; text-overflow: ellipsis;
+  background: rgba(0,0,0,0.55); padding: 1px 4px; border-radius: 2px;
+}
+/* Barre de vie nette */
+.token-hpbar {
+  width: 52px; height: 5px;
+  background: rgba(0,0,0,0.8);
+  border: 1px solid rgba(0,0,0,0.9);
+  overflow: hidden;
+}
 .token-hpfill { height: 100%; transition: width .3s ease; }
-.token.ally .token-hpfill, .token.player .token-hpfill { background: linear-gradient(90deg,#094a28,var(--hex-green)); }
-.token.enemy .token-hpfill { background: linear-gradient(90deg,#601010,var(--hex-red)); }
+.token.ally .token-hpfill,
+.token.player .token-hpfill { background: linear-gradient(90deg, #0a4028, var(--hex-green)); }
+.token.enemy .token-hpfill { background: linear-gradient(90deg, #5c0e10, var(--hex-red-bright)); }
+
 .token.dead { pointer-events: none; animation: tokenDeath .5s ease forwards; }
 @keyframes tokenDeath {
   0% { opacity: 1; filter: grayscale(0) brightness(1.8); transform: translate(-50%,-50%) scale(1) rotate(0deg); }
   25% { filter: grayscale(.6) brightness(1.4); transform: translate(-50%,-50%) scale(1.08) rotate(-6deg); }
-  100% { opacity: .3; filter: grayscale(1) brightness(.7); transform: translate(-50%,-42%) scale(.86) rotate(-16deg); }
+  100% { opacity: .25; filter: grayscale(1) brightness(.5); transform: translate(-50%,-42%) scale(.84) rotate(-18deg); }
 }
-.token-badge { position: absolute; top: -8px; right: -6px; font-size: 8px; font-weight: bold; padding: 1px 5px; border-radius: 8px; background: #000; border: 1px solid var(--hex-gold); color: var(--hex-gold-light); }
+.token-badge {
+  position: absolute; top: -8px; right: -8px;
+  font-size: 7px; font-weight: 900; padding: 2px 5px;
+  background: var(--hex-gold); border: 1px solid var(--hex-gold-bright);
+  color: #000; letter-spacing: 0.5px;
+  clip-path: polygon(4px 0, 100% 0, 100% calc(100% - 4px), calc(100% - 4px) 100%, 0 100%, 0 4px);
+}
 .token-lvl {
-  position: absolute; top: -6px; left: -6px; width: 18px; height: 18px; border-radius: 50%;
-  background: #000; border: 2px solid var(--hex-gold-dark); color: var(--hex-gold-light);
-  font-family: 'Cinzel', serif; font-size: 9px; font-weight: 900; display: flex; align-items: center;
-  justify-content: center; z-index: 6; box-shadow: 0 1px 4px rgba(0,0,0,0.7);
+  position: absolute; top: -6px; left: -6px;
+  width: 17px; height: 17px; border-radius: 50%;
+  background: #050d1a; border: 1px solid var(--hex-gold-dark);
+  color: var(--hex-gold-light);
+  font-family: 'Cinzel', serif; font-size: 8px; font-weight: 900;
+  display: flex; align-items: center; justify-content: center;
+  z-index: 6; box-shadow: 0 1px 6px rgba(0,0,0,0.9);
 }
-.token.enemy .token-lvl { border-color: var(--hex-red); }
-.token.ally .token-lvl, .token.player .token-lvl { border-color: var(--hex-green); }
+.token.enemy .token-lvl { border-color: #7a2020; color: #e08080; }
+.token.ally .token-lvl, .token.player .token-lvl { border-color: var(--hex-green-dim); color: var(--hex-green); }
 
 /* =====================================================
    === ANIMATIONS DE COMBAT PAR RÔLE & TYPE D'ACTION ===
@@ -753,6 +981,7 @@ body::after {
 }
 .fx-dmg.heal { color: var(--hex-green); text-shadow: 0 2px 4px #000, 0 0 10px rgba(19,137,85,0.6); }
 .fx-dmg.crit { font-size: 26px; color: #ff8a3d; text-shadow: 0 2px 6px #000, 0 0 16px rgba(255,138,61,0.9); letter-spacing: 1px; }
+.fx-dmg.dodge { color: var(--hex-magic); font-size: 13px; letter-spacing: 2px; text-shadow: 0 2px 4px #000, 0 0 12px rgba(10,200,185,0.8); }
 @keyframes fxFloat {
   0% { opacity: 0; transform: translate(-50%,-50%) scale(.3); }
   15% { opacity: 1; transform: translate(-50%,-58%) scale(1.15); }
@@ -833,69 +1062,190 @@ body::after {
 @media (min-width: 901px) { .arena-controls { display: none; } }
 @media (max-width: 900px) { .arena-hint { display: none; } }
 
-/* HUD Top Bar (Timer, Scores, Nexus) */
-.hud-left { display: flex; flex-direction: column; gap: 2px; }
-.hud-mission { font-family: 'Cinzel', serif; font-size: 13px; letter-spacing: 2px; color: var(--hex-gold-light); text-transform: uppercase; }
-.hud-timer { font-family: 'Cinzel', serif; font-size: 32px; font-weight: 900; color: var(--hex-gold-light); text-shadow: 0 0 10px var(--hex-gold); }
-.hud-score { font-size: 24px; font-weight: bold; }
-.score-ally { color: var(--hex-green); }
-.score-enemy { color: var(--hex-red); }
-.score-sep { color: var(--hex-text); margin: 0 10px; }
-.hud-right { display: flex; flex-direction: column; align-items: flex-end; gap: 2px; }
-.nexus-label { font-size: 9px; letter-spacing: 2px; color: var(--hex-text); text-transform: uppercase; }
-.nexus-bar { width: 150px; height: 10px; background: #000; border: 1px solid var(--hex-border); border-radius: 5px; overflow: hidden; }
+/* ── HUD TOP BAR ── */
+.game-hud {
+  background: linear-gradient(180deg, #060f1e 0%, var(--hex-panel) 100%);
+  border-bottom: 1px solid var(--hex-gold-trim);
+  box-shadow: 0 4px 20px rgba(0,0,0,0.9), inset 0 -1px 0 rgba(200,155,60,0.08);
+  padding: 10px 22px;
+  display: flex; justify-content: space-between; align-items: center; flex-shrink: 0;
+}
+/* Ligne décorative dorée en bas du HUD */
+.game-hud::after {
+  content: ""; position: absolute; bottom: 0; left: 0; right: 0; height: 1px;
+  background: linear-gradient(90deg, transparent, var(--hex-gold-dark) 20%, var(--hex-gold) 50%, var(--hex-gold-dark) 80%, transparent);
+  pointer-events: none;
+}
+.hud-left { display: flex; flex-direction: column; gap: 1px; }
+.hud-mission {
+  font-family: 'Cinzel', serif; font-size: 10px; letter-spacing: 3px;
+  color: var(--hex-text-dim); text-transform: uppercase;
+}
+.hud-timer {
+  font-family: 'Cinzel', serif; font-size: 28px; font-weight: 900;
+  color: var(--hex-gold-light);
+  text-shadow: 0 0 16px rgba(200,155,60,0.4);
+  line-height: 1;
+}
+.hud-center {
+  display: flex; flex-direction: column; align-items: center; gap: 4px;
+}
+.hud-score {
+  display: flex; align-items: center; gap: 0;
+  font-family: 'Cinzel', serif; font-size: 22px; font-weight: 900;
+}
+.score-ally { color: var(--hex-green); text-shadow: 0 0 10px rgba(30,163,90,0.5); }
+.score-enemy { color: var(--hex-red-bright); text-shadow: 0 0 10px rgba(200,48,45,0.5); }
+.score-sep {
+  color: var(--hex-gold-dark); margin: 0 10px;
+  font-size: 14px; font-weight: 400;
+}
+.hud-right { display: flex; flex-direction: column; align-items: flex-end; gap: 4px; }
+.nexus-label {
+  font-size: 8px; letter-spacing: 3px; color: var(--hex-text-dim); text-transform: uppercase;
+}
+.nexus-wrap { display: flex; flex-direction: column; gap: 3px; }
+.nexus-row { display: flex; align-items: center; gap: 6px; font-size: 8px; letter-spacing: 1px; }
+.nexus-tag-ally { color: var(--hex-green); }
+.nexus-tag-enemy { color: var(--hex-red-bright); }
+.nexus-bar {
+  width: 110px; height: 7px;
+  background: rgba(0,0,0,0.8);
+  border: 1px solid var(--hex-border); border-radius: 1px; overflow: hidden;
+}
 .nexus-fill { height: 100%; transition: width 0.5s; }
-.nexus-fill.ally { background: linear-gradient(90deg, #094a28, var(--hex-green)); }
-.nexus-fill.enemy { background: linear-gradient(90deg, #601010, var(--hex-red)); }
+.nexus-fill.ally { background: linear-gradient(90deg, var(--hex-green-dim), var(--hex-green)); }
+.nexus-fill.enemy { background: linear-gradient(90deg, #5c0e10, var(--hex-red-bright)); }
 
-/* Boîte de narration (façon sous-titres cinématiques) */
+/* ── NARRATION ── sous-titre cinématique LoL */
 .narration-box {
-  flex-shrink: 0; display: flex; align-items: baseline; gap: 14px;
-  background: linear-gradient(180deg, rgba(9,20,40,0.92), rgba(1,10,19,0.96));
-  border-top: 1px solid var(--hex-gold-dark); border-bottom: 1px solid var(--hex-border);
-  padding: 10px 30px; box-shadow: inset 0 0 20px rgba(0,0,0,0.5);
+  flex-shrink: 0;
+  display: flex; align-items: center; gap: 14px;
+  background: linear-gradient(180deg, rgba(6,12,24,0.97), rgba(1,6,14,0.99));
+  border-top: 1px solid rgba(200,155,60,0.12);
+  padding: 8px 22px;
+  box-shadow: inset 0 1px 0 rgba(200,155,60,0.06);
+  min-height: 44px;
+}
+/* Gem décoratif gauche */
+.narration-box::before {
+  content: ""; flex-shrink: 0;
+  width: 8px; height: 8px; transform: rotate(45deg);
+  background: var(--hex-gold-dark);
+  box-shadow: 0 0 6px rgba(200,155,60,0.3);
 }
 .narr-src {
-  font-family: 'Cinzel', serif; font-size: 11px; letter-spacing: 2px; color: var(--hex-gold);
-  text-transform: uppercase; flex-shrink: 0; text-shadow: 0 0 6px rgba(200, 155, 60, 0.4);
+  font-family: 'Cinzel', serif; font-size: 10px; letter-spacing: 3px;
+  color: var(--hex-gold); text-transform: uppercase; flex-shrink: 0;
+  text-shadow: 0 0 8px rgba(200,155,60,0.4);
+  min-width: 80px;
 }
-.narr-txt { font-size: 14px; line-height: 1.4; color: var(--hex-gold-light); font-style: italic; }
-.narr-txt.flash, .narr-src.flash { animation: narrFlash .4s ease; }
-@keyframes narrFlash { 0% { opacity: .2; transform: translateX(-6px); } 100% { opacity: 1; transform: translateX(0); } }
+.narr-txt {
+  font-size: 13px; line-height: 1.4; color: rgba(240,230,210,0.85);
+  font-style: italic;
+}
+.narr-txt.flash, .narr-src.flash { animation: narrFlash .35s ease; }
+@keyframes narrFlash { 0% { opacity: 0; transform: translateX(-8px); } 100% { opacity: 1; transform: translateX(0); } }
 
-/* =========================================
-   ===== HUD DE COMPÉTENCES (SORTS) ========
-   ========================================= */
+/* ── HUD COMPÉTENCES (façon LoL) ── */
 .abilities-hud {
   flex-shrink: 0;
-  background: linear-gradient(180deg, #0a1628 0%, var(--hex-panel) 100%);
-  border-top: 2px solid var(--hex-gold-dark);
-  padding: 12px 30px; display: flex; justify-content: center; align-items: center; gap: 16px;
-  box-shadow: 0 -5px 25px rgba(0,0,0,0.9);
+  background: linear-gradient(0deg, #040c18 0%, #080f1e 100%);
+  border-top: 1px solid var(--hex-gold-trim);
+  padding: 10px 20px;
+  display: flex; justify-content: center; align-items: center; gap: 10px;
+  box-shadow: 0 -8px 30px rgba(0,0,0,0.95);
+  position: relative;
 }
-.ab-btn {
-  background: linear-gradient(180deg, #131c2c 0%, #010a13 100%); border: 1px solid var(--hex-gold-dark); width: 70px; height: 70px; /* Boutons carrés LoL */
-  display: flex; flex-direction: column; justify-content: center; align-items: center;
-  cursor: pointer; transition: 0.2s; position: relative; box-shadow: inset 0 0 10px rgba(0,0,0,0.9);
-  clip-path: polygon(6px 0, 100% 0, 100% calc(100% - 6px), calc(100% - 6px) 100%, 0 100%, 0 6px);
+/* Liseré doré haut */
+.abilities-hud::before {
+  content: "";
+  position: absolute; top: 0; left: 0; right: 0; height: 1px;
+  background: linear-gradient(90deg, transparent, var(--hex-gold-dark) 20%, var(--hex-gold) 50%, var(--hex-gold-dark) 80%, transparent);
 }
-.ab-btn:hover:not([disabled]) { border-color: var(--hex-magic); box-shadow: inset 0 0 15px rgba(10, 200, 185, 0.4); transform: translateY(-2px);}
-.ab-btn .key { font-family: 'Cinzel', serif; font-size: 18px; color: var(--hex-gold); font-weight: 900; }
-.ab-btn .aname { font-size: 9px; color: var(--hex-text); text-transform: uppercase; text-align: center; margin-top: 4px; padding: 0 2px;}
-.ab-btn.on-cooldown { filter: grayscale(1); opacity: 0.5; cursor: not-allowed; border-color: var(--hex-red); }
-.ab-btn .cd { position: absolute; font-size: 24px; font-weight: bold; color: var(--hex-red); text-shadow: 0 2px 4px #000; }
 
-/* Journal d'actions (Le Chat) */
-.action-log { flex-shrink: 0; background: rgba(1, 10, 19, 0.95); border-top: 1px solid var(--hex-border); padding: 8px 30px; height: 84px; overflow-y: auto; font-size: 13px; }
+.ab-btn {
+  position: relative;
+  width: 66px; height: 66px;
+  background: linear-gradient(180deg, #161f2e 0%, #070e1a 100%);
+  border: 1px solid var(--hex-gold-dark);
+  display: flex; flex-direction: column; justify-content: center; align-items: center;
+  cursor: pointer; transition: all 0.15s ease;
+  /* Coins coupés LoL */
+  clip-path: polygon(8px 0, 100% 0, 100% calc(100% - 8px), calc(100% - 8px) 100%, 0 100%, 0 8px);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.06), 0 4px 12px rgba(0,0,0,0.8);
+  gap: 2px;
+}
+.ab-btn::after {
+  content: ""; position: absolute; top: 0; left: 15%; right: 15%; height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(240,230,210,0.18), transparent);
+}
+.ab-btn:hover:not(.on-cooldown) {
+  border-color: var(--hex-gold);
+  background: linear-gradient(180deg, #1f2e44 0%, #0d1828 100%);
+  transform: translateY(-3px);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.1), 0 8px 24px rgba(0,0,0,0.9), 0 0 16px rgba(200,155,60,0.15);
+}
+.ab-btn:active:not(.on-cooldown) { transform: translateY(0); }
+
+/* Touche raccourci — coin supérieur gauche */
+.ab-btn .key {
+  position: absolute; top: 3px; left: 5px;
+  font-family: 'Cinzel', serif; font-size: 10px; font-weight: 900;
+  color: var(--hex-gold); line-height: 1;
+  text-shadow: 0 1px 4px rgba(0,0,0,0.9);
+}
+.ab-btn .aname {
+  font-size: 8px; color: var(--hex-text); text-transform: uppercase;
+  text-align: center; padding: 0 4px; letter-spacing: 0.3px; line-height: 1.2;
+  margin-top: 14px; /* espace sous la touche */
+}
+/* Bouton ultime (R) — bordure cyan */
+.ab-btn[data-idx="3"], .ab-btn:nth-child(4) {
+  border-color: var(--hex-magic-dim);
+}
+.ab-btn[data-idx="3"]:hover, .ab-btn:nth-child(4):hover {
+  border-color: var(--hex-magic);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.1), 0 8px 24px rgba(0,0,0,0.9), 0 0 20px rgba(10,200,185,0.2);
+}
+/* Cooldown */
+.ab-btn.on-cooldown {
+  filter: brightness(0.45) saturate(0.3);
+  cursor: not-allowed;
+  border-color: #1a2233;
+}
+.ab-btn.on-cooldown::before {
+  content: ""; position: absolute; inset: 0;
+  background: rgba(0,0,0,0.55);
+  clip-path: polygon(8px 0, 100% 0, 100% calc(100% - 8px), calc(100% - 8px) 100%, 0 100%, 0 8px);
+}
+.ab-btn .cd {
+  position: absolute; font-family: 'Cinzel', serif;
+  font-size: 22px; font-weight: 900;
+  color: var(--hex-gold-light);
+  text-shadow: 0 2px 8px rgba(0,0,0,0.9);
+  z-index: 2;
+}
+
+/* ── JOURNAL D'ACTIONS ── */
+.action-log {
+  flex-shrink: 0;
+  background: rgba(1,6,14,0.97);
+  border-top: 1px solid rgba(30,45,61,0.8);
+  padding: 6px 18px; height: 72px; overflow-y: auto; font-size: 12px;
+}
 .log-line {
-  margin-bottom: 6px; color: var(--hex-text); padding: 3px 10px; border-radius: 3px 8px 8px 3px;
-  border-left: 2px solid var(--hex-gold-dark); background: rgba(255,255,255,0.025);
-  opacity: 0; transform: translateX(-10px); animation: logSlideIn .3s ease forwards;
+  margin-bottom: 4px; color: var(--hex-text); padding: 2px 8px;
+  border-left: 2px solid var(--hex-gold-trim);
+  background: rgba(255,255,255,0.018);
+  opacity: 0; transform: translateX(-8px); animation: logSlideIn .25s ease forwards;
+  line-height: 1.5;
 }
 @keyframes logSlideIn { to { opacity: 1; transform: translateX(0); } }
-.log-line .cname { color: var(--hex-gold-light); font-weight: bold; }
-.log-line .dmg { color: var(--hex-red); font-weight: bold; }
-.log-line .heal { color: var(--hex-green); font-weight: bold; }
+.log-line .cname { color: var(--hex-gold-light); font-weight: 700; }
+.log-line .you { color: var(--hex-magic); font-weight: 700; }
+.log-line .dmg { color: var(--hex-red-bright); font-weight: 700; }
+.log-line .heal { color: var(--hex-green); font-weight: 700; }
 
 /* =========================================
    ===== FIN DE MISSION ====================
@@ -1003,18 +1353,18 @@ body::after {
 
 <!-- TITRE -->
 <div id="screen-title" class="screen active">
+  <div class="t-eyebrow">ABIDJAN · MARCORY · 1996</div>
   <div class="stones-row">
     <div class="stone"></div><div class="stone"></div><div class="stone"></div>
     <div class="stone"></div><div class="stone"></div>
   </div>
   <div class="t-title">DE PIERRE ET DE FORCE</div>
   <div class="t-sub">L ' É V E I L</div>
-  <div class="t-place">ABIDJAN &middot; 1996</div>
-  <div class="t-divider"></div>
+  <div class="t-divider"><div class="t-divider-gem"></div><div class="t-divider-gem"></div><div class="t-divider-gem"></div></div>
   <div class="t-quote">« Dans le silence de Niani, cinq pierres attendaient depuis sept siècles.<br>Cette nuit, à Abidjan, elles ont choisi leurs gardiens. »</div>
   <div id="save-status" class="t-save"></div>
-  <button class="btn" id="btn-start">COMMENCER LA PARTIE</button>
-  <button class="btn btn-sm" id="btn-continue" style="margin-top:10px;display:none">CONTINUER</button>
+  <button class="btn btn-primary" id="btn-start">COMMENCER LA PARTIE</button>
+  <button class="btn btn-sm" id="btn-continue" style="margin-top:12px;display:none">CONTINUER</button>
   <button class="btn btn-sm btn-red" id="btn-reset" style="margin-top:8px;display:none">RECOMMENCER</button>
 </div>
 
@@ -1112,7 +1462,7 @@ body::after {
   </div>
   <div class="deploy-footer">
     <div class="team-preview" id="deploy-team-preview">Équipe : <span>Tarine</span></div>
-    <button class="btn" id="btn-launch">ENTRER EN COMBAT</button>
+    <button class="btn btn-primary" id="btn-launch">ENTRER EN COMBAT</button>
     <div class="no-lives-msg" id="no-lives-msg" style="display:none">Plus de vies — attends la régénération pour repartir en mission.</div>
   </div>
 </div>
@@ -1124,16 +1474,24 @@ body::after {
       <div class="hud-mission" id="hud-mission-name">Mission</div>
       <div class="hud-timer" id="hud-timer">00:00</div>
     </div>
-    <div class="hud-score">
-      <div class="score-ally" id="score-ally">0</div>
-      <div class="score-sep">/</div>
-      <div class="score-enemy" id="score-enemy">0</div>
+    <div class="hud-center">
+      <div class="hud-score">
+        <span class="score-ally" id="score-ally">0</span>
+        <span class="score-sep">—</span>
+        <span class="score-enemy" id="score-enemy">0</span>
+      </div>
     </div>
     <div class="hud-right">
-      <div class="nexus-label">NEXUS ENNEMI</div>
-      <div class="nexus-bar"><div class="nexus-fill enemy" id="nexus-fill" style="width:100%"></div></div>
-      <div class="nexus-label" style="margin-top:4px">NEXUS ALLIÉ</div>
-      <div class="nexus-bar"><div class="nexus-fill ally" id="ally-nexus-fill" style="width:100%"></div></div>
+      <div class="nexus-wrap">
+        <div class="nexus-row">
+          <span class="nexus-tag-enemy">▼ ENE</span>
+          <div class="nexus-bar"><div class="nexus-fill enemy" id="nexus-fill" style="width:100%"></div></div>
+        </div>
+        <div class="nexus-row">
+          <span class="nexus-tag-ally">▲ ALL</span>
+          <div class="nexus-bar"><div class="nexus-fill ally" id="ally-nexus-fill" style="width:100%"></div></div>
+        </div>
+      </div>
     </div>
   </div>
   <div class="narration-box">
@@ -1189,7 +1547,7 @@ body::after {
   <div class="end-narration" id="end-narration"></div>
   <div class="end-rewards" id="end-rewards"></div>
   <div class="end-btns">
-    <button class="btn" id="btn-hub">RETOUR AU HUB</button>
+    <button class="btn btn-primary" id="btn-hub">RETOUR AU HUB</button>
     <button class="btn btn-red" id="btn-retry">RÉESSAYER</button>
   </div>
 </div>
@@ -3842,11 +4200,16 @@ function gameTick(){
     c.abilities.forEach(function(a){if(a.curCd>0)a.curCd--;});
   });
   renderAbilityButtons();
-  // Ennemis agissent toutes les ~2s, alliés toutes les ~4s — pression de base.
-  // + une chance d'action supplémentaire hors cadence pour casser le rythme prévisible.
+  // Ennemis agissent toutes les ~2s, alliés toutes les ~2s aussi (réactivité accrue).
+  // + réaction d'urgence des alliés quand un télégraphe de boss est actif.
   if(tickCount%2===0)iaEnemyAction();
   else if(Math.random()<0.12)iaEnemyAction();
-  if(tickCount%4===0)iaAllyAction();
+  if(tickCount%2===0)iaAllyAction();
+  else if(Math.random()<0.18)iaAllyAction(); // réaction supplémentaire si danger
+  // Réaction d'urgence : si un télégraphe boss est actif, les alliés réagissent immédiatement
+  if(document.querySelectorAll(".fx-telegraph").length>0&&Math.random()<0.70){
+    iaAllyAction();
+  }
   checkGameEnd();
 }
 
@@ -4055,18 +4418,140 @@ function iaEnemyAction(){
   shuffled.slice(0,activeCount).forEach(function(att){enemyAct(att,allyAlive,focusTarget);});
 }
 
+// ===== IA ALLIÉE INTELLIGENTE =====
+// Chaque allié dispose d'un "cerveau" qui prend des décisions contextuelles :
+// • Esquiver les coups spéciaux du boss (fuir la zone télégraphiée)
+// • Soigner l'allié le plus blessé si disponible
+// • Cibler en priorité le boss ou l'ennemi le plus dangereux
+// • Se repositionner pour ne pas rester groupé (cible zonale du boss)
+// • Utiliser ses compétences intelligemment selon son rôle
+
+// Distance entre deux combattants (positions %)
+function distBetween(idA, idB){
+  var a=combat.fighters[idA], b=combat.fighters[idB];
+  if(!a||!b)return 9999;
+  return distPct(a,b);
+}
+
+// Vérifie si un allié est dans une zone de danger boss (télégraphe actif)
+// On repère les fx-telegraph présents dans l'arène pour savoir où fuir
+function isInDangerZone(fighter, safeRadius){
+  var dangZones=[];
+  document.querySelectorAll(".fx-telegraph").forEach(function(el){
+    var lx=parseFloat(el.style.left),ly=parseFloat(el.style.top);
+    if(!isNaN(lx)&&!isNaN(ly))dangZones.push({x:lx,y:ly});
+  });
+  if(!dangZones.length)return false;
+  return dangZones.some(function(z){
+    var dx=fighter.x-z.x, dy=fighter.y-z.y;
+    return Math.sqrt(dx*dx+dy*dy)<(safeRadius||16);
+  });
+}
+
+// Calcule une position de fuite loin des zones de danger (direction opposée au boss)
+function computeFleePos(fighter, boss){
+  var bx=boss?boss.x:50, by=boss?boss.y:50;
+  var dx=fighter.x-bx, dy=fighter.y-by;
+  var len=Math.sqrt(dx*dx+dy*dy)||1;
+  var fleeX=clamp(fighter.x+(dx/len)*20, ARENA_X_MIN, ARENA_X_MAX);
+  var fleeY=clamp(fighter.y+(dy/len)*20, ARENA_Y_MIN, ARENA_Y_MAX);
+  return {x:fleeX, y:fleeY};
+}
+
 function iaAllyAction(){
   var allies=combat.allyTeam.slice(1).filter(aliveFilter);
   var enemies=combat.enemyTeam.filter(aliveFilter);
   if(!allies.length||!enemies.length)return;
-  var att=pick(allies),tgt=pick(enemies);
-  var fa=combat.fighters[att.id],ft=combat.fighters[tgt.id];
-  if(distPct(fa,ft)>ATTACK_RANGE){moveToward(fa,ft,11);updateFighterPos(att.id);return;}
-  var aCrit=Math.random()<0.15;
-  var dmg=Math.max(5,Math.floor((att.atk*(0.6+Math.random()*0.5)-(tgt.def||0)*0.22)*(aCrit?1.6:1)));
-  attackWithDodge(tgt.id,dmg,true,aCrit,save.level);
-  addLog(pick(NARR_ALLY)(att.name,tgt.name,dmg));
-  dashAttack(att.id,tgt.id,aCrit);
+
+  var boss=enemies.find(function(c){return c.isBoss;});
+  var bossFighter=boss?combat.fighters[boss.id]:null;
+
+  allies.forEach(function(att){
+    var fa=combat.fighters[att.id];
+    if(!fa||fa.dead)return;
+
+    // ── PRIORITÉ 1 : ESQUIVE DU BOSS ──────────────────────────────
+    // Si un télégraphe est actif ET que l'allié est dans la zone de danger,
+    // il fuit immédiatement (sans attaquer ce tour).
+    var telegraphs=document.querySelectorAll(".fx-telegraph");
+    if(telegraphs.length>0&&isInDangerZone(fa, 18)){
+      var flee=computeFleePos(fa, bossFighter);
+      var fleeDist=Math.sqrt(Math.pow(flee.x-fa.x,2)+Math.pow(flee.y-fa.y,2));
+      var speed=Math.min(fleeDist, 18); // fuite rapide
+      fa.x=clamp(fa.x+(flee.x-fa.x)/fleeDist*speed, ARENA_X_MIN, ARENA_X_MAX);
+      fa.y=clamp(fa.y+(flee.y-fa.y)/fleeDist*speed, ARENA_Y_MIN, ARENA_Y_MAX);
+      updateFighterPos(att.id);
+      // Animation de "dash de fuite"
+      var el=document.getElementById("fighter-"+att.id);
+      if(el){el.classList.add("dodge");setTimeout(function(){el.classList.remove("dodge");},280);}
+      addLog("<span class='cname'>"+att.name+"</span> esquive l'attaque spéciale !");
+      return; // pas d'attaque ce tour
+    }
+
+    // ── PRIORITÉ 2 : SOIN (si l'allié a une compétence de soin) ────
+    var healAbility=att.abilities?att.abilities.find(function(a){return a.heal&&a.curCd<=0;}):null;
+    if(healAbility){
+      // Cherche l'allié allié avec le moins de vie (si < 55% PV)
+      var woundedAllies=combat.allyTeam.filter(aliveFilter).filter(function(a){
+        var f=combat.fighters[a.id];
+        return f&&!f.dead&&(f.hp/f.maxHp)<0.55;
+      });
+      if(woundedAllies.length>0){
+        var mostWounded=woundedAllies.sort(function(a,b){
+          return (combat.fighters[a.id].hp/combat.fighters[a.id].maxHp)-(combat.fighters[b.id].hp/combat.fighters[b.id].maxHp);
+        })[0];
+        healAbility.curCd=healAbility.cd;
+        healFighter(mostWounded.id, healAbility.heal);
+        castFx(att.id, healAbility.key, true, false);
+        addLog("<span class='cname'>"+att.name+"</span> soigne <span class='you'>"+mostWounded.name+"</span> <span class='heal'>+"+healAbility.heal+" PV</span>");
+        return;
+      }
+    }
+
+    // ── PRIORITÉ 3 : CHOISIR LA MEILLEURE CIBLE ──────────────────
+    // Ordre : 1) boss enragé, 2) boss normal, 3) ennemi avec le plus de PV (tank), 4) ennemi le plus proche
+    var tgt;
+    if(boss&&bossFighter&&!bossFighter.dead){
+      // Cibler le boss en priorité
+      tgt=boss;
+    } else {
+      // Cibler l'ennemi avec le plus de PV restants (focus DPS efficace)
+      tgt=enemies.slice().sort(function(a,b){
+        var fa2=combat.fighters[a.id],fb=combat.fighters[b.id];
+        return (fb?fb.hp:0)-(fa2?fa2.hp:0);
+      })[0]||pick(enemies);
+    }
+    var ft=combat.fighters[tgt.id];
+    if(!ft||ft.dead){tgt=pick(enemies);ft=combat.fighters[tgt.id];}
+    if(!ft)return;
+
+    // ── PRIORITÉ 4 : SE REPOSITIONNER INTELLIGEMMENT ─────────────
+    // Si trop loin, avancer — mais pas en ligne droite si boss frappe cette zone
+    if(distPct(fa,ft)>ATTACK_RANGE){
+      moveToward(fa,ft,11);
+      updateFighterPos(att.id);
+      return;
+    }
+
+    // ── PRIORITÉ 5 : UTILISER UNE COMPÉTENCE OFFENSIVE ───────────
+    var offAbility=att.abilities?att.abilities.find(function(a){return a.dmg&&a.curCd<=0&&Math.random()<0.55;}):null;
+    var aCrit=Math.random()<0.20; // alliés un peu plus critiques = sentiment de puissance
+
+    if(offAbility&&distPct(fa,ft)<=ABILITY_RANGE){
+      offAbility.curCd=offAbility.cd;
+      var abDmg=Math.max(8,Math.floor((offAbility.dmg*(0.85+Math.random()*0.3)-(tgt.def||0)*0.12)*(aCrit?1.6:1)));
+      attackWithDodge(tgt.id,abDmg,true,aCrit,save.level);
+      castFx(att.id, offAbility.key, false, offAbility.key==="R");
+      addLog("<span class='cname'>"+att.name+"</span> utilise <em>"+offAbility.name+"</em> sur <span class='cname'>"+tgt.name+"</span> — <span class='dmg'>-"+abDmg+" PV</span>");
+      dashAttack(att.id,tgt.id,aCrit);
+    } else {
+      // Attaque de base
+      var dmg=Math.max(5,Math.floor((att.atk*(0.65+Math.random()*0.45)-(tgt.def||0)*0.22)*(aCrit?1.6:1)));
+      attackWithDodge(tgt.id,dmg,true,aCrit,save.level);
+      addLog(pick(NARR_ALLY)(att.name,tgt.name,dmg));
+      dashAttack(att.id,tgt.id,aCrit);
+    }
+  });
 }
 
 // ===== CONTRÔLES : CLAVIER =====
