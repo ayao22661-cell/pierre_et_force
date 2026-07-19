@@ -502,148 +502,221 @@ body::after {
 .deploy-footer { background: var(--hex-panel); padding: 15px 30px; border-top: 1px solid var(--hex-border); display: flex; justify-content: space-between; align-items: center; }
 
 /* =========================================
-   ===== ARÈNE DE COMBAT LIBRE (MOBA) ======
+   ===== ARÈNE 2.5D STYLE FAILLE ============
    ========================================= */
 #screen-game.screen.active { height: 100vh; height: 100dvh; max-height: 100vh; max-height: 100dvh; }
-.battle-zone { flex: 1; min-height: 0; position: relative; padding: 8px 10px; display: flex; }
+.battle-zone {
+  flex: 1; min-height: 0; position: relative;
+  padding: 6px 8px; display: flex;
+  /* Perspective globale pour l'effet 2.5D */
+  perspective: 800px;
+}
+
 .arena {
-  position: relative; flex: 1; border-radius: 18px; overflow: hidden;
-  /* Fond riche : sol de pierre ancienne style Faille de l'Invocateur */
-  background:
-    /* Pavés : grille subtile diagonale */
-    repeating-linear-gradient(45deg,  rgba(0,0,0,0.08) 0px, rgba(0,0,0,0.08) 1px, transparent 1px, transparent 28px),
-    repeating-linear-gradient(-45deg, rgba(0,0,0,0.08) 0px, rgba(0,0,0,0.08) 1px, transparent 1px, transparent 28px),
-    /* Zones de couleur latérales */
-    radial-gradient(ellipse 60% 50% at 5% 85%,  rgba(15,100,55,0.38) 0%, transparent 60%),
-    radial-gradient(ellipse 60% 50% at 95% 15%, rgba(180,30,30,0.30) 0%, transparent 60%),
-    /* Lueur magique centrale */
-    radial-gradient(ellipse 45% 35% at 50% 50%, rgba(10,40,80,0.55) 0%, transparent 75%),
-    /* Liseré de terrain vert sombre en bas, rouge sombre en haut */
-    linear-gradient(175deg,
-      #110a0a 0%, #0f1408 12%, #081a10 28%,
-      #061220 45%, #0a1008 62%,
-      #141005 78%, #0d080a 92%, #1a0a0a 100%);
+  position: relative; flex: 1;
+  border-radius: 14px; overflow: hidden;
   border: 1px solid var(--hex-gold-trim);
   box-shadow:
-    inset 0 0 100px rgba(0,0,0,0.75),
-    inset 0 0 30px rgba(200,155,60,0.04),
-    0 0 0 1px rgba(200,155,60,0.08),
-    0 6px 30px rgba(0,0,0,0.8);
+    0 0 0 1px rgba(200,155,60,0.12),
+    0 8px 40px rgba(0,0,0,0.9),
+    inset 0 0 60px rgba(0,0,0,0.5);
   touch-action: none;
+  background: #010a06;
 }
-/* Texture "terrain" : grain + vignettage + nervures pierres façon Faille de l'Invocateur */
-.arena::before {
-  content: ""; position: absolute; inset: 0; pointer-events: none; z-index: 1;
-  background-image:
-    /* Vignette bords */
-    radial-gradient(ellipse at 50% 50%, transparent 35%, rgba(0,0,0,0.6) 100%),
-    /* Nervures pierre hextech (or très subtil) */
-    repeating-linear-gradient(60deg,  rgba(200,155,60,0.028) 0 1px, transparent 1px 34px),
-    repeating-linear-gradient(-60deg, rgba(200,155,60,0.028) 0 1px, transparent 1px 34px),
-    /* Craquelures horizontales très subtiles */
-    repeating-linear-gradient(0deg,   rgba(0,0,0,0.06) 0 1px, transparent 1px 18px);
+
+/* ── Couche 1 : arrière-plan lointain (bg.jpg) avec flou de profondeur ── */
+.arena-bg {
+  position: absolute; inset: 0; z-index: 0; pointer-events: none;
+  background-image: url('bg.jpg');
+  background-size: cover;
+  background-position: center 30%;
+  filter: blur(1.5px) brightness(0.45) saturate(0.7);
+  transform: scaleY(0.85) translateY(-6%);
+  transform-origin: top center;
 }
-/* Couche "ambiance magique" par-dessus tout le terrain */
-.arena::after {
-  content: ""; position: absolute; inset: 0; pointer-events: none; z-index: 1;
-  /* Lueur centrale magique cyan très douce */
-  background:
-    radial-gradient(ellipse 70% 30% at 50% 48%,
-      rgba(10,200,185,0.045) 0%, transparent 70%),
-    /* Coins sombres pour délimiter le terrain */
-    radial-gradient(ellipse 30% 30% at 0% 0%,   rgba(0,0,0,0.35) 0%, transparent 60%),
-    radial-gradient(ellipse 30% 30% at 100% 0%,  rgba(0,0,0,0.35) 0%, transparent 60%),
-    radial-gradient(ellipse 30% 30% at 0% 100%,  rgba(0,0,0,0.35) 0%, transparent 60%),
-    radial-gradient(ellipse 30% 30% at 100% 100%,rgba(0,0,0,0.35) 0%, transparent 60%);
-}
-/* Rivière diagonale animée : ligne d'énergie mystique traversant le plateau */
-.arena-river {
-  position: absolute; z-index: 1; pointer-events: none;
-  left: -10%; right: -10%; top: 46%; height: 15%;
-  transform: rotate(-9deg);
-  background: linear-gradient(180deg,
-    transparent 0%, rgba(10,200,185,0.05) 15%,
-    rgba(10,200,185,0.16) 50%, rgba(10,200,185,0.05) 85%, transparent 100%);
-  filter: blur(2px);
-}
-.arena-river::after {
+/* Dégradé de fondu bas → sol */
+.arena-bg::after {
   content: ""; position: absolute; inset: 0;
-  background: repeating-linear-gradient(100deg, transparent 0 24px, rgba(159,216,255,0.14) 24px 26px);
-  animation: riverFlow 5s linear infinite;
-  opacity: .7;
+  background: linear-gradient(
+    180deg,
+    transparent 0%,
+    transparent 40%,
+    rgba(1,8,3,0.7) 70%,
+    rgba(1,8,3,1) 100%
+  );
 }
-@keyframes riverFlow { 0% { transform: translateX(0); } 100% { transform: translateX(50px); } }
-/* Buissons : touffes verte façon "brush" LoL, cachettes tactiques */
-.arena-brush {
-  position: absolute; z-index: 1; pointer-events: none; border-radius: 50%;
-  background: radial-gradient(circle, rgba(19,137,85,0.38) 0%, rgba(19,137,85,0.12) 55%, transparent 75%);
-  filter: blur(1px);
+
+/* ── Couche 2 : sol en perspective isométrique 2.5D (floor.jpg) ── */
+.arena-floor {
+  position: absolute; z-index: 1; pointer-events: none;
+  /* Le sol occupe la moitié basse de l'arène et est incliné en perspective */
+  left: -15%; right: -15%;
+  bottom: -10%; height: 68%;
+  background-image: url('floor.jpg');
+  background-size: 220px 220px;
+  background-repeat: repeat;
+  /* Perspective isométrique : skew + rotation pour simuler le sol vu de haut-en-avant */
+  transform: perspective(400px) rotateX(52deg);
+  transform-origin: bottom center;
+  filter: brightness(0.62) saturate(0.8);
 }
-.arena-brush.b1 { left: 6%; top: 60%; width: 20%; height: 16%; }
-.arena-brush.b2 { right: 6%; top: 24%; width: 20%; height: 16%; }
-.arena-brush.b3 { left: 42%; top: 8%; width: 16%; height: 12%; }
-/* Cristaux de nexus aux coins : remplace les anciens halos flous par des joyaux hextech */
+/* Fondu haut du sol (vers l'arrière-plan) */
+.arena-floor::before {
+  content: ""; position: absolute; inset: 0;
+  background: linear-gradient(
+    180deg,
+    rgba(1,8,3,1) 0%,
+    rgba(1,8,3,0.6) 25%,
+    transparent 55%
+  );
+}
+/* Teinte magique verte/cyan sur le sol */
+.arena-floor::after {
+  content: ""; position: absolute; inset: 0;
+  background:
+    radial-gradient(ellipse 80% 40% at 50% 80%, rgba(10,200,185,0.06) 0%, transparent 70%),
+    radial-gradient(ellipse 50% 30% at 15% 90%, rgba(19,137,85,0.14) 0%, transparent 60%),
+    radial-gradient(ellipse 50% 30% at 85% 90%, rgba(180,30,30,0.10) 0%, transparent 60%);
+}
+
+/* ── Couche 3 : mur gauche ── */
+.arena-wall-left {
+  position: absolute; z-index: 2; pointer-events: none;
+  left: -2%; bottom: 0; width: 22%; height: 80%;
+  background-image: url('wall_left.png');
+  background-size: contain;
+  background-repeat: no-repeat;
+  background-position: bottom left;
+  filter: brightness(0.55) saturate(0.7);
+}
+/* Mur droit = même image flippée */
+.arena-wall-right {
+  position: absolute; z-index: 2; pointer-events: none;
+  right: -2%; bottom: 0; width: 22%; height: 80%;
+  background-image: url('wall_left.png');
+  background-size: contain;
+  background-repeat: no-repeat;
+  background-position: bottom right;
+  filter: brightness(0.55) saturate(0.7);
+  transform: scaleX(-1);
+}
+
+/* ── Couche 4 : torches aux coins ── */
+.arena-torch {
+  position: absolute; z-index: 3; pointer-events: none;
+  width: 38px; height: 72px;
+  background-image: url('torch.png');
+  background-size: contain;
+  background-repeat: no-repeat;
+  background-position: bottom center;
+  filter: brightness(0.85);
+}
+.arena-torch.tl { left: 14%; bottom: 28%; }
+.arena-torch.tr { right: 14%; bottom: 28%; transform: scaleX(-1); }
+/* Lueur de flamme animée autour de chaque torche */
+.arena-torch::after {
+  content: ""; position: absolute;
+  top: 0; left: 50%; transform: translateX(-50%);
+  width: 40px; height: 40px; border-radius: 50%;
+  background: radial-gradient(circle, rgba(255,160,40,0.55) 0%, transparent 70%);
+  animation: torchFlicker 1.8s ease-in-out infinite alternate;
+  filter: blur(4px);
+}
+.arena-torch.tr::after { animation-delay: 0.6s; }
+@keyframes torchFlicker {
+  0%   { opacity: 0.6; transform: translateX(-50%) scale(0.85); }
+  30%  { opacity: 1;   transform: translateX(-48%) scale(1.1); }
+  60%  { opacity: 0.8; transform: translateX(-52%) scale(0.95); }
+  100% { opacity: 1;   transform: translateX(-50%) scale(1.15); }
+}
+/* Projection de lumière dorée sur le sol depuis les torches */
+.arena-torch-glow {
+  position: absolute; z-index: 2; pointer-events: none;
+  width: 120px; height: 60px; border-radius: 50%;
+  background: radial-gradient(ellipse, rgba(255,140,20,0.12) 0%, transparent 70%);
+  filter: blur(6px);
+  animation: torchGlow 1.8s ease-in-out infinite alternate;
+}
+.arena-torch-glow.tl { left: 8%; bottom: 24%; }
+.arena-torch-glow.tr { right: 8%; bottom: 24%; animation-delay: 0.6s; }
+@keyframes torchGlow {
+  0%   { opacity: 0.5; transform: scale(0.9); }
+  100% { opacity: 1;   transform: scale(1.1); }
+}
+
+/* ── Couche 5 : vignette + ambiance par-dessus tout ── */
+.arena-vignette {
+  position: absolute; inset: 0; z-index: 3; pointer-events: none;
+  background:
+    /* Vignette bords noirs */
+    radial-gradient(ellipse 90% 85% at 50% 50%, transparent 50%, rgba(0,0,0,0.65) 100%),
+    /* Ligne magique centrale (rivière d'énergie) */
+    radial-gradient(ellipse 80% 8% at 50% 50%, rgba(10,200,185,0.07) 0%, transparent 100%);
+}
+
+/* ── Zones d'équipe (lueurs latérales) ── */
 .arena-zone {
-  position: absolute; top: 6%; bottom: 6%; width: 20%; pointer-events: none; z-index: 1;
+  position: absolute; top: 10%; bottom: 0; width: 22%;
+  pointer-events: none; z-index: 2;
+  filter: blur(20px); opacity: 0.5;
+  border-radius: 50%;
 }
-.arena-zone::before {
-  content: ""; position: absolute; width: 46px; height: 46px;
-  clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
-  animation: hexPulse 2.6s ease-in-out infinite;
-}
-.arena-zone.a-side { left: -6%; background: radial-gradient(circle, rgba(19,137,85,0.30), transparent 70%); }
-.arena-zone.a-side::before { left: 22%; bottom: 14%; background: linear-gradient(180deg, #39FF7A, #138955); box-shadow: 0 0 22px rgba(19,137,85,0.85); }
-.arena-zone.e-side { right: -6%; background: radial-gradient(circle, rgba(228,63,90,0.28), transparent 70%); }
-.arena-zone.e-side::before { right: 22%; top: 14%; background: linear-gradient(180deg, #ff8a8a, var(--hex-red)); box-shadow: 0 0 22px rgba(228,63,90,0.85); }
-@keyframes hexPulse { 0%,100% { transform: scale(1); opacity: .85; } 50% { transform: scale(1.12); opacity: 1; } }
-/* Joyaux dorés hextech aux 4 coins de l'arène, en écho au style du client LoL */
+.arena-zone.a-side { left: -4%; background: radial-gradient(circle, rgba(19,137,85,0.5), transparent 70%); }
+.arena-zone.e-side { right: -4%; background: radial-gradient(circle, rgba(228,63,90,0.4), transparent 70%); }
+
+/* ── Joyaux Hextech aux coins ── */
 .arena-corner-gem {
-  position: absolute; z-index: 2; width: 16px; height: 16px; pointer-events: none;
+  position: absolute; z-index: 10; width: 14px; height: 14px; pointer-events: none;
   background: linear-gradient(135deg, var(--hex-gold-light), var(--hex-gold) 60%, var(--hex-gold-dark));
   clip-path: polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%);
-  box-shadow: 0 0 10px rgba(200,155,60,0.7);
+  box-shadow: 0 0 10px rgba(200,155,60,0.8);
 }
-.arena-corner-gem.tl { top: 10px; left: 10px; }
-.arena-corner-gem.tr { top: 10px; right: 10px; }
-.arena-corner-gem.bl { bottom: 10px; left: 10px; }
-.arena-corner-gem.br { bottom: 10px; right: 10px; }
+.arena-corner-gem.tl { top: 8px; left: 8px; }
+.arena-corner-gem.tr { top: 8px; right: 8px; }
+.arena-corner-gem.bl { bottom: 8px; left: 8px; }
+.arena-corner-gem.br { bottom: 8px; right: 8px; }
+
+/* ── Ligne de séparation centrale (mid) ── */
 .arena-mid {
-  position: absolute; left: 50%; top: 6%; bottom: 6%; width: 2px; transform: translateX(-50%);
-  background: linear-gradient(180deg, transparent, rgba(200,155,60,0.35), transparent); pointer-events: none;
+  position: absolute; left: 50%; top: 8%; bottom: 4%; width: 1px;
+  transform: translateX(-50%);
+  background: linear-gradient(180deg, transparent 0%, rgba(200,155,60,0.2) 40%, rgba(200,155,60,0.2) 60%, transparent 100%);
+  pointer-events: none; z-index: 4;
 }
-/* Runes gravées au sol : cercles archaïques décoratifs */
+
+/* ── Ombres portées sous les tokens (effet 2.5D) ── */
+.token-shadow {
+  position: absolute;
+  width: 44px; height: 14px;
+  border-radius: 50%;
+  background: radial-gradient(ellipse, rgba(0,0,0,0.55) 0%, transparent 75%);
+  transform: translate(-50%, 18px);
+  pointer-events: none;
+  z-index: 4;
+  filter: blur(2px);
+}
+/* Les tokens sont au-dessus de la vignette */
+.token { z-index: 6; }
+.token.player { z-index: 8; }
+.token.boss { z-index: 7; }
+
+/* Runes au sol */
 .arena-rune {
-  position: absolute; pointer-events: none; z-index: 1; border-radius: 50%;
-  border: 1px solid rgba(200,155,60,0.08);
+  position: absolute; pointer-events: none; z-index: 2; border-radius: 50%;
+  border: 1px solid rgba(200,155,60,0.07);
   animation: runePulse 6s ease-in-out infinite;
 }
 .arena-rune::after {
   content: ""; position: absolute; inset: 6px; border-radius: 50%;
-  border: 1px solid rgba(10,200,185,0.07);
+  border: 1px solid rgba(10,200,185,0.06);
 }
-.arena-rune.r1 {
-  width: 80px; height: 80px; left: 18%; top: 55%;
-  background: radial-gradient(circle, rgba(200,155,60,0.04) 0%, transparent 70%);
-  animation-delay: 0s;
-}
-.arena-rune.r2 {
-  width: 60px; height: 60px; right: 20%; bottom: 28%;
-  background: radial-gradient(circle, rgba(10,200,185,0.04) 0%, transparent 70%);
-  border-color: rgba(10,200,185,0.08); animation-delay: 2s;
-}
-.arena-rune.r2::after { border-color: rgba(200,155,60,0.06); }
-.arena-rune.r3 {
-  width: 50px; height: 50px; left: 46%; top: 20%;
-  background: radial-gradient(circle, rgba(200,155,60,0.035) 0%, transparent 70%);
-  animation-delay: 4s;
-}
+.arena-rune.r1 { width: 80px; height: 80px; left: 18%; top: 55%; animation-delay: 0s; }
+.arena-rune.r2 { width: 60px; height: 60px; right: 20%; bottom: 28%; border-color: rgba(10,200,185,0.07); animation-delay: 2s; }
+.arena-rune.r3 { width: 50px; height: 50px; left: 46%; top: 22%; animation-delay: 4s; }
 @keyframes runePulse {
-  0%,100% { opacity: 0.6; transform: scale(1); }
-  50% { opacity: 1; transform: scale(1.06); }
+  0%,100% { opacity: 0.5; transform: scale(1); }
+  50% { opacity: 0.9; transform: scale(1.06); }
 }
-.arena-zone { position: absolute; top: 6%; bottom: 6%; width: 18%; border-radius: 50%; filter: blur(24px); pointer-events: none; opacity: .55; }
-.arena-zone.a-side { left: -6%; background: radial-gradient(circle, rgba(19,137,85,0.35), transparent 70%); }
-.arena-zone.e-side { right: -6%; background: radial-gradient(circle, rgba(228,63,90,0.35), transparent 70%); }
 
 .arena-toast {
   position: absolute; top: 10px; left: 50%; transform: translateX(-50%);
@@ -1586,21 +1659,26 @@ body::after {
   </div>
   <div class="battle-zone">
     <div class="arena" id="arena">
-      <div class="arena-river"></div>
-      <div class="arena-brush b1"></div>
-      <div class="arena-brush b2"></div>
-      <div class="arena-brush b3"></div>
-      <!-- Pierres/ruines décoratives au sol -->
+      <!-- Couches de décor 2.5D (ordre : fond → sol → murs → torches → vignette → tokens) -->
+      <div class="arena-bg"></div>
+      <div class="arena-floor"></div>
+      <div class="arena-wall-left"></div>
+      <div class="arena-wall-right"></div>
+      <div class="arena-torch-glow tl"></div>
+      <div class="arena-torch-glow tr"></div>
+      <div class="arena-torch tl"></div>
+      <div class="arena-torch tr"></div>
       <div class="arena-rune r1"></div>
       <div class="arena-rune r2"></div>
       <div class="arena-rune r3"></div>
+      <div class="arena-zone a-side"></div>
+      <div class="arena-zone e-side"></div>
+      <div class="arena-mid"></div>
+      <div class="arena-vignette"></div>
       <div class="arena-corner-gem tl"></div>
       <div class="arena-corner-gem tr"></div>
       <div class="arena-corner-gem bl"></div>
       <div class="arena-corner-gem br"></div>
-      <div class="arena-zone a-side"></div>
-      <div class="arena-zone e-side"></div>
-      <div class="arena-mid"></div>
       <div class="side-label a">GARDIENS DU SUD</div>
       <div class="side-label e">EMPIRE DU NORD</div>
       <div class="boss-hpbar" id="boss-hpbar" style="display:none">
@@ -4786,6 +4864,7 @@ function fighterTokenHtml(c,f,side){
   var pct=Math.round((f.hp/f.maxHp)*100);
   var cls="token "+side+(f.dead?" dead":"")+(c.isPlayer?" player":"")+(c.isBoss?" boss":"")+(c.enraged?" enrage":"");
   return '<div class="'+cls+'" id="fighter-'+c.id+'" style="left:'+f.x+'%;top:'+f.y+'%" data-id="'+c.id+'" data-side="'+side+'">'+
+    '<div class="token-shadow"></div>'+
     '<div class="token-avatar-wrap">'+
       '<img class="token-avatar" src="'+IMGS[c.key]+'" alt="'+c.name+'" onerror="this.style.visibility=\'hidden\'">'+
       '<div class="token-ring"></div>'+
