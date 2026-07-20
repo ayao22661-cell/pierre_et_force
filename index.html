@@ -1483,6 +1483,164 @@ body::after {
 ::-webkit-scrollbar-thumb:hover { background: var(--hex-gold-dark); }
 
 /* =========================================
+   ===== ANIMATIONS HUB — STYLE LOL CLIENT =
+   ========================================= */
+
+/* Fond animé du Hub */
+#screen-hub { position: relative; overflow: hidden; }
+#screen-hub::before {
+  content: "";
+  position: absolute; inset: 0; z-index: 0; pointer-events: none;
+  background:
+    radial-gradient(ellipse 70% 50% at 20% 80%, rgba(10,200,185,0.04) 0%, transparent 60%),
+    radial-gradient(ellipse 60% 40% at 80% 20%, rgba(200,155,60,0.05) 0%, transparent 60%);
+  animation: hubAmbientShift 8s ease-in-out infinite alternate;
+}
+@keyframes hubAmbientShift {
+  0%   { opacity: 0.6; transform: scale(1); }
+  100% { opacity: 1;   transform: scale(1.04); }
+}
+#screen-hub .hub-header,
+#screen-hub .hub-body,
+#screen-hub .hub-tabs { position: relative; z-index: 1; }
+
+/* Scan lumineux header */
+.hub-header { position: relative; overflow: hidden; }
+.hub-header::before {
+  content: "";
+  position: absolute; top: 0; left: -100%; width: 60%; height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(200,155,60,0.06), transparent);
+  animation: hubHeaderScan 6s linear infinite;
+  pointer-events: none;
+}
+@keyframes hubHeaderScan {
+  0%   { left: -60%; }
+  100% { left: 140%; }
+}
+
+/* Onglets : lueur active + transition */
+.hub-tab-btn { transition: color .25s ease, transform .2s ease; overflow: hidden; }
+.hub-tab-btn::after {
+  content: "";
+  position: absolute; inset: 0;
+  background: radial-gradient(ellipse at 50% 100%, rgba(200,155,60,0.1) 0%, transparent 70%);
+  opacity: 0; transition: opacity .25s ease;
+}
+.hub-tab-btn.active::after { opacity: 1; }
+.hub-tab-btn:active { transform: scale(0.92); }
+.hub-tab-btn.active::before { animation: tabGlowPulse 2s ease-in-out infinite; }
+@keyframes tabGlowPulse {
+  0%, 100% { box-shadow: 0 0 6px rgba(200,155,60,0.4); opacity: 0.8; }
+  50%       { box-shadow: 0 0 14px rgba(200,155,60,0.9); opacity: 1; }
+}
+
+/* Transition panels */
+.hub-panel.active { animation: panelSlideIn .32s cubic-bezier(.2,.8,.3,1) both; }
+@keyframes panelSlideIn {
+  from { opacity: 0; transform: translateY(12px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* Scan sur cartes disponibles */
+.mission-card.available { position: relative; border-color: var(--hex-magic-dim); }
+.mission-card.available::before {
+  content: "";
+  position: absolute; inset: 0;
+  background: linear-gradient(90deg, transparent, rgba(10,200,185,0.07), transparent);
+  transform: translateX(-100%);
+  animation: missionScan 3.5s ease-in-out infinite;
+  pointer-events: none; z-index: 2;
+}
+@keyframes missionScan {
+  0%   { transform: translateX(-100%); }
+  50%  { transform: translateX(200%); }
+  100% { transform: translateX(200%); }
+}
+
+/* Numéro mission disponible */
+.mission-card.available .m-num { animation: numPulse 2s ease-in-out infinite; }
+@keyframes numPulse {
+  0%, 100% { box-shadow: 0 0 6px rgba(10,200,185,0.3); }
+  50%       { box-shadow: 0 0 18px rgba(10,200,185,0.7), 0 0 30px rgba(10,200,185,0.2); }
+}
+
+/* Mission terminée */
+.mission-card.done .m-num { animation: doneGlow 3s ease-in-out infinite; }
+@keyframes doneGlow {
+  0%, 100% { box-shadow: 0 0 4px rgba(19,137,85,0.2); }
+  50%       { box-shadow: 0 0 12px rgba(19,137,85,0.5); }
+}
+
+/* Alliés : scan hover */
+.ally-row:not(.ally-locked) { position: relative; overflow: hidden; }
+.ally-row:not(.ally-locked)::before {
+  content: "";
+  position: absolute; top: 0; left: -80%; width: 50%; height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(200,155,60,0.06), transparent);
+  transition: left .5s ease; pointer-events: none;
+}
+.ally-row:not(.ally-locked):hover::before { left: 150%; }
+.ally-img { transition: all .25s ease; }
+.ally-row:not(.ally-locked):hover .ally-img {
+  transform: scale(1.08); border-color: var(--hex-gold);
+  box-shadow: 0 0 16px rgba(200,155,60,0.55), 0 0 4px rgba(200,155,60,0.3);
+}
+.ally-badge { animation: badgePulse 2.8s ease-in-out infinite; }
+@keyframes badgePulse {
+  0%, 100% { box-shadow: none; }
+  50%       { box-shadow: 0 0 8px rgba(19,137,85,0.5); }
+}
+
+/* Journal hover */
+.j-entry { transition: transform .2s ease, border-left-color .2s ease, box-shadow .2s ease; }
+.j-entry:hover {
+  transform: translateX(5px); border-left-color: var(--hex-gold);
+  box-shadow: 0 4px 16px rgba(0,0,0,0.4), -2px 0 0 var(--hex-gold-dark);
+}
+
+/* Barre XP shimmer */
+.xp-fill { position: relative; overflow: hidden; transition: width .6s cubic-bezier(.2,.8,.3,1); }
+.xp-fill::after {
+  content: "";
+  position: absolute; inset: 0;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.25), transparent);
+  animation: xpShimmer 2.2s linear infinite;
+}
+@keyframes xpShimmer {
+  0%   { transform: translateX(-100%); }
+  100% { transform: translateX(200%); }
+}
+
+/* Stats profil flash */
+.stat-val { display: inline-block; animation: statAppear .4s ease-out both; }
+@keyframes statAppear {
+  from { opacity: 0; transform: translateX(6px); color: var(--hex-gold-bright); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+
+/* Coeurs de vie */
+.life-heart:not(.empty) { display: inline-block; animation: heartBeat 1.8s ease-in-out infinite; }
+.life-heart:nth-child(2) { animation-delay: .15s; }
+.life-heart:nth-child(3) { animation-delay: .30s; }
+@keyframes heartBeat {
+  0%, 80%, 100% { transform: scale(1); }
+  40%           { transform: scale(1.2); text-shadow: 0 0 10px rgba(228,63,90,0.9); }
+}
+
+/* Acte label underline */
+.acte-label { position: relative; }
+.acte-label::after {
+  content: "";
+  position: absolute; bottom: -6px; left: 0; right: 0; height: 1px;
+  background: linear-gradient(90deg, var(--hex-gold-dark), var(--hex-gold) 40%, transparent);
+  animation: acteLineGrow .6s ease-out both; transform-origin: left;
+}
+@keyframes acteLineGrow {
+  from { transform: scaleX(0); opacity: 0; }
+  to   { transform: scaleX(1); opacity: 1; }
+}
+
+/* =========================================
    ===== RESPONSIVE MOBILE =================
    ========================================= */
 @media (max-width: 900px) {
@@ -1536,6 +1694,7 @@ body::after {
 
 <!-- HUB -->
 <div id="screen-hub" class="screen">
+  <canvas id="hub-particles" style="position:absolute;inset:0;z-index:0;pointer-events:none;"></canvas>
   <div class="hub-header">
     <div>
       <div class="hub-acte" id="hub-acte-label">ACTE I</div>
@@ -3903,7 +4062,7 @@ function cloneChamp(key){
   var base=BASE_CHAMPIONS[key];
   if(!base)return null;
   var c=JSON.parse(JSON.stringify(base));
-  c.abilities.forEach(function(a){a.curCd=0;});
+  c.abilities.forEach(function(a){ a.curCd = a.heal ? a.cd : 0; });
   c.level=save.level; // niveau de référence par défaut (utilisé pour l'esquive), réécrit pour les ennemis en combat
   // Apply level bonuses for player
   if(key==="TARINE"){
@@ -3947,7 +4106,7 @@ function enemyScaleFactor(missionNum,playerLevel){
   var n=Math.max(0,missionNum-1);
   var lvl=Math.max(0,(playerLevel||1)-1);
   // Base liée à la mission (progression de la campagne)
-  var missionHp=1.8+n*0.14, missionAtk=1.05+n*0.06;
+  var missionHp=2.2+n*0.14, missionAtk=1.05+n*0.06;
   // Multiplicateur additionnel lié au niveau du joueur : plus Tarine monte en niveau,
   // plus les ennemis (même sur une mission déjà faite) deviennent costauds — évite que
   // le jeu devienne trivial une fois le personnage bien monté en puissance.
@@ -4282,7 +4441,7 @@ function startCombat(missionId,selectedAllies){
   });
   // Barres de vie alliées (joueur + IA alliées) rallongées : combats moins expéditifs,
   // plus de marge pour réagir et repositionner l'équipe.
-  var ALLY_HP_MULT=1.55;
+  var ALLY_HP_MULT=1.90;
   combat.allyTeam.forEach(function(c){
     c.maxHp=Math.round(c.maxHp*ALLY_HP_MULT);
     c.hp=c.maxHp;
@@ -4334,7 +4493,7 @@ function startCombat(missionId,selectedAllies){
   // Init fighters HP + positions dans l'arène
   combat.allyTeam.concat(combat.enemyTeam).forEach(function(c){
     combat.fighters[c.id]={hp:c.hp,maxHp:c.maxHp,dead:false,x:50,y:50};
-    c.abilities.forEach(function(a){a.curCd=0;});
+    c.abilities.forEach(function(a){ a.curCd = a.heal ? a.cd : 0; });
   });
   initArenaPositions();
 
@@ -5042,6 +5201,66 @@ document.addEventListener("animationend",function(e){
 // ===== INIT =====
 syncLives();
 initTitle();
+
+// ===== PARTICULES HUB =====
+(function initHubParticles(){
+  var canvas=document.getElementById("hub-particles");
+  if(!canvas)return;
+  var ctx=canvas.getContext("2d");
+  var particles=[];
+  var NUM=38;
+
+  function resize(){
+    canvas.width=canvas.offsetWidth||window.innerWidth;
+    canvas.height=canvas.offsetHeight||window.innerHeight;
+  }
+  resize();
+  window.addEventListener("resize",resize);
+
+  // Palette : or, cyan, blanc subtil
+  var COLORS=["rgba(200,155,60,","rgba(10,200,185,","rgba(240,230,210,"];
+
+  for(var i=0;i<NUM;i++){
+    particles.push({
+      x:Math.random()*window.innerWidth,
+      y:Math.random()*window.innerHeight,
+      size:Math.random()*2+0.6,
+      alpha:Math.random()*0.35+0.05,
+      vx:(Math.random()-0.5)*0.18,
+      vy:-(Math.random()*0.22+0.06),
+      color:COLORS[Math.floor(Math.random()*COLORS.length)],
+      flicker:Math.random()*Math.PI*2
+    });
+  }
+
+  var raf=null;
+  function drawParticles(ts){
+    if(!document.getElementById("screen-hub").classList.contains("active")){
+      raf=requestAnimationFrame(drawParticles); return;
+    }
+    ctx.clearRect(0,0,canvas.width,canvas.height);
+    particles.forEach(function(p){
+      p.flicker+=0.025;
+      var a=p.alpha*(0.7+0.3*Math.sin(p.flicker));
+      ctx.beginPath();
+      // Losange hextech
+      var s=p.size;
+      ctx.moveTo(p.x,p.y-s);
+      ctx.lineTo(p.x+s,p.y);
+      ctx.lineTo(p.x,p.y+s);
+      ctx.lineTo(p.x-s,p.y);
+      ctx.closePath();
+      ctx.fillStyle=p.color+a+")";
+      ctx.fill();
+      p.x+=p.vx; p.y+=p.vy;
+      if(p.y<-10){ p.y=canvas.height+10; p.x=Math.random()*canvas.width; }
+      if(p.x<-10) p.x=canvas.width+10;
+      if(p.x>canvas.width+10) p.x=-10;
+    });
+    raf=requestAnimationFrame(drawParticles);
+  }
+  raf=requestAnimationFrame(drawParticles);
+})();
 
 })();
 </script>
