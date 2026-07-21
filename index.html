@@ -3576,7 +3576,7 @@ var CAMPAIGN = [
 // Ajuste ces deux valeurs pour changer le rythme : nombre de vies max et minutes pour regagner 1 vie.
 // Ex: LIFE_REGEN_MINUTES=1 → régénération à la minute (test) ; 60 → une vie par heure.
 var LIFE_MAX=5;
-var LIFE_REGEN_MINUTES=20;
+var LIFE_REGEN_MINUTES=90;  // 20 → 90 minutes par vie
 var LIFE_REGEN_MS=LIFE_REGEN_MINUTES*60*1000;
 
 function defaultSave(){
@@ -4439,9 +4439,8 @@ function startCombat(missionId,selectedAllies){
     var c=cloneChamp(k);
     if(c)combat.allyTeam.push(c);
   });
-  // Barres de vie alliées (joueur + IA alliées) rallongées : combats moins expéditifs,
-  // plus de marge pour réagir et repositionner l'équipe.
-  var ALLY_HP_MULT=1.90;
+  // Barres de vie alliées (joueur + IA alliées) rallongées : combats longs (min 5 min).
+  var ALLY_HP_MULT=5.50;
   combat.allyTeam.forEach(function(c){
     c.maxHp=Math.round(c.maxHp*ALLY_HP_MULT);
     c.hp=c.maxHp;
@@ -4457,7 +4456,7 @@ function startCombat(missionId,selectedAllies){
     var c=cloneChamp(k);
     if(c){
       c.level=m.num;
-      c.maxHp=Math.round(c.maxHp*eScale.hp);c.hp=c.maxHp;
+      c.maxHp=Math.round(c.maxHp*eScale.hp*3.2);c.hp=c.maxHp;  // PV x3.2 pour combats longs
       c.atk=Math.round(c.atk*eScale.atk);
       c.abilities.forEach(function(a){
         if(a.dmg)a.dmg=Math.round(a.dmg*eScale.atk);
@@ -4465,7 +4464,7 @@ function startCombat(missionId,selectedAllies){
       });
       if(isBossMission&&!bossAssigned&&idx===0){
         c.isBoss=true;bossAssigned=true;c.enraged=false;
-        c.maxHp=Math.round(c.maxHp*1.35);c.hp=c.maxHp;
+        c.maxHp=Math.round(c.maxHp*1.5);c.hp=c.maxHp;  // boss encore plus costaud
         c.atk=Math.round(c.atk*1.2);
       }
       combat.enemyTeam.push(c);
@@ -4480,7 +4479,7 @@ function startCombat(missionId,selectedAllies){
       c.id=c.id+"_extra"+i;
       c.name=c.name+" (Ombre)";
       c.level=m.num;
-      c.hp=Math.round(c.maxHp*0.65*eScale.hp);c.maxHp=c.hp;
+      c.hp=Math.round(c.maxHp*2.2*eScale.hp);c.maxHp=c.hp;
       c.atk=Math.round(c.atk*0.70*eScale.atk);
       c.abilities.forEach(function(a){
         if(a.dmg)a.dmg=Math.round(a.dmg*0.70*eScale.atk);
@@ -4523,6 +4522,18 @@ function gameTick(){
   var s=combat.gameTime;
   document.getElementById("hud-timer").textContent=
     String(Math.floor(s/60)).padStart(2,"0")+":"+String(s%60).padStart(2,"0");
+  // ── RÉGÉNÉRATION PASSIVE (très lente, force les combats à durer) ──
+  // Tous les 5 secondes, chaque combattant vivant récupère 0.4% de ses PV max
+  if(s%5===0){
+    combat.allyTeam.concat(combat.enemyTeam).forEach(function(c){
+      var f=combat.fighters[c.id];
+      if(f&&!f.dead&&f.hp>0&&f.hp<f.maxHp){
+        var regen=Math.max(1,Math.round(f.maxHp*0.004));
+        f.hp=Math.min(f.maxHp,f.hp+regen);
+        updateFighterHp(c.id);
+      }
+    });
+  }
   combat.allyTeam.concat(combat.enemyTeam).forEach(function(c){
     c.abilities.forEach(function(a){if(a.curCd>0)a.curCd--;});
   });
@@ -4705,15 +4716,15 @@ function enemyAct(att,allyAlive,forcedTarget){
   var eCrit=Math.random()<0.15;
   if(ab){
     ab.curCd=ab.cd;
-    var dmg=Math.max(8,Math.floor(ab.dmg*(0.85+Math.random()*0.3)*(eCrit?1.6:1)));
+    var dmg=Math.max(4,Math.floor(ab.dmg*(0.35+Math.random()*0.18)*(eCrit?1.4:1)));
     castFx(att.id, ab.key, !!ab.heal, ab.key==="R");
     setNarration(att.name.toUpperCase(),"<em>"+ab.name+"</em> — "+ab.desc+".");
     attackWithDodge(tgt.id,dmg,false,eCrit,att.level);
     addLog("<span class='cname'>"+att.name+"</span> utilise <em>"+ab.name+"</em> sur <span class='you'>"+tgt.name+"</span>.");
     dashAttack(att.id,tgt.id,eCrit);
   }else{
-    // Variance modérée (0.65–1.25) : moins de coups extrêmes qu'avant, mais toujours vivant
-    var dmg=Math.max(5,Math.floor((att.atk*(0.65+Math.random()*0.6)-(tgt.def||40)*0.3)*(eCrit?1.6:1)));
+    // Dégâts réduits pour combats longs (min 5 minutes)
+    var dmg=Math.max(3,Math.floor((att.atk*(0.28+Math.random()*0.22)-(tgt.def||40)*0.45)*(eCrit?1.4:1)));
     attackWithDodge(tgt.id,dmg,false,eCrit,att.level);
     addLog(pick(NARR_ENEMY)(att.name,tgt.name,dmg));
     dashAttack(att.id,tgt.id,eCrit);
@@ -4866,14 +4877,14 @@ function iaAllyAction(){
 
     if(offAbility&&distPct(fa,ft)<=ABILITY_RANGE){
       offAbility.curCd=offAbility.cd;
-      var abDmg=Math.max(8,Math.floor((offAbility.dmg*(0.85+Math.random()*0.3)-(tgt.def||0)*0.12)*(aCrit?1.6:1)));
+      var abDmg=Math.max(4,Math.floor((offAbility.dmg*(0.35+Math.random()*0.18)-(tgt.def||0)*0.20)*(aCrit?1.4:1)));
       attackWithDodge(tgt.id,abDmg,true,aCrit,save.level);
       castFx(att.id, offAbility.key, false, offAbility.key==="R");
       addLog("<span class='cname'>"+att.name+"</span> utilise <em>"+offAbility.name+"</em> sur <span class='cname'>"+tgt.name+"</span> — <span class='dmg'>-"+abDmg+" PV</span>");
       dashAttack(att.id,tgt.id,aCrit);
     } else {
       // Attaque de base
-      var dmg=Math.max(5,Math.floor((att.atk*(0.65+Math.random()*0.45)-(tgt.def||0)*0.22)*(aCrit?1.6:1)));
+      var dmg=Math.max(3,Math.floor((att.atk*(0.28+Math.random()*0.18)-(tgt.def||0)*0.35)*(aCrit?1.4:1)));
       attackWithDodge(tgt.id,dmg,true,aCrit,save.level);
       addLog(pick(NARR_ALLY)(att.name,tgt.name,dmg));
       dashAttack(att.id,tgt.id,aCrit);
@@ -4932,9 +4943,9 @@ function playerBasicAttack(targetId){
   if(!tgt)tgt=nearestInRange(fp,enemies,ATTACK_RANGE);
   if(!tgt){toast("Trop loin — rapproche-toi !");return;}
   if(distPct(fp,combat.fighters[tgt.id])>ATTACK_RANGE){toast("Trop loin — rapproche-toi !");return;}
-  combat.playerAtkCd=0.70;  // 0.55s → 0.70s : attaque fluide mais plus mesurée
-  var isCrit=Math.random()<0.15;  // 18% → 15%
-  var dmg=Math.max(5,Math.floor((player.atk*(0.40+Math.random()*0.22)-(tgt.def||0)*0.22)*(isCrit?1.65:1)));  // la défense ennemie mitige désormais les dégâts
+  combat.playerAtkCd=0.85;  // cooldown attaque de base allongé
+  var isCrit=Math.random()<0.10;  // taux crit réduit
+  var dmg=Math.max(3,Math.floor((player.atk*(0.22+Math.random()*0.14)-(tgt.def||0)*0.35)*(isCrit?1.5:1)));  // dégâts réduits pour combats longs
   var landed=attackWithDodge(tgt.id,dmg,true,isCrit,save.level);
   if(landed)addLog("<span class='you'>Tu</span> frappes <span class='cname'>"+tgt.name+"</span>"+(isCrit?" <b style='color:#ff8a3d'>(CRITIQUE)</b>":"")+" — <span class='dmg'>-"+dmg+" PV</span>");
   dashAttack(player.id,tgt.id,isCrit);
@@ -4953,8 +4964,8 @@ function useAbility(idx){
     var tgt=nearestInRange(fp,enemies,ABILITY_RANGE);
     if(!tgt){toast("Hors de portée — rapproche-toi !");return;}
     ab.curCd=ab.cd;
-    var abCrit=Math.random()<0.22;
-    var dmg=Math.max(8,Math.floor((ab.dmg*(0.9+Math.random()*0.3)-(tgt.def||0)*0.12)*(abCrit?1.6:1)));
+    var abCrit=Math.random()<0.12;
+    var dmg=Math.max(5,Math.floor((ab.dmg*(0.40+Math.random()*0.18)-(tgt.def||0)*0.22)*(abCrit?1.4:1)));
     attackWithDodge(tgt.id,dmg,true,abCrit,save.level);
     setNarration(player.name.toUpperCase(),"<em>"+ab.name+"</em> — "+ab.desc+". <span class='dmg'>-"+dmg+" PV</span> sur <span class='cname'>"+tgt.name+"</span>.");
     addLog("<span class='you'>Tu</span> utilises <span class='cname'>"+ab.name+"</span> sur <span class='cname'>"+tgt.name+"</span> — <span class='dmg'>-"+dmg+" PV</span>");
