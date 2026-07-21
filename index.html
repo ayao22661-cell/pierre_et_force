@@ -4416,23 +4416,51 @@ function reconcileLives(){
   }
 }
 
-function syncLives(){
-  if(save.lives===undefined||save.lives===null)save.lives=LIFE_MAX;
-  if(!save.lives_max)save.lives_max=LIFE_MAX;
+function syncLives() {
+  if (save.lives === undefined || save.lives === null) save.lives = LIFE_MAX;
+  if (!save.lives_max) save.lives_max = LIFE_MAX;
+  
   reconcileLives();
-  if(save.lives<save.lives_max){
-    if(!save.next_life_ts)save.next_life_ts=Date.now()+LIFE_REGEN_MS;
-    var now=Date.now();
-    var changed=false;
-    while(save.next_life_ts&&now>=save.next_life_ts&&save.lives<save.lives_max){
-      save.lives++;
-      save.next_life_ts+=LIFE_REGEN_MS;
-      changed=true;
+
+  var now = Date.now();
+  var changed = false;
+
+  // Si le joueur a moins que le max de vies
+  if (save.lives < save.lives_max) {
+    // Si aucun timestamp n'existait, on en crée un
+    if (!save.next_life_ts) {
+      save.next_life_ts = now + LIFE_REGEN_MS;
+      changed = true;
     }
-    if(save.lives>=save.lives_max)save.next_life_ts=null;
-    if(changed){writeSave(save);writeLifeCookie();}
-  }else{
-    save.next_life_ts=null;
+
+    // Tant que le temps actuel a dépassé l'échéance et qu'on n'a pas atteint le max
+    while (now >= save.next_life_ts && save.lives < save.lives_max) {
+      save.lives++;
+      save.next_life_ts += LIFE_REGEN_MS;
+      changed = true;
+    }
+
+    // CORRECTION CLÉ : Si le timestamp est TOUJOURS dans le passé 
+    // (ex: longue absence sans atteindre le max), on le recale par rapport à MAINTENANT
+    if (save.lives < save.lives_max && save.next_life_ts < now) {
+      save.next_life_ts = now + LIFE_REGEN_MS;
+    }
+
+    // Si on a atteint le maximum de vies, on détruit le chrono
+    if (save.lives >= save.lives_max) {
+      save.next_life_ts = null;
+    }
+  } else {
+    // Si le joueur est déjà full vies
+    if (save.next_life_ts !== null) {
+      save.next_life_ts = null;
+      changed = true;
+    }
+  }
+
+  // On enregistre uniquement si des données ont changé
+  if (changed) {
+    writeSave(save);
   }
   writeLifeCookie();
 }
@@ -4454,24 +4482,43 @@ function formatCountdown(ms){
   return String(m).padStart(2,"0")+":"+String(s).padStart(2,"0");
 }
 
-function updateLivesUI(){
+function updateLivesUI() {
   syncLives();
-  var hearts="";
-  for(var i=0;i<save.lives_max;i++){
-    hearts+='<span class="life-heart'+(i<save.lives?"":" empty")+'">♥</span>';
+
+  // 1. Affichage des cœurs
+  var hearts = "";
+  for (var i = 0; i < save.lives_max; i++) {
+    hearts += '<span class="life-heart' + (i < save.lives ? "" : " empty") + '">♥</span>';
   }
-  document.querySelectorAll(".lives-display").forEach(function(el){el.innerHTML=hearts;});
-  var timerTxt=(save.lives<save.lives_max&&save.next_life_ts)?
-    "Prochaine vie : "+formatCountdown(save.next_life_ts-Date.now()):"";
-  document.querySelectorAll(".lives-timer").forEach(function(el){el.textContent=timerTxt;});
-  var launchBtn=document.getElementById("btn-launch");
-  var noLivesMsg=document.getElementById("no-lives-msg");
-  if(launchBtn&&document.getElementById("screen-deploy").classList.contains("active")){
-    launchBtn.disabled=save.lives<=0;
-    if(noLivesMsg)noLivesMsg.style.display=save.lives<=0?"block":"none";
+  document.querySelectorAll(".lives-display").forEach(function(el) {
+    el.innerHTML = hearts;
+  });
+
+  // 2. Calcul sécurisé du compte à rebours
+  var timerTxt = "";
+  if (save.lives < save.lives_max && save.next_life_ts) {
+    var diff = save.next_life_ts - Date.now();
+    // Verrouillage : jamais de valeur négative à l'affichage
+    if (diff < 0) diff = 0;
+    
+    timerTxt = "Prochaine vie : " + formatCountdown(diff);
+  }
+
+  document.querySelectorAll(".lives-timer").forEach(function(el) {
+    el.textContent = timerTxt;
+  });
+
+  // 3. Mise à jour de l'interface du bouton de lancement
+  var launchBtn = document.getElementById("btn-launch");
+  var noLivesMsg = document.getElementById("no-lives-msg");
+  if (launchBtn && document.getElementById("screen-deploy").classList.contains("active")) {
+    launchBtn.disabled = save.lives <= 0;
+    if (noLivesMsg) noLivesMsg.style.display = save.lives <= 0 ? "block" : "none";
   }
 }
-setInterval(updateLivesUI,1000);
+
+// Rafraîchissement chaque seconde
+setInterval(updateLivesUI, 1000);
 
 // État de combat
 var combat={
