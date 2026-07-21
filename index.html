@@ -171,87 +171,322 @@ body::after {
 /* =========================================
    ===== ÉCRAN TITRE =======================
    ========================================= */
-/* ── ÉCRAN TITRE ── */
+/* =========================================
+   ===== ÉCRAN TITRE STYLE LOL =============
+   ========================================= */
 #screen-title {
-  justify-content: center; align-items: center;
+  justify-content: flex-end; align-items: stretch;
+  background: #000;
+  overflow: hidden;
+  position: relative;
+}
+/* Grande illustration de fond : silhouette d'Abidjan + lueur */
+.title-bg {
+  position: absolute; inset: 0; z-index: 0; overflow: hidden;
+}
+.title-bg-art {
+  width: 100%; height: 100%; object-fit: cover;
+  opacity: 0;
+  animation: titleBgReveal 2s ease 0.3s forwards;
+}
+@keyframes titleBgReveal {
+  from { opacity: 0; transform: scale(1.06); }
+  to   { opacity: 1; transform: scale(1); }
+}
+/* Overlay dégradé cinématique côté gauche + bas */
+.title-bg::after {
+  content: "";
+  position: absolute; inset: 0;
   background:
-    radial-gradient(ellipse 80% 60% at 50% 30%, rgba(10,25,50,0.9) 0%, var(--hex-bg) 70%);
+    linear-gradient(90deg, rgba(1,6,14,0.92) 0%, rgba(1,6,14,0.55) 45%, transparent 70%),
+    linear-gradient(0deg, rgba(1,6,14,0.98) 0%, rgba(1,6,14,0.5) 30%, transparent 60%),
+    radial-gradient(ellipse 60% 50% at 20% 50%, rgba(200,155,60,0.08) 0%, transparent 70%);
+  z-index: 1;
 }
-/* Lueur d'ambiance dorée centrale */
-#screen-title::before {
-  content: ""; position: absolute; width: 600px; height: 300px;
-  top: 15%; left: 50%; transform: translateX(-50%);
-  background: radial-gradient(ellipse, rgba(200,155,60,0.07) 0%, transparent 70%);
-  pointer-events: none;
+/* Lignes de scan Hextech animées */
+.title-scan {
+  position: absolute; inset: 0; z-index: 2; pointer-events: none;
+  background: repeating-linear-gradient(0deg, transparent 0px, transparent 3px, rgba(10,200,185,0.012) 3px, rgba(10,200,185,0.012) 4px);
+  animation: titleScanMove 8s linear infinite;
+}
+@keyframes titleScanMove {
+  from { background-position: 0 0; }
+  to   { background-position: 0 -200px; }
+}
+/* Coins hextech décoratifs */
+.title-corner {
+  position: absolute; z-index: 10; pointer-events: none;
+  width: 60px; height: 60px;
+}
+.title-corner.tl { top: 20px; left: 20px; border-top: 2px solid var(--hex-gold-dark); border-left: 2px solid var(--hex-gold-dark); opacity: 0; animation: cornerReveal .5s ease 1.2s forwards; }
+.title-corner.tr { top: 20px; right: 20px; border-top: 2px solid var(--hex-gold-dark); border-right: 2px solid var(--hex-gold-dark); opacity: 0; animation: cornerReveal .5s ease 1.4s forwards; }
+.title-corner.bl { bottom: 20px; left: 20px; border-bottom: 2px solid var(--hex-gold-dark); border-left: 2px solid var(--hex-gold-dark); opacity: 0; animation: cornerReveal .5s ease 1.3s forwards; }
+.title-corner.br { bottom: 20px; right: 20px; border-bottom: 2px solid var(--hex-gold-dark); border-right: 2px solid var(--hex-gold-dark); opacity: 0; animation: cornerReveal .5s ease 1.5s forwards; }
+@keyframes cornerReveal { to { opacity: 1; } }
+
+/* Panel de contenu côté gauche */
+.title-panel {
+  position: relative; z-index: 5;
+  display: flex; flex-direction: column; justify-content: flex-end;
+  padding: 0 48px 52px 52px;
+  max-width: 520px; width: 100%;
 }
 
+/* Ligne de catégorie au dessus du titre */
 .t-eyebrow {
-  font-family: 'Cinzel', serif; font-size: 10px; letter-spacing: 6px;
+  font-family: 'Cinzel', serif; font-size: 9px; letter-spacing: 7px;
   color: var(--hex-magic); text-transform: uppercase;
-  border: 1px solid var(--hex-magic-dim);
-  padding: 5px 20px; border-radius: 2px;
-  background: rgba(10,200,185,0.06);
-  margin-bottom: 24px;
-  opacity: 0; animation: cardEnter .6s ease .1s forwards;
+  display: flex; align-items: center; gap: 12px;
+  margin-bottom: 18px;
+  opacity: 0; animation: slideUpReveal .5s ease .8s forwards;
 }
-.t-title {
-  font-size: 62px; color: var(--hex-gold-light);
-  text-shadow: 0 2px 0 var(--hex-gold-dark), 0 6px 30px rgba(200,155,60,0.35);
-  letter-spacing: 5px; text-align: center; line-height: 1;
-  opacity: 0; animation: cardEnter .7s ease .25s forwards;
-}
-.t-sub {
-  font-size: 17px; color: var(--hex-magic); letter-spacing: 12px;
-  margin-top: 8px; text-transform: uppercase; text-align: center;
-  text-shadow: 0 0 20px rgba(10,200,185,0.5);
-  opacity: 0; animation: cardEnter .6s ease .4s forwards;
-}
-.t-place {
-  font-size: 11px; color: var(--hex-text-dim); letter-spacing: 5px;
-  margin-top: 8px; text-transform: uppercase; text-align: center;
-  opacity: 0; animation: cardEnter .6s ease .5s forwards;
+.t-eyebrow::before {
+  content: ""; width: 28px; height: 1px;
+  background: var(--hex-magic);
+  box-shadow: 0 0 6px var(--hex-magic);
 }
 
-/* Diviseur Hextech : ligne + diamants */
-.t-divider {
-  display: flex; align-items: center; gap: 12px;
-  margin: 28px 0; width: 340px;
-  opacity: 0; animation: cardEnter .6s ease .55s forwards;
+/* TITRE PRINCIPAL — style LoL client */
+.t-title {
+  font-family: 'Cinzel', serif;
+  font-size: 52px; font-weight: 900;
+  color: var(--hex-gold-light);
+  text-shadow:
+    0 0 0 var(--hex-gold-dark),
+    0 4px 0 #3a2a08,
+    0 0 40px rgba(200,155,60,0.4),
+    0 0 80px rgba(200,155,60,0.15);
+  letter-spacing: 4px; line-height: 1; text-transform: uppercase;
+  opacity: 0; animation: titleSlam .7s cubic-bezier(.2,1,.4,1) 1.0s forwards;
 }
-.t-divider::before, .t-divider::after {
-  content: ""; flex: 1; height: 1px;
-  background: linear-gradient(90deg, transparent, var(--hex-gold-dark), transparent);
+@keyframes titleSlam {
+  0%   { opacity: 0; transform: translateY(20px) scale(0.95); letter-spacing: 12px; }
+  60%  { opacity: 1; letter-spacing: 3px; }
+  100% { opacity: 1; transform: none; letter-spacing: 4px; }
+}
+
+/* Sous-titre en cyan */
+.t-sub {
+  font-family: 'Cinzel', serif;
+  font-size: 13px; letter-spacing: 10px;
+  color: var(--hex-magic); text-transform: uppercase;
+  margin-top: 10px;
+  text-shadow: 0 0 16px rgba(10,200,185,0.6);
+  opacity: 0; animation: slideUpReveal .5s ease 1.5s forwards;
+}
+@keyframes slideUpReveal {
+  from { opacity: 0; transform: translateY(10px); }
+  to   { opacity: 1; transform: none; }
+}
+
+/* Ligne dorée séparatrice */
+.t-divider {
+  display: flex; align-items: center; gap: 10px;
+  margin: 24px 0;
+  opacity: 0; animation: slideUpReveal .5s ease 1.7s forwards;
+}
+.t-divider-line {
+  height: 1px; flex: 1;
+  background: linear-gradient(90deg, var(--hex-gold-dark), transparent);
 }
 .t-divider-gem {
-  width: 10px; height: 10px; transform: rotate(45deg);
-  background: var(--hex-gold); box-shadow: 0 0 10px rgba(200,155,60,0.6);
-  flex-shrink: 0;
+  width: 8px; height: 8px; transform: rotate(45deg); flex-shrink: 0;
+  background: var(--hex-gold); box-shadow: 0 0 10px rgba(200,155,60,0.8);
 }
 
+/* Citation du jeu */
 .t-quote {
-  max-width: 520px; text-align: center; font-size: 14px;
-  font-style: italic; color: var(--hex-text-dim); margin-bottom: 36px;
-  line-height: 1.7;
-  opacity: 0; animation: cardEnter .6s ease .65s forwards;
+  font-size: 13px; font-style: italic;
+  color: var(--hex-text); line-height: 1.8; margin-bottom: 32px;
+  border-left: 2px solid var(--hex-gold-dark);
+  padding-left: 16px;
+  opacity: 0; animation: slideUpReveal .5s ease 1.9s forwards;
 }
-.t-save { font-size: 11px; color: var(--hex-text); letter-spacing: 1px; margin-bottom: 16px; text-align: center; }
 
-/* Pierres — identité visuelle du jeu */
+/* PIERRES — rangée horizontale */
 .stones-row {
-  display: flex; gap: 16px; margin-bottom: 36px;
-  opacity: 0; animation: cardEnter .6s ease .45s forwards;
+  display: flex; gap: 12px; margin-bottom: 28px;
+  opacity: 0; animation: slideUpReveal .5s ease 2.1s forwards;
 }
 .stone {
-  width: 13px; height: 13px; transform: rotate(45deg);
-  background: var(--hex-border); border: 1px solid var(--hex-gold-dark);
+  width: 10px; height: 10px; transform: rotate(45deg);
+  border: 1px solid rgba(200,155,60,0.3);
   animation: floatStones 3s infinite alternate ease-in-out;
 }
-.stone:nth-child(1) { background: var(--hex-green); box-shadow: 0 0 12px var(--hex-green), 0 0 24px rgba(30,163,90,0.3); animation-delay:0s;}
-.stone:nth-child(2) { background: var(--hex-magic); box-shadow: 0 0 12px var(--hex-magic), 0 0 24px rgba(10,200,185,0.3); animation-delay:.2s;}
-.stone:nth-child(3) { background: var(--hex-gold); box-shadow: 0 0 12px var(--hex-gold), 0 0 24px rgba(200,155,60,0.3); animation-delay:.4s;}
-.stone:nth-child(4) { background: var(--hex-red-bright); box-shadow: 0 0 12px var(--hex-red-bright), 0 0 24px rgba(232,64,87,0.3); animation-delay:.6s;}
-.stone:nth-child(5) { background: #8e44ad; box-shadow: 0 0 12px #8e44ad, 0 0 24px rgba(142,68,173,0.3); animation-delay:.8s;}
-@keyframes floatStones { 0% { transform: translateY(0) rotate(45deg) scale(1); } 100% { transform: translateY(-9px) rotate(45deg) scale(1.15); } }
+.stone:nth-child(1) { background: var(--hex-green); box-shadow: 0 0 8px var(--hex-green); animation-delay:0s;}
+.stone:nth-child(2) { background: var(--hex-magic); box-shadow: 0 0 8px var(--hex-magic); animation-delay:.18s;}
+.stone:nth-child(3) { background: var(--hex-gold); box-shadow: 0 0 8px var(--hex-gold); animation-delay:.36s;}
+.stone:nth-child(4) { background: var(--hex-red-bright); box-shadow: 0 0 8px var(--hex-red-bright); animation-delay:.54s;}
+.stone:nth-child(5) { background: #9b59b6; box-shadow: 0 0 8px #9b59b6; animation-delay:.72s;}
+@keyframes floatStones { 0% { transform: translateY(0) rotate(45deg); } 100% { transform: translateY(-6px) rotate(45deg) scale(1.1); } }
+
+/* Boutons title */
+.title-btns {
+  display: flex; flex-direction: column; gap: 10px; width: 240px;
+  opacity: 0; animation: slideUpReveal .5s ease 2.2s forwards;
+}
+
+.t-save {
+  font-size: 10px; color: var(--hex-text-dim); letter-spacing: 2px;
+  margin-bottom: 10px; font-family: 'Cinzel', serif;
+}
+
+/* Logo pulsant en haut à gauche */
+.title-logo-mark {
+  position: absolute; top: 28px; left: 52px; z-index: 10;
+  display: flex; align-items: center; gap: 10px;
+  opacity: 0; animation: slideUpReveal .5s ease 0.5s forwards;
+}
+.title-logo-gem {
+  width: 20px; height: 20px;
+  clip-path: polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%);
+  background: linear-gradient(135deg, var(--hex-gold-light), var(--hex-gold), var(--hex-gold-dark));
+  box-shadow: 0 0 20px rgba(200,155,60,0.7), 0 0 40px rgba(200,155,60,0.3);
+  animation: logoGemPulse 3s ease-in-out infinite;
+}
+@keyframes logoGemPulse {
+  0%,100% { box-shadow: 0 0 16px rgba(200,155,60,0.7); }
+  50% { box-shadow: 0 0 30px rgba(200,155,60,1), 0 0 60px rgba(200,155,60,0.4); }
+}
+.title-logo-text {
+  font-family: 'Cinzel', serif; font-size: 9px; letter-spacing: 4px;
+  color: var(--hex-gold); text-transform: uppercase;
+}
+
+/* Version desktop : image à droite */
+@media (min-width: 700px) {
+  .title-panel { padding-bottom: 72px; }
+}
+@media (max-width: 699px) {
+  .title-panel { max-width: 100%; padding: 0 24px 40px; }
+  .t-title { font-size: 34px; }
+  .t-sub { font-size: 10px; letter-spacing: 6px; }
+}
+
+/* =========================================
+   ===== CINÉMATIQUE D'INTRO (IMAGES) ======
+   ========================================= */
+#screen-intro {
+  background: #000;
+  display: none; flex-direction: column;
+  align-items: stretch; justify-content: stretch;
+  position: relative; overflow: hidden;
+}
+#screen-intro.active { display: flex; }
+
+.intro-slide {
+  position: absolute; inset: 0;
+  display: flex; flex-direction: column;
+  align-items: stretch; justify-content: flex-end;
+  opacity: 0; pointer-events: none;
+  transition: opacity .0s;
+}
+.intro-slide.active {
+  opacity: 1; pointer-events: auto;
+  animation: introSlideIn .8s cubic-bezier(.2,.8,.3,1) forwards;
+}
+.intro-slide.exit {
+  animation: introSlideOut .5s ease forwards;
+  pointer-events: none;
+}
+@keyframes introSlideIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+@keyframes introSlideOut {
+  from { opacity: 1; }
+  to   { opacity: 0; }
+}
+
+/* L'illustration SVG plein écran */
+.intro-art {
+  position: absolute; inset: 0; z-index: 0;
+  display: flex; align-items: stretch; justify-content: stretch;
+}
+.intro-art svg { width: 100%; height: 100%; display: block; }
+
+/* Vignette par dessus l'art */
+.intro-vignette {
+  position: absolute; inset: 0; z-index: 1; pointer-events: none;
+  background:
+    linear-gradient(0deg, rgba(0,0,0,0.92) 0%, rgba(0,0,0,0.45) 35%, transparent 65%),
+    linear-gradient(180deg, rgba(0,0,0,0.5) 0%, transparent 20%);
+}
+
+/* Zone de texte narratif en bas */
+.intro-text-box {
+  position: relative; z-index: 5;
+  padding: 28px 40px 36px;
+  background: linear-gradient(0deg, rgba(0,0,0,0.95) 0%, transparent 100%);
+}
+.intro-chapter {
+  font-family: 'Cinzel', serif; font-size: 9px; letter-spacing: 6px;
+  color: var(--hex-magic); text-transform: uppercase; margin-bottom: 10px;
+  display: flex; align-items: center; gap: 10px;
+}
+.intro-chapter::before { content:""; width:20px; height:1px; background:var(--hex-magic); box-shadow:0 0 4px var(--hex-magic); }
+.intro-title {
+  font-family: 'Cinzel', serif; font-size: 22px; font-weight: 700;
+  color: var(--hex-gold-light); text-shadow: 0 2px 12px rgba(200,155,60,0.5);
+  margin-bottom: 10px; letter-spacing: 2px;
+}
+.intro-body {
+  font-size: 15px; color: #c8c0b0; line-height: 1.7; max-width: 680px;
+}
+
+/* Barre de progression des slides */
+.intro-progress {
+  position: absolute; top: 0; left: 0; right: 0; z-index: 10;
+  display: flex; gap: 4px; padding: 16px 20px 0;
+}
+.intro-prog-seg {
+  flex: 1; height: 2px;
+  background: rgba(255,255,255,0.15);
+  position: relative; overflow: hidden;
+}
+.intro-prog-seg.done { background: var(--hex-gold-dark); }
+.intro-prog-seg.active::after {
+  content: ""; position: absolute; inset: 0;
+  background: var(--hex-gold);
+  transform: translateX(-100%);
+  animation: progFill var(--dur, 5s) linear forwards;
+}
+@keyframes progFill { to { transform: translateX(0); } }
+
+/* Boutons nav intro */
+.intro-nav {
+  position: absolute; z-index: 10;
+  display: flex; align-items: center; gap: 16px;
+  bottom: 32px; right: 40px;
+}
+.intro-btn {
+  font-family: 'Cinzel', serif; font-size: 10px; letter-spacing: 3px;
+  color: var(--hex-gold-light); text-transform: uppercase; cursor: pointer;
+  background: none; border: 1px solid var(--hex-gold-dark);
+  padding: 10px 24px;
+  clip-path: polygon(6px 0, 100% 0, 100% calc(100% - 6px), calc(100% - 6px) 100%, 0 100%, 0 6px);
+  transition: all .18s;
+}
+.intro-btn:hover {
+  border-color: var(--hex-gold);
+  color: var(--hex-gold-bright);
+  background: rgba(200,155,60,0.08);
+  box-shadow: 0 0 18px rgba(200,155,60,0.2);
+}
+.intro-skip {
+  font-family: 'Cinzel', serif; font-size: 9px; letter-spacing: 3px;
+  color: var(--hex-text-dim); text-transform: uppercase; cursor: pointer;
+  background: none; border: none; padding: 6px;
+  transition: color .15s;
+}
+.intro-skip:hover { color: var(--hex-text); }
+
+/* Numéro de slide */
+.intro-counter {
+  position: absolute; top: 52px; right: 20px; z-index: 10;
+  font-family: 'Cinzel', serif; font-size: 9px; letter-spacing: 3px;
+  color: var(--hex-text-dim);
+}
 
 /* =========================================
    ===== NARRATION =========================
@@ -1668,21 +1903,621 @@ body::after {
 </head>
 <body>
 
-<!-- TITRE -->
+<!-- TITRE STYLE LOL -->
 <div id="screen-title" class="screen active">
-  <div class="t-eyebrow">ABIDJAN · MARCORY · 1996</div>
-  <div class="stones-row">
-    <div class="stone"></div><div class="stone"></div><div class="stone"></div>
-    <div class="stone"></div><div class="stone"></div>
+  <!-- Fond illustré SVG (Abidjan by night) -->
+  <div class="title-bg">
+    <svg class="title-bg-art" viewBox="0 0 1200 800" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid slice">
+      <defs>
+        <radialGradient id="skyGlow" cx="60%" cy="35%" r="55%">
+          <stop offset="0%" stop-color="#1a2a4a"/>
+          <stop offset="60%" stop-color="#050d1e"/>
+          <stop offset="100%" stop-color="#010610"/>
+        </radialGradient>
+        <radialGradient id="moonGlow" cx="50%" cy="50%" r="50%">
+          <stop offset="0%" stop-color="#c8b87a" stop-opacity="0.35"/>
+          <stop offset="100%" stop-color="#c8b87a" stop-opacity="0"/>
+        </radialGradient>
+        <radialGradient id="cityGlow" cx="50%" cy="100%" r="60%">
+          <stop offset="0%" stop-color="#c89b3c" stop-opacity="0.18"/>
+          <stop offset="100%" stop-color="#c89b3c" stop-opacity="0"/>
+        </radialGradient>
+        <filter id="glow"><feGaussianBlur stdDeviation="3" result="blur"/><feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+        <filter id="softGlow"><feGaussianBlur stdDeviation="6" result="blur"/><feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+        <linearGradient id="waterRef" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stop-color="#0a1628" stop-opacity="0.9"/>
+          <stop offset="100%" stop-color="#010a13"/>
+        </linearGradient>
+      </defs>
+      <!-- Ciel -->
+      <rect width="1200" height="800" fill="url(#skyGlow)"/>
+      <!-- Lune -->
+      <circle cx="780" cy="130" r="55" fill="#e8dcc0" opacity="0.85" filter="url(#softGlow)"/>
+      <circle cx="780" cy="130" r="58" fill="url(#moonGlow)"/>
+      <!-- Étoiles -->
+      <g opacity="0.6">
+        <circle cx="120" cy="60" r="1.2" fill="#fff"/><circle cx="340" cy="40" r="0.8" fill="#fff"/>
+        <circle cx="500" cy="80" r="1.5" fill="#c8b87a"/><circle cx="650" cy="30" r="1" fill="#fff"/>
+        <circle cx="900" cy="55" r="0.9" fill="#fff"/><circle cx="1050" cy="90" r="1.3" fill="#c8b87a"/>
+        <circle cx="200" cy="110" r="0.7" fill="#fff"/><circle cx="420" cy="25" r="1.1" fill="#fff"/>
+        <circle cx="1100" cy="40" r="0.8" fill="#fff"/><circle cx="60" cy="140" r="1" fill="#c8b87a"/>
+        <circle cx="860" cy="20" r="1.2" fill="#fff"/><circle cx="970" cy="140" r="0.7" fill="#fff"/>
+        <circle cx="310" cy="160" r="0.9" fill="#fff"/><circle cx="740" cy="55" r="0.6" fill="#fff"/>
+      </g>
+      <!-- Nuages -->
+      <ellipse cx="250" cy="180" rx="120" ry="35" fill="#0d1a30" opacity="0.5"/>
+      <ellipse cx="1000" cy="150" rx="90" ry="28" fill="#0d1a30" opacity="0.4"/>
+      <!-- Lagune -->
+      <path d="M0,560 Q300,540 600,555 Q900,570 1200,548 L1200,800 L0,800 Z" fill="url(#waterRef)"/>
+      <!-- Reflets lune dans lagune -->
+      <ellipse cx="780" cy="640" rx="18" ry="80" fill="#c8b87a" opacity="0.12"/>
+      <!-- Skyline Abidjan : silhouettes buildings -->
+      <!-- Quartier Plateau (tours) -->
+      <rect x="580" y="370" width="28" height="200" fill="#08111e"/>
+      <rect x="575" y="355" width="38" height="20" fill="#0a1528"/>
+      <rect x="615" y="395" width="22" height="175" fill="#060e1a"/>
+      <rect x="640" y="380" width="32" height="190" fill="#09131f"/>
+      <rect x="635" y="365" width="42" height="18" fill="#0b1629"/>
+      <rect x="678" y="410" width="18" height="160" fill="#070f1b"/>
+      <rect x="700" y="390" width="26" height="180" fill="#0a141f"/>
+      <rect x="726" y="415" width="20" height="155" fill="#060d18"/>
+      <!-- Tour BNETD / Immeuble phare -->
+      <rect x="750" y="300" width="35" height="270" fill="#0c1726"/>
+      <rect x="745" y="285" width="45" height="18" fill="#0e1d2e"/>
+      <rect x="762" y="270" width="12" height="16" fill="#0e1d2e"/>
+      <!-- Antenne -->
+      <line x1="768" y1="270" x2="768" y2="240" stroke="#0c1520" stroke-width="2"/>
+      <!-- Fenêtres allumées sur les tours -->
+      <g fill="#c89b3c" opacity="0.25">
+        <rect x="585" y="380" width="4" height="3"/><rect x="593" y="380" width="4" height="3"/>
+        <rect x="585" y="390" width="4" height="3"/><rect x="593" y="395" width="4" height="3"/>
+        <rect x="647" y="390" width="4" height="3"/><rect x="655" y="388" width="4" height="3"/>
+        <rect x="647" y="400" width="4" height="3"/><rect x="663" y="398" width="4" height="3"/>
+        <rect x="757" y="315" width="5" height="4"/><rect x="766" y="320" width="5" height="4"/>
+        <rect x="757" y="328" width="5" height="4"/><rect x="766" y="335" width="5" height="4"/>
+        <rect x="757" y="345" width="5" height="4"/><rect x="766" y="350" width="5" height="4"/>
+        <rect x="708" y="400" width="4" height="3"/><rect x="716" y="405" width="4" height="3"/>
+      </g>
+      <!-- Fenêtres lumière cyan (magie) -->
+      <g fill="#0ac8b9" opacity="0.15">
+        <rect x="602" y="385" width="3" height="2"/><rect x="668" y="395" width="3" height="2"/>
+        <rect x="774" y="325" width="4" height="3"/>
+      </g>
+      <!-- Bâtiments moyens arrière-plan -->
+      <rect x="480" y="440" width="40" height="130" fill="#07101c"/>
+      <rect x="525" y="455" width="30" height="115" fill="#060e19"/>
+      <rect x="800" y="430" width="38" height="140" fill="#071020"/>
+      <rect x="842" y="450" width="28" height="120" fill="#06101e"/>
+      <rect x="875" y="460" width="34" height="110" fill="#071221"/>
+      <rect x="920" y="445" width="24" height="125" fill="#060e1a"/>
+      <!-- Maisons basses Marcory (gauche) -->
+      <g fill="#050c17">
+        <rect x="50" y="510" width="60" height="60"/><rect x="120" y="520" width="50" height="50"/>
+        <rect x="180" y="505" width="70" height="65"/><rect x="260" y="515" width="55" height="55"/>
+        <rect x="325" y="508" width="65" height="62"/><rect x="400" y="520" width="50" height="50"/>
+        <!-- Toits -->
+        <polygon points="50,510 80,490 110,510" fill="#060e1a"/>
+        <polygon points="120,520 145,502 170,520" fill="#060e1a"/>
+        <polygon points="180,505 215,485 250,505" fill="#070f1c"/>
+        <polygon points="260,515 287,496 314,515" fill="#060e1a"/>
+        <polygon points="325,508 357,488 390,508" fill="#060e1a"/>
+      </g>
+      <!-- Lumières de rue basse intensité -->
+      <g fill="#c89b3c" opacity="0.1">
+        <circle cx="100" cy="565" r="20"/><circle cx="220" cy="560" r="18"/>
+        <circle cx="360" cy="563" r="16"/><circle cx="460" cy="562" r="14"/>
+      </g>
+      <!-- Lueur ville sur le bas -->
+      <rect x="0" y="540" width="1200" height="260" fill="url(#cityGlow)"/>
+      <!-- Particules magiques (pierres) flottantes -->
+      <g filter="url(#glow)">
+        <circle cx="320" cy="280" r="3" fill="#1ea35a" opacity="0.7"><animate attributeName="cy" values="280;270;280" dur="3s" repeatCount="indefinite"/><animate attributeName="opacity" values="0.7;1;0.7" dur="3s" repeatCount="indefinite"/></circle>
+        <circle cx="440" cy="220" r="2.5" fill="#0ac8b9" opacity="0.6"><animate attributeName="cy" values="220;210;220" dur="2.5s" repeatCount="indefinite"/></circle>
+        <circle cx="280" cy="340" r="2" fill="#c89b3c" opacity="0.8"><animate attributeName="cy" values="340;330;340" dur="4s" repeatCount="indefinite"/></circle>
+        <circle cx="510" cy="300" r="3" fill="#e84057" opacity="0.6"><animate attributeName="cy" values="300;290;300" dur="3.5s" repeatCount="indefinite"/></circle>
+        <circle cx="380" cy="180" r="2" fill="#9b59b6" opacity="0.7"><animate attributeName="cy" values="180;170;180" dur="2.8s" repeatCount="indefinite"/></circle>
+      </g>
+      <!-- Silhouette personnage (Tarine) sur toit à gauche -->
+      <g transform="translate(200,470)" fill="#020810">
+        <rect x="-8" y="-55" width="16" height="55"/><!-- corps -->
+        <circle cx="0" cy="-62" r="10"/><!-- tête -->
+        <!-- Cape -->
+        <path d="M-8,-20 Q-25,10 -20,55 L8,55 Q4,10 8,-20 Z" fill="#030c16"/>
+        <!-- Bras levé avec pierre -->
+        <path d="M8,-40 Q30,-55 35,-45" stroke="#030c16" stroke-width="6" fill="none" stroke-linecap="round"/>
+        <!-- Pierre qui brille -->
+        <polygon points="35,-45 40,-52 45,-45 40,-38" fill="#c89b3c" opacity="0.9" filter="url(#glow)"/>
+      </g>
+    </svg>
   </div>
-  <div class="t-title">DE PIERRE ET DE FORCE</div>
-  <div class="t-sub">L ' É V E I L</div>
-  <div class="t-divider"><div class="t-divider-gem"></div><div class="t-divider-gem"></div><div class="t-divider-gem"></div></div>
-  <div class="t-quote">« Dans le silence de Niani, cinq pierres attendaient depuis sept siècles.<br>Cette nuit, à Abidjan, elles ont choisi leurs gardiens. »</div>
-  <div id="save-status" class="t-save"></div>
-  <button class="btn btn-primary" id="btn-start">COMMENCER LA PARTIE</button>
-  <button class="btn btn-sm" id="btn-continue" style="margin-top:12px;display:none">CONTINUER</button>
-  <button class="btn btn-sm btn-red" id="btn-reset" style="margin-top:8px;display:none">RECOMMENCER</button>
+  <div class="title-scan"></div>
+  <div class="title-corner tl"></div>
+  <div class="title-corner tr"></div>
+  <div class="title-corner bl"></div>
+  <div class="title-corner br"></div>
+
+  <!-- Logo en haut gauche -->
+  <div class="title-logo-mark">
+    <div class="title-logo-gem"></div>
+    <div class="title-logo-text">Gardiens du Sud · Abidjan 1996</div>
+  </div>
+
+  <!-- Panel texte + boutons -->
+  <div class="title-panel">
+    <div class="t-eyebrow">Abidjan · Marcory · 1996</div>
+    <div class="t-title">De Pierre<br>et de Force</div>
+    <div class="t-sub">L ' É V E I L</div>
+    <div class="t-divider">
+      <div class="t-divider-line"></div>
+      <div class="t-divider-gem"></div>
+      <div class="t-divider-gem"></div>
+      <div class="t-divider-gem"></div>
+      <div class="t-divider-line" style="background:linear-gradient(270deg,var(--hex-gold-dark),transparent)"></div>
+    </div>
+    <div class="t-quote">« Dans le silence de Niani, cinq pierres attendaient depuis sept siècles. Cette nuit, à Abidjan, elles ont choisi leurs gardiens. »</div>
+    <div class="stones-row">
+      <div class="stone"></div><div class="stone"></div><div class="stone"></div>
+      <div class="stone"></div><div class="stone"></div>
+    </div>
+    <div id="save-status" class="t-save"></div>
+    <div class="title-btns">
+      <button class="btn btn-primary" id="btn-start">✦ COMMENCER</button>
+      <button class="btn btn-sm" id="btn-continue" style="display:none">CONTINUER</button>
+      <button class="btn btn-sm btn-red" id="btn-reset" style="display:none">RECOMMENCER</button>
+    </div>
+  </div>
+</div>
+
+<!-- CINÉMATIQUE D'INTRO — HISTOIRE DES PIERRES -->
+<div id="screen-intro" class="screen">
+  <div class="intro-progress" id="intro-progress"></div>
+  <div class="intro-counter" id="intro-counter"></div>
+
+  <!-- SLIDE 1 : L'Empire du Mali, Niani 1324 -->
+  <div class="intro-slide active" id="intro-slide-0">
+    <div class="intro-art">
+      <svg viewBox="0 0 800 600" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid slice">
+        <defs>
+          <radialGradient id="s1sky" cx="50%" cy="30%" r="70%"><stop offset="0%" stop-color="#2a1a05"/><stop offset="100%" stop-color="#0a0500"/></radialGradient>
+          <radialGradient id="s1sun" cx="50%" cy="50%" r="50%"><stop offset="0%" stop-color="#f5a623" stop-opacity="0.9"/><stop offset="100%" stop-color="#f5a623" stop-opacity="0"/></radialGradient>
+          <filter id="f1"><feGaussianBlur stdDeviation="4"/></filter>
+          <filter id="f2"><feGaussianBlur stdDeviation="2"/></filter>
+        </defs>
+        <!-- Ciel chaud désert -->
+        <rect width="800" height="600" fill="url(#s1sky)"/>
+        <!-- Soleil couchant -->
+        <circle cx="400" cy="200" r="60" fill="#f5a623" opacity="0.8" filter="url(#f1)"/>
+        <circle cx="400" cy="200" r="40" fill="#ffd070" opacity="0.9"/>
+        <ellipse cx="400" cy="200" r="120" ry="80" fill="url(#s1sun)"/>
+        <!-- Sable dunes -->
+        <path d="M0,380 Q200,320 400,350 Q600,380 800,330 L800,600 L0,600Z" fill="#1a0e05"/>
+        <path d="M0,400 Q150,360 350,375 Q550,390 800,360 L800,600 L0,600Z" fill="#150b03"/>
+        <!-- Silhouette Kankou Moussa et sa cour -->
+        <g fill="#08050000" opacity="0.95">
+          <!-- Trône / chaise portée -->
+          <rect x="360" y="290" width="80" height="60" fill="#0d0801"/>
+          <rect x="340" y="310" width="120" height="10" fill="#0d0801"/>
+          <!-- Silhouette Roi sur trône -->
+          <rect x="385" y="250" width="30" height="50" fill="#080501"/>
+          <circle cx="400" cy="242" r="15" fill="#080501"/>
+          <!-- Couronne / coiffe -->
+          <path d="M385,232 L388,218 L393,228 L400,215 L407,228 L412,218 L415,232 Z" fill="#0d0801"/>
+          <!-- Porteurs gauche -->
+          <rect x="305" y="310" width="15" height="60" fill="#080501"/><circle cx="312" cy="305" r="9" fill="#080501"/>
+          <rect x="325" y="315" width="13" height="55" fill="#080501"/><circle cx="331" cy="310" r="8" fill="#080501"/>
+          <!-- Porteurs droite -->
+          <rect x="462" y="310" width="15" height="60" fill="#080501"/><circle cx="469" cy="305" r="9" fill="#080501"/>
+          <rect x="480" y="315" width="13" height="55" fill="#080501"/><circle cx="487" cy="310" r="8" fill="#080501"/>
+          <!-- Gardes avec lances -->
+          <rect x="250" y="305" width="10" height="70" fill="#080501"/><circle cx="255" cy="300" r="8" fill="#080501"/>
+          <line x1="255" y1="305" x2="255" y2="260" stroke="#0d0801" stroke-width="3"/>
+          <polygon points="255,258 250,272 260,272" fill="#0d0801"/>
+          <rect x="540" y="305" width="10" height="70" fill="#080501"/><circle cx="545" cy="300" r="8" fill="#080501"/>
+          <line x1="545" y1="305" x2="545" y2="260" stroke="#0d0801" stroke-width="3"/>
+          <polygon points="545,258 540,272 550,272" fill="#0d0801"/>
+        </g>
+        <!-- Mosquée de Niani en arrière plan -->
+        <g fill="#0e0904" opacity="0.7">
+          <rect x="60" y="250" width="80" height="130"/>
+          <polygon points="60,250 100,210 140,250" fill="#130d06"/>
+          <rect x="95" y="195" width="10" height="30"/>
+          <circle cx="100" cy="192" r="8" fill="#c89b3c" opacity="0.4" filter="url(#f2)"/>
+          <rect x="80" y="260" width="15" height="20"/><rect x="105" y="260" width="15" height="20"/>
+          <!-- Minaret -->
+          <rect x="150" y="220" width="20" height="160"/>
+          <rect x="145" y="215" width="30" height="10"/>
+          <circle cx="160" cy="212" r="7" fill="#c89b3c" opacity="0.3"/>
+        </g>
+        <!-- Les 5 pierres présentées par le roi -->
+        <g filter="url(#f2)">
+          <polygon points="390,310 396,300 402,310 396,320" fill="#1ea35a" opacity="0.95"/>
+          <polygon points="402,312 408,302 414,312 408,322" fill="#0ac8b9" opacity="0.9"/>
+          <polygon points="378,312 384,302 390,312 384,322" fill="#c89b3c" opacity="0.95"/>
+          <polygon points="414,308 420,298 426,308 420,318" fill="#e84057" opacity="0.9"/>
+          <polygon points="366,308 372,298 378,308 372,318" fill="#9b59b6" opacity="0.85"/>
+        </g>
+        <!-- Lueurs des pierres -->
+        <circle cx="396" cy="310" r="12" fill="#1ea35a" opacity="0.25" filter="url(#f1)"/>
+        <circle cx="408" cy="312" r="10" fill="#0ac8b9" opacity="0.2" filter="url(#f1)"/>
+        <circle cx="384" cy="312" r="11" fill="#c89b3c" opacity="0.28" filter="url(#f1)"/>
+        <circle cx="420" cy="308" r="10" fill="#e84057" opacity="0.22" filter="url(#f1)"/>
+        <circle cx="372" cy="308" r="10" fill="#9b59b6" opacity="0.22" filter="url(#f1)"/>
+        <!-- Caravane chameaux bg -->
+        <g fill="#08050100" opacity="0.5">
+          <ellipse cx="650" cy="355" rx="35" ry="18" fill="#0a0602"/>
+          <rect x="630" y="330" width="18" height="30" fill="#0a0602"/>
+          <ellipse cx="640" cy="328" rx="12" ry="8" fill="#0a0602"/>
+          <rect x="640" y="315" width="6" height="18" fill="#0a0602"/>
+          <ellipse cx="720" cy="360" rx="30" ry="15" fill="#0a0602"/>
+          <rect x="705" y="338" width="15" height="28" fill="#0a0602"/>
+          <ellipse cx="713" cy="336" rx="10" ry="7" fill="#0a0602"/>
+        </g>
+        <!-- Sable qui vole -->
+        <path d="M0,380 Q100,370 200,375 Q300,380 400,373" stroke="#2a1a08" stroke-width="1" fill="none" opacity="0.4"/>
+      </svg>
+    </div>
+    <div class="intro-vignette"></div>
+    <div class="intro-text-box">
+      <div class="intro-chapter">Niani, Empire du Mali · 1324</div>
+      <div class="intro-title">Les Cinq Pierres de Kankou Moussa</div>
+      <div class="intro-body">Au sommet de sa puissance, l'Empereur Kankou Moussa possédait cinq pierres d'une puissance inouïe — héritées de l'aube des temps. Chacune gouvernait un élément : Terre, Eau, Feu, Équilibre, Air. Il savait qu'elles ne pouvaient rester réunies sans déchirer le tissu du monde.</div>
+    </div>
+  </div>
+
+  <!-- SLIDE 2 : La séparation des pierres -->
+  <div class="intro-slide" id="intro-slide-1">
+    <div class="intro-art">
+      <svg viewBox="0 0 800 600" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid slice">
+        <defs>
+          <radialGradient id="s2bg" cx="50%" cy="50%" r="60%"><stop offset="0%" stop-color="#0a0a1a"/><stop offset="100%" stop-color="#050508"/></radialGradient>
+          <filter id="s2g"><feGaussianBlur stdDeviation="5"/></filter>
+          <filter id="s2g2"><feGaussianBlur stdDeviation="2.5"/></filter>
+        </defs>
+        <rect width="800" height="600" fill="url(#s2bg)"/>
+        <!-- Salle souterraine, colonnes -->
+        <g fill="#0a0a12" opacity="0.9">
+          <rect x="50" y="100" width="30" height="400"/><rect x="120" y="120" width="25" height="380"/>
+          <rect x="650" y="100" width="30" height="400"/><rect x="605" y="120" width="25" height="380"/>
+          <rect x="0" y="490" width="800" height="110" fill="#080810"/><!-- sol -->
+          <!-- Plafond voûté -->
+          <path d="M0,0 L0,120 Q400,60 800,120 L800,0 Z" fill="#080810"/>
+        </g>
+        <!-- Torches -->
+        <g>
+          <rect x="60" y="180" width="6" height="20" fill="#5a3010"/>
+          <ellipse cx="63" cy="176" rx="8" ry="12" fill="#f5a623" opacity="0.7" filter="url(#s2g2)"/>
+          <rect x="720" y="180" width="6" height="20" fill="#5a3010"/>
+          <ellipse cx="723" cy="176" rx="8" ry="12" fill="#f5a623" opacity="0.7" filter="url(#s2g2)"/>
+        </g>
+        <!-- Rituel : cercle de séparation au centre -->
+        <circle cx="400" cy="300" r="160" stroke="#c89b3c" stroke-width="1.5" fill="none" opacity="0.4" stroke-dasharray="8 6"/>
+        <circle cx="400" cy="300" r="120" stroke="#c89b3c" stroke-width="0.8" fill="none" opacity="0.25" stroke-dasharray="4 8"/>
+        <!-- Rayons du cercle -->
+        <g stroke="#c89b3c" stroke-width="0.8" opacity="0.3">
+          <line x1="400" y1="140" x2="400" y2="460"/>
+          <line x1="240" y1="220" x2="560" y2="380"/>
+          <line x1="240" y1="380" x2="560" y2="220"/>
+        </g>
+        <!-- Centre : explosion de séparation -->
+        <circle cx="400" cy="300" r="30" fill="#c89b3c" opacity="0.15" filter="url(#s2g)"/>
+        <circle cx="400" cy="300" r="12" fill="#f0e6d2" opacity="0.5" filter="url(#s2g2)"/>
+        <!-- Les 5 pierres qui s'envolent dans 5 directions -->
+        <!-- Pierre Terre (verte) → bas-gauche -->
+        <line x1="400" y1="300" x2="200" y2="460" stroke="#1ea35a" stroke-width="2" opacity="0.5" stroke-dasharray="4 4"/>
+        <polygon points="200,460 206,448 212,460 206,472" fill="#1ea35a" filter="url(#s2g2)"/>
+        <circle cx="200" cy="460" r="18" fill="#1ea35a" opacity="0.2" filter="url(#s2g)"/>
+        <!-- Pierre Eau (cyan) → bas-droite -->
+        <line x1="400" y1="300" x2="600" y2="460" stroke="#0ac8b9" stroke-width="2" opacity="0.5" stroke-dasharray="4 4"/>
+        <polygon points="600,460 606,448 612,460 606,472" fill="#0ac8b9" filter="url(#s2g2)"/>
+        <circle cx="600" cy="460" r="16" fill="#0ac8b9" opacity="0.2" filter="url(#s2g)"/>
+        <!-- Pierre Feu (rouge) → droite -->
+        <line x1="400" y1="300" x2="680" y2="280" stroke="#e84057" stroke-width="2" opacity="0.5" stroke-dasharray="4 4"/>
+        <polygon points="680,280 686,268 692,280 686,292" fill="#e84057" filter="url(#s2g2)"/>
+        <circle cx="680" cy="280" r="16" fill="#e84057" opacity="0.2" filter="url(#s2g)"/>
+        <!-- Pierre Air (violet) → haut -->
+        <line x1="400" y1="300" x2="400" y2="140" stroke="#9b59b6" stroke-width="2" opacity="0.5" stroke-dasharray="4 4"/>
+        <polygon points="400,140 406,128 412,140 406,152" fill="#9b59b6" filter="url(#s2g2)"/>
+        <circle cx="400" cy="140" r="16" fill="#9b59b6" opacity="0.2" filter="url(#s2g)"/>
+        <!-- Pierre Équilibre (or) → gauche -->
+        <line x1="400" y1="300" x2="120" y2="280" stroke="#c89b3c" stroke-width="2" opacity="0.5" stroke-dasharray="4 4"/>
+        <polygon points="120,280 126,268 132,280 126,292" fill="#c89b3c" filter="url(#s2g2)"/>
+        <circle cx="120" cy="280" r="16" fill="#c89b3c" opacity="0.2" filter="url(#s2g)"/>
+        <!-- Silhouette du roi les bras tendus -->
+        <rect x="385" y="285" width="30" height="50" fill="#12121e" opacity="0.9"/>
+        <circle cx="400" cy="280" r="14" fill="#12121e" opacity="0.9"/>
+        <line x1="385" y1="305" x2="355" y2="285" stroke="#12121e" stroke-width="8" stroke-linecap="round"/>
+        <line x1="415" y1="305" x2="445" y2="285" stroke="#12121e" stroke-width="8" stroke-linecap="round"/>
+        <!-- Inscriptions runes sur le sol -->
+        <g stroke="#c89b3c" stroke-width="0.5" opacity="0.15" fill="none">
+          <ellipse cx="400" cy="490" rx="80" ry="20"/>
+          <path d="M370,490 L380,470 L390,490 L400,475 L410,490 L420,470 L430,490"/>
+        </g>
+      </svg>
+    </div>
+    <div class="intro-vignette"></div>
+    <div class="intro-text-box">
+      <div class="intro-chapter">La Chambre des Poids · Niani</div>
+      <div class="intro-title">La Grande Séparation</div>
+      <div class="intro-body">Dans les profondeurs de Niani, Kankou Moussa accomplit le rituel ultime. Il sépara les cinq pierres et les dispersa aux quatre coins du monde. « Quand l'humanité sera prête, elles trouveront leurs porteurs. » Dit-il. Sept siècles allaient s'écouler.</div>
+    </div>
+  </div>
+
+  <!-- SLIDE 3 : Abidjan 1983 - Le Général Keïta découvre la Pierre -->
+  <div class="intro-slide" id="intro-slide-2">
+    <div class="intro-art">
+      <svg viewBox="0 0 800 600" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid slice">
+        <defs>
+          <radialGradient id="s3bg" cx="40%" cy="40%" r="60%"><stop offset="0%" stop-color="#0a1428"/><stop offset="100%" stop-color="#020810"/></radialGradient>
+          <radialGradient id="s3lamp" cx="50%" cy="50%" r="50%"><stop offset="0%" stop-color="#f5c842" stop-opacity="0.7"/><stop offset="100%" stop-color="#f5c842" stop-opacity="0"/></radialGradient>
+          <filter id="s3g"><feGaussianBlur stdDeviation="4"/></filter>
+          <filter id="s3g2"><feGaussianBlur stdDeviation="2"/></filter>
+        </defs>
+        <rect width="800" height="600" fill="url(#s3bg)"/>
+        <!-- Nuit abidjanaise par la fenêtre -->
+        <rect x="500" y="80" width="240" height="180" fill="#0d1a30" rx="4"/>
+        <!-- Vue ville depuis fenêtre -->
+        <g fill="#060f1e" opacity="0.9">
+          <rect x="520" y="160" width="20" height="80"/><rect x="550" y="140" width="16" height="100"/>
+          <rect x="575" y="155" width="22" height="85"/><rect x="607" y="130" width="18" height="110"/>
+          <rect x="634" y="148" width="20" height="92"/><rect x="663" y="160" width="16" height="80"/>
+          <rect x="690" y="145" width="18" height="95"/>
+        </g>
+        <!-- Lumières fenêtres ville -->
+        <g fill="#c89b3c" opacity="0.2">
+          <rect x="523" y="165" width="4" height="3"/><rect x="553" y="148" width="3" height="2"/>
+          <rect x="579" y="163" width="4" height="3"/><rect x="611" y="138" width="3" height="2"/>
+          <rect x="638" y="155" width="4" height="3"/><rect x="667" y="168" width="3" height="2"/>
+        </g>
+        <!-- Cadre fenêtre -->
+        <rect x="500" y="80" width="240" height="180" fill="none" stroke="#1a2a3e" stroke-width="6" rx="4"/>
+        <line x1="620" y1="80" x2="620" y2="260" stroke="#1a2a3e" stroke-width="4"/>
+        <line x1="500" y1="170" x2="740" y2="170" stroke="#1a2a3e" stroke-width="4"/>
+        <!-- Mur bureau -->
+        <rect x="0" y="0" width="800" height="600" fill="#060c18" opacity="0.6"/>
+        <!-- Table du Général -->
+        <rect x="100" y="340" width="550" height="200" fill="#0a1018" rx="4"/>
+        <rect x="100" y="335" width="550" height="15" fill="#0d1520" rx="2"/>
+        <!-- Lampe de bureau -->
+        <line x1="450" y1="335" x2="450" y2="240" stroke="#1a2030" stroke-width="6"/>
+        <ellipse cx="450" cy="240" rx="50" ry="16" fill="#1a2030"/>
+        <circle cx="450" cy="260" r="60" fill="url(#s3lamp)" filter="url(#s3g)"/>
+        <circle cx="450" cy="248" r="8" fill="#f5c842" opacity="0.9"/>
+        <!-- Livres / dossiers sur table -->
+        <rect x="120" y="310" width="80" height="30" fill="#0e1a28" rx="2"/>
+        <rect x="125" y="305" width="75" height="8" fill="#162035" rx="1"/>
+        <rect x="210" y="315" width="60" height="25" fill="#0c1822" rx="2"/>
+        <rect x="540" y="308" width="90" height="32" fill="#0e1a28" rx="2"/>
+        <!-- Carnet de terrain du Général -->
+        <rect x="360" y="300" width="70" height="50" fill="#8b4513" rx="3" opacity="0.9"/>
+        <rect x="362" y="302" width="66" height="46" fill="#7a3c10" rx="2"/>
+        <rect x="395" y="302" width="2" height="46" fill="#5a2c08"/>
+        <!-- Pierre sur le carnet qui brille -->
+        <polygon points="395,310 403,298 411,310 403,322" fill="#1ea35a" filter="url(#s2g2)"/>
+        <circle cx="403" cy="310" r="20" fill="#1ea35a" opacity="0.3" filter="url(#s3g)"/>
+        <!-- Mains du Général (silhouette) autour de la pierre -->
+        <path d="M365,320 Q380,315 395,318" stroke="#08101c" stroke-width="8" fill="none" stroke-linecap="round"/>
+        <path d="M411,318 Q426,315 440,322" stroke="#08101c" stroke-width="8" fill="none" stroke-linecap="round"/>
+        <!-- Silhouette Général assis -->
+        <rect x="400" y="200" width="40" height="140" fill="#06101e"/><!-- corps -->
+        <circle cx="420" cy="192" r="22" fill="#06101e"/><!-- tête -->
+        <!-- Casquette militaire -->
+        <path d="M398,185 L442,185 L444,192 L398,192 Z" fill="#080f1a"/>
+        <rect x="396" y="176" width="48" height="12" fill="#06101e" rx="3"/>
+        <!-- Médailles -->
+        <g fill="#c89b3c" opacity="0.4">
+          <circle cx="408" cy="220" r="4"/><circle cx="418" cy="218" r="3.5"/><circle cx="428" cy="222" r="4"/>
+        </g>
+        <!-- Bras posé sur la table -->
+        <path d="M400,290 Q400,330 380,340" stroke="#06101e" stroke-width="12" fill="none" stroke-linecap="round"/>
+        <path d="M440,290 Q445,325 450,338" stroke="#06101e" stroke-width="12" fill="none" stroke-linecap="round"/>
+        <!-- Reflet de la pierre sur son visage -->
+        <ellipse cx="420" cy="200" rx="18" ry="14" fill="#1ea35a" opacity="0.06" filter="url(#s3g)"/>
+        <!-- Calendrier mur : 1983 -->
+        <rect x="110" y="120" width="80" height="100" fill="#0a1420" rx="3"/>
+        <rect x="110" y="120" width="80" height="22" fill="#c89b3c" opacity="0.6" rx="3"/>
+        <text x="150" y="137" text-anchor="middle" font-family="serif" font-size="12" fill="#0a0a00" font-weight="bold">1983</text>
+        <text x="150" y="175" text-anchor="middle" font-family="serif" font-size="22" fill="#8090a0">14</text>
+      </svg>
+    </div>
+    <div class="intro-vignette"></div>
+    <div class="intro-text-box">
+      <div class="intro-chapter">Abidjan, Marcory · 1983</div>
+      <div class="intro-title">Le Général Keïta et la Pierre de l'Équilibre</div>
+      <div class="intro-body">Treize ans avant les événements du jeu, le Général Keïta — père de Tarine — retrouva la Pierre de l'Équilibre dans les archives de l'Empire du Mali. Il comprit immédiatement son danger et consacra sa vie à cacher les cinq pierres. Une mission qui lui coûterait tout.</div>
+    </div>
+  </div>
+
+  <!-- SLIDE 4 : Tarine reçoit la pierre, 1996 -->
+  <div class="intro-slide" id="intro-slide-3">
+    <div class="intro-art">
+      <svg viewBox="0 0 800 600" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid slice">
+        <defs>
+          <radialGradient id="s4bg" cx="50%" cy="60%" r="70%"><stop offset="0%" stop-color="#0f1a10"/><stop offset="100%" stop-color="#030808"/></radialGradient>
+          <radialGradient id="s4glow" cx="50%" cy="50%" r="50%"><stop offset="0%" stop-color="#1ea35a" stop-opacity="0.5"/><stop offset="100%" stop-color="#1ea35a" stop-opacity="0"/></radialGradient>
+          <filter id="s4g"><feGaussianBlur stdDeviation="5"/></filter>
+          <filter id="s4g2"><feGaussianBlur stdDeviation="2.5"/></filter>
+        </defs>
+        <rect width="800" height="600" fill="url(#s4bg)"/>
+        <!-- Cour de Marcory en arrière plan (végétation tropicale) -->
+        <!-- Feuilles de palmier -->
+        <g fill="#061008" opacity="0.8">
+          <path d="M600,0 Q650,100 580,200 Q620,80 670,0 Z"/>
+          <path d="M650,0 Q680,120 620,230 Q660,90 710,10 Z"/>
+          <path d="M550,0 Q530,150 490,250 Q560,120 600,0 Z"/>
+          <path d="M700,0 Q760,100 730,220 Q750,80 780,0 Z"/>
+          <path d="M0,100 Q80,80 160,120 Q60,90 20,200 Z"/>
+          <path d="M0,60 Q100,40 180,80 Q80,55 40,160 Z"/>
+        </g>
+        <!-- Mur de la cour -->
+        <rect x="0" y="350" width="800" height="250" fill="#05100a"/>
+        <path d="M0,350 Q200,330 400,345 Q600,360 800,340 L800,380 Q600,398 400,383 Q200,368 0,388 Z" fill="#061208"/>
+        <!-- Sol herbe/terre -->
+        <g fill="#040d06" opacity="0.9">
+          <rect x="0" y="400" width="800" height="200"/>
+        </g>
+        <!-- Ombres arbres sur le sol -->
+        <ellipse cx="640" cy="520" rx="80" ry="20" fill="#03090500" opacity="0.4"/>
+        <!-- Boîte d'emballage ouverte -->
+        <rect x="310" y="330" width="180" height="120" fill="#1a0e06" rx="4"/>
+        <rect x="308" y="328" width="184" height="12" fill="#220e05" rx="2"/>
+        <path d="M310,340 L220,300 L220,290 L310,330 Z" fill="#140c04" opacity="0.8"/><!-- rabat gauche -->
+        <path d="M490,340 L580,295 L580,285 L490,330 Z" fill="#140c04" opacity="0.8"/><!-- rabat droite -->
+        <path d="M310,328 Q400,310 490,328 Q400,295 310,328 Z" fill="#0f0a03" opacity="0.6"/><!-- papier kraft intérieur -->
+        <!-- Fils de paille / emballage -->
+        <g stroke="#3a2a10" stroke-width="1" fill="none" opacity="0.5">
+          <path d="M330,340 Q360,325 390,340"/><path d="M350,350 Q380,335 410,348"/>
+          <path d="M420,342 Q450,328 480,345"/>
+        </g>
+        <!-- LA PIERRE — au centre du cadre, suspendue magiquement -->
+        <polygon points="400,260 416,232 432,260 416,288" fill="#1ea35a" opacity="0.95" filter="url(#s4g2)"/>
+        <circle cx="416" cy="260" r="45" fill="url(#s4glow)" filter="url(#s4g)"/>
+        <circle cx="416" cy="260" r="25" fill="#1ea35a" opacity="0.12" filter="url(#s4g)"/>
+        <!-- Particules d'énergie autour -->
+        <g fill="#1ea35a" opacity="0.6">
+          <circle cx="380" cy="230" r="2"><animate attributeName="r" values="2;4;2" dur="1.5s" repeatCount="indefinite"/></circle>
+          <circle cx="450" cy="245" r="1.5"><animate attributeName="r" values="1.5;3;1.5" dur="2s" repeatCount="indefinite"/></circle>
+          <circle cx="390" cy="290" r="2"><animate attributeName="r" values="2;3.5;2" dur="1.8s" repeatCount="indefinite"/></circle>
+          <circle cx="445" cy="285" r="1.5"><animate attributeName="r" values="1.5;3;1.5" dur="1.3s" repeatCount="indefinite"/></circle>
+        </g>
+        <!-- Mains de Tarine (13 ans) tendues vers la pierre -->
+        <!-- Bras gauche -->
+        <path d="M250,400 Q300,360 370,320 Q390,312 395,290" stroke="#06100a" stroke-width="14" fill="none" stroke-linecap="round"/>
+        <!-- Main gauche -->
+        <ellipse cx="390" cy="285" rx="16" ry="10" fill="#07120a" transform="rotate(-30,390,285)"/>
+        <!-- Bras droit -->
+        <path d="M570,400 Q520,360 460,320 Q440,312 440,290" stroke="#06100a" stroke-width="14" fill="none" stroke-linecap="round"/>
+        <!-- Main droite -->
+        <ellipse cx="442" cy="285" rx="16" ry="10" fill="#07120a" transform="rotate(30,442,285)"/>
+        <!-- Silhouette Tarine (enfant/ado) -->
+        <rect x="375" y="390" width="90" height="130" fill="#04100a"/><!-- corps -->
+        <circle cx="420" cy="378" r="26" fill="#04100a"/><!-- tête -->
+        <!-- T-shirt de lycéen -->
+        <path d="M375,420 Q400,415 420,420 Q440,415 465,420 L465,520 L375,520 Z" fill="#060f0a"/>
+        <!-- Sac d'école -->
+        <rect x="355" y="430" width="25" height="60" fill="#051008" rx="3"/>
+        <!-- Reflet vert de la pierre sur son visage -->
+        <ellipse cx="420" cy="380" rx="22" ry="18" fill="#1ea35a" opacity="0.08" filter="url(#s4g)"/>
+        <!-- Lettre du père (à côté de la boîte) -->
+        <rect x="190" y="355" width="90" height="65" fill="#d4b896" opacity="0.7" transform="rotate(-12,235,387)"/>
+        <g stroke="#8b6040" stroke-width="1" fill="none" opacity="0.5" transform="rotate(-12,235,387)">
+          <line x1="200" y1="372" x2="272" y2="372"/><line x1="200" y1="382" x2="272" y2="382"/>
+          <line x1="200" y1="392" x2="260" y2="392"/>
+        </g>
+        <!-- Lumière chaude de l'après-midi (Abidjan) -->
+        <rect x="0" y="0" width="800" height="600" fill="#c89b3c" opacity="0.03"/>
+      </svg>
+    </div>
+    <div class="intro-vignette"></div>
+    <div class="intro-text-box">
+      <div class="intro-chapter">Marcory, Abidjan · 14 Décembre 1996</div>
+      <div class="intro-title">Le Cadeau de Papa</div>
+      <div class="intro-body">Un matin d'anniversaire. Une boîte sans retour d'adresse. À l'intérieur : une pierre tiède, lisse, qui semble respirer dans la paume. Le Général Keïta, quelque part au loin, a choisi son successeur. Tarine Keïta a treize ans. La Pierre de l'Équilibre vient de trouver son gardien.</div>
+    </div>
+  </div>
+
+  <!-- SLIDE 5 : Le monde qui veut les pierres -->
+  <div class="intro-slide" id="intro-slide-4">
+    <div class="intro-art">
+      <svg viewBox="0 0 800 600" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid slice">
+        <defs>
+          <radialGradient id="s5bg" cx="50%" cy="40%" r="65%"><stop offset="0%" stop-color="#14050a"/><stop offset="100%" stop-color="#050208"/></radialGradient>
+          <radialGradient id="s5glow" cx="50%" cy="50%" r="50%"><stop offset="0%" stop-color="#e84057" stop-opacity="0.4"/><stop offset="100%" stop-color="#e84057" stop-opacity="0"/></radialGradient>
+          <filter id="s5g"><feGaussianBlur stdDeviation="5"/></filter>
+          <filter id="s5g2"><feGaussianBlur stdDeviation="2"/></filter>
+        </defs>
+        <rect width="800" height="600" fill="url(#s5bg)"/>
+        <!-- Carte du monde stylisée -->
+        <!-- Afrique de l'Ouest (silhouette) -->
+        <path d="M200,100 Q240,90 280,110 Q320,130 310,180 Q300,230 280,270 Q260,310 240,340 Q220,370 210,350 Q190,320 180,280 Q165,240 170,200 Q175,150 200,100 Z"
+              fill="#0a0a14" stroke="#1a1a2e" stroke-width="1.5" opacity="0.8"/>
+        <!-- Golfe de Guinée -->
+        <path d="M210,350 Q240,370 270,360 Q300,350 310,360 Q295,390 280,380 Q255,370 230,375 Q215,368 210,350 Z"
+              fill="#0a0a14" stroke="#1a1a2e" stroke-width="1" opacity="0.7"/>
+        <!-- Point Abidjan -->
+        <circle cx="228" cy="355" r="4" fill="#c89b3c" filter="url(#s5g2)">
+          <animate attributeName="r" values="4;7;4" dur="2s" repeatCount="indefinite"/>
+        </circle>
+        <circle cx="228" cy="355" r="14" fill="#c89b3c" opacity="0.25" filter="url(#s5g)"/>
+        <!-- Ligne de visée vers Abidjan depuis le nord -->
+        <line x1="228" y1="355" x2="228" y2="355" stroke="#e84057" stroke-width="1.5" stroke-dasharray="6 4" opacity="0.6">
+          <animate attributeName="x2" values="228;228;500" dur="3s" fill="freeze"/>
+          <animate attributeName="y2" values="355;355;120" dur="3s" fill="freeze"/>
+        </line>
+        <!-- Figure de Sgrün / ennemi en arrière plan (empire) -->
+        <!-- Bâtiment imposant à droite : siège de l'Empire du Nord -->
+        <g fill="#0a0510" opacity="0.9">
+          <rect x="520" y="80" width="220" height="420"/>
+          <rect x="505" y="72" width="250" height="20"/>
+          <!-- Tour centrale -->
+          <rect x="590" y="40" width="60" height="450"/>
+          <rect x="582" y="32" width="76" height="14"/>
+          <!-- Antennes -->
+          <line x1="620" y1="32" x2="620" y2="-10" stroke="#0c0810" stroke-width="4"/>
+          <!-- Fenêtres rouges (Empire) -->
+        </g>
+        <g fill="#e84057" opacity="0.18">
+          <rect x="535" y="100" width="10" height="8"/><rect x="555" y="100" width="10" height="8"/>
+          <rect x="575" y="100" width="10" height="8"/><rect x="540" y="120" width="10" height="8"/>
+          <rect x="562" y="118" width="10" height="8"/><rect x="596" y="58" width="8" height="6"/>
+          <rect x="610" y="62" width="8" height="6"/><rect x="625" y="58" width="8" height="6"/>
+          <rect x="600" y="78" width="8" height="6"/><rect x="616" y="80" width="8" height="6"/>
+          <rect x="697" y="100" width="10" height="8"/><rect x="718" y="95" width="10" height="8"/>
+        </g>
+        <!-- Lueur rouge malveillante autour du bâtiment -->
+        <rect x="480" y="60" width="300" height="500" fill="url(#s5glow)" filter="url(#s5g)" opacity="0.5"/>
+        <!-- Sgrün : silhouette costume croisé, debout -->
+        <g transform="translate(620,180)" fill="#060310">
+          <rect x="-15" y="0" width="30" height="80"/><!-- corps -->
+          <circle cx="0" cy="-10" r="18"/><!-- tête -->
+          <!-- Costume croisé (veste) -->
+          <path d="M-15,0 Q-20,40 -18,80 L-2,80 Q-5,40 0,20 Q5,40 2,80 L18,80 Q20,40 15,0 Z" fill="#08040e"/>
+          <line x1="-5" y1="5" x2="8" y2="45" stroke="#0c0814" stroke-width="3"/>
+          <!-- Mains avec une pierre rouge -->
+          <line x1="-15" y1="30" x2="-40" y2="55" stroke="#060310" stroke-width="8" stroke-linecap="round"/>
+          <polygon points="-40,55 -34,42 -28,55 -34,68" fill="#e84057" filter="url(#s5g2)"/>
+          <circle cx="-34" cy="55" r="14" fill="#e84057" opacity="0.25" filter="url(#s5g)"/>
+        </g>
+        <!-- Titre SGRÜN -->
+        <text x="620" y="290" text-anchor="middle" font-family="serif" font-size="10" letter-spacing="4" fill="#e84057" opacity="0.6">SGRÜN</text>
+        <!-- Les autres personnages côté gauche (silhouettes Gardiens) -->
+        <g transform="translate(80,300)" fill="#06100a" opacity="0.85">
+          <!-- Karen -->
+          <rect x="0" y="20" width="22" height="65"/><circle cx="11" cy="14" r="13"/>
+          <!-- Fulgence (plus grand) -->
+          <rect x="30" y="10" width="28" height="80"/><circle cx="44" cy="3" r="15"/>
+          <!-- Lundgren -->
+          <rect x="68" y="18" width="22" height="70"/><circle cx="79" cy="11" r="13"/>
+          <!-- Baba Tunde -->
+          <rect x="100" y="22" width="22" height="65"/><circle cx="111" cy="15" r="13"/>
+        </g>
+        <!-- Tarine au centre, entre les deux camps -->
+        <g transform="translate(310,280)" fill="#06120a">
+          <rect x="-12" y="20" width="24" height="75"/>
+          <circle cx="0" cy="12" r="16"/>
+          <!-- Pierre d'équilibre qui brille -->
+          <polygon points="0,-10 7,-22 14,-10 7,2" fill="#1ea35a" filter="url(#s5g2)"/>
+          <circle cx="7" cy="-10" r="16" fill="#1ea35a" opacity="0.3" filter="url(#s5g)"/>
+        </g>
+        <!-- Trait de séparation entre les deux camps -->
+        <line x1="310" y1="80" x2="310" y2="520" stroke="#c89b3c" stroke-width="0.8" stroke-dasharray="6 4" opacity="0.25"/>
+        <!-- Titres camps -->
+        <text x="180" y="80" text-anchor="middle" font-family="serif" font-size="9" letter-spacing="5" fill="#1ea35a" opacity="0.5">GARDIENS DU SUD</text>
+        <text x="650" y="80" text-anchor="middle" font-family="serif" font-size="9" letter-spacing="5" fill="#e84057" opacity="0.5">EMPIRE DU NORD</text>
+      </svg>
+    </div>
+    <div class="intro-vignette"></div>
+    <div class="intro-text-box">
+      <div class="intro-chapter">Le Conflit · 1996</div>
+      <div class="intro-title">Deux Camps, Une Seule Vérité</div>
+      <div class="intro-body">Sgrün, l'Architecte, veut réunir les cinq pierres pour réécrire le monde selon sa vision d'un ordre parfait. Tarine, treize ans, fils d'un Général disparu, est la seule personne à qui la Pierre de l'Équilibre ait jamais parlé. Le choix appartient à Abidjan. L'histoire commence maintenant.</div>
+    </div>
+  </div>
+
+  <!-- Boutons navigation -->
+  <div class="intro-nav">
+    <button class="intro-skip" id="intro-skip">Passer l'intro</button>
+    <button class="intro-btn" id="intro-next">Suivant →</button>
+  </div>
 </div>
 
 <!-- NARRATION CINÉMATIQUE -->
