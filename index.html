@@ -13,7 +13,7 @@
    === REFONTE VISUELLE : STYLE MOBILE GAMING MODERNE ===
    ======================================================= */
 
-@import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@400;500;600;700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Cinzel:wght@400;600;700;900&family=Inter:wght@400;500;600;700;800&display=swap');
 
 * { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -1836,6 +1836,1414 @@ body::after { content: none; }
   .token-avatar-wrap, .token-avatar { width: 42px; height: 42px; }
   .token-hpbar { width: 42px; }
 }
+
+/* ===========================================================
+   ===  SURCOUCHE VISUELLE — "ARCANE FORGE" ==================
+   ===  Direction artistique originale inspirée des codes
+   ===  du genre MOBA/fantasy-tech : bleu nuit profond,
+   ===  or bronze, énergie turquoise, cadres biseautés.
+   =========================================================== */
+
+:root{
+  /* ── Fonds ── */
+  --hex-bg:          #04090f;
+  --hex-panel:       #0a1526;
+  --hex-panel-light: #102337;
+  /* ── Structure ── */
+  --hex-border:      #1d2b3a;
+  --hex-border-glow: #7a5c2b;
+  /* ── Or / bronze ── */
+  --hex-gold:        #c9a86a;
+  --hex-gold-light:  #f2e8d5;
+  --hex-gold-bright: #e6c98a;
+  --hex-gold-dark:   #7a5c2b;
+  --hex-gold-trim:   #3f3115;
+  /* ── Énergie arcanique (turquoise) ── */
+  --hex-magic:       #16c8bd;
+  --hex-magic-dim:   #0b6f6a;
+  --hex-magic-glow:  rgba(22,200,189,0.35);
+  /* ── États ── */
+  --hex-red:         #e0455c;
+  --hex-red-bright:  #ff7285;
+  --hex-green:       #23b567;
+  --hex-green-dim:   #0d6b3c;
+  /* ── Texte ── */
+  --hex-text:        #a8a294;
+  --hex-text-dim:    #5f5b53;
+  --v-accent:        #0d7f8f;
+  --v-accent2:       #16c8bd;
+  --v-bright:        #b9f5f0;
+  --shadow-deep:     0 10px 40px rgba(0,0,0,0.85);
+  --shadow-panel:    0 2px 24px rgba(0,0,0,0.6);
+  --inset-dark:      inset 0 1px 0 rgba(242,232,213,0.07), inset 0 -1px 0 rgba(0,0,0,0.6);
+  --bevel:           polygon(10px 0, 100% 0, 100% calc(100% - 10px), calc(100% - 10px) 100%, 0 100%, 0 10px);
+}
+
+/* ── Typographie : titres gravés, corps de texte net ── */
+.t-title, .end-title, .hub-titre, .deploy-mission, .profile-name,
+.deploy-title, .side-label, .intro-title, .lu-tag, .narr-chapter,
+.reward-title, .allies-title, .journal-title, .m-name, .t-eyebrow{
+  font-family: 'Cinzel', Georgia, serif !important;
+  font-weight: 700;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+}
+body, html{ font-family:'Inter', system-ui, sans-serif; }
+
+/* ── Ambiance de fond : voûte bleu nuit + halo doré au sol ── */
+body::before{
+  background:
+    radial-gradient(ellipse 90% 55% at 50% -8%,  rgba(22,200,189,0.14) 0%, transparent 62%),
+    radial-gradient(ellipse 70% 45% at 50% 108%, rgba(201,168,106,0.10) 0%, transparent 60%),
+    linear-gradient(180deg, #061020 0%, var(--hex-bg) 55%, #02060b 100%) !important;
+}
+/* Trame hexagonale discrète */
+body::after{
+  content:"" !important; position:fixed; inset:0; pointer-events:none; z-index:-1;
+  opacity:.22;
+  background-image:
+    linear-gradient(115deg, rgba(201,168,106,.07) 1px, transparent 1px),
+    linear-gradient(65deg,  rgba(201,168,106,.07) 1px, transparent 1px);
+  background-size: 34px 58px, 34px 58px;
+}
+
+/* ===========================================================
+   PANNEAUX & CADRES — angles biseautés, filet doré
+   =========================================================== */
+.title-panel, .hub-panel, .profile-box, .brief-box, .narration-box,
+.intro-text-box, .lu-card, .deploy-briefing, .action-log{
+  background:
+    linear-gradient(180deg, rgba(16,35,55,.92) 0%, rgba(10,21,38,.96) 100%) !important;
+  border:1px solid var(--hex-gold-dark) !important;
+  border-radius:0 !important;
+  box-shadow: var(--shadow-panel), var(--inset-dark) !important;
+  position:relative;
+}
+.title-panel::before, .hub-panel::before, .lu-card::before{
+  content:""; position:absolute; inset:3px; pointer-events:none;
+  border:1px solid rgba(201,168,106,.18);
+}
+
+/* Filet séparateur avec losange central */
+.t-divider-line{
+  background:linear-gradient(90deg, transparent, var(--hex-gold-dark) 25%, var(--hex-gold) 50%, var(--hex-gold-dark) 75%, transparent) !important;
+  height:1px !important;
+}
+.t-divider-gem{
+  background:var(--hex-gold) !important;
+  transform:rotate(45deg); border-radius:0 !important;
+  box-shadow:0 0 10px rgba(201,168,106,.7) !important;
+}
+
+/* ===========================================================
+   BOUTONS — plaque sombre, liseré or, lueur au survol
+   =========================================================== */
+.btn{
+  border-radius:0 !important;
+  clip-path: var(--bevel);
+  background:linear-gradient(180deg, #12283f 0%, #0a1728 100%) !important;
+  border:1px solid var(--hex-gold-dark) !important;
+  color:var(--hex-gold-light) !important;
+  font-family:'Cinzel', Georgia, serif !important;
+  text-transform:uppercase; letter-spacing:2.5px; font-weight:700;
+  transition: box-shadow .18s ease, transform .1s ease, border-color .18s ease;
+}
+.btn:hover{
+  border-color:var(--hex-gold) !important;
+  box-shadow:0 0 0 1px rgba(201,168,106,.35), 0 0 22px rgba(201,168,106,.28) !important;
+}
+.btn:active{ transform:translateY(1px) scale(.995); }
+.btn::before{ display:none !important; }
+.btn::after{
+  content:""; position:absolute; left:0; right:0; top:0; height:1px;
+  background:linear-gradient(90deg, transparent, var(--hex-gold), transparent);
+  opacity:.6;
+}
+.btn-primary{
+  background:linear-gradient(180deg, #1a3a52 0%, #0c2033 100%) !important;
+  border-color:var(--hex-gold) !important;
+  color:var(--hex-gold-light) !important;
+  box-shadow:0 0 18px rgba(201,168,106,.18), var(--inset-dark) !important;
+}
+.btn-primary:hover{ box-shadow:0 0 30px rgba(201,168,106,.4) !important; }
+.btn-red{
+  border-color:#8e2436 !important; color:#ffd3d9 !important;
+  background:linear-gradient(180deg, #3b1421 0%, #1c0a11 100%) !important;
+}
+.btn-red:hover{ box-shadow:0 0 24px rgba(224,69,92,.35) !important; }
+.btn:disabled, .btn.disabled{ filter:grayscale(.7); opacity:.45; }
+.intro-btn, .narr-continue{
+  border-radius:0 !important; border:1px solid var(--hex-gold-dark) !important;
+  color:var(--hex-gold-light) !important; letter-spacing:2px;
+  background:linear-gradient(180deg,#12283f,#0a1728) !important;
+}
+.intro-btn:hover{ border-color:var(--hex-gold) !important; box-shadow:0 0 20px rgba(201,168,106,.3) !important; }
+
+/* ===========================================================
+   EN-TÊTES & ONGLETS
+   =========================================================== */
+.hub-header, .deploy-header{
+  background:linear-gradient(180deg, rgba(8,20,34,.98), rgba(4,10,18,.9)) !important;
+  border-bottom:1px solid var(--hex-gold-dark) !important;
+}
+.hub-header::after, .deploy-header::after{
+  background:linear-gradient(90deg, transparent, var(--hex-gold), transparent) !important;
+  height:1px !important; opacity:.8;
+}
+.hub-tabs{
+  background:linear-gradient(0deg, #04090f 0%, #08131f 100%) !important;
+  border-top:1px solid var(--hex-gold-dark) !important;
+}
+.hub-tab-btn{ color:var(--hex-text-dim) !important; border-radius:0 !important; }
+.hub-tab-btn.active{ color:var(--hex-gold-light) !important; }
+.hub-tab-btn.active::before{
+  background:linear-gradient(180deg, rgba(201,168,106,.22), transparent) !important;
+}
+.hub-tab-btn.active::after{
+  background:var(--hex-gold) !important; height:2px !important;
+  box-shadow:0 0 12px rgba(201,168,106,.8) !important;
+}
+.hub-tab-btn .tab-label{ letter-spacing:1.5px; text-transform:uppercase; font-size:10px; }
+
+/* ===========================================================
+   CARTES DE MISSION / DÉPLOIEMENT
+   =========================================================== */
+.mission-card, .deploy-card{
+  border-radius:0 !important;
+  clip-path: var(--bevel);
+  background:linear-gradient(180deg, rgba(16,35,55,.9), rgba(8,18,31,.95)) !important;
+  border:1px solid var(--hex-border) !important;
+}
+.mission-card.available{
+  border-color:var(--hex-gold-dark) !important;
+  box-shadow:0 0 0 1px rgba(201,168,106,.15), 0 6px 20px rgba(0,0,0,.6) !important;
+}
+.mission-card.available::before{
+  background:linear-gradient(180deg, var(--hex-gold), var(--hex-gold-dark)) !important;
+}
+.mission-card.done{ border-color:rgba(35,181,103,.4) !important; }
+.mission-card.locked{ filter:grayscale(.8) brightness(.6); }
+.deploy-card.selected{
+  border-color:var(--hex-magic) !important;
+  box-shadow:0 0 0 1px var(--hex-magic), 0 0 26px var(--hex-magic-glow) !important;
+}
+.m-num{
+  font-family:'Cinzel', serif !important; color:var(--hex-gold) !important;
+  border-radius:0 !important;
+}
+.m-status.avail{ color:var(--hex-gold-light) !important; }
+.m-status.done{ color:var(--hex-green) !important; }
+.m-status.lock{ color:var(--hex-text-dim) !important; }
+
+/* ===========================================================
+   ALLIÉS / JOURNAL / PROFIL
+   =========================================================== */
+.ally-row, .j-entry{
+  border-radius:0 !important;
+  background:linear-gradient(90deg, rgba(16,35,55,.75), rgba(8,18,31,.6)) !important;
+  border:1px solid var(--hex-border) !important;
+  border-left:2px solid var(--hex-gold-dark) !important;
+}
+.ally-row:not(.ally-locked):hover, .j-entry:hover{
+  border-left-color:var(--hex-gold) !important;
+  background:linear-gradient(90deg, rgba(24,48,72,.85), rgba(10,21,38,.7)) !important;
+}
+.ally-img, .token-avatar, .deploy-card img, .mission-card img{
+  border-radius:0 !important;
+  border:1px solid var(--hex-gold-dark) !important;
+}
+.ally-badge{ border-radius:0 !important; background:var(--hex-gold-dark) !important; color:#04090f !important; }
+.ally-role{ color:var(--hex-magic) !important; letter-spacing:1px; text-transform:uppercase; font-size:10px; }
+
+/* ===========================================================
+   JAUGES — fines, carrées, énergie qui coule
+   =========================================================== */
+.xp-bar, .nexus-bar, .token-hpbar, .boss-hp-track{
+  border-radius:0 !important;
+  background:#02060b !important;
+  border:1px solid var(--hex-border) !important;
+  box-shadow: inset 0 1px 3px rgba(0,0,0,.9) !important;
+}
+.xp-fill{
+  border-radius:0 !important;
+  background:linear-gradient(90deg, var(--hex-magic-dim), var(--hex-magic)) !important;
+  box-shadow:0 0 12px var(--hex-magic-glow) !important;
+}
+.nexus-fill.ally, .token.ally .token-hpfill, .token.player .token-hpfill{
+  border-radius:0 !important;
+  background:linear-gradient(90deg, #0d6b3c, #23b567) !important;
+}
+.nexus-fill.enemy, .token.enemy .token-hpfill{
+  border-radius:0 !important;
+  background:linear-gradient(90deg, #7a1c2c, var(--hex-red)) !important;
+}
+.boss-hp-fill{
+  border-radius:0 !important;
+  background:linear-gradient(90deg, #6d1526, var(--hex-red), #ff8a9b) !important;
+}
+.boss-hp-fill.enraged{ background:linear-gradient(90deg,#8e1c14,#ff6a3d) !important; }
+
+/* ===========================================================
+   ARÈNE — dalle de pierre, braseros, runes turquoise
+   =========================================================== */
+.arena-bg{
+  background:
+    radial-gradient(ellipse 70% 50% at 50% 30%, rgba(22,200,189,.10), transparent 65%),
+    linear-gradient(180deg, #071523 0%, #04090f 70%) !important;
+}
+.arena-floor{
+  background:
+    linear-gradient(180deg, rgba(201,168,106,.07) 0%, transparent 60%),
+    linear-gradient(180deg, #0b1a2b, #050d16) !important;
+  border-top:1px solid rgba(201,168,106,.25) !important;
+}
+.arena-rune{ color:var(--hex-magic) !important; filter:drop-shadow(0 0 8px var(--hex-magic-glow)); }
+.arena-torch-glow{ background:radial-gradient(circle, rgba(201,168,106,.35), transparent 70%) !important; }
+.arena-corner-gem{
+  background:var(--hex-gold) !important; border-radius:0 !important;
+  transform:rotate(45deg); box-shadow:0 0 12px rgba(201,168,106,.6) !important;
+}
+.arena-wall-left, .arena-wall-right{
+  background:linear-gradient(90deg, rgba(201,168,106,.12), transparent) !important;
+}
+.arena-toast{
+  border-radius:0 !important; border:1px solid var(--hex-gold-dark) !important;
+  background:rgba(6,14,24,.95) !important; color:var(--hex-gold-light) !important;
+  font-family:'Cinzel', serif !important; letter-spacing:2px;
+}
+
+/* ===========================================================
+   HUD DE COMBAT & COMPÉTENCES
+   =========================================================== */
+.game-hud{
+  background:linear-gradient(180deg, rgba(4,10,18,.95), rgba(4,10,18,.55)) !important;
+  border-bottom:1px solid rgba(201,168,106,.35) !important;
+}
+.abilities-hud{
+  background:linear-gradient(0deg, rgba(4,10,18,.97), rgba(6,16,28,.7)) !important;
+  border-top:1px solid var(--hex-gold-dark) !important;
+}
+.ab-btn{
+  border-radius:0 !important;
+  clip-path: polygon(8px 0, 100% 0, 100% calc(100% - 8px), calc(100% - 8px) 100%, 0 100%, 0 8px);
+  background:linear-gradient(180deg, #12283f, #08131f) !important;
+  border:1px solid var(--hex-gold-dark) !important;
+  color:var(--hex-gold-light) !important;
+}
+.ab-btn:hover:not(.on-cooldown){
+  border-color:var(--hex-magic) !important;
+  box-shadow:0 0 18px var(--hex-magic-glow) !important;
+}
+.ab-btn .key{
+  background:var(--hex-gold-dark) !important; color:#04090f !important;
+  border-radius:0 !important; font-weight:800;
+}
+.ab-btn.on-cooldown{ filter:grayscale(.6) brightness(.65); }
+.ab-btn.on-cooldown::before{ background:rgba(4,10,18,.7) !important; }
+.dpad button{
+  border-radius:0 !important;
+  background:linear-gradient(180deg, #12283f, #08131f) !important;
+  border:1px solid var(--hex-gold-dark) !important;
+  color:var(--hex-gold-light) !important;
+}
+.dpad button:active, .dpad button.pressed{
+  border-color:var(--hex-magic) !important; box-shadow:0 0 16px var(--hex-magic-glow) !important;
+}
+.hud-timer, .hud-score{ font-family:'Cinzel', serif !important; color:var(--hex-gold-light) !important; }
+.side-label.a::before, .side-label::before{ background:var(--hex-magic) !important; }
+.side-label.e::before{ background:var(--hex-red) !important; }
+
+/* ===========================================================
+   TOKENS DE COMBAT
+   =========================================================== */
+.token-avatar-wrap{ border-radius:0 !important; }
+.token.player .token-ring, .token-ring{
+  border-radius:0 !important;
+  border:1px solid var(--hex-magic) !important;
+  box-shadow:0 0 14px var(--hex-magic-glow) !important;
+}
+.token-lvl{
+  border-radius:0 !important; font-family:'Cinzel', serif !important;
+  background:#04090f !important; border:1px solid var(--hex-gold-dark) !important;
+  color:var(--hex-gold) !important;
+}
+.token-name{ letter-spacing:1px; color:var(--hex-text) !important; }
+.token.boss .token-avatar-wrap, .token.boss .token-avatar{
+  border-color:var(--hex-red) !important;
+  box-shadow:0 0 22px rgba(224,69,92,.45) !important;
+}
+.token.boss .token-name{ color:var(--hex-red-bright) !important; font-family:'Cinzel',serif !important; }
+
+/* ===========================================================
+   EFFETS
+   =========================================================== */
+.fx-dmg{ font-family:'Cinzel', serif !important; text-shadow:0 2px 6px #000, 0 0 12px rgba(0,0,0,.9) !important; }
+.fx-dmg.heal{ color:#5ce09a !important; }
+.fx-dmg.crit{ color:#ffd98e !important; }
+.fx-dmg.dodge{ color:var(--hex-magic) !important; }
+.fx-ring, .fx-shockwave{ border-color:var(--hex-magic) !important; }
+.fx-orb, .fx-trail{ background:var(--hex-magic) !important; box-shadow:0 0 14px var(--hex-magic-glow) !important; }
+.fx-telegraph{ border-color:var(--hex-red) !important; }
+.fx-slash{ background:linear-gradient(90deg, transparent, var(--hex-gold-light), transparent) !important; }
+.fx-slash.dark{ background:linear-gradient(90deg, transparent, var(--hex-magic), transparent) !important; }
+
+/* ===========================================================
+   ÉCRAN TITRE / INTRO / NARRATION / FIN
+   =========================================================== */
+.title-logo-text{ font-family:'Cinzel', serif !important; letter-spacing:6px; }
+.title-logo-gem, .title-logo-mark{ color:var(--hex-gold) !important; }
+.title-corner{ border-color:var(--hex-gold) !important; }
+.t-eyebrow{ color:var(--hex-magic) !important; letter-spacing:4px; }
+.t-quote{ color:var(--hex-text-dim) !important; font-style:italic; }
+.t-sub{ color:var(--hex-text) !important; letter-spacing:2px; }
+.intro-chapter, .narr-chapter{ color:var(--hex-gold) !important; letter-spacing:4px; }
+.intro-prog-seg{ background:var(--hex-border) !important; border-radius:0 !important; }
+.intro-prog-seg.done{ background:var(--hex-gold-dark) !important; }
+.intro-prog-seg.active::after{ background:var(--hex-gold) !important; }
+.narration-box{ border-left:2px solid var(--hex-gold) !important; }
+.narr-src{ color:var(--hex-magic) !important; letter-spacing:2px; text-transform:uppercase; }
+.end-title.victory{
+  color:var(--hex-gold-light) !important;
+  text-shadow:0 0 30px rgba(201,168,106,.55) !important;
+}
+.end-title.defeat{
+  color:var(--hex-red-bright) !important;
+  text-shadow:0 0 30px rgba(224,69,92,.45) !important;
+}
+.reward-row{ border-bottom:1px solid var(--hex-border) !important; }
+.reward-val{ color:var(--hex-gold) !important; font-family:'Cinzel',serif !important; }
+.reward-key{ color:var(--hex-text) !important; }
+
+/* Level up */
+.lu-card{ border:1px solid var(--hex-gold) !important; box-shadow:0 0 60px rgba(201,168,106,.25) !important; }
+.lu-tag{ color:var(--hex-magic) !important; letter-spacing:4px; }
+.lu-lvl-new{ color:var(--hex-gold-light) !important; text-shadow:0 0 24px rgba(201,168,106,.7) !important; }
+.lu-lvl-old{ color:var(--hex-text-dim) !important; }
+.lu-arrow{ color:var(--hex-gold) !important; }
+.lu-stat{ background:rgba(8,18,31,.8) !important; border:1px solid var(--hex-border) !important; border-radius:0 !important; }
+.lu-stat-val{ color:var(--hex-magic) !important; font-family:'Cinzel',serif !important; }
+.lu-rays{ background:conic-gradient(from 0deg, transparent, rgba(201,168,106,.25), transparent, rgba(22,200,189,.2), transparent) !important; }
+
+/* Vies / pierres */
+.life-heart{ color:var(--hex-red) !important; }
+.life-heart.empty{ color:var(--hex-border) !important; }
+.stone{ color:var(--hex-gold) !important; }
+.lives-box{ border:1px solid var(--hex-border) !important; border-radius:0 !important; background:rgba(8,18,31,.7) !important; }
+
+/* Journal */
+.j-date{ color:var(--hex-magic) !important; letter-spacing:1px; }
+.j-text{ color:var(--hex-text) !important; }
+.log-line .you{ color:var(--hex-magic) !important; }
+.log-line .cname{ color:var(--hex-gold) !important; }
+.log-line .dmg{ color:var(--hex-red-bright) !important; }
+.log-line .heal{ color:#5ce09a !important; }
+
+/* Divers : plus aucun angle arrondi parasite */
+.hub-panel, .deploy-grid, .profile-box, .brief-box, .enemy-preview,
+.boss-hpbar, .nexus-wrap, .arena-hint, .no-lives-msg, .t-save{
+  border-radius:0 !important;
+}
+.enemy-lvl.lvl-safe{ color:var(--hex-green) !important; }
+.enemy-lvl.lvl-even{ color:var(--hex-gold) !important; }
+.enemy-lvl.lvl-danger{ color:var(--hex-red-bright) !important; }
+
+
+/* ===========================================================
+   ===  COUCHE 2 — "POCKET FORGE" ============================
+   ===  Grammaire d'application mobile moderne :
+   ===  cartes arrondies, verre dépoli, cartouche d'énergie,
+   ===  barre d'onglets flottante, CTA à gradient.
+   =========================================================== */
+
+:root{
+  --r-card:  18px;
+  --r-tile:  14px;
+  --r-pill:  999px;
+  --card-bg: linear-gradient(160deg, rgba(23,45,70,.88) 0%, rgba(10,21,38,.94) 100%);
+  --card-line: 1px solid rgba(201,168,106,.22);
+  --card-shadow: 0 10px 28px rgba(0,0,0,.55), inset 0 1px 0 rgba(255,255,255,.06);
+  --glass: blur(14px) saturate(1.2);
+  --grad-cta: linear-gradient(135deg, #e6c98a 0%, #c9a86a 45%, #9a7434 100%);
+  --grad-arc: linear-gradient(135deg, #16c8bd 0%, #0d7f8f 100%);
+  --safe-b: env(safe-area-inset-bottom, 0px);
+}
+
+/* On abandonne les angles coupés de la couche 1 au profit d'arrondis tactiles */
+.btn, .ab-btn, .mission-card, .deploy-card{ clip-path:none !important; }
+
+/* ===========================================================
+   CARTES — le motif central de l'interface
+   =========================================================== */
+.mission-card, .deploy-card, .ally-row, .j-entry,
+.profile-box, .brief-box, .lu-stat, .enemy-preview, .deploy-briefing{
+  border-radius: var(--r-card) !important;
+  background: var(--card-bg) !important;
+  border: var(--card-line) !important;
+  box-shadow: var(--card-shadow) !important;
+  -webkit-backdrop-filter: var(--glass);
+  backdrop-filter: var(--glass);
+  overflow: hidden;
+}
+.hub-panel::before, .title-panel::before, .lu-card::before{ display:none !important; }
+
+/* Cartes de mission : vignette + contenu + chevron, façon liste d'app */
+.mission-card{
+  padding:14px !important;
+  display:flex !important; align-items:center; gap:14px;
+  transition: transform .16s cubic-bezier(.2,.8,.3,1), box-shadow .16s ease;
+}
+.mission-card:active{ transform:scale(.975); }
+.mission-card.available{
+  border-color: rgba(201,168,106,.55) !important;
+  box-shadow: 0 10px 30px rgba(0,0,0,.6), 0 0 0 1px rgba(201,168,106,.25), inset 0 1px 0 rgba(255,255,255,.07) !important;
+}
+/* Liseré de rareté vertical à gauche */
+.mission-card.available::before{
+  content:"" !important; position:absolute; left:0; top:0; bottom:0; width:4px !important;
+  background: var(--grad-cta) !important; border-radius:0 !important;
+  box-shadow:0 0 14px rgba(201,168,106,.6);
+}
+.mission-card.done::before{ content:""; position:absolute; left:0; top:0; bottom:0; width:4px; background:linear-gradient(180deg,#2ee08a,#0d6b3c); }
+.mission-card.locked{ opacity:.55; }
+/* Chevron d'entrée de carte */
+.mission-card.available::after{
+  content:"›" !important; position:absolute !important; right:14px; top:50%;
+  transform:translateY(-50%); font-size:26px; line-height:1;
+  color:var(--hex-gold) !important; background:none !important; opacity:.8;
+}
+.m-num{
+  width:44px; height:44px; flex:0 0 44px;
+  display:flex; align-items:center; justify-content:center;
+  border-radius:12px !important;
+  background: rgba(201,168,106,.12) !important;
+  border:1px solid rgba(201,168,106,.35) !important;
+  font-size:16px !important;
+}
+.m-name{ font-size:15px !important; letter-spacing:1.5px; color:var(--hex-gold-light) !important; }
+.m-desc{ font-size:12px !important; color:var(--hex-text) !important; opacity:.85; }
+.m-status{
+  display:inline-block; padding:3px 10px; border-radius:var(--r-pill) !important;
+  font-size:10px !important; letter-spacing:1px; text-transform:uppercase; font-weight:700;
+}
+.m-status.avail{ background:rgba(201,168,106,.16); color:var(--hex-gold-bright) !important; }
+.m-status.done{ background:rgba(35,181,103,.16); color:#4ade9a !important; }
+.m-status.lock{ background:rgba(255,255,255,.05); color:var(--hex-text-dim) !important; }
+
+/* ===========================================================
+   CARTES DE HÉROS — cadre de rareté + portrait plein
+   =========================================================== */
+.deploy-card{
+  padding:0 !important; position:relative;
+  aspect-ratio: 3 / 4;
+  transition: transform .16s cubic-bezier(.2,.8,.3,1);
+}
+.deploy-card img, .mission-card img{
+  border-radius:0 !important; border:none !important;
+  width:100% !important; height:100% !important; object-fit:cover;
+}
+.deploy-card::after{
+  content:"" !important; position:absolute !important; inset:0 !important;
+  background:linear-gradient(180deg, transparent 40%, rgba(4,9,15,.92) 100%) !important;
+  pointer-events:none;
+}
+.deploy-card-name{
+  position:absolute; left:0; right:0; bottom:0; z-index:2;
+  padding:8px 8px 10px !important;
+  font-size:11px !important; letter-spacing:1px; text-align:center;
+  color:var(--hex-gold-light) !important;
+}
+.deploy-card:active{ transform:scale(.96); }
+.deploy-card.selected{
+  border-color:transparent !important;
+  box-shadow:
+    0 0 0 2px var(--hex-magic),
+    0 0 26px var(--hex-magic-glow),
+    0 12px 30px rgba(0,0,0,.6) !important;
+}
+/* Pastille de sélection en coin */
+.deploy-card.selected::before{
+  content:"✓"; position:absolute; z-index:3; top:8px; right:8px;
+  width:22px; height:22px; border-radius:50%;
+  background:var(--grad-arc); color:#04090f;
+  font-size:13px; font-weight:900; display:flex; align-items:center; justify-content:center;
+  box-shadow:0 2px 10px var(--hex-magic-glow);
+}
+.deploy-card.locked{ filter:grayscale(.9) brightness(.5); }
+.deploy-grid{ gap:10px !important; }
+
+/* ===========================================================
+   LIGNES D'ALLIÉS — tuile avec portrait arrondi
+   =========================================================== */
+.ally-row{
+  padding:12px !important; gap:12px !important;
+  border-left:none !important;
+  transition: transform .15s ease;
+}
+.ally-row:active{ transform:scale(.985); }
+.ally-img{
+  width:52px !important; height:52px !important;
+  border-radius:14px !important;
+  border:1px solid rgba(201,168,106,.4) !important;
+  object-fit:cover;
+}
+.ally-name{ font-size:14px !important; color:var(--hex-gold-light) !important; }
+.ally-role{
+  display:inline-block; padding:2px 8px; border-radius:var(--r-pill);
+  background:rgba(22,200,189,.12); border:1px solid rgba(22,200,189,.3);
+  font-size:9px !important;
+}
+.ally-badge{
+  border-radius:var(--r-pill) !important; padding:3px 9px !important;
+  background:var(--grad-cta) !important; color:#04090f !important;
+  font-size:9px !important; font-weight:800; letter-spacing:.5px;
+}
+.ally-row.ally-locked{ opacity:.45; }
+
+/* ===========================================================
+   CARTOUCHE D'ÉNERGIE (VIES) — pilule en haut à droite
+   =========================================================== */
+.lives-box{
+  flex-direction:row !important; align-items:center !important; gap:8px !important;
+  padding:6px 12px !important;
+  border-radius:var(--r-pill) !important;
+  background:linear-gradient(135deg, rgba(224,69,92,.14), rgba(10,21,38,.9)) !important;
+  border:1px solid rgba(224,69,92,.35) !important;
+  box-shadow:0 4px 16px rgba(0,0,0,.5), inset 0 1px 0 rgba(255,255,255,.07) !important;
+  -webkit-backdrop-filter:var(--glass); backdrop-filter:var(--glass);
+}
+.lives-box.is-full{
+  background:linear-gradient(135deg, rgba(35,181,103,.14), rgba(10,21,38,.9)) !important;
+  border-color:rgba(35,181,103,.4) !important;
+}
+.lives-box.is-empty{ animation:pulse-empty 1.8s ease-in-out infinite; }
+@keyframes pulse-empty{ 0%,100%{box-shadow:0 0 0 0 rgba(224,69,92,.35);} 50%{box-shadow:0 0 0 6px rgba(224,69,92,0);} }
+.lives-display{ gap:2px !important; align-items:center; font-size:13px !important; }
+.life-heart{ filter:drop-shadow(0 0 5px rgba(224,69,92,.6)); }
+.life-heart.empty{ filter:none; opacity:.35; }
+.life-count{
+  margin-left:6px; font-size:11px; font-weight:800; letter-spacing:.5px;
+  color:var(--hex-gold-light);
+}
+.lives-timer{
+  font-size:10px !important; letter-spacing:.3px;
+  color:var(--hex-text) !important; white-space:nowrap;
+  border-left:1px solid rgba(255,255,255,.12); padding-left:8px;
+}
+.no-lives-msg{
+  border-radius:var(--r-tile) !important; padding:12px !important;
+  background:rgba(224,69,92,.1) !important; border:1px solid rgba(224,69,92,.3) !important;
+}
+
+/* ===========================================================
+   BARRE D'ONGLETS FLOTTANTE
+   =========================================================== */
+.hub-tabs{
+  margin:0 12px calc(10px + var(--safe-b)) !important;
+  padding:6px !important;
+  border-radius:22px !important;
+  background:rgba(10,21,38,.82) !important;
+  border:1px solid rgba(201,168,106,.25) !important;
+  box-shadow:0 12px 34px rgba(0,0,0,.65) !important;
+  -webkit-backdrop-filter:var(--glass); backdrop-filter:var(--glass);
+  position:relative; z-index:30;
+}
+.hub-tabs::before{ display:none !important; }
+.hub-tab-btn{
+  border-radius:16px !important; padding:8px 4px !important;
+  transition:background .2s ease, color .2s ease, transform .15s ease;
+}
+.hub-tab-btn:active{ transform:scale(.94); }
+.hub-tab-btn.active{
+  background:linear-gradient(160deg, rgba(201,168,106,.22), rgba(201,168,106,.06)) !important;
+}
+.hub-tab-btn.active::before, .hub-tab-btn.active::after{ display:none !important; }
+.hub-tab-btn .tab-icon{ font-size:19px !important; }
+.hub-tab-btn .tab-label{ font-size:9px !important; letter-spacing:.8px; }
+
+/* ===========================================================
+   BOUTONS — pilules tactiles, CTA à gradient
+   =========================================================== */
+.btn{
+  border-radius:var(--r-pill) !important;
+  min-height:50px; padding:0 26px !important;
+  font-size:13px !important; letter-spacing:2px;
+  transition:transform .14s cubic-bezier(.2,.8,.3,1), box-shadow .2s ease, filter .2s ease;
+}
+.btn:active{ transform:scale(.96) !important; }
+.btn-sm{ min-height:38px; padding:0 16px !important; font-size:11px !important; }
+.btn-primary{
+  background:var(--grad-cta) !important;
+  border:none !important;
+  color:#0a1526 !important; font-weight:800;
+  box-shadow:0 8px 22px rgba(201,168,106,.35), inset 0 1px 0 rgba(255,255,255,.4) !important;
+}
+.btn-primary:hover{ filter:brightness(1.07); box-shadow:0 10px 30px rgba(201,168,106,.5) !important; }
+.btn-red{
+  background:linear-gradient(135deg,#ff7285,#c0263c) !important; border:none !important;
+  color:#1a0509 !important; font-weight:800;
+  box-shadow:0 8px 22px rgba(224,69,92,.35) !important;
+}
+.btn::after{ display:none !important; }
+.intro-btn, .narr-continue{
+  border-radius:var(--r-pill) !important; min-height:46px; padding:0 22px !important;
+}
+/* Le bouton de lancement devient un CTA plein largeur, collé en bas */
+#btn-launch{ width:100%; }
+.deploy-footer{ padding-bottom:calc(12px + var(--safe-b)) !important; }
+
+/* ===========================================================
+   HUD DE COMBAT & COMPÉTENCES — pastilles rondes
+   =========================================================== */
+.abilities-hud{
+  padding-bottom:calc(10px + var(--safe-b)) !important;
+  border-top:none !important;
+  background:linear-gradient(0deg, rgba(4,9,15,.98) 40%, transparent 100%) !important;
+}
+.abilities-hud::before{ display:none !important; }
+.ab-btn{
+  border-radius:20px !important;
+  background:linear-gradient(160deg, rgba(23,45,70,.95), rgba(10,21,38,.98)) !important;
+  border:1px solid rgba(201,168,106,.35) !important;
+  box-shadow:0 6px 18px rgba(0,0,0,.55), inset 0 1px 0 rgba(255,255,255,.07) !important;
+  transition:transform .12s ease, box-shadow .2s ease;
+}
+.ab-btn:active:not(.on-cooldown){ transform:scale(.92); }
+.ab-btn .key{ border-radius:8px !important; }
+.btn-atk{
+  border-radius:50% !important;
+  background:var(--grad-cta) !important; border:none !important;
+  color:#0a1526 !important;
+  box-shadow:0 10px 26px rgba(201,168,106,.45), inset 0 2px 0 rgba(255,255,255,.45) !important;
+}
+.btn-atk:active{ transform:scale(.9); }
+.dpad button{
+  border-radius:16px !important;
+  background:rgba(23,45,70,.85) !important;
+  -webkit-backdrop-filter:var(--glass); backdrop-filter:var(--glass);
+}
+.game-hud{
+  border-bottom:none !important;
+  padding-top:calc(8px + env(safe-area-inset-top,0px)) !important;
+  background:linear-gradient(180deg, rgba(4,9,15,.92), transparent) !important;
+}
+.hud-mission, .hud-timer, .hud-score{
+  padding:5px 12px; border-radius:var(--r-pill);
+  background:rgba(10,21,38,.7);
+  border:1px solid rgba(201,168,106,.2);
+  -webkit-backdrop-filter:var(--glass); backdrop-filter:var(--glass);
+}
+
+/* ===========================================================
+   JAUGES — arrondies, épaisses, lisibles au pouce
+   =========================================================== */
+.xp-bar, .nexus-bar, .token-hpbar, .boss-hp-track{
+  border-radius:var(--r-pill) !important;
+  height:8px !important;
+  border:none !important;
+  background:rgba(255,255,255,.08) !important;
+  box-shadow:inset 0 1px 3px rgba(0,0,0,.7) !important;
+  overflow:hidden;
+}
+.token-hpbar{ height:5px !important; }
+.xp-fill, .nexus-fill, .boss-hp-fill, .token-hpfill{
+  border-radius:var(--r-pill) !important;
+  transition:width .45s cubic-bezier(.2,.8,.3,1) !important;
+}
+.xp-fill{ background:var(--grad-arc) !important; }
+
+/* ===========================================================
+   PANNEAUX DE TÊTE & ÉCRANS
+   =========================================================== */
+.hub-header, .deploy-header{
+  padding-top:calc(12px + env(safe-area-inset-top,0px)) !important;
+  border-bottom:none !important;
+  background:linear-gradient(180deg, rgba(6,14,24,.95), rgba(4,9,15,0)) !important;
+}
+.hub-header::after, .deploy-header::after{ opacity:.35 !important; }
+.hub-body, .deploy-body{ padding:14px !important; }
+.hub-titre{ font-size:20px !important; letter-spacing:3px; }
+.acte-label{ font-size:10px !important; letter-spacing:3px; color:var(--hex-magic) !important; }
+
+.title-panel{
+  border-radius:24px !important;
+  background:rgba(10,21,38,.72) !important;
+  border:1px solid rgba(201,168,106,.28) !important;
+  -webkit-backdrop-filter:blur(18px) saturate(1.3); backdrop-filter:blur(18px) saturate(1.3);
+  box-shadow:0 20px 60px rgba(0,0,0,.7) !important;
+}
+.intro-text-box, .narration-box{
+  border-radius:var(--r-card) !important;
+  background:rgba(10,21,38,.8) !important;
+  -webkit-backdrop-filter:var(--glass); backdrop-filter:var(--glass);
+}
+.lu-card{
+  border-radius:26px !important;
+  background:linear-gradient(160deg, rgba(28,54,82,.95), rgba(8,17,30,.98)) !important;
+  box-shadow:0 24px 70px rgba(0,0,0,.75), 0 0 60px rgba(201,168,106,.18) !important;
+}
+.lu-stat{ border-radius:var(--r-tile) !important; padding:10px 8px !important; }
+.action-log{
+  border-radius:var(--r-tile) !important;
+  background:rgba(4,9,15,.55) !important;
+  border:1px solid rgba(255,255,255,.06) !important;
+}
+.arena-toast{
+  border-radius:var(--r-pill) !important; padding:10px 20px !important;
+  -webkit-backdrop-filter:var(--glass); backdrop-filter:var(--glass);
+}
+.end-rewards{ border-radius:var(--r-card) !important; }
+.reward-row{ padding:10px 0 !important; }
+
+/* Défilement fluide type app, sans barre visible */
+.hub-body, .deploy-body, .hub-panel, .missions-row, .deploy-grid{
+  -webkit-overflow-scrolling:touch; scrollbar-width:none;
+}
+.hub-body::-webkit-scrollbar, .deploy-body::-webkit-scrollbar,
+.hub-panel::-webkit-scrollbar{ display:none; }
+
+/* Apparition en cascade des cartes */
+.stagger-in{ animation:cardIn .38s cubic-bezier(.2,.8,.3,1) both; }
+@keyframes cardIn{ from{opacity:0; transform:translateY(14px) scale(.98);} to{opacity:1; transform:none;} }
+
+/* Petits écrans : on resserre */
+@media (max-width:380px){
+  :root{ --r-card:15px; }
+  .m-name{ font-size:14px !important; }
+  .lives-timer{ font-size:9px !important; }
+  .btn{ min-height:46px; font-size:12px !important; }
+}
+
+
+/* ===========================================================
+   ===  COUCHE 3 — DÉFILEMENT + CHROME D'APPLICATION  ========
+   =========================================================== */
+
+/* ---- CORRECTIF DÉFILEMENT -------------------------------
+   La couche 2 posait overflow:hidden sur .hub-panel (règle
+   « carte »), ce qui bloquait le scroll vertical du hub.
+   On rend explicitement leur défilement aux conteneurs. */
+.hub-panel{
+  overflow-y:auto !important;
+  overflow-x:hidden !important;
+  background:none !important;
+  border:none !important;
+  box-shadow:none !important;
+  border-radius:0 !important;
+  -webkit-backdrop-filter:none !important; backdrop-filter:none !important;
+  padding:12px 14px calc(104px + var(--safe-b)) !important; /* place pour la barre flottante */
+  overscroll-behavior:contain;
+  -webkit-overflow-scrolling:touch;
+  scroll-behavior:smooth;
+}
+.hub-body{ padding:0 !important; overflow:hidden !important; min-height:0 !important; }
+.hub-map{ overflow:visible !important; }
+.deploy-body{
+  padding:0 !important;
+  overflow-y:auto !important;
+  -webkit-overflow-scrolling:touch;
+  overscroll-behavior:contain;
+}
+.deploy-allies, .deploy-briefing{
+  overflow:visible !important; width:auto !important;
+  padding:14px !important; border-left:none !important;
+}
+.action-log{ overflow-y:auto !important; -webkit-overflow-scrolling:touch; }
+/* Les cartes gardent leur découpe, mais jamais au prix du scroll du parent */
+.mission-card, .deploy-card, .ally-row, .j-entry{ overflow:hidden !important; }
+
+/* ===========================================================
+   BARRE D'APPLICATION — titre + énergie, façon en-tête natif
+   =========================================================== */
+.hub-header, .deploy-header{
+  position:sticky; top:0; z-index:40;
+  display:flex !important; align-items:center; justify-content:space-between;
+  gap:12px;
+  padding:calc(10px + env(safe-area-inset-top,0px)) 14px 12px !important;
+  background:linear-gradient(180deg, rgba(6,14,24,.96) 65%, rgba(6,14,24,0)) !important;
+  -webkit-backdrop-filter:blur(16px); backdrop-filter:blur(16px);
+}
+.hub-titre, .deploy-title, .deploy-mission{
+  font-size:17px !important; letter-spacing:2.5px; line-height:1.15;
+}
+.hub-acte{ min-width:0; }
+.acte-label{
+  display:inline-block; margin-bottom:4px;
+  padding:3px 9px; border-radius:var(--r-pill);
+  background:rgba(22,200,189,.12); border:1px solid rgba(22,200,189,.28);
+  font-size:9px !important; letter-spacing:2px;
+}
+
+/* Titres de section collants, comme dans une liste iOS/Android */
+.acte-section{ margin-bottom:18px !important; }
+.acte-section > .acte-label{
+  position:sticky; top:0; z-index:5;
+  display:block; width:100%; margin:0 0 10px !important;
+  padding:8px 12px !important; border-radius:12px;
+  background:rgba(10,21,38,.92) !important;
+  border:1px solid rgba(201,168,106,.18) !important;
+  -webkit-backdrop-filter:blur(12px); backdrop-filter:blur(12px);
+  font-size:10px !important; color:var(--hex-gold) !important;
+  white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+}
+.acte-label::after{ display:none !important; }
+
+/* ===========================================================
+   LISTE DE MISSIONS — 50 entrées confortables au pouce
+   =========================================================== */
+.missions-row{ gap:10px !important; }
+.mission-card{ min-height:76px; padding:12px 40px 12px 12px !important; }
+.m-info{ min-width:0; flex:1; }
+.m-name{
+  white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+  margin-bottom:2px;
+}
+.m-desc{
+  display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical;
+  overflow:hidden; line-height:1.35;
+}
+.m-status{
+  position:absolute; right:36px; top:12px;
+  font-size:9px !important; padding:2px 8px !important;
+}
+/* Une mission terminée reste cliquable : chevron + accent vert */
+.mission-card.done{
+  opacity:1 !important; cursor:pointer;
+  border-color:rgba(35,181,103,.35) !important;
+}
+.mission-card.done::after{
+  content:"↻"; position:absolute; right:14px; top:50%;
+  transform:translateY(-50%); font-size:19px; color:#4ade9a; opacity:.85;
+}
+.mission-card.done .m-num{
+  background:rgba(35,181,103,.14) !important;
+  border-color:rgba(35,181,103,.4) !important; color:#4ade9a !important;
+}
+.mission-card.locked::after{ content:"🔒"; position:absolute; right:14px; top:50%; transform:translateY(-50%); font-size:13px; opacity:.6; }
+
+/* ===========================================================
+   PORTRAITS SVG — cadrage propre
+   =========================================================== */
+.ally-img, .token-avatar, .deploy-card img{
+  object-fit:cover !important; object-position:50% 22% !important;
+  background:#0a1526;
+}
+.token-avatar{ border-radius:14px !important; }
+.token.boss .token-avatar{ border-radius:16px !important; }
+
+/* ===========================================================
+   GRILLE DE DÉPLOIEMENT
+   =========================================================== */
+.deploy-grid{
+  display:grid !important;
+  grid-template-columns:repeat(auto-fill, minmax(96px, 1fr)) !important;
+  gap:10px !important;
+}
+.deploy-footer{
+  position:sticky; bottom:0; z-index:20;
+  padding:12px 14px calc(14px + var(--safe-b)) !important;
+  background:linear-gradient(0deg, rgba(4,9,15,.97) 55%, rgba(4,9,15,0)) !important;
+  -webkit-backdrop-filter:blur(14px); backdrop-filter:blur(14px);
+}
+
+/* ===========================================================
+   ONGLETS — ancrés en bas de l'écran, au-dessus du contenu
+   =========================================================== */
+.hub-tabs{
+  position:absolute !important; left:0; right:0; bottom:0;
+  z-index:50 !important;
+}
+#screen-hub .hub-body{ padding-bottom:0 !important; }
+
+/* Retour tactile générique */
+.mission-card, .ally-row, .deploy-card, .j-entry, .hub-tab-btn, .btn{
+  -webkit-tap-highlight-color:transparent;
+  touch-action:manipulation;
+}
+
+/* ===========================================================
+   AJUSTEMENTS PETITS ÉCRANS
+   =========================================================== */
+@media (max-width:420px){
+  .hub-titre{ font-size:15px !important; letter-spacing:2px; }
+  .mission-card{ min-height:70px; }
+  .m-name{ font-size:13.5px !important; }
+  .m-desc{ font-size:11px !important; }
+  .lives-box{ padding:5px 9px !important; gap:6px !important; }
+  .lives-timer{ padding-left:6px; }
+  .deploy-grid{ grid-template-columns:repeat(auto-fill, minmax(84px,1fr)) !important; }
+}
+
+
+/* ===========================================================
+   ===  COUCHE 4 — CODEX DES PERSONNAGES  ====================
+   =========================================================== */
+.codex-filters{
+  display:flex; gap:8px; margin:0 0 12px; overflow-x:auto;
+  scrollbar-width:none; -webkit-overflow-scrolling:touch;
+}
+.codex-filters::-webkit-scrollbar{ display:none; }
+.codex-chip{
+  flex:0 0 auto; padding:7px 15px; border-radius:var(--r-pill);
+  background:rgba(255,255,255,.05);
+  border:1px solid rgba(201,168,106,.22);
+  color:var(--hex-text); font-family:'Inter',sans-serif;
+  font-size:11px; font-weight:700; letter-spacing:1px;
+  text-transform:uppercase; cursor:pointer;
+  -webkit-tap-highlight-color:transparent; touch-action:manipulation;
+  transition:background .18s ease, color .18s ease, transform .12s ease;
+}
+.codex-chip:active{ transform:scale(.94); }
+.codex-chip.active{
+  background:var(--grad-cta); border-color:transparent;
+  color:#0a1526; box-shadow:0 4px 14px rgba(201,168,106,.3);
+}
+.codex-card{
+  display:flex; gap:12px; align-items:stretch;
+  margin-bottom:10px; padding:0; overflow:hidden;
+  border-radius:var(--r-card);
+  background:var(--card-bg);
+  border:1px solid rgba(201,168,106,.18);
+  box-shadow:var(--card-shadow);
+}
+.codex-card.camp-ennemi{ border-color:rgba(224,69,92,.3); }
+.codex-card.camp-neutre{ border-color:rgba(201,168,106,.4); }
+.codex-portrait{
+  flex:0 0 76px; width:76px; align-self:stretch;
+  object-fit:cover; object-position:50% 22%;
+  background:#0a1526;
+}
+.codex-body{ flex:1; min-width:0; padding:11px 12px 12px 0; }
+.codex-head{ display:flex; align-items:center; gap:8px; margin-bottom:2px; }
+.codex-name{
+  font-family:'Cinzel',Georgia,serif; font-weight:700;
+  font-size:13.5px; letter-spacing:1.2px; color:var(--hex-gold-light);
+  white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+}
+.codex-camp{
+  flex:0 0 auto; padding:2px 7px; border-radius:var(--r-pill);
+  font-size:8.5px; font-weight:800; letter-spacing:1px;
+  background:rgba(22,200,189,.14); color:var(--hex-magic);
+  border:1px solid rgba(22,200,189,.3);
+}
+.camp-ennemi .codex-camp{ background:rgba(224,69,92,.14); color:var(--hex-red-bright); border-color:rgba(224,69,92,.3); }
+.camp-neutre .codex-camp{ background:rgba(201,168,106,.14); color:var(--hex-gold); border-color:rgba(201,168,106,.32); }
+.codex-titre{
+  font-size:10px; letter-spacing:1.5px; text-transform:uppercase;
+  color:var(--hex-gold); opacity:.85; margin-bottom:5px;
+}
+.codex-bio{ font-size:11.5px; line-height:1.45; color:var(--hex-text); }
+
+@media (max-width:420px){
+  .codex-portrait{ flex-basis:64px; width:64px; }
+  .codex-bio{ font-size:11px; }
+}
+
+
+/* ===========================================================
+   ===  COUCHE 5 — PROFIL & JOURNAL  =========================
+   =========================================================== */
+
+/* ---------- EN-TÊTE DE PROFIL ---------- */
+.pf-hero{
+  display:flex; gap:14px; align-items:center;
+  padding:14px; margin-bottom:12px;
+  border-radius:var(--r-card);
+  background:
+    radial-gradient(ellipse 70% 90% at 12% 20%, rgba(22,200,189,.16), transparent 62%),
+    var(--card-bg);
+  border:1px solid rgba(201,168,106,.28);
+  box-shadow:var(--card-shadow);
+  position:relative; overflow:hidden;
+}
+.pf-hero::after{
+  content:""; position:absolute; inset:0; pointer-events:none;
+  background:linear-gradient(120deg, transparent 45%, rgba(255,255,255,.05) 50%, transparent 55%);
+}
+.pf-portrait-wrap{ position:relative; flex:0 0 84px; }
+.pf-portrait{
+  width:84px; height:104px; display:block;
+  object-fit:cover; object-position:50% 20%;
+  border-radius:16px;
+  border:1px solid rgba(201,168,106,.45);
+  box-shadow:0 6px 20px rgba(0,0,0,.55), 0 0 26px rgba(22,200,189,.15);
+  background:#0a1526;
+}
+.pf-lvl-badge{
+  position:absolute; left:50%; bottom:-11px; transform:translateX(-50%);
+  display:flex; align-items:baseline; gap:4px;
+  padding:3px 11px; border-radius:var(--r-pill);
+  background:var(--grad-cta); color:#0a1526;
+  font-size:8.5px; font-weight:800; letter-spacing:1.4px;
+  box-shadow:0 4px 14px rgba(201,168,106,.45);
+  white-space:nowrap;
+}
+.pf-lvl-badge b{ font-size:13px; font-family:'Cinzel',serif; letter-spacing:0; }
+.pf-ident{ flex:1; min-width:0; }
+.pf-ident .profile-name{ font-size:16px !important; letter-spacing:2.5px; margin-bottom:2px; }
+.pf-ident .profile-title{
+  font-size:11px; color:var(--hex-magic); letter-spacing:1.2px;
+  margin-bottom:12px; opacity:.9;
+}
+.pf-xp-head{
+  display:flex; justify-content:space-between; align-items:baseline;
+  font-size:9.5px; letter-spacing:1.4px; text-transform:uppercase;
+  color:var(--hex-text-dim); margin-bottom:5px;
+}
+.pf-xp-head .stat-val{ font-size:11px !important; color:var(--hex-gold-light) !important; letter-spacing:.5px; }
+
+/* ---------- TUILES DE STATS ---------- */
+.pf-grid{
+  display:grid; grid-template-columns:repeat(2,1fr); gap:10px;
+  margin-bottom:12px;
+}
+.pf-tile{
+  display:flex; flex-direction:column; align-items:flex-start; gap:1px;
+  padding:12px 13px;
+  border-radius:var(--r-tile);
+  background:var(--card-bg);
+  border:1px solid rgba(255,255,255,.06);
+  box-shadow:var(--card-shadow);
+  position:relative; overflow:hidden;
+}
+.pf-tile::before{
+  content:""; position:absolute; left:0; top:0; bottom:0; width:3px;
+  background:var(--tile-c, var(--hex-gold));
+}
+.pf-tile.t-hp  { --tile-c:#e0455c; }
+.pf-tile.t-atk { --tile-c:#c9a86a; }
+.pf-tile.t-msn { --tile-c:#16c8bd; }
+.pf-tile.t-ally{ --tile-c:#23b567; }
+.pf-ico{
+  font-size:13px; color:var(--tile-c); opacity:.9;
+  filter:drop-shadow(0 0 8px currentColor); margin-bottom:2px;
+}
+.pf-val{
+  font-family:'Cinzel',Georgia,serif; font-weight:700;
+  font-size:21px; line-height:1.1; color:var(--hex-gold-light);
+}
+.pf-key{
+  font-size:9px; letter-spacing:1.3px; text-transform:uppercase;
+  color:var(--hex-text-dim);
+}
+
+/* ---------- SECTIONS ---------- */
+.pf-section{
+  padding:14px;
+  margin-bottom:12px;
+  border-radius:var(--r-card);
+  background:var(--card-bg);
+  border:1px solid rgba(255,255,255,.06);
+  box-shadow:var(--card-shadow);
+}
+.pf-sec-title{
+  font-family:'Cinzel',Georgia,serif; font-weight:700;
+  font-size:11px; letter-spacing:2.2px; text-transform:uppercase;
+  color:var(--hex-gold); margin-bottom:12px;
+}
+.pf-sec-note{
+  margin-top:10px; font-size:10.5px; line-height:1.4;
+  color:var(--hex-text-dim); font-style:italic;
+}
+
+/* ---------- LES CINQ PIERRES ---------- */
+.pf-stones{ display:flex; gap:10px; }
+.pf-stone{
+  flex:1; height:34px; position:relative;
+  border-radius:8px;
+  background:rgba(255,255,255,.04);
+  border:1px solid rgba(255,255,255,.08);
+  transition:all .4s ease;
+}
+.pf-stone::after{
+  content:""; position:absolute; left:50%; top:50%;
+  width:13px; height:13px; margin:-6.5px 0 0 -6.5px;
+  transform:rotate(45deg);
+  background:rgba(255,255,255,.09);
+  border-radius:2px;
+  transition:all .4s ease;
+}
+.pf-stone.on{
+  background:linear-gradient(180deg, rgba(201,168,106,.22), rgba(201,168,106,.06));
+  border-color:rgba(201,168,106,.55);
+  box-shadow:0 0 16px rgba(201,168,106,.28), inset 0 1px 0 rgba(255,255,255,.14);
+}
+.pf-stone.on::after{
+  background:var(--grad-cta);
+  box-shadow:0 0 12px rgba(230,201,138,.85);
+  animation:stonePulse 2.6s ease-in-out infinite;
+  animation-delay:var(--d,0ms);
+}
+@keyframes stonePulse{
+  0%,100%{ transform:rotate(45deg) scale(1); opacity:1; }
+  50%    { transform:rotate(45deg) scale(1.14); opacity:.82; }
+}
+
+/* ---------- PROGRESSION ---------- */
+.pf-prog-head{
+  display:flex; justify-content:space-between; align-items:baseline;
+  margin-bottom:7px;
+}
+.pf-prog-head span:first-child{
+  font-size:11px; letter-spacing:.6px; color:var(--hex-text);
+}
+.pf-prog-head span:last-child{
+  font-family:'Cinzel',serif; font-size:14px; color:var(--hex-gold-light);
+}
+.pf-prog-fill{ background:var(--grad-cta) !important; }
+.pf-acte-list{ margin-top:14px; display:flex; flex-direction:column; gap:9px; }
+.pf-acte{ display:flex; align-items:center; gap:10px; }
+.pf-acte-name{
+  flex:0 0 58px; font-size:9.5px; letter-spacing:1.4px;
+  text-transform:uppercase; color:var(--hex-text-dim);
+}
+.pf-acte-bar{
+  flex:1; height:5px; border-radius:var(--r-pill);
+  background:rgba(255,255,255,.07); overflow:hidden;
+}
+.pf-acte-fill{
+  display:block; height:100%; border-radius:var(--r-pill);
+  background:linear-gradient(90deg, var(--hex-magic-dim), var(--hex-magic));
+  transition:width .6s cubic-bezier(.2,.8,.3,1);
+}
+.pf-acte-num{
+  flex:0 0 34px; text-align:right;
+  font-size:10px; color:var(--hex-text); font-variant-numeric:tabular-nums;
+}
+.pf-acte.complete .pf-acte-name{ color:var(--hex-gold); }
+.pf-acte.complete .pf-acte-fill{ background:var(--grad-cta); }
+
+/* ===========================================================
+   JOURNAL — frise chronologique
+   =========================================================== */
+.j-timeline{ position:relative; padding-left:22px; }
+.j-timeline::before{
+  content:""; position:absolute; left:5px; top:8px; bottom:8px; width:2px;
+  background:linear-gradient(180deg,
+    rgba(201,168,106,.55) 0%,
+    rgba(201,168,106,.22) 45%,
+    transparent 100%);
+  border-radius:2px;
+}
+.j-entry{
+  position:relative;
+  background:none !important; border:none !important;
+  box-shadow:none !important; border-radius:0 !important;
+  padding:0 !important; margin:0 0 12px !important;
+  overflow:visible !important;
+}
+.j-dot{
+  position:absolute; left:-21px; top:16px;
+  width:12px; height:12px; border-radius:50%;
+  background:var(--hex-panel);
+  border:2px solid var(--hex-gold-dark);
+  box-shadow:0 0 0 4px rgba(4,9,15,.9);
+}
+.j-latest .j-dot{
+  border-color:var(--hex-gold);
+  background:var(--grad-cta);
+  box-shadow:0 0 0 4px rgba(4,9,15,.9), 0 0 16px rgba(201,168,106,.7);
+}
+.j-card{
+  padding:13px 14px;
+  border-radius:var(--r-card);
+  background:var(--card-bg);
+  border:1px solid rgba(255,255,255,.07);
+  box-shadow:var(--card-shadow);
+  transition:transform .16s ease, border-color .2s ease;
+}
+.j-entry:active .j-card{ transform:scale(.985); }
+.j-latest .j-card{
+  border-color:rgba(201,168,106,.4);
+  box-shadow:var(--card-shadow), 0 0 26px rgba(201,168,106,.1);
+}
+.j-head{ display:flex; align-items:center; gap:8px; margin-bottom:8px; flex-wrap:wrap; }
+.j-badge{
+  display:inline-flex; align-items:center; justify-content:center;
+  min-width:24px; height:24px; padding:0 6px;
+  border-radius:8px;
+  background:rgba(201,168,106,.14);
+  border:1px solid rgba(201,168,106,.35);
+  font-family:'Cinzel',serif; font-size:12px; color:var(--hex-gold);
+}
+.j-acte{
+  font-size:9px; letter-spacing:1.6px; text-transform:uppercase;
+  color:var(--hex-text-dim);
+}
+.j-new{
+  margin-left:auto; padding:2px 8px; border-radius:var(--r-pill);
+  background:rgba(22,200,189,.14); border:1px solid rgba(22,200,189,.3);
+  font-size:8.5px; font-weight:800; letter-spacing:1px;
+  text-transform:uppercase; color:var(--hex-magic);
+}
+.j-text{
+  font-size:12.5px !important; line-height:1.55 !important;
+  color:var(--hex-text) !important;
+}
+.j-latest .j-text{ color:#cfc7b6 !important; }
+
+/* État vide du carnet */
+.j-empty{
+  text-align:center; padding:38px 22px;
+  border-radius:var(--r-card);
+  background:var(--card-bg);
+  border:1px dashed rgba(201,168,106,.3);
+}
+.j-empty-ico{ font-size:30px; color:var(--hex-gold); opacity:.55; margin-bottom:12px; }
+.j-empty-title{
+  font-family:'Cinzel',serif; font-size:13px; letter-spacing:2.5px;
+  text-transform:uppercase; color:var(--hex-gold-light); margin-bottom:7px;
+}
+.j-empty-text{ font-size:11.5px; line-height:1.5; color:var(--hex-text-dim); }
+
+/* Titres de panneaux harmonisés */
+.allies-title, .journal-title{
+  font-size:11px !important; letter-spacing:2.5px;
+  color:var(--hex-gold) !important; margin-bottom:12px !important;
+  padding-bottom:8px; border-bottom:1px solid rgba(201,168,106,.16);
+}
+
+@media (max-width:420px){
+  .pf-portrait{ width:74px; height:92px; }
+  .pf-portrait-wrap{ flex-basis:74px; }
+  .pf-val{ font-size:19px; }
+  .pf-stone{ height:30px; }
+  .j-text{ font-size:12px !important; }
+}
+
+
+/* ===========================================================
+   ===  COUCHE 6 — PROFIL RESPONSIVE  ========================
+   ===  Tout se calcule en fluide (clamp / auto-fit) pour
+   ===  tenir du petit téléphone 320 px à l'écran large.
+   =========================================================== */
+
+/* Le panneau se centre et cesse de s'étirer au-delà d'une largeur lisible */
+#panel-profile{
+  width:100%;
+  max-width:min(100%, 680px);
+  margin-inline:auto;
+}
+#panel-profile *{ min-width:0; }
+
+/* ---------- EN-TÊTE ---------- */
+.pf-hero{
+  flex-wrap:wrap;
+  gap:clamp(10px, 3vw, 18px) !important;
+  padding:clamp(12px, 3.4vw, 20px) !important;
+}
+.pf-portrait-wrap{
+  flex:0 0 clamp(64px, 21vw, 96px) !important;
+}
+.pf-portrait{
+  width:100% !important;
+  height:auto !important;
+  aspect-ratio:200 / 260;
+}
+.pf-lvl-badge{
+  font-size:clamp(7.5px, 2vw, 9px);
+  padding:3px clamp(8px, 2.4vw, 12px);
+}
+.pf-lvl-badge b{ font-size:clamp(11px, 3vw, 14px); }
+
+.pf-ident{ flex:1 1 clamp(150px, 45vw, 420px); }
+.pf-ident .profile-name{
+  font-size:clamp(13px, 4.2vw, 19px) !important;
+  letter-spacing:clamp(1px, .5vw, 3px);
+  white-space:normal; overflow-wrap:anywhere;
+}
+.pf-ident .profile-title{
+  font-size:clamp(10px, 2.9vw, 12.5px);
+  margin-bottom:clamp(8px, 2.4vw, 14px);
+}
+.pf-xp-head{ font-size:clamp(8.5px, 2.3vw, 10px); flex-wrap:wrap; gap:4px; }
+.pf-xp-head .stat-val{ font-size:clamp(10px, 2.8vw, 12px) !important; }
+
+/* ---------- TUILES : 2 colonnes sur téléphone, 4 dès qu'il y a la place ---------- */
+.pf-grid{
+  grid-template-columns:repeat(auto-fit, minmax(clamp(120px, 38vw, 160px), 1fr)) !important;
+  gap:clamp(8px, 2.4vw, 12px) !important;
+}
+.pf-tile{ padding:clamp(10px, 3vw, 15px) clamp(11px, 3.2vw, 16px) !important; }
+.pf-ico{ font-size:clamp(11px, 3vw, 14px); }
+.pf-val{ font-size:clamp(17px, 5.4vw, 24px) !important; }
+.pf-key{
+  font-size:clamp(8px, 2.2vw, 9.5px);
+  letter-spacing:clamp(.6px, .3vw, 1.4px);
+  white-space:normal; overflow-wrap:anywhere;
+}
+
+/* ---------- SECTIONS ---------- */
+.pf-section{ padding:clamp(12px, 3.4vw, 18px) !important; }
+.pf-sec-title{
+  font-size:clamp(9.5px, 2.7vw, 12px) !important;
+  letter-spacing:clamp(1.2px, .55vw, 2.4px);
+  margin-bottom:clamp(9px, 2.6vw, 14px) !important;
+}
+.pf-sec-note{ font-size:clamp(9.5px, 2.5vw, 11px); overflow-wrap:anywhere; }
+
+/* ---------- LES CINQ PIERRES ---------- */
+.pf-stones{ gap:clamp(5px, 2vw, 12px) !important; }
+.pf-stone{
+  flex:1 1 0; min-width:0;
+  height:clamp(26px, 8vw, 40px) !important;
+}
+.pf-stone::after{
+  width:clamp(9px, 3vw, 15px); height:clamp(9px, 3vw, 15px);
+  margin:calc(clamp(9px, 3vw, 15px) / -2) 0 0 calc(clamp(9px, 3vw, 15px) / -2);
+}
+
+/* ---------- PROGRESSION ---------- */
+.pf-prog-head{ gap:8px; flex-wrap:wrap; }
+.pf-prog-head span:first-child{ font-size:clamp(10px, 2.7vw, 12px); }
+.pf-prog-head span:last-child{ font-size:clamp(12px, 3.6vw, 16px); }
+.pf-acte{ gap:clamp(6px, 2.2vw, 12px) !important; }
+.pf-acte-name{
+  flex:0 0 clamp(44px, 15vw, 70px) !important;
+  font-size:clamp(8px, 2.3vw, 10px);
+  letter-spacing:clamp(.6px, .35vw, 1.5px);
+  white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+}
+.pf-acte-num{
+  flex:0 0 clamp(30px, 10vw, 42px) !important;
+  font-size:clamp(9px, 2.4vw, 11px);
+}
+
+/* ---------- Écran large : l'en-tête gagne de l'air ---------- */
+@media (min-width:600px){
+  .pf-hero{ padding:22px 24px !important; gap:20px !important; }
+  .pf-portrait-wrap{ flex-basis:110px !important; }
+  .pf-section, .pf-grid{ margin-bottom:14px; }
+}
+
+/* ---------- Paysage bas de plafond : on comprime la hauteur ---------- */
+@media (orientation:landscape) and (max-height:520px){
+  .pf-hero{ padding:10px 12px !important; gap:12px !important; }
+  .pf-portrait-wrap{ flex-basis:62px !important; }
+  .pf-ident .profile-title{ margin-bottom:7px; }
+  .pf-grid{ grid-template-columns:repeat(4, 1fr) !important; }
+  .pf-tile{ padding:8px 10px !important; }
+  .pf-val{ font-size:17px !important; }
+  .pf-section{ padding:11px 13px !important; margin-bottom:9px !important; }
+  .pf-stone{ height:24px !important; }
+  .pf-acte-list{ margin-top:9px; gap:7px; }
+}
+
+/* ---------- Très petits téléphones : la carte passe en colonne ---------- */
+@media (max-width:340px){
+  .pf-hero{ flex-direction:column; align-items:center; text-align:center; }
+  .pf-portrait-wrap{ flex-basis:auto !important; width:84px; margin-bottom:6px; }
+  .pf-ident{ flex:1 1 100%; width:100%; }
+  .pf-xp-head{ justify-content:space-between; }
+}
+
+
+/* Sécurité d'affichage du portrait de profil : dimensions minimales garanties */
+.pf-portrait-wrap{ min-width:64px !important; }
+.pf-portrait{
+  display:block !important;
+  min-width:64px; min-height:80px;
+  visibility:visible !important; opacity:1 !important;
+}
 </style>
 </head>
 <body>
@@ -2483,22 +3891,51 @@ body::after { content: none; }
       <div class="hub-map" id="hub-missions"></div>
     </div>
     <div class="hub-panel" id="panel-profile" data-panel="profile">
-      <div class="profile-box">
-        <div class="profile-name">TARINE KEÏTA</div>
-        <div class="profile-title" id="prof-title">L'Éveillé de Marcory</div>
-        <div class="profile-stats">
-          <div class="stat-row"><span class="stat-label">Niveau</span><span class="stat-val" id="prof-lvl">1</span></div>
-          <div class="stat-row"><span class="stat-label">XP</span><span class="stat-val" id="prof-xp">0 / 100</span></div>
-          <div class="xp-bar"><div class="xp-fill" id="xp-fill" style="width:0%"></div></div>
-          <div class="stat-row" style="margin-top:8px"><span class="stat-label">PV</span><span class="stat-val" id="prof-hp">850</span></div>
-          <div class="stat-row"><span class="stat-label">ATK</span><span class="stat-val" id="prof-atk">95</span></div>
-          <div class="stat-row"><span class="stat-label">Pierres actives</span><span class="stat-val" id="prof-pierres">1</span></div>
+      <div class="pf-hero">
+        <div class="pf-portrait-wrap">
+          <img class="pf-portrait" id="pf-portrait" alt="Tarine Keïta">
+          <span class="pf-lvl-badge">NV<b id="prof-lvl">1</b></span>
         </div>
+        <div class="pf-ident">
+          <div class="profile-name">TARINE KEÏTA</div>
+          <div class="profile-title" id="prof-title">L'Éveillé de Marcory</div>
+          <div class="pf-xp-head"><span>Expérience</span><span class="stat-val" id="prof-xp">0 / 100</span></div>
+          <div class="xp-bar"><div class="xp-fill" id="xp-fill" style="width:0%"></div></div>
+        </div>
+      </div>
+
+      <div class="pf-grid">
+        <div class="pf-tile t-hp"><span class="pf-ico">&#10084;</span><span class="pf-val" id="prof-hp">850</span><span class="pf-key">Points de vie</span></div>
+        <div class="pf-tile t-atk"><span class="pf-ico">&#9876;</span><span class="pf-val" id="prof-atk">95</span><span class="pf-key">Attaque</span></div>
+        <div class="pf-tile t-msn"><span class="pf-ico">&#9670;</span><span class="pf-val" id="pf-missions">0</span><span class="pf-key">Missions</span></div>
+        <div class="pf-tile t-ally"><span class="pf-ico">&#10038;</span><span class="pf-val" id="pf-allies">2</span><span class="pf-key">Gardiens</span></div>
+      </div>
+
+      <div class="pf-section">
+        <div class="pf-sec-title">Pierres de Kankou Moussa</div>
+        <div class="pf-stones" id="pf-stones"></div>
+        <div class="pf-sec-note" id="pf-stones-note"></div>
+        <span id="prof-pierres" hidden>1</span>
+      </div>
+
+      <div class="pf-section">
+        <div class="pf-sec-title">Progression de la campagne</div>
+        <div class="pf-prog-head"><span id="pf-prog-label">0 / 0 missions</span><span id="pf-prog-pct">0 %</span></div>
+        <div class="xp-bar"><div class="xp-fill pf-prog-fill" id="pf-prog-fill" style="width:0%"></div></div>
+        <div class="pf-acte-list" id="pf-acte-list"></div>
       </div>
     </div>
     <div class="hub-panel" id="panel-allies" data-panel="allies">
       <div class="allies-title">GARDIENS DISPONIBLES</div>
       <div id="allies-list"></div>
+      <div class="allies-title" style="margin-top:22px">CODEX DES PERSONNAGES</div>
+      <div class="codex-filters" id="codex-filters">
+        <button class="codex-chip active" data-camp="tous">Tous</button>
+        <button class="codex-chip" data-camp="allie">Alliés</button>
+        <button class="codex-chip" data-camp="ennemi">Empire</button>
+        <button class="codex-chip" data-camp="neutre">Légende</button>
+      </div>
+      <div id="codex-list"></div>
     </div>
     <div class="hub-panel" id="panel-journal" data-panel="journal">
       <div class="journal-title">JOURNAL DE TARINE</div>
@@ -2675,14 +4112,320 @@ body::after { content: none; }
 'use strict';
 
 // ===== IMAGES =====
-var IMGS = {
-  TARINE:"/TARINE.png",
-  KAREN:"/KarenKeïta.png",
-  FULGENCE:"/Fulgence.png",
-  BABA_TUNDE:"/BabaTunde.png",
-  LUNDGREN:"/Lundgren.png",
-  DARK:"/dark.png"
+// ===========================================================
+// ===  PORTRAITS VECTORIELS — v2, CASTING COMPLET  ==========
+// ===  Chaque personnage cité dans la campagne possède son
+// ===  propre portrait dessiné en SVG, réglé d'après ce que
+// ===  le récit dit de lui. Les figurants restent générés
+// ===  procéduralement pour peupler les 50 missions.
+// ===========================================================
+
+function _pHash(str){
+  var h=2166136261; str=String(str);
+  for(var i=0;i<str.length;i++){h^=str.charCodeAt(i);h=Math.imul(h,16777619);}
+  return h>>>0;
+}
+function _pRng(seed){
+  var s=(seed>>>0)||1;
+  return function(){s=(Math.imul(s,1664525)+1013904223)>>>0;return s/4294967296;};
+}
+function _pPick(rnd,arr){return arr[Math.floor(rnd()*arr.length)%arr.length];}
+
+var P_SKINS   =["#8d5524","#a86b3c","#6b4226","#c68642","#7a4a2b","#5c3317","#b07340"];
+var P_CLOTHS  =["#1c3a5e","#3a1c4e","#1c4e3a","#4e2a1c","#2a2a4e","#4e1c2c","#123a3a"];
+var P_ACCENTS =["#c9a86a","#16c8bd","#e0455c","#23b567","#e6c98a","#9d7bff","#ff9f43"];
+var P_HAIRS   =["#141018","#2b1a10","#3d2b1f","#1a1a24","#4a2c17"];
+
+var P_ROLE_BG={
+  DUELLISTE:["#1a3d2a","#04120b"], SOUTIEN:["#132f52","#040d1a"],
+  TANK     :["#2a1f52","#0a0518"], ASSASSIN:["#4a1a1a","#160404"],
+  MAGE     :["#123f45","#04161a"], OMBRE   :["#241238","#080312"],
+  ERUDIT   :["#1b3550","#050e18"], EMISSAIRE:["#301028","#0e0410"],
+  EMPEREUR :["#4a3410","#150e02"], TEMOIN  :["#3d2036","#100510"]
 };
+var P_GLYPHS={
+  DUELLISTE:"\u2694", SOUTIEN:"\u271A", TANK:"\u26E8", ASSASSIN:"\u2620",
+  MAGE:"\u2726", OMBRE:"\u25C6", ERUDIT:"\u269B", EMISSAIRE:"\u2668",
+  EMPEREUR:"\u265B", TEMOIN:"\u270D"
+};
+
+// ---------- Briques de dessin ----------
+function _hairLayer(cfg){
+  var hr=cfg.hair, ac=cfg.accent, cl=cfg.cloth, bg2=cfg.bg[1];
+  switch(cfg.hairStyle){
+    case 0: return '<path d="M66 90 Q66 52 100 52 Q134 52 134 90 L134 96 L66 96 Z" fill="'+hr+'" opacity=".9"/>'+
+                   '<rect x="63" y="85" width="74" height="9" rx="4" fill="'+ac+'"/>';
+    case 1: return '<ellipse cx="100" cy="70" rx="52" ry="40" fill="'+hr+'"/>'+
+                   '<ellipse cx="100" cy="64" rx="43" ry="29" fill="'+hr+'" opacity=".65"/>';
+    case 2: return '<path d="M64 92 Q64 50 100 50 Q136 50 136 92 L136 78 Z" fill="'+hr+'"/>'+
+                   '<rect x="59" y="82" width="7" height="66" rx="3.5" fill="'+hr+'"/>'+
+                   '<rect x="134" y="82" width="7" height="66" rx="3.5" fill="'+hr+'"/>'+
+                   '<rect x="70" y="88" width="6" height="48" rx="3" fill="'+hr+'" opacity=".8"/>'+
+                   '<rect x="124" y="88" width="6" height="48" rx="3" fill="'+hr+'" opacity=".8"/>';
+    case 3: return '<path d="M54 118 Q50 42 100 42 Q150 42 146 118 L134 108 Q134 64 100 64 Q66 64 66 108 Z" fill="'+cl+'"/>'+
+                   '<path d="M54 118 Q50 42 100 42 Q150 42 146 118" fill="none" stroke="'+ac+'" stroke-width="2.5" opacity=".85"/>';
+    case 4: return '<path d="M64 90 Q64 54 100 54 Q136 54 136 90 L136 94 L64 94 Z" fill="'+hr+'"/>'+
+                   '<path d="M61 88 L100 64 L139 88 L139 96 L61 96 Z" fill="'+ac+'" opacity=".92"/>'+
+                   '<circle cx="100" cy="73" r="6" fill="'+bg2+'" stroke="'+ac+'" stroke-width="2"/>';
+    case 5: return '<path d="M64 94 Q64 50 100 50 Q136 50 136 94 L128 92 Q128 68 100 68 Q72 68 72 92 Z" fill="'+hr+'"/>'+
+                   '<circle cx="100" cy="43" r="13" fill="'+hr+'"/>'+
+                   '<circle cx="100" cy="43" r="13" fill="none" stroke="'+ac+'" stroke-width="2"/>';
+    case 6: return '<path d="M66 96 Q66 54 100 54 Q134 54 134 96 L126 90 Q120 74 100 74 Q80 74 74 90 Z" fill="'+hr+'"/>'+
+                   '<path d="M74 90 Q100 62 128 84" fill="none" stroke="#fff" stroke-opacity=".12" stroke-width="4"/>'; // dégarni / tempes
+    case 7: return '<path d="M62 100 Q62 48 100 48 Q138 48 138 100 L138 84 Q126 62 100 62 Q74 62 62 84 Z" fill="'+hr+'"/>'+
+                   '<path d="M62 96 L52 150 L64 150 L70 104 Z" fill="'+hr+'"/>'+
+                   '<path d="M138 96 L148 150 L136 150 L130 104 Z" fill="'+hr+'"/>'; // longs cheveux
+    default: return '';
+  }
+}
+function _beardLayer(cfg){
+  var hr=cfg.hair;
+  switch(cfg.beard){
+    case 1: return '<path d="M72 124 Q72 156 100 158 Q128 156 128 124 L128 138 Q128 160 100 162 Q72 160 72 138 Z" fill="'+hr+'" opacity=".9"/>';
+    case 2: return '<path d="M92 142 Q100 156 108 142 Q108 152 100 154 Q92 152 92 142 Z" fill="'+hr+'"/>'+
+                   '<path d="M88 133 Q100 128 112 133" stroke="'+hr+'" stroke-width="4" fill="none" stroke-linecap="round"/>';
+    case 3: return '<path d="M68 118 Q68 168 100 172 Q132 168 132 118 L132 132 Q132 176 100 180 Q68 176 68 132 Z" fill="'+hr+'"/>'+
+                   '<path d="M86 132 Q100 126 114 132" stroke="'+hr+'" stroke-width="5" fill="none" stroke-linecap="round"/>';
+    case 4: return '<path d="M86 133 Q100 127 114 133" stroke="'+hr+'" stroke-width="5" fill="none" stroke-linecap="round"/>'; // moustache seule
+    default: return '';
+  }
+}
+function _eyewearLayer(cfg){
+  var ac=cfg.accent;
+  switch(cfg.eyewear){
+    case 1: return '<g fill="none" stroke="'+ac+'" stroke-width="2.4" opacity=".95">'+
+                   '<circle cx="85" cy="110" r="12"/><circle cx="115" cy="110" r="12"/>'+
+                   '<path d="M97 110 h6 M73 108 l-8 -3 M127 108 l8 -3"/></g>';
+    case 2: return '<g fill="none" stroke="'+ac+'" stroke-width="2.4" opacity=".95">'+
+                   '<rect x="72" y="101" width="26" height="17" rx="3"/>'+
+                   '<rect x="102" y="101" width="26" height="17" rx="3"/>'+
+                   '<path d="M98 109 h4 M72 106 l-8 -3 M128 106 l8 -3"/></g>';
+    case 3: return '<path d="M64 98 L136 98 L136 118 Q100 128 64 118 Z" fill="'+ac+'" opacity=".35"/>'+
+                   '<path d="M64 98 L136 98" stroke="'+ac+'" stroke-width="3"/>'; // visière
+    default: return '';
+  }
+}
+function _propLayer(cfg){
+  var ac=cfg.accent, cl=cfg.cloth;
+  switch(cfg.prop){
+    case "tie":     return '<path d="M100 190 L92 202 L100 232 L108 202 Z" fill="'+ac+'"/>'+
+                           '<path d="M92 186 L100 194 L108 186 L104 182 L96 182 Z" fill="'+ac+'" opacity=".8"/>';
+    case "scarf":   return '<path d="M62 188 Q100 210 138 188 L142 204 Q100 228 58 204 Z" fill="'+ac+'" opacity=".9"/>'+
+                           '<path d="M132 200 L148 246 L132 246 L124 206 Z" fill="'+ac+'" opacity=".75"/>';
+    case "cigar":   return '<rect x="112" y="136" width="30" height="6" rx="3" fill="#6b4226" transform="rotate(-12 112 136)"/>'+
+                           '<circle cx="142" cy="130" r="3.4" fill="#ff7a35"/>'+
+                           '<path d="M144 126 q6 -10 -1 -18" stroke="#fff" stroke-opacity=".22" stroke-width="3" fill="none" stroke-linecap="round"/>';
+    case "notebook":return '<rect x="128" y="196" width="40" height="52" rx="4" fill="#7a1c2c" stroke="'+ac+'" stroke-width="2" transform="rotate(9 128 196)"/>'+
+                           '<path d="M136 212 h26 M134 224 h26 M132 236 h26" stroke="#fff" stroke-opacity=".35" stroke-width="2" transform="rotate(9 128 196)"/>';
+    case "medal":   return '<path d="M84 190 L100 214 L116 190" stroke="'+ac+'" stroke-width="4" fill="none"/>'+
+                           '<circle cx="100" cy="222" r="11" fill="'+ac+'"/>'+
+                           '<text x="100" y="227" font-size="12" text-anchor="middle" fill="'+cl+'" font-family="serif">\u2605</text>';
+    case "epaulet": return '<path d="M22 214 L64 196 L70 212 L28 232 Z" fill="'+ac+'" opacity=".9"/>'+
+                           '<path d="M178 214 L136 196 L130 212 L172 232 Z" fill="'+ac+'" opacity=".9"/>';
+    case "stone":   return '<path d="M40 214 L54 202 L70 210 L66 230 L46 232 Z" fill="'+ac+'" opacity=".95"/>'+
+                           '<path d="M40 214 L54 202 L70 210" fill="none" stroke="#fff" stroke-opacity=".4" stroke-width="2"/>';
+    default: return '';
+  }
+}
+// Formes non humaines : les Émissaires de Sgrün ne portent pas de visage ordinaire.
+function _formLayer(cfg){
+  var ac=cfg.accent, e=cfg.eye, bg2=cfg.bg[1];
+  switch(cfg.form){
+    case "liquid": // Murk — l'Émissaire abyssal, sans forme fixe
+      return '<path d="M66 96 Q60 54 100 52 Q140 54 134 96 Q140 130 122 148 Q112 160 100 156 Q88 160 78 148 Q60 130 66 96 Z" fill="'+ac+'" opacity=".55"/>'+
+             '<path d="M74 104 Q100 88 126 104" stroke="'+e+'" stroke-width="2" fill="none" opacity=".5"/>'+
+             '<ellipse cx="86" cy="112" rx="6" ry="4" fill="'+e+'"/>'+
+             '<ellipse cx="114" cy="112" rx="6" ry="4" fill="'+e+'"/>'+
+             '<path d="M84 160 q2 14 -2 20 M116 160 q-2 14 2 20" stroke="'+ac+'" stroke-width="4" fill="none" stroke-linecap="round" opacity=".7"/>';
+    case "stone": // Krag — conçu pour tenir la pression des profondeurs
+      return '<path d="M68 96 L82 58 L118 58 L132 96 L128 132 L112 154 L88 154 L72 132 Z" fill="'+cfg.skin+'"/>'+
+             '<path d="M82 58 L100 92 L118 58 M72 132 L100 116 L128 132" fill="none" stroke="#000" stroke-opacity=".28" stroke-width="2"/>'+
+             '<path d="M76 104 L92 100 L92 114 Z" fill="'+e+'"/>'+
+             '<path d="M124 104 L108 100 L108 114 Z" fill="'+e+'"/>'+
+             '<path d="M88 138 L112 138" stroke="#000" stroke-opacity=".4" stroke-width="3"/>'+
+             '<path d="M100 58 L100 40" stroke="'+ac+'" stroke-width="4" opacity=".7"/>';
+    case "wind": // Vael — la Lame Invisible, à moitié dissoute
+      return '<path d="M68 92 Q68 58 100 58 Q132 58 132 92 L132 118 Q132 154 100 154 Q68 154 68 118 Z" fill="'+cfg.skin+'" opacity=".38"/>'+
+             '<path d="M56 96 h34 M60 108 h26 M52 120 h30" stroke="'+ac+'" stroke-width="2.5" opacity=".55" stroke-linecap="round"/>'+
+             '<path d="M110 96 h34 M114 108 h26 M110 120 h34" stroke="'+ac+'" stroke-width="2.5" opacity=".55" stroke-linecap="round"/>'+
+             '<path d="M82 108 l10 3 l-10 3 Z" fill="'+e+'"/>'+
+             '<path d="M118 108 l-10 3 l10 3 Z" fill="'+e+'"/>';
+    case "shadow": // Sgrün, Schissin-Rouge — une silhouette et deux yeux
+      return '<path d="M66 96 Q66 52 100 52 Q134 52 134 96 L134 120 Q134 156 100 156 Q66 156 66 120 Z" fill="#05070c"/>'+
+             '<path d="M66 96 Q66 52 100 52 Q134 52 134 96" fill="none" stroke="'+ac+'" stroke-width="2" opacity=".5"/>'+
+             '<path d="M76 108 l16 -4 l0 9 Z" fill="'+e+'"/>'+
+             '<path d="M124 108 l-16 -4 l0 9 Z" fill="'+e+'"/>'+
+             '<ellipse cx="100" cy="106" rx="42" ry="30" fill="'+e+'" opacity=".07"/>';
+    default: return null;
+  }
+}
+
+function buildPortraitSVG(cfg){
+  var s=cfg.skin, cl=cfg.cloth, ac=cfg.accent, hr=cfg.hair;
+  var bg1=cfg.bg[0], bg2=cfg.bg[1], uid=cfg.uid;
+  var special=_formLayer(cfg);
+
+  var face;
+  if(special){
+    face=special;
+  }else{
+    face=
+      '<ellipse cx="66" cy="112" rx="7" ry="11" fill="'+s+'"/>'+
+      '<ellipse cx="134" cy="112" rx="7" ry="11" fill="'+s+'"/>'+
+      '<path d="M68 92 Q68 58 100 58 Q132 58 132 92 L132 118 Q132 154 100 154 Q68 154 68 118 Z" fill="'+s+'"/>'+
+      '<path d="M68 118 Q68 154 100 154 Q132 154 132 118 L132 128 Q132 156 100 156 Q68 156 68 128 Z" fill="#000" opacity=".14"/>'+
+      _hairLayer(cfg)+
+      '<ellipse cx="85" cy="110" rx="8" ry="5" fill="#0a0d12" opacity=".55"/>'+
+      '<ellipse cx="115" cy="110" rx="8" ry="5" fill="#0a0d12" opacity=".55"/>'+
+      '<ellipse cx="85" cy="109" rx="5" ry="3.4" fill="'+cfg.eye+'"/>'+
+      '<ellipse cx="115" cy="109" rx="5" ry="3.4" fill="'+cfg.eye+'"/>'+
+      '<path d="M76 100 Q85 95 94 99 M106 99 Q115 95 124 100" stroke="'+hr+'" stroke-width="3" fill="none" stroke-linecap="round"/>'+
+      '<path d="M100 114 L96 128 Q100 131 104 128" fill="none" stroke="#000" stroke-opacity=".28" stroke-width="2.4" stroke-linecap="round"/>'+
+      '<path d="M91 139 Q100 '+(cfg.smile?145:135)+' 109 139" fill="none" stroke="#000" stroke-opacity=".4" stroke-width="2.6" stroke-linecap="round"/>'+
+      _beardLayer(cfg)+
+      _eyewearLayer(cfg);
+  }
+
+  var marks="";
+  if(cfg.mark===1)marks='<path d="M78 112 l0 14 M122 112 l0 14" stroke="'+ac+'" stroke-width="2.5" stroke-linecap="round" opacity=".7"/>';
+  if(cfg.mark===2)marks='<path d="M100 96 l0 -10 M92 100 l-8 -6 M108 100 l8 -6" stroke="'+ac+'" stroke-width="2" stroke-linecap="round" opacity=".65"/>';
+  if(cfg.mark===3)marks='<circle cx="100" cy="90" r="4" fill="'+ac+'" opacity=".8"/>';
+  if(cfg.mark===4)marks='<path d="M74 96 q26 -14 52 0" fill="none" stroke="'+ac+'" stroke-width="2" opacity=".55"/>';
+
+  var crown=cfg.crown?
+    '<path d="M66 56 L78 30 L92 48 L100 22 L108 48 L122 30 L134 56 Z" fill="'+ac+'"/>'+
+    '<path d="M66 56 L134 56 L134 64 L66 64 Z" fill="'+ac+'" opacity=".8"/>'+
+    '<circle cx="100" cy="60" r="4" fill="'+bg2+'"/>':"";
+
+  return '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 260" width="200" height="260">'+
+  '<defs>'+
+    '<linearGradient id="b'+uid+'" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="'+bg1+'"/><stop offset="1" stop-color="'+bg2+'"/></linearGradient>'+
+    '<linearGradient id="c'+uid+'" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="'+cl+'"/><stop offset="1" stop-color="'+bg2+'"/></linearGradient>'+
+    '<radialGradient id="g'+uid+'" cx="50%" cy="36%" r="62%"><stop offset="0" stop-color="'+ac+'" stop-opacity=".32"/><stop offset="1" stop-color="'+ac+'" stop-opacity="0"/></radialGradient>'+
+  '</defs>'+
+  '<rect width="200" height="260" fill="url(#b'+uid+')"/>'+
+  '<rect width="200" height="260" fill="url(#g'+uid+')"/>'+
+  '<circle cx="100" cy="104" r="76" fill="none" stroke="'+ac+'" stroke-opacity=".18" stroke-width="2"/>'+
+  '<path d="M100 34 L152 64 L152 124 L100 154 L48 124 L48 64 Z" fill="none" stroke="'+ac+'" stroke-opacity=".12" stroke-width="1.5"/>'+
+  '<path d="M14 260 Q16 200 60 184 L140 184 Q184 200 186 260 Z" fill="url(#c'+uid+')"/>'+
+  '<path d="M60 184 L100 214 L140 184" fill="none" stroke="'+ac+'" stroke-width="3" stroke-opacity=".85"/>'+
+  '<path d="M14 260 Q16 200 60 184" fill="none" stroke="'+ac+'" stroke-width="2" stroke-opacity=".35"/>'+
+  '<path d="M186 260 Q184 200 140 184" fill="none" stroke="'+ac+'" stroke-width="2" stroke-opacity=".35"/>'+
+  '<path d="M86 148 L114 148 L114 190 L86 190 Z" fill="'+(cfg.form?cl:s)+'"/>'+
+  '<path d="M86 148 L114 148 L114 166 L86 166 Z" fill="#000" opacity=".22"/>'+
+  face+marks+crown+_propLayer(cfg)+
+  '<circle cx="100" cy="232" r="16" fill="'+bg2+'" stroke="'+ac+'" stroke-width="2"/>'+
+  '<text x="100" y="238" font-size="16" text-anchor="middle" fill="'+ac+'" font-family="serif">'+cfg.glyph+'</text>'+
+  '</svg>';
+}
+
+function svgDataUri(svg){return "data:image/svg+xml;charset=utf-8,"+encodeURIComponent(svg);}
+
+function makePortrait(seed,role,overrides){
+  var h=_pHash(seed), rnd=_pRng(h);
+  role=role||"OMBRE";
+  var cfg={
+    uid:(h%100000).toString(36),
+    skin:_pPick(rnd,P_SKINS), cloth:_pPick(rnd,P_CLOTHS),
+    accent:_pPick(rnd,P_ACCENTS), hair:_pPick(rnd,P_HAIRS),
+    eye:_pPick(rnd,["#e6c98a","#16c8bd","#9fd8ff","#ffd76b","#ff9f43","#c8f5b0"]),
+    hairStyle:Math.floor(rnd()*8), mark:Math.floor(rnd()*5),
+    beard:Math.floor(rnd()*5), eyewear:rnd()>0.82?1+Math.floor(rnd()*2):0,
+    prop:null, crown:false, form:null, smile:rnd()>0.5,
+    bg:P_ROLE_BG[role]||P_ROLE_BG.OMBRE, glyph:P_GLYPHS[role]||"\u25C6"
+  };
+  if(overrides)for(var k in overrides)cfg[k]=overrides[k];
+  if(!cfg.bg)cfg.bg=P_ROLE_BG.OMBRE;
+  return svgDataUri(buildPortraitSVG(cfg));
+}
+
+// ===========================================================
+// ===  LE CASTING — un portrait par personnage du récit  ====
+// ===  Chaque fiche reprend ce que la campagne dit de lui.
+// ===========================================================
+var CAST={
+  // ---- Le cercle de Tarine ----
+  TARINE:{name:"Tarine Keïta",titre:"L'Éveillé de Marcory",role:"DUELLISTE",camp:"allie",
+    bio:"Treize ans, surnommé « le Bricoleur » à la Villoise. La pierre tiède envoyée par son père s'est réveillée dans ses paumes.",
+    o:{skin:"#8d5524",cloth:"#1c4e3a",accent:"#39FF7A",hair:"#141018",eye:"#c8f5b0",hairStyle:0,mark:2,beard:0,smile:true,prop:"stone"}},
+  KAREN:{name:"Karen Keïta",titre:"La Sentinelle",role:"SOUTIEN",camp:"allie",
+    bio:"Elle veille sur Tarine avant même de comprendre ce qu'il devient. Sa force est de tenir debout quand les autres reculent.",
+    o:{skin:"#a86b3c",cloth:"#132f52",accent:"#378ADD",hair:"#1a1a24",eye:"#9fd8ff",hairStyle:5,mark:3,beard:0,smile:true}},
+  FULGENCE:{name:"Fulgence",titre:"Le Roc de Marcory",role:"TANK",camp:"allie",
+    bio:"On ne le contourne pas, on ne le déplace pas. Il s'interpose, et c'est tout ce qu'il a jamais eu à faire.",
+    o:{skin:"#6b4226",cloth:"#2a2a4e",accent:"#7F77DD",hair:"#141018",eye:"#e6c98a",hairStyle:6,mark:0,beard:3,smile:false}},
+  BABA_TUNDE:{name:"Baba Tunde",titre:"Seigneur de la Cour",role:"ASSASSIN",camp:"allie",
+    bio:"La star auto-proclamée du lycée. Battu dans la cour, il revient en allié — le genre d'ami qu'on préfère devant soi.",
+    o:{skin:"#7a4a2b",cloth:"#4e1c2c",accent:"#D85A30",hair:"#2b1a10",eye:"#ffd76b",hairStyle:2,mark:1,beard:2,smile:true}},
+  LUNDGREN:{name:"Lundgren",titre:"Le Cartographe",role:"ERUDIT",camp:"allie",
+    bio:"Il sait où sont les choses : les ruines, la Chambre des Poids, les emplacements que sept siècles avaient effacés.",
+    o:{skin:"#c68642",cloth:"#123a3a",accent:"#B5D4F4",hair:"#4a2c17",eye:"#9fd8ff",hairStyle:7,mark:4,beard:1,eyewear:1,smile:false}},
+  SAM:{name:"Sam Grün",titre:"Le Passeur",role:"MAGE",camp:"allie",
+    bio:"Assis sur les marches, il attendait. C'est lui qui mène Tarine au Royaume de l'Essence pour lui montrer ce qu'il est vraiment.",
+    o:{skin:"#5c3317",cloth:"#1b3550",accent:"#16c8bd",hair:"#1a1a24",eye:"#16c8bd",hairStyle:3,mark:4,beard:2,smile:false,prop:"scarf"}},
+  YOURI:{name:"Youri",titre:"L'Observateur",role:"SOUTIEN",camp:"allie",
+    bio:"Grand, calme, cette façon d'observer qu'ont les gens qui attendent depuis longtemps. Il surveille quelqu'un depuis des mois.",
+    o:{skin:"#b07340",cloth:"#2a2a4e",accent:"#9fd8ff",hair:"#3d2b1f",eye:"#9fd8ff",hairStyle:6,mark:0,beard:1,eyewear:2,smile:false}},
+  SAMIA:{name:"Samia Koné",titre:"Le Carnet Rouge",role:"TEMOIN",camp:"allie",
+    bio:"Elle documente les incidents depuis des mois dans un carnet rouge bordeaux. C'est pour ça qu'il faut la protéger.",
+    o:{skin:"#a86b3c",cloth:"#4e1c2c",accent:"#e0455c",hair:"#141018",eye:"#ffd76b",hairStyle:5,mark:3,beard:0,smile:true,prop:"notebook"}},
+  KEITA:{name:"Général Keïta",titre:"Le Père",role:"EMPEREUR",camp:"allie",
+    bio:"Il a découvert la Pierre de l'Équilibre en 1983 et n'a jamais oublié un anniversaire. Son carnet contient un nom de code.",
+    o:{skin:"#7a4a2b",cloth:"#1c3a5e",accent:"#c9a86a",hair:"#c8c0b0",eye:"#e6c98a",hairStyle:6,mark:0,beard:1,smile:false,prop:"epaulet"}},
+  KANKOU:{name:"Kankou Moussa",titre:"L'Empereur",role:"EMPEREUR",camp:"neutre",
+    bio:"Au sommet de sa puissance il possédait cinq pierres héritées de l'aube des temps. Sous les ruines, il a pris sa décision.",
+    o:{skin:"#6b4226",cloth:"#4a3410",accent:"#f0c860",hair:"#141018",eye:"#ffd76b",hairStyle:0,mark:4,beard:3,crown:true,smile:false,prop:"medal"}},
+
+  // ---- L'empire de Sgrün ----
+  SGRUN:{name:"Sgrün",titre:"L'Empire",role:"OMBRE",camp:"ennemi",
+    bio:"Une silhouette en costume croisé, debout au fond de chaque vision. Ce n'est pas un homme qu'on affronte, c'est une structure.",
+    o:{cloth:"#0d0d14",accent:"#C084FC",eye:"#C084FC",form:"shadow",prop:"tie",bg:["#241238","#050208"]}},
+  DARK:{name:"L'Ombre",titre:"Le Reflet",role:"OMBRE",camp:"ennemi",
+    bio:"Ce que tu vas voir ici n'est pas un ennemi. C'est une version de toi — celle qui n'a jamais posé la pierre.",
+    o:{cloth:"#241238",accent:"#C084FC",eye:"#ff5c72",form:"shadow"}},
+  SCHISSIN:{name:"Schissin-Rouge",titre:"La Peur qui a une Forme",role:"OMBRE",camp:"ennemi",
+    bio:"Un nom de code dans le carnet du Général. Quelqu'un qui a su qui il était avant que lui-même ne le sache.",
+    o:{cloth:"#2a0810",accent:"#e0455c",eye:"#ff3d3d",form:"shadow",bg:["#3d0d18","#0d0206"]}},
+  SYLLA:{name:"Sylla",titre:"Le Maître de la Villa",role:"ASSASSIN",camp:"ennemi",
+    bio:"Il frappe les lieux symboliques pour briser le moral. Dans la vision, ses yeux disaient déjà : je te trouverai.",
+    o:{skin:"#5c3317",cloth:"#1a1a1a",accent:"#e0455c",hair:"#141018",eye:"#e0455c",hairStyle:0,mark:1,beard:2,eyewear:2,smile:false,prop:"tie"}},
+  OUSMANE:{name:"Ousmane",titre:"Le Bras Droit",role:"TANK",camp:"ennemi",
+    bio:"Un ancien ami du Général passé chez Sylla. Il gère la sécurité du Port et fume son cigare près des conteneurs.",
+    o:{skin:"#6b4226",cloth:"#2a2418",accent:"#ff9f43",hair:"#3d2b1f",eye:"#ffd76b",hairStyle:6,mark:0,beard:3,smile:false,prop:"cigar"}},
+  KRAG:{name:"Krag",titre:"L'Émissaire des Profondeurs",role:"EMISSAIRE",camp:"ennemi",
+    bio:"Conçu spécifiquement pour résister à la pression des abysses. Ce qui le brise doit venir d'ailleurs que de la force.",
+    o:{skin:"#4a5560",cloth:"#16232e",accent:"#7fd4e0",eye:"#9fd8ff",form:"stone",bg:["#16323f","#04101a"]}},
+  VAEL:{name:"Vael",titre:"La Lame Invisible",role:"EMISSAIRE",camp:"ennemi",
+    bio:"L'Émissaire de l'Air, resté derrière pour s'assurer que personne ne suive Sgrün. On ne le voit qu'après le coup.",
+    o:{skin:"#cfe8f0",cloth:"#1e3a44",accent:"#cdfafa",eye:"#ffffff",form:"wind",bg:["#1d4450","#050f14"]}},
+  MURK:{name:"Murk",titre:"L'Émissaire Abyssal",role:"EMISSAIRE",camp:"ennemi",
+    bio:"Sans forme fixe. Un émissaire liquide qui se glisse partout et gèle instantanément ce qu'il touche.",
+    o:{cloth:"#0d2833",accent:"#2a7f9e",eye:"#9fd8ff",form:"liquid",bg:["#12363f","#030d12"]}},
+  SUB:{name:"Sub",titre:"L'Opérateur Installé",role:"ASSASSIN",camp:"ennemi",
+    bio:"À Abidjan depuis six mois. Il ne passe pas : il s'enracine, il apprend les habitudes, il attend l'ordre.",
+    o:{skin:"#7a4a2b",cloth:"#1a1f2e",accent:"#9d7bff",hair:"#1a1a24",eye:"#9d7bff",hairStyle:3,mark:1,beard:4,smile:false}},
+  GROB:{name:"Grob",titre:"L'Opérateur de Passage",role:"TANK",camp:"ennemi",
+    bio:"Lui, il passe. Il arrive, il casse ce qu'il faut casser, il repart avant qu'on ait retenu son visage.",
+    o:{skin:"#5c3317",cloth:"#2e1a1a",accent:"#ff7a35",hair:"#141018",eye:"#ff9f43",hairStyle:0,mark:1,beard:3,smile:false,prop:"epaulet"}}
+};
+
+// Les portraits sont générés une seule fois au démarrage.
+var IMGS={};
+(function(){
+  for(var k in CAST){
+    IMGS[k]=makePortrait("cast:"+k,CAST[k].role,CAST[k].o);
+  }
+  // alias utilisés par le code de combat
+  IMGS.BABA=IMGS.BABA_TUNDE;
+})();
+
+function portraitFor(c){
+  if(!c)return "";
+  if(c.portrait)return c.portrait;
+  var k=c.key||c.id||"?";
+  if(IMGS[k])return IMGS[k];
+  return makePortrait(k,c.role||"OMBRE");
+}
 
 var BASE_CHAMPIONS = {
   TARINE:{
@@ -2694,6 +4437,17 @@ var BASE_CHAMPIONS = {
       {key:"X",name:"Chaleur Ancestrale",desc:"Frappe concentrée ×2",dmg:180,cd:6,curCd:0},
       {key:"C",name:"Mur de Pierre",desc:"Soin allié",heal:80,cd:6,curCd:0},
       {key:"R",name:"Cinq Pierres",desc:"Explosion massive",dmg:280,cd:16,curCd:0}
+    ]
+  },
+  SAM:{
+    id:"sam", key:"SAM", name:"Sam Grün", title:"Le Passeur", role:"MAGE",
+    roleColor:"#0d2833", roleText:"#16c8bd", img:"sam.svg",
+    hp:760, maxHp:760, atk:105, def:65,
+    abilities:[
+      {key:"Z",name:"Seuil Ouvert",desc:"Faille d'essence",dmg:115,cd:3,curCd:0},
+      {key:"X",name:"Ce Que Tu Es",desc:"Révèle et frappe",dmg:170,cd:6,curCd:0},
+      {key:"C",name:"Main sur l'Épaule",desc:"Soin et calme",heal:110,cd:6,curCd:0},
+      {key:"R",name:"Royaume de l'Essence",desc:"Déchirure massive",dmg:290,cd:17,curCd:0}
     ]
   },
   KAREN:{
@@ -2752,6 +4506,13 @@ var BASE_CHAMPIONS = {
     ]
   }
 };
+
+// Noms et rôles des adversaires générés (variété visuelle sur 50 missions)
+var SHADOW_NAMES=["Sbire de la Cour","Guetteur d'Ombre","Bras Droit","Racaille de Treichville",
+  "Milicien du Port","Vigie de Marcory","Mercenaire d'Adjamé","Colosse Muet","Rôdeur du Plateau",
+  "Cogneur de Yopougon","Voleur de Pierres","Fidèle de l'Ombre","Sentinelle Fêlée","Chien de Garde",
+  "Traqueur de Nuit","Homme de Main","Frappeur de la Lagune","Éclaireur Corrompu"];
+var SHADOW_ROLES=["ASSASSIN","TANK","DUELLISTE","MAGE","OMBRE","SOUTIEN"];
 
 // ===== CAMPAGNE : ACTES ET MISSIONS =====
 var CAMPAIGN = [
@@ -4348,7 +6109,7 @@ var CAMPAIGN = [
 // Ajuste ces deux valeurs pour changer le rythme : nombre de vies max et minutes pour regagner 1 vie.
 // Ex: LIFE_REGEN_MINUTES=1 → régénération à la minute (test) ; 60 → une vie par heure.
 var LIFE_MAX=5;
-var LIFE_REGEN_MINUTES=90;  // 20 → 90 minutes par vie
+var LIFE_REGEN_MINUTES=20;  // 20 minutes pour regagner une vie
 var LIFE_REGEN_MS=LIFE_REGEN_MINUTES*60*1000;
 
 function defaultSave(){
@@ -4381,19 +6142,15 @@ function writeSave(d){
 
 var save=loadSave();
 
-// ===== GESTION DES VIES (ÉNERGIE) =====
-// Recalcule save.lives en fonction du temps écoulé depuis la dernière régénération connue.
-// Fonctionne même si le joueur a fermé le jeu (basé sur un timestamp, pas sur un minuteur actif).
+// ===== GESTION DES VIES (ÉNERGIE) — v3, réécrite =====
+// Principe : une seule source de vérité = save.next_life_ts (échéance de la prochaine vie).
+// Le calcul est purement temporel : le jeu peut être fermé, l'onglet endormi ou l'appli
+// rechargée, le résultat est toujours le même. Aucun minuteur actif n'est nécessaire.
 
-// ---- Sauvegarde redondante (cookie) en plus du localStorage ----
-// Objectif : si le joueur efface le localStorage (ou recharge dans un contexte qui le réinitialise)
-// pour tenter de regagner des vies gratuitement, le cookie garde une trace de l'état le plus
-// restrictif connu et on la réapplique. Ce n'est pas infaillible (un effacement complet des
-// données de navigation efface les deux), mais ça bloque la triche "reload rapide" la plus courante.
 function writeLifeCookie(){
   try{
     var snap={lives:save.lives,lives_max:save.lives_max,next_life_ts:save.next_life_ts,t:Date.now()};
-    document.cookie="dpdf_lives="+encodeURIComponent(JSON.stringify(snap))+";max-age=31536000;path=/";
+    document.cookie="dpdf_lives="+encodeURIComponent(JSON.stringify(snap))+";max-age=31536000;path=/;SameSite=Lax";
   }catch(e){}
 }
 function readLifeCookie(){
@@ -4403,122 +6160,135 @@ function readLifeCookie(){
     return JSON.parse(decodeURIComponent(m[1]));
   }catch(e){return null;}
 }
+
+// Filet anti-triche : si le cookie connaît MOINS de vies que le localStorage, on garde
+// la valeur la plus restrictive. On ne touche plus jamais au chrono quand le nombre de
+// vies est identique — c'était la cause du compte à rebours qui repartait à zéro.
 function reconcileLives(){
   var snap=readLifeCookie();
-  if(!snap||typeof snap.lives!=="number")return;
-  if(snap.lives<save.lives){
-    // Le cookie indique moins de vies que le localStorage : on garde le plus restrictif.
-    save.lives=snap.lives;
-    save.next_life_ts=snap.next_life_ts;
-  }else if(snap.lives===save.lives&&snap.next_life_ts&&save.next_life_ts&&snap.next_life_ts>save.next_life_ts){
-    // Même nombre de vies mais régénération plus tardive côté cookie : on garde la plus tardive.
-    save.next_life_ts=snap.next_life_ts;
+  if(!snap||typeof snap.lives!=="number"||isNaN(snap.lives))return;
+  var snapLives=Math.max(0,Math.min(save.lives_max,Math.floor(snap.lives)));
+  if(snapLives<save.lives){
+    save.lives=snapLives;
+    save.next_life_ts=(typeof snap.next_life_ts==="number"&&isFinite(snap.next_life_ts))?snap.next_life_ts:null;
   }
 }
 
-function syncLives() {
-  if (save.lives === undefined || save.lives === null) save.lives = LIFE_MAX;
-  if (!save.lives_max) save.lives_max = LIFE_MAX;
-  
+function syncLives(){
+  // 1. Normalisation défensive (sauvegarde corrompue, ancienne version, valeur NaN…)
+  if(typeof save.lives_max!=="number"||!isFinite(save.lives_max)||save.lives_max<1)save.lives_max=LIFE_MAX;
+  if(typeof save.lives!=="number"||isNaN(save.lives))save.lives=save.lives_max;
+  save.lives=Math.max(0,Math.min(save.lives_max,Math.floor(save.lives)));
+
   reconcileLives();
 
-  var now = Date.now();
-  var changed = false;
+  var now=Date.now();
+  var changed=false;
 
-  // Si le joueur a moins que le max de vies
-  if (save.lives < save.lives_max) {
-    // Si aucun timestamp n'existait, on en crée un
-    if (!save.next_life_ts) {
-      save.next_life_ts = now + LIFE_REGEN_MS;
-      changed = true;
-    }
+  if(save.lives>=save.lives_max){
+    // Énergie pleine : plus de chrono.
+    if(save.next_life_ts!==null&&save.next_life_ts!==undefined){save.next_life_ts=null;changed=true;}
+  }else{
+    var t=save.next_life_ts;
 
-    // Tant que le temps actuel a dépassé l'échéance et qu'on n'a pas atteint le max
-    while (now >= save.next_life_ts && save.lives < save.lives_max) {
-      save.lives++;
-      save.next_life_ts += LIFE_REGEN_MS;
-      changed = true;
-    }
+    // Chrono absent ou invalide → on en démarre un.
+    if(typeof t!=="number"||!isFinite(t)){t=now+LIFE_REGEN_MS;changed=true;}
 
-    // CORRECTION CLÉ : Si le timestamp est TOUJOURS dans le passé 
-    // (ex: longue absence sans atteindre le max), on le recale par rapport à MAINTENANT
-    if (save.lives < save.lives_max && save.next_life_ts < now) {
-      save.next_life_ts = now + LIFE_REGEN_MS;
-    }
+    // Horloge système reculée : on plafonne à un cycle complet pour ne pas bloquer le joueur.
+    if(t-now>LIFE_REGEN_MS){t=now+LIFE_REGEN_MS;changed=true;}
 
-    // Si on a atteint le maximum de vies, on détruit le chrono
-    if (save.lives >= save.lives_max) {
-      save.next_life_ts = null;
+    // Échéance atteinte : on crédite d'un coup toutes les vies dues (même après plusieurs jours).
+    if(now>=t){
+      var due=1+Math.floor((now-t)/LIFE_REGEN_MS);
+      var granted=Math.min(due,save.lives_max-save.lives);
+      save.lives+=granted;
+      changed=true;
+      if(save.lives>=save.lives_max){
+        t=null;
+      }else{
+        t=t+granted*LIFE_REGEN_MS;
+        if(t<=now)t=now+LIFE_REGEN_MS; // garde-fou : le chrono reste toujours dans le futur
+      }
     }
-  } else {
-    // Si le joueur est déjà full vies
-    if (save.next_life_ts !== null) {
-      save.next_life_ts = null;
-      changed = true;
-    }
+    save.next_life_ts=t;
   }
 
-  // On enregistre uniquement si des données ont changé
-  if (changed) {
-    writeSave(save);
-  }
+  if(changed)writeSave(save);
   writeLifeCookie();
+  return changed;
 }
 
 function consumeLife(){
   syncLives();
   if(save.lives<=0)return false;
+  var wasFull=(save.lives>=save.lives_max);
   save.lives--;
-  if(!save.next_life_ts)save.next_life_ts=Date.now()+LIFE_REGEN_MS;
+  // Le chrono ne démarre qu'au moment où on quitte le plein — sinon on conserve celui en cours.
+  if(wasFull||typeof save.next_life_ts!=="number"||!isFinite(save.next_life_ts)){
+    save.next_life_ts=Date.now()+LIFE_REGEN_MS;
+  }
   writeSave(save);
   writeLifeCookie();
+  updateLivesUI();
   return true;
 }
 
 function formatCountdown(ms){
   if(ms<=0)return"00:00";
   var totalSec=Math.ceil(ms/1000);
-  var m=Math.floor(totalSec/60),s=totalSec%60;
+  var h=Math.floor(totalSec/3600),m=Math.floor((totalSec%3600)/60),s=totalSec%60;
+  if(h>0)return h+"h"+String(m).padStart(2,"0");
   return String(m).padStart(2,"0")+":"+String(s).padStart(2,"0");
 }
 
-function updateLivesUI() {
+function updateLivesUI(){
   syncLives();
 
-  // 1. Affichage des cœurs
-  var hearts = "";
-  for (var i = 0; i < save.lives_max; i++) {
-    hearts += '<span class="life-heart' + (i < save.lives ? "" : " empty") + '">♥</span>';
+  var hearts="";
+  for(var i=0;i<save.lives_max;i++){
+    hearts+='<span class="life-heart'+(i<save.lives?"":" empty")+'">&#9829;</span>';
   }
-  document.querySelectorAll(".lives-display").forEach(function(el) {
-    el.innerHTML = hearts;
+  var countEl='<span class="life-count">'+save.lives+'/'+save.lives_max+'</span>';
+  document.querySelectorAll(".lives-display").forEach(function(el){
+    el.innerHTML=hearts+countEl;
   });
 
-  // 2. Calcul sécurisé du compte à rebours
-  var timerTxt = "";
-  if (save.lives < save.lives_max && save.next_life_ts) {
-    var diff = save.next_life_ts - Date.now();
-    // Verrouillage : jamais de valeur négative à l'affichage
-    if (diff < 0) diff = 0;
-    
-    timerTxt = "Prochaine vie : " + formatCountdown(diff);
+  var timerTxt;
+  if(save.lives>=save.lives_max){
+    timerTxt="Énergie pleine";
+  }else if(typeof save.next_life_ts==="number"&&isFinite(save.next_life_ts)){
+    var diff=save.next_life_ts-Date.now();
+    if(diff<0)diff=0;
+    timerTxt="+1 vie dans "+formatCountdown(diff);
+  }else{
+    timerTxt="";
   }
-
-  document.querySelectorAll(".lives-timer").forEach(function(el) {
-    el.textContent = timerTxt;
+  document.querySelectorAll(".lives-timer").forEach(function(el){
+    el.textContent=timerTxt;
+  });
+  document.querySelectorAll(".lives-box").forEach(function(el){
+    el.classList.toggle("is-empty",save.lives<=0);
+    el.classList.toggle("is-full",save.lives>=save.lives_max);
   });
 
-  // 3. Mise à jour de l'interface du bouton de lancement
-  var launchBtn = document.getElementById("btn-launch");
-  var noLivesMsg = document.getElementById("no-lives-msg");
-  if (launchBtn && document.getElementById("screen-deploy").classList.contains("active")) {
-    launchBtn.disabled = save.lives <= 0;
-    if (noLivesMsg) noLivesMsg.style.display = save.lives <= 0 ? "block" : "none";
+  var launchBtn=document.getElementById("btn-launch");
+  var deployScreen=document.getElementById("screen-deploy");
+  var noLivesMsg=document.getElementById("no-lives-msg");
+  if(launchBtn&&deployScreen&&deployScreen.classList.contains("active")){
+    launchBtn.disabled=save.lives<=0;
+    if(noLivesMsg)noLivesMsg.style.display=save.lives<=0?"block":"none";
   }
 }
 
-// Rafraîchissement chaque seconde
-setInterval(updateLivesUI, 1000);
+// Affichage immédiat au chargement (avant, il fallait attendre 1 s : les cœurs restaient vides).
+try{updateLivesUI();}catch(e){}
+document.addEventListener("DOMContentLoaded",function(){try{updateLivesUI();}catch(e){}});
+// Recalcul au retour d'arrière-plan (onglet endormi / appli minimisée sur mobile).
+document.addEventListener("visibilitychange",function(){if(!document.hidden)updateLivesUI();});
+window.addEventListener("focus",function(){updateLivesUI();});
+window.addEventListener("pageshow",function(){updateLivesUI();});
+setInterval(updateLivesUI,1000);
+
 
 // État de combat
 var combat={
@@ -5032,9 +6802,127 @@ function showNarration(lines,callback,chapterLabel){
   },1200);
 }
 
+
+// ===== CODEX : la fiche de chaque personnage cité dans la campagne =====
+var codexFilter="tous";
+var CAMP_LABEL={allie:"ALLIÉ",ennemi:"EMPIRE",neutre:"LÉGENDE"};
+
+function renderCodex(){
+  var box=document.getElementById("codex-list");
+  if(!box)return;
+  box.innerHTML="";
+  var i=0;
+  for(var k in CAST){
+    var c=CAST[k];
+    if(codexFilter!=="tous"&&c.camp!==codexFilter)continue;
+    var card=document.createElement("div");
+    card.className="codex-card camp-"+c.camp+" stagger-in";
+    card.style.setProperty("--i",i++);
+    card.innerHTML=
+      '<img class="codex-portrait" src="'+IMGS[k]+'" alt="'+c.name+'">'+
+      '<div class="codex-body">'+
+        '<div class="codex-head">'+
+          '<span class="codex-name">'+c.name+'</span>'+
+          '<span class="codex-camp">'+(CAMP_LABEL[c.camp]||"")+'</span>'+
+        '</div>'+
+        '<div class="codex-titre">'+c.titre+'</div>'+
+        '<div class="codex-bio">'+c.bio+'</div>'+
+      '</div>';
+    box.appendChild(card);
+  }
+}
+
+document.addEventListener("click",function(e){
+  var chip=e.target.closest?e.target.closest(".codex-chip"):null;
+  if(!chip)return;
+  codexFilter=chip.dataset.camp;
+  document.querySelectorAll(".codex-chip").forEach(function(b){
+    b.classList.toggle("active",b===chip);
+  });
+  renderCodex();
+});
+
+
+
+// Le portrait du profil est posé dès l'ouverture de la page : il ne dépend plus
+// du premier passage dans le hub pour apparaître.
+function primeProfilePortrait(){
+  var img=document.getElementById("pf-portrait");
+  if(img&&IMGS.TARINE)img.setAttribute("src",IMGS.TARINE);
+}
+if(document.readyState==="loading"){
+  document.addEventListener("DOMContentLoaded",primeProfilePortrait);
+}else{
+  primeProfilePortrait();
+}
+
+// ===== PROFIL : portrait, tuiles de stats, pierres et progression =====
+function renderProfile(){
+  var img=document.getElementById("pf-portrait");
+  if(img){
+    // Assignation inconditionnelle : l'ancien test "si src est vide" pouvait ne
+    // jamais passer selon le navigateur, et la carte restait alors vide.
+    var uri=IMGS.TARINE||makePortrait("cast:TARINE","DUELLISTE",CAST.TARINE.o);
+    if(img.getAttribute("src")!==uri)img.setAttribute("src",uri);
+    img.onerror=function(){
+      this.onerror=null;
+      this.setAttribute("src",makePortrait("cast:TARINE","DUELLISTE",CAST.TARINE.o));
+    };
+  }
+
+  // Pierres de Kankou Moussa : cinq éclats, débloqués tous les trois niveaux.
+  var actives=Math.min(5,1+Math.floor(save.level/3));
+  var box=document.getElementById("pf-stones");
+  if(box){
+    var html="";
+    for(var i=0;i<5;i++){
+      html+='<span class="pf-stone'+(i<actives?" on":"")+'" style="--d:'+(i*90)+'ms"></span>';
+    }
+    box.innerHTML=html;
+  }
+  var note=document.getElementById("pf-stones-note");
+  if(note){
+    note.textContent=actives>=5
+      ? "Les cinq pierres répondent. L'Équilibre est complet."
+      : actives+" pierre"+(actives>1?"s":"")+" éveillée"+(actives>1?"s":"")+" — la suivante au niveau "+((actives)*3);
+  }
+
+  // Compteurs
+  var total=totalMissionsCount();
+  var done=save.missions_done.length;
+  var el;
+  if(el=document.getElementById("pf-missions"))el.textContent=done;
+  if(el=document.getElementById("pf-allies"))el.textContent=save.allies_unlocked.length;
+  if(el=document.getElementById("pf-prog-label"))el.textContent=done+" / "+total+" missions";
+  var pct=total?Math.round(done/total*100):0;
+  if(el=document.getElementById("pf-prog-pct"))el.textContent=pct+" %";
+  if(el=document.getElementById("pf-prog-fill"))el.style.width=pct+"%";
+
+  // Avancement acte par acte
+  var list=document.getElementById("pf-acte-list");
+  if(list){
+    list.innerHTML="";
+    CAMPAIGN.forEach(function(a){
+      var n=a.missions.filter(function(m){return isMissionDone(m.id);}).length;
+      var p=a.missions.length?Math.round(n/a.missions.length*100):0;
+      var row=document.createElement("div");
+      row.className="pf-acte"+(p===100?" complete":"");
+      row.innerHTML=
+        '<span class="pf-acte-name">'+a.label+'</span>'+
+        '<span class="pf-acte-bar"><span class="pf-acte-fill" style="width:'+p+'%"></span></span>'+
+        '<span class="pf-acte-num">'+n+'/'+a.missions.length+'</span>';
+      list.appendChild(row);
+    });
+  }
+}
+
+var AUTO_ALLIES={SAM:true};
+
 // ===== HUB =====
 function buildHub(){
   updateLivesUI();
+  renderCodex();
+  renderProfile();
   // Update header
   var currentActe=null;
   var lastDone=save.missions_done[save.missions_done.length-1];
@@ -5071,7 +6959,7 @@ function buildHub(){
       var done=isMissionDone(m.id);
       var avail=isMissionAvailable(m.id);
       var cls="mission-card"+(done?" done":avail?" available":" locked");
-      var statusTxt=done?"✓ TERMINÉE":avail?"DISPONIBLE":"VERROUILLÉE";
+      var statusTxt=done?"REJOUER":avail?"DISPONIBLE":"VERROUILLÉE";
       var statusCls=done?"done":avail?"avail":"lock";
       var card=document.createElement("div");
       card.className=cls;
@@ -5085,8 +6973,12 @@ function buildHub(){
           '<div class="m-desc">'+m.desc+'</div>'+
         '</div>'+
         '<div class="m-status '+statusCls+'">'+statusTxt+'</div>';
-      if(avail&&!done){
+      // Les missions terminées restent rejouables : on peut revenir en arrière
+      // pour farmer de l'XP ou refaire un combat raté de justesse.
+      if(avail||done){
         card.addEventListener("click",function(){openDeploy(m.id);});
+        card.setAttribute("role","button");
+        card.setAttribute("tabindex","0");
       }
       row.appendChild(card);
       // Révélation par transition JS pour ne pas interférer avec cardGlow
@@ -5103,7 +6995,7 @@ function buildHub(){
   // Alliés
   var aDiv=document.getElementById("allies-list");
   aDiv.innerHTML="";
-  var allAllies=["KAREN","FULGENCE","LUNDGREN","BABA","DARK"];
+  var allAllies=["KAREN","FULGENCE","SAM","LUNDGREN","BABA","DARK"];
   allAllies.forEach(function(k,idx){
     var unlocked=save.allies_unlocked.indexOf(k)>=0;
     var c=BASE_CHAMPIONS[k];
@@ -5112,7 +7004,7 @@ function buildHub(){
     row.className="ally-row stagger-in"+(unlocked?"":" ally-locked");
     row.style.setProperty("--i",idx);
     row.innerHTML=
-      '<img class="ally-img" src="'+IMGS[c.key]+'" alt="'+c.name+'">'+
+      '<img class="ally-img" src="'+portraitFor(c)+'" alt="'+c.name+'">'+
       '<div class="ally-info">'+
         '<div class="ally-name">'+c.name+'</div>'+
         '<div class="ally-role">'+c.role+'</div>'+
@@ -5125,19 +7017,36 @@ function buildHub(){
   var jDiv=document.getElementById("journal-entries");
   jDiv.innerHTML="";
   if(save.journal.length===0){
-    jDiv.innerHTML='<div class="j-entry stagger-in"><div class="j-text">Les premières pages sont vides. Quelque chose commence ce soir.</div></div>';
+    jDiv.innerHTML=
+      '<div class="j-empty stagger-in">'+
+        '<div class="j-empty-ico">&#9998;</div>'+
+        '<div class="j-empty-title">Le carnet est vierge</div>'+
+        '<div class="j-empty-text">Les premières pages attendent. Quelque chose commence ce soir, à Marcory.</div>'+
+      '</div>';
   }else{
     var entries=save.journal.slice().reverse();
+    var timeline=document.createElement("div");
+    timeline.className="j-timeline";
     entries.forEach(function(e,idx){
       var el=document.createElement("div");
-      el.className="j-entry stagger-in";
+      el.className="j-entry stagger-in"+(idx===0?" j-latest":"");
       el.style.setProperty("--i",Math.min(idx,8));
-      el.innerHTML='<div class="j-date">Mission '+e.mission+' — Acte '+e.acte+'</div><div class="j-text">'+e.text+'</div>';
-      jDiv.appendChild(el);
+      el.innerHTML=
+        '<span class="j-dot"></span>'+
+        '<div class="j-card">'+
+          '<div class="j-head">'+
+            '<span class="j-badge">'+e.mission+'</span>'+
+            '<span class="j-acte">Acte '+e.acte+'</span>'+
+            (idx===0?'<span class="j-new">Dernière page</span>':'')+
+          '</div>'+
+          '<div class="j-text">'+e.text+'</div>'+
+        '</div>';
+      timeline.appendChild(el);
     });
+    jDiv.appendChild(timeline);
   }
 
-
+  renderProfile();
   writeSave(save);
 }
 
@@ -5174,6 +7083,13 @@ function openDeploy(missionId){
   // Grille alliés dispo
   var grid=document.getElementById("deploy-grid");
   grid.innerHTML="";
+  // Sam accompagne Tarine dès que le récit le fait apparaître : il n'est débloqué
+  // par aucune mission en particulier, on le rend donc disponible à la volée.
+  m.allies_dispo.concat(m.allies_requis).forEach(function(k){
+    if(AUTO_ALLIES[k]&&BASE_CHAMPIONS[k]&&save.allies_unlocked.indexOf(k)<0){
+      save.allies_unlocked.push(k); writeSave(save);
+    }
+  });
   var available=m.allies_dispo.filter(function(k){return save.allies_unlocked.indexOf(k)>=0;});
 
   // Requis auto-sélectionnés
@@ -5193,7 +7109,7 @@ function openDeploy(missionId){
     card.style.setProperty("--i",idx);
     card.dataset.key=k;
     card.innerHTML=
-      '<img src="'+IMGS[c.key]+'" alt="'+c.name+'">'+
+      '<img src="'+portraitFor(c)+'" alt="'+c.name+'">'+
       '<div class="deploy-card-name">'+c.name+'</div>'+
       '<div class="deploy-card-role">'+c.role+(requis?" · REQUIS":"")+'</div>';
     if(unlocked&&(inDispo||requis)){
@@ -5296,7 +7212,11 @@ function startCombat(missionId,selectedAllies){
     var c=cloneChamp(k);
     if(c){
       c.id=c.id+"_extra"+i;
-      c.name=c.name+" (Ombre)";
+      c.name=SHADOW_NAMES[(m.num*7+i*3)%SHADOW_NAMES.length];
+      // Chaque sbire reçoit un visage propre, dérivé de la mission et de son rang :
+      // les 50 missions ne montrent donc jamais deux fois la même tête.
+      c.portrait=makePortrait("foe:"+m.id+":"+i+":"+k,SHADOW_ROLES[(m.num+i)%SHADOW_ROLES.length]);
+      c.role=SHADOW_ROLES[(m.num+i)%SHADOW_ROLES.length];
       c.level=m.num;
       c.hp=Math.round(c.maxHp*2.2*eScale.hp);c.maxHp=c.hp;
       c.atk=Math.round(c.atk*0.70*eScale.atk);
@@ -5855,7 +7775,7 @@ function fighterTokenHtml(c,f,side){
   return '<div class="'+cls+'" id="fighter-'+c.id+'" style="left:'+f.x+'%;top:'+f.y+'%" data-id="'+c.id+'" data-side="'+side+'">'+
     '<div class="token-shadow"></div>'+
     '<div class="token-avatar-wrap">'+
-      '<img class="token-avatar" src="'+IMGS[c.key]+'" alt="'+c.name+'" onerror="this.style.visibility=\'hidden\'">'+
+      '<img class="token-avatar" src="'+portraitFor(c)+'" alt="'+c.name+'" onerror="this.style.visibility=\'hidden\'">'+
       '<div class="token-ring"></div>'+
       (c.level?'<div class="token-lvl">'+c.level+'</div>':'')+
     '</div>'+
