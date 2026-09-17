@@ -3539,6 +3539,65 @@ body::after{
 .slot-tag{font-size:8px;background:var(--hex-gold);color:#2b1400;border-radius:6px;padding:1px 5px;vertical-align:middle;}
 .slot-b{display:flex;flex-direction:column;gap:4px;}
 #slot-over{position:fixed;inset:0;z-index:300;}
+/* coach d'apprentissage */
+.mv-coach{position:absolute;left:8px;right:8px;bottom:calc(env(safe-area-inset-bottom,0px) + 268px);background:rgba(10,6,22,.94);
+  border:1px solid var(--hex-gold);border-radius:14px;padding:10px 12px;opacity:0;transform:translateY(10px);transition:.3s;pointer-events:none;}
+.mv-coach.on{opacity:1;transform:none;pointer-events:auto;}
+.mv-coach.ok{border-color:#6dffa8;box-shadow:0 0 22px rgba(109,255,168,.45);}
+.mv-coach-h{display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;}
+.mv-coach-h b{font-size:9px;letter-spacing:2px;color:var(--hex-gold-bright);}
+.mv-coach-h button{background:none;border:none;color:var(--hex-text-dim);font-size:10px;text-decoration:underline;}
+.mv-coach p{font-size:12px;color:#f0e6ff;line-height:1.45;}
+/* menace au déploiement */
+.dp-threat{margin-top:8px;border-radius:10px;padding:6px 10px;border-left:3px solid;}
+.dp-threat b{font-size:12px;display:block;}
+.dp-threat small{font-size:10px;color:#cbbde0;}
+.dp-threat.t0{border-color:#22c55e;background:rgba(34,197,94,.1);} .dp-threat.t0 b{color:#6dffa8;}
+.dp-threat.t1{border-color:#f59e0b;background:rgba(245,158,11,.1);} .dp-threat.t1 b{color:#fbbf24;}
+.dp-threat.t2{border-color:#f97316;background:rgba(249,115,22,.12);} .dp-threat.t2 b{color:#ffa34d;}
+.dp-threat.t3{border-color:#ef4444;background:rgba(239,68,68,.12);} .dp-threat.t3 b{color:#ff8497;}
+/* panneau d'aide */
+.hlp h4{color:var(--hex-gold-light);font-size:12px;letter-spacing:1px;margin:10px 0 4px;}
+.hlp p{font-size:12px;color:#d8cbee;line-height:1.5;margin-bottom:6px;}
+.hlp ul{margin:0 0 6px 16px;}
+.hlp li{font-size:12px;color:#cbbde0;line-height:1.5;margin-bottom:3px;}
+.hlp b{color:#fff;}
+/* --- allègement : hub --- */
+.hub-play{display:flex;align-items:center;gap:8px;background:linear-gradient(135deg,rgba(124,58,237,.22),rgba(10,6,20,.6));
+  border:1px solid var(--hex-border-glow);border-radius:14px;padding:10px 12px;margin-bottom:12px;}
+.hp-i{flex:1;min-width:0;}
+.hp-i small{display:block;font-size:9px;letter-spacing:2px;color:var(--hex-gold-bright);}
+.hp-i b{display:block;font-size:14px;color:#fff;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+#hub-play-go{padding:8px 18px;}
+.hub-menu-btn{margin-top:4px;width:30px;height:26px;border-radius:8px;background:rgba(255,255,255,.06);
+  border:1px solid var(--hex-border);color:#d8cbee;font-size:13px;float:right;}
+.hm-b{display:block;width:100%;margin-bottom:8px;text-align:left;}
+/* --- allègement : combat --- */
+.mv-obj{transition:opacity .6s;}
+#mv-mini{width:88px;height:66px;}
+.mv-pill{font-size:10px;padding:3px 9px;opacity:.85;}
+.mv-inv i{width:18px;height:18px;line-height:18px;font-size:11px;}
+/* --- narration --- */
+.narr-skip{position:absolute;right:14px;top:calc(env(safe-area-inset-top,0px) + 12px);z-index:30;
+  background:rgba(10,6,22,.85);border:1px solid var(--hex-border-glow);color:#e8dcff;border-radius:16px;
+  padding:6px 14px;font-size:10px;letter-spacing:2px;}
+/* --- en-tête du hub : une seule ligne, rien qui déborde --- */
+#screen-hub .hub-header{display:flex!important;align-items:center;gap:8px;padding:8px 10px!important;}
+#screen-hub .hub-header>div:first-child{min-width:0;flex:0 0 auto;max-width:42%;}
+#screen-hub .hub-acte{font-size:9px!important;letter-spacing:2px;}
+#screen-hub .hub-titre{font-size:15px!important;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;line-height:1.1;}
+#screen-hub .lives-box{flex:1;min-width:0;display:flex;align-items:center;justify-content:flex-end;gap:8px;padding:6px 8px!important;}
+#screen-hub .lives-box>div[style]{display:none!important;}
+#screen-hub .lives-timer{font-size:9px;}
+.hub-cauris{margin:0;white-space:nowrap;}
+.hub-menu-btn{margin:0;float:none;flex:0 0 auto;}
+#btn-slots-hub,#btn-help{display:none!important;}
+#screen-hub .hub-titre{max-width:150px;}
+.mission-card .m-info{flex:1;min-width:0;}
+.mission-card .m-name{overflow-wrap:anywhere;padding-right:4px;}
+.mission-card .m-status{align-self:flex-start;}
+.mission-card .m-name{white-space:normal!important;overflow-wrap:anywhere;max-width:calc(100% - 84px);}
+.mission-card .m-status{top:10px!important;right:10px!important;}
 
 </style>
 </head>
@@ -7614,6 +7673,11 @@ function recalc(u,full){
 function xpNeeded(l){return 180+(l-1)*95;}
 function gainXp(u,x){
   if(u.lvl>=18)return;
+  // en campagne, l'Empire ne prend pas d'avance sur le joueur : il peut suivre, pas distancer
+  if(u.team===1&&u.ai&&!G.floor&&G.player){
+    var cap=G.player.lvl+(G.diff.id===0?0:1);
+    if(u.lvl>=cap)return;
+  }
   u.xp+=x;
   while(u.lvl<18&&u.xp>=xpNeeded(u.lvl)){
     u.xp-=xpNeeded(u.lvl);u.lvl++;u.sp++;
@@ -8523,7 +8587,7 @@ function updateUnits(dt){
       if(u.spells.saut>0)u.spells.saut-=dt;if(u.spells.soin>0)u.spells.soin-=dt;
       u.hp=Math.min(u.maxHp,u.hp+u.regen*dt);
       u.mana=Math.min(u.maxMana,u.mana+u.manaRegen*dt);
-      u.gold+=2.4*dt*(u.team===1&&u.ai?1.1:1);
+      u.gold+=2.4*dt*(u.team===1&&u.ai?(G.diff.id===0?0.75:1.1):1);
       // fontaine
       var f=G.fount[u.team];
       if(f&&dist2(u.x,u.y,f.x,f.y)<380*380){u.hp=Math.min(u.maxHp,u.hp+u.maxHp*0.12*dt);u.mana=Math.min(u.maxMana,u.mana+u.maxMana*0.12*dt);u.atFount=true;}else u.atFount=false;
@@ -8986,8 +9050,13 @@ function aiLane(u){
     G.units.forEach(function(t){if(t.kind==="tower"&&!t.dead&&t.team===u.team){if(!myT||(t.x-myT.x)*dir>0)myT=t;}});
     gx=myT?myT.x+dir*60:G.fount[u.team].x+dir*300;
   }
+  // pression : au bout de quelques minutes, l'Empire quitte sa moitié et vient au contact
+  if(u.team===1&&!front){
+    var press=(G.time>180?1:0)+(G.teamKills[1]>G.teamKills[0]?1:0);
+    if(press)gx=gx+dir*(180+press*160);
+  }
   var slot=(u.id%3-1)*70;
-  u.moveGoal={x:gx,y:laneY(gx)+slot};
+  u.moveGoal={x:clamp(gx,G.bx0,G.bx1),y:laneY(clamp(gx,G.bx0,G.bx1))+slot};
 }
 function aiArena(u){
   var e=G.units.filter(function(o){return o.kind==="champ"&&o.team!==u.team&&!o.dead;});
@@ -9949,7 +10018,7 @@ function buildGameDom(){
   '<div id="mv-joyzone"></div>'+
   '<div class="mv-hud">'+
     '<div class="mv-top">'+
-      '<div class="mv-pill" id="mv-kda">0 / 0 / 0</div>'+
+      '<div class="mv-pill" id="mv-kda"></div>'+
       '<div class="mv-score"><b class="a" id="mv-sa">0</b><span id="mv-time">00:00</span><b class="e" id="mv-se">0</b></div>'+
       '<button class="mv-ico" id="mv-pause" aria-label="Pause">❚❚</button>'+
     '</div>'+
@@ -10039,6 +10108,7 @@ function playerCast(i,tx,ty,tu){
     sfx("deny");return false;
   }
   var ok=castAbility(p,i,tx,ty,tu);
+  if(ok)G.coachCasts=(G.coachCasts||0)+1;
   if(ok){haptic(p.d.abil[i].ult?[20,30,40]:12);if(p.d.abil[i].type!=="dash")p.target=p.target&&!p.target.dead?p.target:null;}
   return ok;
 }
@@ -10289,8 +10359,10 @@ function openMenu(){
   h+='</table>';
   var aff=Object.keys(G.affix).map(function(a){var A=AFFIXES.filter(function(x){return x.id===a;})[0];return A?'<span class="mv-aff" title="'+esc(A.desc)+'">'+A.name+'</span>':"";}).join("");
   h+='<div class="mv-info"><b>'+esc(G.meta.title)+'</b> · '+MODE_INFO[G.mode].name+' · '+G.diff.name+(aff?'<div>'+aff+'</div>':'')+'<p>'+esc(G.objective)+'</p></div>';
+  h+='<button class="btn btn-sm" id="mv-help" style="margin-bottom:8px">? COMMENT JOUER</button>';
   h+='<div class="mv-keys">Clavier : ZQSD/WASD déplacer · clic gauche = aller/attaquer · Espace attaque · 1-4 capacités (vers la souris) · Ctrl+1-4 améliorer · F saut · H souffle · B repli · P boutique</div>';
   document.getElementById("mv-board").innerHTML=h;
+  var hb=document.getElementById("mv-help");if(hb)hb.onclick=function(){if(typeof openHelp==="function")openHelp();};
   var S=save.settings;
   document.getElementById("mv-set").innerHTML=
     setToggle("sound","Sons",S.sound!==false)+setToggle("shake","Tremblements",S.shake!==false)+setToggle("vibe","Vibrations",S.vibe!==false)+
@@ -10325,11 +10397,15 @@ function updateHud(dt){
   E.lvl.textContent=p.lvl;
   var xpf=p.lvl>=18?1:p.xp/xpNeeded(p.lvl);
   E.xpring.style.strokeDasharray=(xpf*100.5)+" 100.5";
-  E.kda.textContent=p.kills+" / "+p.deaths+" / "+p.assists+"  ·  "+p.cs+" 🗡";
+  E.kda.textContent=p.kills+"/"+p.deaths+" · "+p.cs+"🗡";
   E.time.textContent=fmtTime(G.time);
   E.sa.textContent=G.teamKills[0];
   E.se.textContent=G.teamKills[1];
-  E.obj.innerHTML=objectiveText();
+  // l'objectif ne reste pas en permanence : il s'estompe et revient quand il change
+  var ot=objectiveText();
+  if(ot!==HUD.lastObj){HUD.lastObj=ot;HUD.objT=5;E.obj.innerHTML=ot;}
+  HUD.objT=Math.max(0,(HUD.objT||0)-dt);
+  E.obj.style.opacity=HUD.objT>0?1:0.28;
   // boutique
   var near=canShop(p);
   E.shopbtn.classList.toggle("hot",near||HUD.shopHint>0);
@@ -10357,7 +10433,7 @@ function updateHud(dt){
   E.recall.classList.toggle("act",p.recall>0);
   E.recall.querySelector(".cd").style.height=(p.recall>0?p.recall/4*100:0)+"%";
   if(HUD.dirty){
-    var inv="";for(var s=0;s<INV_MAX;s++){var id=p.items[s];inv+='<i>'+(id?ITEM_BY[id].ico:"")+'</i>';}
+    var inv="";for(var s=0;s<INV_MAX;s++){var id=p.items[s];if(id)inv+='<i>'+ITEM_BY[id].ico+'</i>';}
     E.inv.innerHTML=inv;
     HUD.dirty=false;
   }
@@ -10374,6 +10450,7 @@ function updateHud(dt){
   if(HUD.holdAtk){HUD.holdT-=dt;if(HUD.holdT<=0){HUD.holdT=0.25;if(!p.target||p.target.dead)playerAttack();}}
   if(save.settings.autoRank&&p.sp>0){[3,0,2,1].forEach(function(i){rankUp(p,i);});}
   MINI.t-=dt;if(MINI.t<=0){MINI.t=0.1;drawMinimap();}
+  if(typeof coachTick==="function")coachTick(dt);
 }
 function objectiveText(){
   var t=esc(G.objective||"");
@@ -10453,6 +10530,7 @@ function runMatch(cfg,meta){
     setTimeout(function(){hudTip("Joystick à gauche · ⚔ attaque · glisse une capacité pour viser");},900);
     save.tutoDone=true;writeSave(save);
   }
+  if(typeof coachStart==="function")coachStart();
   LOOP.running=true;LOOP.last=performance.now();LOOP.acc=0;
   cancelAnimationFrame(LOOP.raf);
   LOOP.raf=requestAnimationFrame(frame);
@@ -10741,7 +10819,7 @@ function renderDeploy(){
   if(cfg.mode==="boss")foes=[cfg.boss].concat(foes.slice(0,Math.max(0,cfg.allies.length)));
   var power=Math.round((cfg.floor?(0.95+cfg.floor*0.022):(0.9+cfg.num*0.01))*DIFFS[cfg.diff].mult*100);
   el.innerHTML=foes.map(function(k,i){var c=CHAMPS[k];return '<div class="enemy-preview"><img src="'+champPortrait(k)+'" alt="">'+(cfg.mode==="boss"&&i===0?"👑 ":"")+esc(c?c.name:k)+' <span class="enemy-lvl">'+(c?c.role:"")+'</span></div>';}).join("")+
-    '<div class="dp-power">Puissance ennemie : <b>'+power+' %</b> · ta puissance : <b>'+Math.round(playerPowerPct(DEPLOY.champ))+' %</b></div>';
+    threatLine(power,cfg);
   // alliés
   var grid=document.getElementById("deploy-grid");
   var pool=allyPool(),req=isF?[]:(m.allies_requis||[]);
@@ -10767,6 +10845,16 @@ function renderDeploy(){
   btn.textContent=isF?"DESCENDRE DANS LA FAILLE":"ENTRER EN COMBAT";
   document.getElementById("no-lives-msg").style.display=(!isF&&save.lives<=0)?"block":"none";
 }
+function threatLine(power,cfg){
+  var mine=playerPowerPct(DEPLOY.champ)+(cfg.diff===0?12:0);
+  var r=power/mine*(cfg.foeCount/(1+DEPLOY.allies.length));
+  var lab,cls,txt;
+  if(r<0.75){lab="FACILE";cls="t0";txt="Tu domines nettement ce combat.";}
+  else if(r<1.05){lab="ABORDABLE";cls="t1";txt="Combat équilibré : joue derrière tes sbires.";}
+  else if(r<1.45){lab="RUDE";cls="t2";txt="Ils sont plus forts : farme, achète, puis engage.";}
+  else{lab="REDOUTABLE";cls="t3";txt="Reviens avec plus de talents, de reliques ou d'alliés.";}
+  return '<div class="dp-threat '+cls+'"><b>Menace : '+lab+'</b><small>'+txt+'</small></div>';
+}
 function playerPowerPct(k){
   var b=playerBonus(k);
   return 100*(1+(b.hpP||0)*0.5+(b.atkP||0)*0.5+((b.hp||0)/1500)+((b.atk||0)/120)+((b.armF||0)+(b.arm||0))/300);
@@ -10780,6 +10868,7 @@ function launchFromDeploy(){
   var m=DEPLOY.m;if(!m)return;
   if(!consumeLife()){updateLivesUI();hubToast("Plus de vies — une victoire te rend ta vie. Reviens bientôt ou tente la Faille.");renderDeploy();return;}
   updateLivesUI();
+  save.lastAllies=DEPLOY.allies.slice();save.lastChamp=DEPLOY.champ;writeSave(save);
   var cfg=missionCfg(m,DEPLOY.diff,DEPLOY.champ,DEPLOY.allies.slice());
   var meta={kind:"mission",m:m,title:m.num+". "+m.name};
   var firstTime=!(save.diff[m.id]||[])[DEPLOY.diff];
@@ -10950,9 +11039,13 @@ function installHubV3(){
   // bouton de lancement : on remplace l'ancien gestionnaire
   var old=document.getElementById("btn-launch");
   if(old&&!old.dataset.v3){var nb=old.cloneNode(true);nb.dataset.v3="1";old.parentNode.replaceChild(nb,old);nb.addEventListener("click",launchFromDeploy);}
-  // compteur de cauris dans l'en-tête
+  // en-tête compact : cauris + un seul bouton menu
   var lb=document.querySelector("#screen-hub .lives-box");
   if(lb&&!document.getElementById("hub-cauris")){var c=document.createElement("div");c.id="hub-cauris";c.className="hub-cauris";lb.appendChild(c);}
+  if(lb&&!document.getElementById("hub-menu-btn")){
+    var mb=document.createElement("button");mb.id="hub-menu-btn";mb.className="hub-menu-btn";mb.textContent="☰";
+    mb.onclick=openHubMenu;lb.appendChild(mb);
+  }
   if(!document.getElementById("hub-toast")){var t=document.createElement("div");t.id="hub-toast";document.body.appendChild(t);}
   var bs=document.getElementById("btn-start");
   if(bs)bs.addEventListener("click",function(){migrateSave();refreshQuests();writeSave(save);});
@@ -10963,11 +11056,52 @@ function installHubV3(){
 // filet de sécurité : une sauvegarde neuve doit toujours porter les champs v3
 var _basePlayerBonus=playerBonus;
 playerBonus=function(k){migrateSave();return _basePlayerBonus(k);};
+function openHubMenu(){
+  var ov=document.getElementById("hubmenu-over");
+  if(!ov){ov=document.createElement("div");ov.id="hubmenu-over";ov.className="mv-over";document.body.appendChild(ov);}
+  ov.innerHTML='<div class="mv-panel"><div class="mv-ph"><b>MENU</b><button class="mv-x" id="hm-x">✕</button></div>'+
+    '<button class="btn hm-b" id="hm-help">? Comment jouer</button>'+
+    '<button class="btn hm-b" id="hm-slots">Parties sauvegardées (empl. '+curSlot()+')</button>'+
+    '<button class="btn hm-b" id="hm-title">Écran titre</button></div>';
+  ov.classList.add("on");
+  var close=function(){ov.classList.remove("on");};
+  document.getElementById("hm-x").onclick=close;
+  document.getElementById("hm-help").onclick=function(){close();openHelp();};
+  document.getElementById("hm-slots").onclick=function(){close();openSlots();};
+  document.getElementById("hm-title").onclick=function(){close();goTo("screen-title");initTitle();};
+}
+// mission suivante à jouer : première non terminée, sinon la dernière ouverte
+function nextMission(){
+  var all=[],prev=null;
+  CAMPAIGN.forEach(function(a){a.missions.forEach(function(m){all.push(m);});});
+  for(var i=0;i<all.length;i++){if(!isMissionDone(all[i].id))return all[i];prev=all[i];}
+  return prev||all[0];
+}
+function quickPlay(){
+  var m=nextMission();
+  DEPLOY.kind="mission";DEPLOY.m=m;DEPLOY.diff=0;
+  DEPLOY.champ=championUnlocked(save.lastChamp)?save.lastChamp:"TARINE";
+  var mem=(save.lastAllies||[]).filter(function(k){return championUnlocked(k)&&k!==DEPLOY.champ;});
+  var pool=(m.allies_dispo||[]).concat(m.allies_requis||[]).filter(function(k){return CHAMPS[k]&&championUnlocked(k)&&k!==DEPLOY.champ;});
+  DEPLOY.allies=(isMissionDone(m.id)?mem:pool).slice(0,2);
+  if(!DEPLOY.allies.length)DEPLOY.allies=pool.slice(0,2);
+  launchFromDeploy();
+}
 var _baseBuildHub=buildHub;
 buildHub=function(){
   migrateSave();refreshQuests();
   var nw=checkAchievements();
   _baseBuildHub();
+  // bandeau JOUER : une seule touche pour repartir au combat
+  var mp=document.getElementById("panel-missions");
+  var m0=nextMission();
+  var bar=document.getElementById("hub-play");
+  if(!bar){bar=document.createElement("div");bar.id="hub-play";bar.className="hub-play";mp.insertBefore(bar,mp.firstChild);}
+  bar.innerHTML='<div class="hp-i"><small>'+(isMissionDone(m0.id)?"REJOUER":"MISSION "+m0.num)+'</small><b>'+esc(m0.name)+'</b></div>'+
+    '<button class="btn btn-primary" id="hub-play-go">JOUER</button>'+
+    '<button class="btn btn-sm" id="hub-play-team">Équipe</button>';
+  document.getElementById("hub-play-go").onclick=quickPlay;
+  document.getElementById("hub-play-team").onclick=function(){openDeploy(m0.id);};
   // cartes de mission : étoiles, mode, boss
   var cards=document.querySelectorAll("#hub-missions .mission-card"),idx=0;
   CAMPAIGN.forEach(function(a){a.missions.forEach(function(m){
@@ -11132,6 +11266,129 @@ buildHub=function(){
 };
 // au démarrage, on charge l'emplacement mémorisé
 useSlot(curSlot(),false);
+
+// =====================================================================
+// ===  APPRENTISSAGE : coach en combat + panneau « Comment jouer »   ===
+// =====================================================================
+var COACH_STEPS=[
+  {id:"move",txt:"Pose ton doigt sur la moitié gauche de l'écran et fais-le glisser : Tarine suit la direction.",
+   ok:function(c){return dist(G.player.x,G.player.y,c.x0,c.y0)>420;}},
+  {id:"atk",txt:"Approche les sbires ennemis (petits soldats rouges) et touche le gros bouton ⚔. Chaque sbire achevé rapporte de l'or et de l'expérience.",
+   ok:function(){return G.player.cs>=3;}},
+  {id:"rank",txt:"Tu as un point de capacité : touche le « + » doré sur un bouton rond pour apprendre une capacité.",
+   ok:function(){return G.player.ranks[0]+G.player.ranks[1]+G.player.ranks[2]+G.player.ranks[3]>=1;}},
+  {id:"cast",txt:"Lance-la : touche le bouton pour viser tout seul, ou garde le doigt dessus et glisse pour viser à la main.",
+   ok:function(){return (G.coachCasts||0)>=1;}},
+  {id:"shop",txt:"Touche ⌂ pour rentrer à ta base, puis 🛒 pour dépenser ton or. Les objets sont ce qui te rend vraiment plus fort.",
+   ok:function(){return G.player.items.length>=1;}},
+  {id:"tower",txt:"Avance derrière tes sbires : ils encaissent les tours. Détruis les tours, puis le nexus ennemi pour gagner.",
+   ok:function(){return G.stats.towers>=1||G.over;}}
+];
+var coach=null;
+function coachStart(){
+  if(save.coachDone||!G||G.floor){coach=null;return;}
+  coach={i:0,t:0,x0:G.player.x,y0:G.player.y,done:false};
+  G.coachCasts=0;
+  coachRender();
+}
+function coachRender(){
+  var el=document.getElementById("mv-coach");
+  if(!el){
+    el=document.createElement("div");el.id="mv-coach";el.className="mv-coach";
+    document.querySelector("#screen-game .mv-hud").appendChild(el);
+  }
+  if(!coach||coach.done){el.classList.remove("on");return;}
+  var st=COACH_STEPS[coach.i];
+  el.className="mv-coach on";
+  el.innerHTML='<div class="mv-coach-h"><b>APPRENTISSAGE '+(coach.i+1)+'/'+COACH_STEPS.length+'</b><button id="mv-coach-skip">passer</button></div><p>'+esc(st.txt)+'</p>';
+  document.getElementById("mv-coach-skip").onclick=function(){
+    coach.done=true;save.coachDone=true;writeSave(save);coachRender();
+  };
+}
+function coachTick(dt){
+  if(!coach||coach.done||!G)return;
+  coach.t+=dt;
+  if(coach.t<1.2)return;
+  var st=COACH_STEPS[coach.i];
+  var ok=false;try{ok=st.ok(coach);}catch(e){}
+  if(!ok)return;
+  var el=document.getElementById("mv-coach");
+  if(el){el.classList.add("ok");setTimeout(function(){if(el)el.classList.remove("ok");},600);}
+  sfx("lvl");
+  coach.i++;coach.t=0;
+  if(coach.i>=COACH_STEPS.length){
+    coach.done=true;save.coachDone=true;writeSave(save);
+    announce("Tu as les bases. Bonne chance.","good");
+  }
+  coachRender();
+}
+
+// ---------------------------------------------------------------------
+// Panneau « Comment jouer » (accessible depuis le hub et la pause)
+// ---------------------------------------------------------------------
+function openHelp(){
+  var ov=document.getElementById("help-over");
+  if(!ov){ov=document.createElement("div");ov.id="help-over";ov.className="mv-over";document.body.appendChild(ov);}
+  ov.innerHTML='<div class="mv-panel"><div class="mv-ph"><b>COMMENT JOUER</b><button class="mv-x" id="help-close">✕</button></div>'+
+  '<div class="hlp">'+
+    '<h4>Le but</h4><p>Chaque mission est un combat en temps réel. Ce que tu dois faire dépend du mode, indiqué avant le départ :</p>'+
+    '<ul>'+
+      '<li><b>🏰 Siège</b> — détruis les tours ennemies puis leur nexus. Tes sbires arrivent par vagues : avance toujours derrière eux.</li>'+
+      '<li><b>⚔️ Escarmouche</b> — premier camp à atteindre le score. Une Pierre de pouvoir apparaît au centre.</li>'+
+      '<li><b>🛡️ Défense</b> — survis aux vagues et protège ton nexus.</li>'+
+      '<li><b>👑 Boss</b> — un adversaire unique en trois phases. Les cercles rouges au sol annoncent ses coups : sors-en.</li>'+
+    '</ul>'+
+    '<h4>Les commandes</h4>'+
+    '<ul>'+
+      '<li>Doigt sur la <b>moitié gauche</b> : déplacement libre.</li>'+
+      '<li><b>⚔</b> : attaque la cible la plus proche. Reste appuyé pour enchaîner.</li>'+
+      '<li>Boutons ronds <b>1, 2, 3, R</b> : capacités. Appui court = visée automatique, appui long + glisser = visée libre.</li>'+
+      '<li><b>+</b> doré : apprendre ou améliorer une capacité (un point par niveau).</li>'+
+      '<li><b>✦</b> saut, <b>✚</b> souffle (soin), <b>⌂</b> retour à la base.</li>'+
+      '<li><b>🛒</b> : boutique, uniquement à ta base ou pendant ta réapparition.</li>'+
+    '</ul>'+
+    '<h4>Pendant le combat</h4>'+
+    '<p>Tu commences chaque mission au niveau 1 : l\'or et les niveaux gagnés dans une partie ne sont pas conservés. Achever un sbire au dernier coup rapporte l\'or — c\'est la base de ta puissance. Les tours font très mal : n\'y entre jamais sans sbires devant toi.</p>'+
+    '<h4>Entre les combats</h4>'+
+    '<ul>'+
+      '<li><b>Éveil</b> — talents permanents (un point par niveau de compte), reliques à équiper et améliorer, maîtrise des héros.</li>'+
+      '<li><b>Faille</b> — étages infinis, défis quotidiens, succès. C\'est là qu\'on farme sans limite.</li>'+
+      '<li>Chaque mission se rejoue en <b>Normal, Héroïque et Légendaire</b> : trois étoiles par mission.</li>'+
+      '<li>Si une mission te résiste, réessaie : les Pierres te renforcent à chaque échec.</li>'+
+    '</ul>'+
+  '</div></div>';
+  ov.classList.add("on");
+  document.getElementById("help-close").onclick=function(){ov.classList.remove("on");};
+}
+function installHelpUI(){
+  var lb=document.querySelector("#screen-hub .lives-box");
+  if(lb&&!document.getElementById("btn-help")){
+    var b=document.createElement("button");
+    b.className="btn btn-sm";b.id="btn-help";b.style.cssText="margin-top:4px;font-size:9px;padding:3px 8px";
+    b.textContent="? COMMENT JOUER";b.onclick=openHelp;lb.appendChild(b);
+  }
+}
+var _helpBuildHub=buildHub;
+buildHub=function(){_helpBuildHub();installHelpUI();};
+
+
+// ---------------------------------------------------------------------
+// Narrations : bouton PASSER visible, apparition plus rapide, clic immédiat
+// ---------------------------------------------------------------------
+var _baseShowNarration=showNarration;
+showNarration=function(lines,cb,label){
+  _baseShowNarration(lines,cb,label);
+  var sc=document.getElementById("screen-narration");
+  var done=false;
+  var go=function(){if(done)return;done=true;sc.onclick=null;if(cb)cb();};
+  sc.onclick=go;                       // plus d'attente d'une seconde
+  var el=sc.querySelectorAll(".narr-line");
+  el.forEach(function(l,i){setTimeout(function(){l.classList.add("visible");},120+i*260);});
+  var btn=document.getElementById("narr-skip");
+  if(!btn){btn=document.createElement("button");btn.id="narr-skip";btn.className="narr-skip";sc.appendChild(btn);}
+  btn.textContent="PASSER ▸";
+  btn.onclick=function(e){e.stopPropagation();go();};
+};
 
 
 // ===== INIT =====
