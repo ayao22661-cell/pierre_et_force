@@ -3598,6 +3598,7 @@ body::after{
 .mission-card .m-status{align-self:flex-start;}
 .mission-card .m-name{white-space:normal!important;overflow-wrap:anywhere;max-width:calc(100% - 84px);}
 .mission-card .m-status{top:10px!important;right:10px!important;}
+.slot-b .sure{background:#ef4444!important;color:#fff!important;border-color:#ef4444!important;}
 
 </style>
 </head>
@@ -4786,7 +4787,7 @@ var BASE_CHAMPIONS = {
   TARINE:{
     id:"tarine", key:"TARINE", name:"Tarine Keïta", title:"L'Éveillé de Marcory", role:"DUELLISTE",
     roleColor:"#1a4a20", roleText:"#39FF7A", img:"TARINE.png",
-    hp:850, maxHp:850, atk:95, def:60,
+    hp:1050, maxHp:1050, atk:110, def:70,
     abilities:[
       {key:"Z",name:"Onde d'Éveil",desc:"Bourrasque d'énergie",dmg:120,cd:3,curCd:0},
       {key:"X",name:"Chaleur Ancestrale",desc:"Frappe concentrée ×2",dmg:180,cd:6,curCd:0},
@@ -4797,7 +4798,7 @@ var BASE_CHAMPIONS = {
   SAM:{
     id:"sam", key:"SAM", name:"Sam Grün", title:"Le Passeur", role:"MAGE",
     roleColor:"#0d2833", roleText:"#16c8bd", img:"sam.svg",
-    hp:760, maxHp:760, atk:105, def:65,
+    hp:940, maxHp:940, atk:120, def:75,
     abilities:[
       {key:"Z",name:"Seuil Ouvert",desc:"Faille d'essence",dmg:115,cd:3,curCd:0},
       {key:"X",name:"Ce Que Tu Es",desc:"Révèle et frappe",dmg:170,cd:6,curCd:0},
@@ -4808,7 +4809,7 @@ var BASE_CHAMPIONS = {
   KAREN:{
     id:"karen", key:"KAREN", name:"Karen Keïta", title:"La Sentinelle", role:"SOUTIEN",
     roleColor:"#0a1a3a", roleText:"#378ADD", img:"KarenKeïta.png",
-    hp:680, maxHp:680, atk:55, def:80,
+    hp:860, maxHp:860, atk:65, def:95,
     abilities:[
       {key:"Z",name:"Main Tranquille",desc:"Soin allié",heal:120,cd:5,curCd:0},
       {key:"X",name:"Regard Absolu",desc:"Ralentit l'ennemi",dmg:60,cd:5,curCd:0},
@@ -4819,7 +4820,7 @@ var BASE_CHAMPIONS = {
   FULGENCE:{
     id:"fulgence", key:"FULGENCE", name:"Fulgence", title:"Le Roc de Marcory", role:"TANK",
     roleColor:"#1a0a3a", roleText:"#7F77DD", img:"Fulgence.png",
-    hp:1200, maxHp:1200, atk:70, def:120,
+    hp:1500, maxHp:1500, atk:82, def:145,
     abilities:[
       {key:"Z",name:"Corps Interposé",desc:"Aura défensive",heal:60,cd:5,curCd:0},
       {key:"X",name:"Grip de Marcory",desc:"Frappe immobilisante",dmg:90,cd:5,curCd:0},
@@ -4830,7 +4831,7 @@ var BASE_CHAMPIONS = {
   BABA:{
     id:"baba", key:"BABA_TUNDE", name:"Baba Tunde", title:"Seigneur de la Cour", role:"ASSASSIN",
     roleColor:"#3a0a0a", roleText:"#D85A30", img:"BabaTunde.png",
-    hp:720, maxHp:720, atk:130, def:45,
+    hp:900, maxHp:900, atk:150, def:55,
     abilities:[
       {key:"Z",name:"Mot qui Blesse",desc:"Réduit la défense",dmg:100,cd:3,curCd:0},
       {key:"X",name:"Sourire de Victoire",desc:"Étourdit et frappe",dmg:160,cd:6,curCd:0},
@@ -4841,7 +4842,7 @@ var BASE_CHAMPIONS = {
   LUNDGREN:{
     id:"lundgren", key:"LUNDGREN", name:"Lundgren", title:"Le Passeur de Pierres", role:"MAGE",
     roleColor:"#0a1a2a", roleText:"#B5D4F4", img:"Lundgren.png",
-    hp:780, maxHp:780, atk:140, def:55,
+    hp:970, maxHp:970, atk:160, def:65,
     abilities:[
       {key:"Z",name:"Yeux de Glace",desc:"Pétrifie un ennemi",dmg:110,cd:4,curCd:0},
       {key:"X",name:"Bougainvillier",desc:"Disparaît et frappe",dmg:130,cd:7,curCd:0},
@@ -4852,7 +4853,7 @@ var BASE_CHAMPIONS = {
   DARK:{
     id:"dark", key:"DARK", name:"Dark", title:"L'Enfant de l'Abîme", role:"ASSASSIN",
     roleColor:"#0d0010", roleText:"#C084FC", img:"dark.png",
-    hp:620, maxHp:620, atk:175, def:35,
+    hp:800, maxHp:800, atk:200, def:45,
     abilities:[
       {key:"Z",name:"Lame d'Ombre",desc:"Lame de magie noire",dmg:120,cd:3,curCd:0},
       {key:"X",name:"Voile Maudit",desc:"Enveloppe de ténèbres",dmg:145,cd:6,curCd:0},
@@ -6464,7 +6465,7 @@ var CAMPAIGN = [
 // Ajuste ces deux valeurs pour changer le rythme : nombre de vies max et minutes pour regagner 1 vie.
 // Ex: LIFE_REGEN_MINUTES=1 → régénération à la minute (test) ; 60 → une vie par heure.
 var LIFE_MAX=5;
-var LIFE_REGEN_MINUTES=20;  // 20 minutes pour regagner une vie
+var LIFE_REGEN_MINUTES=10;  // 10 minutes pour regagner une vie
 var LIFE_REGEN_MS=LIFE_REGEN_MINUTES*60*1000;
 
 function defaultSave(){
@@ -7362,9 +7363,9 @@ var RARITY=[
   {id:3,name:"Légendaire",mult:3.8,color:"#fbbf24"}
 ];
 var DIFFS=[
-  {id:0,name:"Normal",mult:0.78,ai:0.32,xp:1,cauris:1},
-  {id:1,name:"Héroïque",mult:1.12,ai:0.62,xp:1.6,cauris:1.9},
-  {id:2,name:"Légendaire",mult:1.45,ai:0.9,xp:2.4,cauris:3.2}
+  {id:0,name:"Normal",mult:0.55,ai:0.18,xp:1,cauris:1},
+  {id:1,name:"Héroïque",mult:0.82,ai:0.42,xp:1.6,cauris:1.9},
+  {id:2,name:"Légendaire",mult:1.10,ai:0.68,xp:2.4,cauris:3.2}
 ];
 var MASTERY_XP=[0,300,800,1500,2500,4000,6000,8500,11500,15000];
 var SKINS=[{lvl:0,name:"Tenue d'origine"},{lvl:4,name:"Tenue d'argent",tint:"#d8dee9"},{lvl:7,name:"Tenue d'or",tint:"#f5c542"},{lvl:10,name:"Tenue d'Essence",tint:"#c084fc"}];
@@ -8290,9 +8291,9 @@ function newMatch(cfg){
     affix:{},stats:{kills:0,deaths:0,towers:0,cs:0,ults:0,camps:0,healed:0,gold:0,penta:0},
     cam:{x:0,y:0,z:1},announceQ:[],feed:[],teamSize:1+cfg.allies.length};
   (cfg.affixes||[]).forEach(function(a){G.affix[a]=true;});
-  var power=cfg.floor?(0.95+cfg.floor*0.022):(0.80+num*0.008);
+  var power=cfg.floor?(0.90+cfg.floor*0.018):(0.72+num*0.006);
   power*=diff.mult;
-  G.foeMult=power;G.minionMult=0.9+(power-1)*0.8;G.towerMult=0.9+(power-1)*0.6;G.monsterMult=0.9+(power-1)*0.5;
+  G.foeMult=power;G.minionMult=0.85+(power-1)*0.65;G.towerMult=0.85+(power-1)*0.5;G.monsterMult=0.85+(power-1)*0.4;
   G.bossHpMult=1;
   G.aiSkill=clamp(diff.ai+(cfg.floor?cfg.floor*0.006:num*0.003),0.25,1);
   if(G.mode==="siege")buildSiege();
@@ -8305,8 +8306,9 @@ function newMatch(cfg){
   var pb=playerBonus(cfg.champ);
   // coup de pouce : le joueur humain n'a pas la précision d'une IA, et l'aide
   // adaptative s'ajoute après plusieurs échecs sur la même mission
-  if(diff.id===0){pb.hpP=(pb.hpP||0)+0.12;pb.atkP=(pb.atkP||0)+0.08;}
-  if(cfg.assist){pb.hpP=(pb.hpP||0)+cfg.assist;pb.atkP=(pb.atkP||0)+cfg.assist*0.7;pb.armF=(pb.armF||0)+cfg.assist*30;}
+  if(diff.id===0){pb.hpP=(pb.hpP||0)+0.30;pb.atkP=(pb.atkP||0)+0.20;}
+  if(diff.id===1){pb.hpP=(pb.hpP||0)+0.12;pb.atkP=(pb.atkP||0)+0.08;}
+  if(cfg.assist){pb.hpP=(pb.hpP||0)+cfg.assist;pb.atkP=(pb.atkP||0)+cfg.assist*0.9;pb.armF=(pb.armF||0)+cfg.assist*50;}
   var player=makeChamp(cfg.champ,0,{player:true,bonus:pb,skin:skinFor(cfg.champ).tint||null});
   G.player=player;
   var allyBonus={hpP:(pb.hpP||0)*0.5,atkP:(pb.atkP||0)*0.5};
@@ -10562,7 +10564,7 @@ function missionCfg(m,diffK,champ,allies){
   if(!pool.length)pool=["DARK"];
   return{mode:mode,champ:champ,allies:allies,foes:pool,foeCount:foeCount,boss:af.boss,diff:diffK,num:m.num,acteIdx:ai,
     themeIdx:ai%THEMES.length,affixes:pickAffixes(m.id+":"+diffK,diffK),
-    assist:Math.min(0.36,((save.fails||{})[m.id+":"+diffK]||0)*0.12)};
+    assist:Math.min(0.54,((save.fails||{})[m.id+":"+diffK]||0)*0.18)};
 }
 function failleCfg(floor,champ,allies){
   var mode=floor%5===0?"boss":["arena","siege","defense","siege"][floor%4];
@@ -10624,7 +10626,7 @@ function finishMatch(){
       save.fails=save.fails||{};
       var fk=mission.id+":"+diff.id;
       if(!g.abandon)save.fails[fk]=Math.min(3,(save.fails[fk]||0)+1);
-      R.assist=Math.min(0.36,(save.fails[fk]||0)*0.12);
+      R.assist=Math.min(0.54,(save.fails[fk]||0)*0.18);
     }
   }else{ // Faille
     var f=g.floor;
@@ -11216,10 +11218,20 @@ function openSlots(){
     b.onclick=function(){
       var i=+b.dataset.i;
       if(b.dataset.act==="del"){
-        if(!confirm("Effacer définitivement l'emplacement "+i+" ?"))return;
+        // confirmation en deux temps : window.confirm est bloqué dans certaines applis
+        if(b.dataset.sure!=="1"){
+          b.dataset.sure="1";b.textContent="CONFIRMER ?";b.classList.add("sure");
+          clearTimeout(b._t);b._t=setTimeout(function(){b.dataset.sure="";b.textContent="EFFACER";b.classList.remove("sure");},4000);
+          return;
+        }
         try{localStorage.removeItem(slotKey(i));}catch(e){}
-        if(curSlot()===i)useSlot(i,true);
-        openSlots();initTitle();return;
+        if(curSlot()===i){
+          // on vide la partie en mémoire SANS réécrire : l'emplacement doit rester vide
+          save=defaultSave();migrateSave();refreshQuests();syncLives();
+        }
+        openSlots();initTitle();
+        hubToast("Emplacement "+i+" effacé");
+        return;
       }
       var fresh=!readSlot(i);
       useSlot(i,fresh);
