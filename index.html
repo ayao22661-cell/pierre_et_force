@@ -7661,7 +7661,7 @@ function recalc(u,full){
   u.ah=it.ah+(b.ah||0);
   u.ls=it.ls+(b.ls||0)+(u.key==="DARK"?0.12:0)+(G&&G.affix.vampire&&u.team===1?0.1:0);
   u.crit=Math.min(1,it.crit+(b.crit||0));
-  u.regen=(2+u.lvl*0.4+it.regen+(b.regen||0)+(b.regenF||0))*(u.isBoss?0:1);
+  u.regen=(2+u.lvl*0.4+it.regen+(b.regen||0)+(b.regenF||0))*(u.isBoss?0.15:1);
   u.manaRegen=4+u.lvl*0.5;
   u.pen=it.pen;u.thorns=it.thorns+(b.thornsF||0);
   if(full){u.hp=u.maxHp;u.mana=u.maxMana;}
@@ -7958,12 +7958,12 @@ function castAbility(u,i,tx,ty,tu){
   if(!canCast(u,i))return false;
   var ab=u.d.abil[i],r=u.ranks[i];
   var cdr=u.ah/(u.ah+100);
-  u.cds[i]=rv(ab.cd,r)*(1-cdr)*(u.isBoss?0.6:1);
+  u.cds[i]=rv(ab.cd,r)*(1-cdr);  // cooldowns normaux pour le boss
   if(!u.isBoss)u.mana-=ab.cost;
   u.recall=0;
   var dmg=ab.dmg?rv(ab.dmg,r)+(ab.ratio||0)*u.atk:0;
   if(ab.ult&&u.bonus.ultDmg)dmg*=1+u.bonus.ultDmg;
-  if(u.isBoss)dmg*=1.2;
+  // Plus de bonus de dégâts ×1.2 pour le boss
   var ang=Math.atan2(ty-u.y,tx-u.x);
   if(!isFinite(ang))ang=u.face>0?0:Math.PI;
   var dx=Math.cos(ang),dy=Math.sin(ang);
@@ -9071,7 +9071,7 @@ function aiBoss(u){
   if(u.team===1){
     var foes=G.units.filter(function(o){return o.team===0&&o.kind==="champ"&&!o.dead;});
     var t=foes.sort(function(a,b){return dist2(u.x,u.y,a.x,a.y)-dist2(u.x,u.y,b.x,b.y);})[0];
-    if(u.isBoss&&G.time%12<4&&foes.length>1)t=foes.sort(function(a,b){return a.hp-b.hp;})[0];
+    // Le boss cible normalement (pas de priorité sur le joueur le plus faible)
     u.target=t||null;u.moveGoal=t?null:{x:G.cx,y:G.cy};
     if(t)aiUseAbilities(u,t,foes);
     return;
