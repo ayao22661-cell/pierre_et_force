@@ -298,9 +298,9 @@ var RARITY=[
   {id:3,name:"Légendaire",mult:3.8,color:"#fbbf24"}
 ];
 var DIFFS=[
-  {id:0,name:"Normal",mult:1,ai:0.45,xp:1,cauris:1},
-  {id:1,name:"Héroïque",mult:1.3,ai:0.7,xp:1.5,cauris:1.8},
-  {id:2,name:"Légendaire",mult:1.65,ai:0.95,xp:2.2,cauris:3}
+  {id:0,name:"Normal",mult:0.78,ai:0.32,xp:1,cauris:1},
+  {id:1,name:"Héroïque",mult:1.12,ai:0.62,xp:1.6,cauris:1.9},
+  {id:2,name:"Légendaire",mult:1.45,ai:0.9,xp:2.4,cauris:3.2}
 ];
 var MASTERY_XP=[0,300,800,1500,2500,4000,6000,8500,11500,15000];
 var SKINS=[{lvl:0,name:"Tenue d'origine"},{lvl:4,name:"Tenue d'argent",tint:"#d8dee9"},{lvl:7,name:"Tenue d'or",tint:"#f5c542"},{lvl:10,name:"Tenue d'Essence",tint:"#c084fc"}];

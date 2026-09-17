@@ -662,12 +662,14 @@ function missionCfg(m,diffK,champ,allies){
   var af=ACTE_FOES[ai%ACTE_FOES.length];
   var mode=modeForMission(m);
   var ts=1+allies.length;
-  var foeCount=ts+(diffK===2?1:0)+(mode==="defense"?2:0)+(mode==="arena"&&m.ennemis_extra>2?1:0);
+  var foeCount=ts+(diffK===2?1:0)+(mode==="defense"?(diffK===0?1:2):0)+(mode==="arena"&&m.ennemis_extra>2&&diffK>0?1:0);
+  if(diffK===0&&m.num<=5)foeCount=Math.max(1,foeCount-1); // les premières missions restent douces
   foeCount=clamp(foeCount,1,mode==="defense"?6:5);
   var pool=af.pool.filter(function(k){return CHAMPS[k];});
   if(!pool.length)pool=["DARK"];
   return{mode:mode,champ:champ,allies:allies,foes:pool,foeCount:foeCount,boss:af.boss,diff:diffK,num:m.num,acteIdx:ai,
-    themeIdx:ai%THEMES.length,affixes:pickAffixes(m.id+":"+diffK,diffK)};
+    themeIdx:ai%THEMES.length,affixes:pickAffixes(m.id+":"+diffK,diffK),
+    assist:Math.min(0.36,((save.fails||{})[m.id+":"+diffK]||0)*0.12)};
 }
 function failleCfg(floor,champ,allies){
   var mode=floor%5===0?"boss":["arena","siege","defense","siege"][floor%4];
@@ -708,6 +710,7 @@ function finishMatch(){
       R.cauris=Math.round(base*diff.cauris*k*perf);
       R.mxp=Math.round((120+mission.num*6)*diff.xp);
       d[diff.id]=true;
+      if(save.fails)delete save.fails[mission.id+":"+diff.id];
       var luck=diff.id*0.25+(R.first?0.3:0)+(g.mode==="boss"?0.35:0);
       if(Math.random()<(R.first?0.8:0.25)+diff.id*0.1)R.relic=rollRelic(luck);
       if(!isMissionDone(mission.id)){
@@ -725,6 +728,10 @@ function finishMatch(){
       refundLife();
     }else{
       R.xp=Math.round(base*0.3*diff.xp);R.cauris=Math.round(base*0.2);R.mxp=Math.round(40*diff.xp);
+      save.fails=save.fails||{};
+      var fk=mission.id+":"+diff.id;
+      if(!g.abandon)save.fails[fk]=Math.min(3,(save.fails[fk]||0)+1);
+      R.assist=Math.min(0.36,(save.fails[fk]||0)*0.12);
     }
   }else{ // Faille
     var f=g.floor;
@@ -785,6 +792,7 @@ function showResults(res){
   if(res.skin)h+='<div class="reward-unlock">✦ Nouvelle tenue : '+res.skin.name+'</div>';
   if(res.unlockTxt)h+='<div class="reward-unlock">✦ '+esc(res.unlockTxt)+'</div>';
   res.ach.forEach(function(a){h+='<div class="reward-unlock">🏆 Succès : '+esc(a.name)+' (+250 🐚)</div>';});
+  if(R.assist)h+='<div class="reward-unlock">✦ Renfort des Pierres : +'+Math.round(R.assist*100)+'% de PV et de dégâts au prochain essai</div>';
   if(meta.kind==="mission")h+=rsRow("Étoiles de campagne",totalStars()+" / "+totalMissionsCount()*3);
   else h+=rsRow("Record de la Faille","étage "+save.faille.best);
   h+=rsRow("Contenu terminé",contentProgress()+" %");

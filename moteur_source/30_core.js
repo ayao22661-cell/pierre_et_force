@@ -275,6 +275,7 @@ function killUnit(t,src){
     var base=t.isBoss?0:Math.round(7+t.lvl*1.8);
     t.respawnT=G.mode==="arena"?5+t.lvl*0.4:base;
     if(t.isPlayer&&t.bonus.respawn)t.respawnT*=1-t.bonus.respawn;
+    if(t.isPlayer&&G.diff.id===0)t.respawnT*=0.7;
     if(G.mode==="boss"&&t.team===0)t.respawnT=12;
     var assists=[];
     for(var id in t.lastHitBy){
@@ -697,11 +698,11 @@ function newMatch(cfg){
     affix:{},stats:{kills:0,deaths:0,towers:0,cs:0,ults:0,camps:0,healed:0,gold:0,penta:0},
     cam:{x:0,y:0,z:1},announceQ:[],feed:[],teamSize:1+cfg.allies.length};
   (cfg.affixes||[]).forEach(function(a){G.affix[a]=true;});
-  var power=cfg.floor?(0.95+cfg.floor*0.022):(0.9+num*0.01);
+  var power=cfg.floor?(0.95+cfg.floor*0.022):(0.80+num*0.008);
   power*=diff.mult;
   G.foeMult=power;G.minionMult=0.9+(power-1)*0.8;G.towerMult=0.9+(power-1)*0.6;G.monsterMult=0.9+(power-1)*0.5;
   G.bossHpMult=1;
-  G.aiSkill=clamp(diff.ai+(cfg.floor?cfg.floor*0.006:num*0.004),0.3,1);
+  G.aiSkill=clamp(diff.ai+(cfg.floor?cfg.floor*0.006:num*0.003),0.25,1);
   if(G.mode==="siege")buildSiege();
   else if(G.mode==="arena")buildArena();
   else if(G.mode==="defense")buildDefense();
@@ -710,6 +711,10 @@ function newMatch(cfg){
 
   // Équipe alliée
   var pb=playerBonus(cfg.champ);
+  // coup de pouce : le joueur humain n'a pas la précision d'une IA, et l'aide
+  // adaptative s'ajoute après plusieurs échecs sur la même mission
+  if(diff.id===0){pb.hpP=(pb.hpP||0)+0.12;pb.atkP=(pb.atkP||0)+0.08;}
+  if(cfg.assist){pb.hpP=(pb.hpP||0)+cfg.assist;pb.atkP=(pb.atkP||0)+cfg.assist*0.7;pb.armF=(pb.armF||0)+cfg.assist*30;}
   var player=makeChamp(cfg.champ,0,{player:true,bonus:pb,skin:skinFor(cfg.champ).tint||null});
   G.player=player;
   var allyBonus={hpP:(pb.hpP||0)*0.5,atkP:(pb.atkP||0)*0.5};
@@ -726,7 +731,7 @@ function newMatch(cfg){
     team1.push(fu);
   }
   if(G.mode==="boss"){
-    G.bossHpMult=5+G.teamSize*1.6;
+    G.bossHpMult=(3.4+G.teamSize*1.1)*(diff.id===0?0.85:1);
     var bk=cfg.boss;
     var boss=makeChamp(bk,1,{skill:Math.min(1,G.aiSkill+0.1),mult:power,boss:true});
     boss.ranks=[5,5,5,3];boss.lvl=Math.min(18,6+Math.floor(num/3));recalc(boss,true);
