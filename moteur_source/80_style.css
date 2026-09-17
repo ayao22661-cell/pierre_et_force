@@ -293,3 +293,62 @@
 .slot-tag{font-size:8px;background:var(--hex-gold);color:#2b1400;border-radius:6px;padding:1px 5px;vertical-align:middle;}
 .slot-b{display:flex;flex-direction:column;gap:4px;}
 #slot-over{position:fixed;inset:0;z-index:300;}
+/* coach d'apprentissage */
+.mv-coach{position:absolute;left:8px;right:8px;bottom:calc(env(safe-area-inset-bottom,0px) + 268px);background:rgba(10,6,22,.94);
+  border:1px solid var(--hex-gold);border-radius:14px;padding:10px 12px;opacity:0;transform:translateY(10px);transition:.3s;pointer-events:none;}
+.mv-coach.on{opacity:1;transform:none;pointer-events:auto;}
+.mv-coach.ok{border-color:#6dffa8;box-shadow:0 0 22px rgba(109,255,168,.45);}
+.mv-coach-h{display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;}
+.mv-coach-h b{font-size:9px;letter-spacing:2px;color:var(--hex-gold-bright);}
+.mv-coach-h button{background:none;border:none;color:var(--hex-text-dim);font-size:10px;text-decoration:underline;}
+.mv-coach p{font-size:12px;color:#f0e6ff;line-height:1.45;}
+/* menace au déploiement */
+.dp-threat{margin-top:8px;border-radius:10px;padding:6px 10px;border-left:3px solid;}
+.dp-threat b{font-size:12px;display:block;}
+.dp-threat small{font-size:10px;color:#cbbde0;}
+.dp-threat.t0{border-color:#22c55e;background:rgba(34,197,94,.1);} .dp-threat.t0 b{color:#6dffa8;}
+.dp-threat.t1{border-color:#f59e0b;background:rgba(245,158,11,.1);} .dp-threat.t1 b{color:#fbbf24;}
+.dp-threat.t2{border-color:#f97316;background:rgba(249,115,22,.12);} .dp-threat.t2 b{color:#ffa34d;}
+.dp-threat.t3{border-color:#ef4444;background:rgba(239,68,68,.12);} .dp-threat.t3 b{color:#ff8497;}
+/* panneau d'aide */
+.hlp h4{color:var(--hex-gold-light);font-size:12px;letter-spacing:1px;margin:10px 0 4px;}
+.hlp p{font-size:12px;color:#d8cbee;line-height:1.5;margin-bottom:6px;}
+.hlp ul{margin:0 0 6px 16px;}
+.hlp li{font-size:12px;color:#cbbde0;line-height:1.5;margin-bottom:3px;}
+.hlp b{color:#fff;}
+/* --- allègement : hub --- */
+.hub-play{display:flex;align-items:center;gap:8px;background:linear-gradient(135deg,rgba(124,58,237,.22),rgba(10,6,20,.6));
+  border:1px solid var(--hex-border-glow);border-radius:14px;padding:10px 12px;margin-bottom:12px;}
+.hp-i{flex:1;min-width:0;}
+.hp-i small{display:block;font-size:9px;letter-spacing:2px;color:var(--hex-gold-bright);}
+.hp-i b{display:block;font-size:14px;color:#fff;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+#hub-play-go{padding:8px 18px;}
+.hub-menu-btn{margin-top:4px;width:30px;height:26px;border-radius:8px;background:rgba(255,255,255,.06);
+  border:1px solid var(--hex-border);color:#d8cbee;font-size:13px;float:right;}
+.hm-b{display:block;width:100%;margin-bottom:8px;text-align:left;}
+/* --- allègement : combat --- */
+.mv-obj{transition:opacity .6s;}
+#mv-mini{width:88px;height:66px;}
+.mv-pill{font-size:10px;padding:3px 9px;opacity:.85;}
+.mv-inv i{width:18px;height:18px;line-height:18px;font-size:11px;}
+/* --- narration --- */
+.narr-skip{position:absolute;right:14px;top:calc(env(safe-area-inset-top,0px) + 12px);z-index:30;
+  background:rgba(10,6,22,.85);border:1px solid var(--hex-border-glow);color:#e8dcff;border-radius:16px;
+  padding:6px 14px;font-size:10px;letter-spacing:2px;}
+/* --- en-tête du hub : une seule ligne, rien qui déborde --- */
+#screen-hub .hub-header{display:flex!important;align-items:center;gap:8px;padding:8px 10px!important;}
+#screen-hub .hub-header>div:first-child{min-width:0;flex:0 0 auto;max-width:42%;}
+#screen-hub .hub-acte{font-size:9px!important;letter-spacing:2px;}
+#screen-hub .hub-titre{font-size:15px!important;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;line-height:1.1;}
+#screen-hub .lives-box{flex:1;min-width:0;display:flex;align-items:center;justify-content:flex-end;gap:8px;padding:6px 8px!important;}
+#screen-hub .lives-box>div[style]{display:none!important;}
+#screen-hub .lives-timer{font-size:9px;}
+.hub-cauris{margin:0;white-space:nowrap;}
+.hub-menu-btn{margin:0;float:none;flex:0 0 auto;}
+#btn-slots-hub,#btn-help{display:none!important;}
+#screen-hub .hub-titre{max-width:150px;}
+.mission-card .m-info{flex:1;min-width:0;}
+.mission-card .m-name{overflow-wrap:anywhere;padding-right:4px;}
+.mission-card .m-status{align-self:flex-start;}
+.mission-card .m-name{white-space:normal!important;overflow-wrap:anywhere;max-width:calc(100% - 84px);}
+.mission-card .m-status{top:10px!important;right:10px!important;}

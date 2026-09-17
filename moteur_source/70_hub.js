@@ -92,7 +92,7 @@ function renderDeploy(){
   if(cfg.mode==="boss")foes=[cfg.boss].concat(foes.slice(0,Math.max(0,cfg.allies.length)));
   var power=Math.round((cfg.floor?(0.95+cfg.floor*0.022):(0.9+cfg.num*0.01))*DIFFS[cfg.diff].mult*100);
   el.innerHTML=foes.map(function(k,i){var c=CHAMPS[k];return '<div class="enemy-preview"><img src="'+champPortrait(k)+'" alt="">'+(cfg.mode==="boss"&&i===0?"👑 ":"")+esc(c?c.name:k)+' <span class="enemy-lvl">'+(c?c.role:"")+'</span></div>';}).join("")+
-    '<div class="dp-power">Puissance ennemie : <b>'+power+' %</b> · ta puissance : <b>'+Math.round(playerPowerPct(DEPLOY.champ))+' %</b></div>';
+    threatLine(power,cfg);
   // alliés
   var grid=document.getElementById("deploy-grid");
   var pool=allyPool(),req=isF?[]:(m.allies_requis||[]);
@@ -118,6 +118,16 @@ function renderDeploy(){
   btn.textContent=isF?"DESCENDRE DANS LA FAILLE":"ENTRER EN COMBAT";
   document.getElementById("no-lives-msg").style.display=(!isF&&save.lives<=0)?"block":"none";
 }
+function threatLine(power,cfg){
+  var mine=playerPowerPct(DEPLOY.champ)+(cfg.diff===0?12:0);
+  var r=power/mine*(cfg.foeCount/(1+DEPLOY.allies.length));
+  var lab,cls,txt;
+  if(r<0.75){lab="FACILE";cls="t0";txt="Tu domines nettement ce combat.";}
+  else if(r<1.05){lab="ABORDABLE";cls="t1";txt="Combat équilibré : joue derrière tes sbires.";}
+  else if(r<1.45){lab="RUDE";cls="t2";txt="Ils sont plus forts : farme, achète, puis engage.";}
+  else{lab="REDOUTABLE";cls="t3";txt="Reviens avec plus de talents, de reliques ou d'alliés.";}
+  return '<div class="dp-threat '+cls+'"><b>Menace : '+lab+'</b><small>'+txt+'</small></div>';
+}
 function playerPowerPct(k){
   var b=playerBonus(k);
   return 100*(1+(b.hpP||0)*0.5+(b.atkP||0)*0.5+((b.hp||0)/1500)+((b.atk||0)/120)+((b.armF||0)+(b.arm||0))/300);
@@ -131,6 +141,7 @@ function launchFromDeploy(){
   var m=DEPLOY.m;if(!m)return;
   if(!consumeLife()){updateLivesUI();hubToast("Plus de vies — une victoire te rend ta vie. Reviens bientôt ou tente la Faille.");renderDeploy();return;}
   updateLivesUI();
+  save.lastAllies=DEPLOY.allies.slice();save.lastChamp=DEPLOY.champ;writeSave(save);
   var cfg=missionCfg(m,DEPLOY.diff,DEPLOY.champ,DEPLOY.allies.slice());
   var meta={kind:"mission",m:m,title:m.num+". "+m.name};
   var firstTime=!(save.diff[m.id]||[])[DEPLOY.diff];
@@ -301,9 +312,13 @@ function installHubV3(){
   // bouton de lancement : on remplace l'ancien gestionnaire
   var old=document.getElementById("btn-launch");
   if(old&&!old.dataset.v3){var nb=old.cloneNode(true);nb.dataset.v3="1";old.parentNode.replaceChild(nb,old);nb.addEventListener("click",launchFromDeploy);}
-  // compteur de cauris dans l'en-tête
+  // en-tête compact : cauris + un seul bouton menu
   var lb=document.querySelector("#screen-hub .lives-box");
   if(lb&&!document.getElementById("hub-cauris")){var c=document.createElement("div");c.id="hub-cauris";c.className="hub-cauris";lb.appendChild(c);}
+  if(lb&&!document.getElementById("hub-menu-btn")){
+    var mb=document.createElement("button");mb.id="hub-menu-btn";mb.className="hub-menu-btn";mb.textContent="☰";
+    mb.onclick=openHubMenu;lb.appendChild(mb);
+  }
   if(!document.getElementById("hub-toast")){var t=document.createElement("div");t.id="hub-toast";document.body.appendChild(t);}
   var bs=document.getElementById("btn-start");
   if(bs)bs.addEventListener("click",function(){migrateSave();refreshQuests();writeSave(save);});
@@ -314,11 +329,52 @@ function installHubV3(){
 // filet de sécurité : une sauvegarde neuve doit toujours porter les champs v3
 var _basePlayerBonus=playerBonus;
 playerBonus=function(k){migrateSave();return _basePlayerBonus(k);};
+function openHubMenu(){
+  var ov=document.getElementById("hubmenu-over");
+  if(!ov){ov=document.createElement("div");ov.id="hubmenu-over";ov.className="mv-over";document.body.appendChild(ov);}
+  ov.innerHTML='<div class="mv-panel"><div class="mv-ph"><b>MENU</b><button class="mv-x" id="hm-x">✕</button></div>'+
+    '<button class="btn hm-b" id="hm-help">? Comment jouer</button>'+
+    '<button class="btn hm-b" id="hm-slots">Parties sauvegardées (empl. '+curSlot()+')</button>'+
+    '<button class="btn hm-b" id="hm-title">Écran titre</button></div>';
+  ov.classList.add("on");
+  var close=function(){ov.classList.remove("on");};
+  document.getElementById("hm-x").onclick=close;
+  document.getElementById("hm-help").onclick=function(){close();openHelp();};
+  document.getElementById("hm-slots").onclick=function(){close();openSlots();};
+  document.getElementById("hm-title").onclick=function(){close();goTo("screen-title");initTitle();};
+}
+// mission suivante à jouer : première non terminée, sinon la dernière ouverte
+function nextMission(){
+  var all=[],prev=null;
+  CAMPAIGN.forEach(function(a){a.missions.forEach(function(m){all.push(m);});});
+  for(var i=0;i<all.length;i++){if(!isMissionDone(all[i].id))return all[i];prev=all[i];}
+  return prev||all[0];
+}
+function quickPlay(){
+  var m=nextMission();
+  DEPLOY.kind="mission";DEPLOY.m=m;DEPLOY.diff=0;
+  DEPLOY.champ=championUnlocked(save.lastChamp)?save.lastChamp:"TARINE";
+  var mem=(save.lastAllies||[]).filter(function(k){return championUnlocked(k)&&k!==DEPLOY.champ;});
+  var pool=(m.allies_dispo||[]).concat(m.allies_requis||[]).filter(function(k){return CHAMPS[k]&&championUnlocked(k)&&k!==DEPLOY.champ;});
+  DEPLOY.allies=(isMissionDone(m.id)?mem:pool).slice(0,2);
+  if(!DEPLOY.allies.length)DEPLOY.allies=pool.slice(0,2);
+  launchFromDeploy();
+}
 var _baseBuildHub=buildHub;
 buildHub=function(){
   migrateSave();refreshQuests();
   var nw=checkAchievements();
   _baseBuildHub();
+  // bandeau JOUER : une seule touche pour repartir au combat
+  var mp=document.getElementById("panel-missions");
+  var m0=nextMission();
+  var bar=document.getElementById("hub-play");
+  if(!bar){bar=document.createElement("div");bar.id="hub-play";bar.className="hub-play";mp.insertBefore(bar,mp.firstChild);}
+  bar.innerHTML='<div class="hp-i"><small>'+(isMissionDone(m0.id)?"REJOUER":"MISSION "+m0.num)+'</small><b>'+esc(m0.name)+'</b></div>'+
+    '<button class="btn btn-primary" id="hub-play-go">JOUER</button>'+
+    '<button class="btn btn-sm" id="hub-play-team">Équipe</button>';
+  document.getElementById("hub-play-go").onclick=quickPlay;
+  document.getElementById("hub-play-team").onclick=function(){openDeploy(m0.id);};
   // cartes de mission : étoiles, mode, boss
   var cards=document.querySelectorAll("#hub-missions .mission-card"),idx=0;
   CAMPAIGN.forEach(function(a){a.missions.forEach(function(m){

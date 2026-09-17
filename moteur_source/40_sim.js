@@ -55,7 +55,7 @@ function updateUnits(dt){
       if(u.spells.saut>0)u.spells.saut-=dt;if(u.spells.soin>0)u.spells.soin-=dt;
       u.hp=Math.min(u.maxHp,u.hp+u.regen*dt);
       u.mana=Math.min(u.maxMana,u.mana+u.manaRegen*dt);
-      u.gold+=2.4*dt*(u.team===1&&u.ai?1.1:1);
+      u.gold+=2.4*dt*(u.team===1&&u.ai?(G.diff.id===0?0.75:1.1):1);
       // fontaine
       var f=G.fount[u.team];
       if(f&&dist2(u.x,u.y,f.x,f.y)<380*380){u.hp=Math.min(u.maxHp,u.hp+u.maxHp*0.12*dt);u.mana=Math.min(u.maxMana,u.mana+u.maxMana*0.12*dt);u.atFount=true;}else u.atFount=false;
@@ -518,8 +518,13 @@ function aiLane(u){
     G.units.forEach(function(t){if(t.kind==="tower"&&!t.dead&&t.team===u.team){if(!myT||(t.x-myT.x)*dir>0)myT=t;}});
     gx=myT?myT.x+dir*60:G.fount[u.team].x+dir*300;
   }
+  // pression : au bout de quelques minutes, l'Empire quitte sa moitié et vient au contact
+  if(u.team===1&&!front){
+    var press=(G.time>180?1:0)+(G.teamKills[1]>G.teamKills[0]?1:0);
+    if(press)gx=gx+dir*(180+press*160);
+  }
   var slot=(u.id%3-1)*70;
-  u.moveGoal={x:gx,y:laneY(gx)+slot};
+  u.moveGoal={x:clamp(gx,G.bx0,G.bx1),y:laneY(clamp(gx,G.bx0,G.bx1))+slot};
 }
 function aiArena(u){
   var e=G.units.filter(function(o){return o.kind==="champ"&&o.team!==u.team&&!o.dead;});

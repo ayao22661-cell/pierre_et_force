@@ -134,7 +134,7 @@ function buildGameDom(){
   '<div id="mv-joyzone"></div>'+
   '<div class="mv-hud">'+
     '<div class="mv-top">'+
-      '<div class="mv-pill" id="mv-kda">0 / 0 / 0</div>'+
+      '<div class="mv-pill" id="mv-kda"></div>'+
       '<div class="mv-score"><b class="a" id="mv-sa">0</b><span id="mv-time">00:00</span><b class="e" id="mv-se">0</b></div>'+
       '<button class="mv-ico" id="mv-pause" aria-label="Pause">❚❚</button>'+
     '</div>'+
@@ -224,6 +224,7 @@ function playerCast(i,tx,ty,tu){
     sfx("deny");return false;
   }
   var ok=castAbility(p,i,tx,ty,tu);
+  if(ok)G.coachCasts=(G.coachCasts||0)+1;
   if(ok){haptic(p.d.abil[i].ult?[20,30,40]:12);if(p.d.abil[i].type!=="dash")p.target=p.target&&!p.target.dead?p.target:null;}
   return ok;
 }
@@ -474,8 +475,10 @@ function openMenu(){
   h+='</table>';
   var aff=Object.keys(G.affix).map(function(a){var A=AFFIXES.filter(function(x){return x.id===a;})[0];return A?'<span class="mv-aff" title="'+esc(A.desc)+'">'+A.name+'</span>':"";}).join("");
   h+='<div class="mv-info"><b>'+esc(G.meta.title)+'</b> · '+MODE_INFO[G.mode].name+' · '+G.diff.name+(aff?'<div>'+aff+'</div>':'')+'<p>'+esc(G.objective)+'</p></div>';
+  h+='<button class="btn btn-sm" id="mv-help" style="margin-bottom:8px">? COMMENT JOUER</button>';
   h+='<div class="mv-keys">Clavier : ZQSD/WASD déplacer · clic gauche = aller/attaquer · Espace attaque · 1-4 capacités (vers la souris) · Ctrl+1-4 améliorer · F saut · H souffle · B repli · P boutique</div>';
   document.getElementById("mv-board").innerHTML=h;
+  var hb=document.getElementById("mv-help");if(hb)hb.onclick=function(){if(typeof openHelp==="function")openHelp();};
   var S=save.settings;
   document.getElementById("mv-set").innerHTML=
     setToggle("sound","Sons",S.sound!==false)+setToggle("shake","Tremblements",S.shake!==false)+setToggle("vibe","Vibrations",S.vibe!==false)+
@@ -510,11 +513,15 @@ function updateHud(dt){
   E.lvl.textContent=p.lvl;
   var xpf=p.lvl>=18?1:p.xp/xpNeeded(p.lvl);
   E.xpring.style.strokeDasharray=(xpf*100.5)+" 100.5";
-  E.kda.textContent=p.kills+" / "+p.deaths+" / "+p.assists+"  ·  "+p.cs+" 🗡";
+  E.kda.textContent=p.kills+"/"+p.deaths+" · "+p.cs+"🗡";
   E.time.textContent=fmtTime(G.time);
   E.sa.textContent=G.teamKills[0];
   E.se.textContent=G.teamKills[1];
-  E.obj.innerHTML=objectiveText();
+  // l'objectif ne reste pas en permanence : il s'estompe et revient quand il change
+  var ot=objectiveText();
+  if(ot!==HUD.lastObj){HUD.lastObj=ot;HUD.objT=5;E.obj.innerHTML=ot;}
+  HUD.objT=Math.max(0,(HUD.objT||0)-dt);
+  E.obj.style.opacity=HUD.objT>0?1:0.28;
   // boutique
   var near=canShop(p);
   E.shopbtn.classList.toggle("hot",near||HUD.shopHint>0);
@@ -542,7 +549,7 @@ function updateHud(dt){
   E.recall.classList.toggle("act",p.recall>0);
   E.recall.querySelector(".cd").style.height=(p.recall>0?p.recall/4*100:0)+"%";
   if(HUD.dirty){
-    var inv="";for(var s=0;s<INV_MAX;s++){var id=p.items[s];inv+='<i>'+(id?ITEM_BY[id].ico:"")+'</i>';}
+    var inv="";for(var s=0;s<INV_MAX;s++){var id=p.items[s];if(id)inv+='<i>'+ITEM_BY[id].ico+'</i>';}
     E.inv.innerHTML=inv;
     HUD.dirty=false;
   }
@@ -559,6 +566,7 @@ function updateHud(dt){
   if(HUD.holdAtk){HUD.holdT-=dt;if(HUD.holdT<=0){HUD.holdT=0.25;if(!p.target||p.target.dead)playerAttack();}}
   if(save.settings.autoRank&&p.sp>0){[3,0,2,1].forEach(function(i){rankUp(p,i);});}
   MINI.t-=dt;if(MINI.t<=0){MINI.t=0.1;drawMinimap();}
+  if(typeof coachTick==="function")coachTick(dt);
 }
 function objectiveText(){
   var t=esc(G.objective||"");
@@ -638,6 +646,7 @@ function runMatch(cfg,meta){
     setTimeout(function(){hudTip("Joystick à gauche · ⚔ attaque · glisse une capacité pour viser");},900);
     save.tutoDone=true;writeSave(save);
   }
+  if(typeof coachStart==="function")coachStart();
   LOOP.running=true;LOOP.last=performance.now();LOOP.acc=0;
   cancelAnimationFrame(LOOP.raf);
   LOOP.raf=requestAnimationFrame(frame);

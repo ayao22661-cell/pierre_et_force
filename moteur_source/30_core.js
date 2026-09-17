@@ -86,6 +86,11 @@ function recalc(u,full){
 function xpNeeded(l){return 180+(l-1)*95;}
 function gainXp(u,x){
   if(u.lvl>=18)return;
+  // en campagne, l'Empire ne prend pas d'avance sur le joueur : il peut suivre, pas distancer
+  if(u.team===1&&u.ai&&!G.floor&&G.player){
+    var cap=G.player.lvl+(G.diff.id===0?0:1);
+    if(u.lvl>=cap)return;
+  }
   u.xp+=x;
   while(u.lvl<18&&u.xp>=xpNeeded(u.lvl)){
     u.xp-=xpNeeded(u.lvl);u.lvl++;u.sp++;
