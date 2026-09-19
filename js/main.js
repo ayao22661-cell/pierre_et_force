@@ -23,6 +23,7 @@ let renderer = null;
 let match = null;
 let hud = null;
 let currentMission = null;
+let currentModeLabel = 'SIÈGE';
 
 function toHub(){
   match?.destroy(); match = null;
@@ -34,6 +35,7 @@ function toHub(){
 
 function onSelectMission(mission, modeLabel){
   currentMission = mission;
+  currentModeLabel = modeLabel;
   goTo('screen-deploy');
   renderDeploy(mission, modeLabel, save, launchMatch);
 }
@@ -65,7 +67,7 @@ function onMatchEnd({ victory }){
     goTo('screen-end');
     renderEnd(victory, currentMission, save, match?.sim, toHub, () => {
       goTo('screen-deploy');
-      renderDeploy(currentMission, 'SIÈGE', save, launchMatch);
+      renderDeploy(currentMission, currentModeLabel, save, launchMatch);
     });
   }, 600);
 }

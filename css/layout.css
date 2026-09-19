@@ -123,3 +123,8 @@ html, body{
 }
 .pf-hero-title, .pf-hero-sub{ text-shadow: 0 3px 16px rgba(0,0,0,.85), 0 1px 4px rgba(0,0,0,.9); }
 #end-title, #end-subtitle{ text-shadow: 0 3px 16px rgba(0,0,0,.85), 0 1px 4px rgba(0,0,0,.9); }
+
+/* ── Tous les écrans : l'image de premier plan remplit TOUT l'écran (recadrage centré sur le héros),
+   plus de bandes ni de flou visibles sur les côtés. ── */
+.pf-bg-blur{ display: none; }
+.pf-bg-img{ object-fit: cover; object-position: center 38%; }

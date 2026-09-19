@@ -16,6 +16,11 @@ import { computeBonuses } from './bonuses.js';
 
 let UID = 1;
 
+// Vitesse relative des champions ennemis par rapport à leur valeur de base.
+const FOE_SPEED = 0.85;
+// Rayon dans lequel un ennemi remarque le joueur (avant : 480 pour tout le monde).
+const FOE_AGGRO = 420;
+
 export function makeChampionUnit(key, team, opts = {}){
   const d = CHAMPS[key];
   const mult = opts.mult ?? 1;
@@ -24,9 +29,13 @@ export function makeChampionUnit(key, team, opts = {}){
   // Les ennemis utilisent leurs stats de base multipliées par foeMult.
   const bns = (team === 0 && opts.save) ? computeBonuses(opts.save) : null;
 
+  const atkMult = opts.atkMult ?? mult;
+  // Les champions ennemis courent ~15 % moins vite que le joueur : on peut leur échapper.
+  const foeSpeed = team === 1 ? FOE_SPEED : 1;
+
   const baseHp  = d.hp  * mult * (bns ? 1 + bns.hpP   : 1) + (bns ? bns.hp   : 0);
-  const baseAtk = d.atk * mult * (bns ? 1 + bns.atkP  : 1) + (bns ? bns.atk  : 0);
-  const baseMs  = d.ms  + (bns ? bns.ms + bns.msF : 0);
+  const baseAtk = d.atk * atkMult * (bns ? 1 + bns.atkP  : 1) + (bns ? bns.atk  : 0);
+  const baseMs  = d.ms * foeSpeed + (bns ? bns.ms + bns.msF : 0);
   const baseAs  = d.as  + (bns ? bns.as  : 0);
   const baseArm = d.arm + (bns ? bns.arm + bns.armF : 0);
   const baseMana = (d.mana || 0) * (bns ? 1 + bns.manaP : 1) + (bns ? bns.mana : 0);
@@ -47,6 +56,7 @@ export function makeChampionUnit(key, team, opts = {}){
     path: opts.path || null, wp: opts.wp ?? 0,
     cds: [0,0,0,0], shield: 0, tempArm: 0, tempArmUntil: 0,
     cc: null, facing: { x: 1, y: 0 }, temporary: false, expiresAt: 0,
+    home: { x: opts.x ?? 0, y: opts.y ?? 0 },
     // Stats dérivées des bonus — gardées sur l'unité pour y accéder en combat
     bns: bns || {},
     // Revive : reset à true en début de match, consommé une seule fois
@@ -113,7 +123,7 @@ export class Sim{
       this.units.push(u);
     });
     const foes = this.cfg.foes || ['BABA'];
-    for(let i = 0; i < (this.cfg.foeCount || 2); i++){
+    for(let i = 0; i < (this.cfg.foeCount || 1); i++){
       const k = foes[i % foes.length];
       const u = makeChampionUnit(k, 1, { x: p1.x, y: p1.y + (i-1)*44, mult: this.cfg.foeMult || 1, path, wp: path.length-2 });
       this.units.push(u);
@@ -166,9 +176,11 @@ export class Sim{
       this.units.push(makeChampionUnit(k, 0, { isAlly: true, x: cx - 480, y: cy + 60 + i*50, save: this.cfg.save }));
     });
     // Boss — multiplicateur fort, ne respawn pas
-    const bossMult = this.cfg.foeMult ? this.cfg.foeMult * 2.5 : 3.0;
+    // Beaucoup de PV (×3,5) mais des dégâts à peine supérieurs à un ennemi normal (×1,3) :
+    // avant, le boss avait ×2,5 sur les deux et tuait le joueur en quelques secondes.
+    const fm = this.cfg.foeMult || 0.5;
     const bossKey = (this.cfg.foes && this.cfg.foes[0]) || 'BABA';
-    this.boss = makeChampionUnit(bossKey, 1, { x: cx + 480, y: cy, mult: bossMult });
+    this.boss = makeChampionUnit(bossKey, 1, { x: cx + 480, y: cy, mult: fm * 3.5, atkMult: fm * 1.3 });
     this.boss.isBoss = true;
     this.boss.respawnDisabled = true;
     this.units.push(this.boss);
@@ -260,8 +272,11 @@ export class Sim{
 
   _think(u, dt){
     if(u.cc && u.cc.type !== 'slow' && this.time < u.cc.until) return; // étourdi/enraciné
+    // Les sbires sont pilotés par _minionMove (sinon ils avançaient deux fois par frame).
+    if(u.kind === 'minion') return;
     // Cible la plus proche adverse dans une zone d'agro.
-    const foe = this._nearestFoe(u, 480);
+    const aggro = (u.team === 1 && !u.isBoss) ? FOE_AGGRO : 480;
+    const foe = this._nearestFoe(u, aggro);
     if(foe){
       const d = Math.hypot(foe.x-u.x, foe.y-u.y);
       if(d > u.range * 0.85){
@@ -277,10 +292,17 @@ export class Sim{
       }
       u.target = null;
     } else if(u.kind === 'champ'){
-      // Alliés/ennemis en arena sans cible : dérive vers le joueur.
-      const anchor = this.player;
-      const d = Math.hypot(anchor.x-u.x, anchor.y-u.y);
-      if(d > 140) this._moveToward(u, anchor.x, anchor.y, dt);
+      if(u.team === 0 || u.isBoss){
+        // Alliés (et boss) sans cible : rejoignent le joueur.
+        const anchor = this.player;
+        const d = Math.hypot(anchor.x-u.x, anchor.y-u.y);
+        if(d > 140) this._moveToward(u, anchor.x, anchor.y, dt);
+      } else {
+        // Ennemis normaux sans cible : retournent à leur poste au lieu de traquer
+        // le joueur à travers toute la carte.
+        const h = u.home;
+        if(h && Math.hypot(h.x-u.x, h.y-u.y) > 40) this._moveToward(u, h.x, h.y, dt);
+      }
       u.target = null;
     }
   }
@@ -445,7 +467,11 @@ export class Sim{
 
   _minionMove(u, dt){
     const foe = this._nearestFoe(u, 220);
-    if(foe){ u.target = foe; return; }
+    if(foe){
+      u.target = foe;
+      if(Math.hypot(foe.x-u.x, foe.y-u.y) > u.range * 0.85) this._moveToward(u, foe.x, foe.y, dt);
+      return;
+    }
     const wp = u.path[u.wp];
     if(!wp) return;
     const d = Math.hypot(wp.x-u.x, wp.y-u.y);

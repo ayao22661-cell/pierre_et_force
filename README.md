@@ -142,3 +142,14 @@ plat stocké sur chaque unité alliée. `makeChampionUnit` l'applique au
 moment de la construction pour que les stats de base soient déjà les
 stats finales — aucun calcul n'est nécessaire pendant la boucle de jeu
 (sauf les effets à tick : regen, burn, lifesteal).
+
+## Équilibrage (correctif)
+
+- `js/ui/deploy.js` : 1 à 3 champions ennemis (avant : `1 + ennemis_extra`, soit 3 dès la
+  mission 1 et jusqu'à 13 plus loin), stats ennemies de ~40 % (mission 1) à 80 % (mission 50)
+  au lieu de 85 % partout.
+- `js/game/sim.js` : ennemis 15 % plus lents que le joueur, rayon d'agro 420, plus de traque
+  à travers la carte en Arène, boss à ×3,5 PV / ×1,3 dégâts (avant ×2,5 sur les deux),
+  sbires qui n'avancent plus deux fois par frame.
+- `js/main.js` : « RÉESSAYER » relance le bon mode (avant : toujours Siège).
+- `css/layout.css` : l'image de premier plan remplit tout l'écran sur tous les écrans (`cover`).

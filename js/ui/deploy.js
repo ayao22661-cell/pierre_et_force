@@ -85,8 +85,11 @@ export function renderDeploy(mission, modeLabel, save, onLaunch){
       champ: state.champ,
       allies: state.allies.slice(),
       foes: mission.ennemis || ['BABA'],
-      foeCount: 1 + (mission.ennemis_extra || 1),
-      foeMult: 0.85,
+      // Équilibrage : avant, foeCount = 1 + ennemis_extra (jusqu'à 13 champions d'un coup,
+      // 3 dès la mission 1) avec 85 % des stats de base. Désormais 1 à 3 champions,
+      // et des stats qui montent doucement avec la mission (≈ 40 % au début, 80 % à la fin).
+      foeCount: Math.min(3, 1 + Math.floor((mission.ennemis_extra || 0) / 3)),
+      foeMult: Math.min(0.8, 0.4 + (mission.num || 1) * 0.008),
       save,                  // transmis à Sim pour les bonus objets/talents
     });
   };
