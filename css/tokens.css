@@ -1,0 +1,131 @@
+/* ============================================================
+   PIERRE ET FORCE — DESIGN TOKENS
+   Palette inspirée des panneaux à bordure métallique et du logo
+   (bordeaux #a5342b, noir profond, or discret pour les accents rares)
+   ============================================================ */
+
+:root{
+  /* Surfaces */
+  --pf-bg:           #0a0a10;
+  --pf-bg-alt:       #0e0e16;
+  --pf-panel:        #12121c;
+  --pf-panel-raised: #171724;
+  --pf-panel-border: #2a2a3c;
+  --pf-panel-border-lit: #3d3d56;
+
+  /* Texte */
+  --pf-text:         #e8e6df;
+  --pf-text-dim:     #9c98a8;
+  --pf-text-faint:   #625f70;
+
+  /* Accent de marque — issu du logo Pierre et Force */
+  --pf-brand:        #a5342b;
+  --pf-brand-lit:     #c94436;
+  --pf-brand-dim:     #6e211b;
+  --pf-gold:          #c9a24a;
+  --pf-gold-dim:      #8a6f34;
+
+  /* Rôles fonctionnels */
+  --pf-hp:            #d6453f;
+  --pf-hp-dim:        #5a201d;
+  --pf-mana:          #3f8fd6;
+  --pf-mana-dim:      #1d3e5a;
+  --pf-xp:            #c9a24a;
+  --pf-good:          #4aa876;
+  --pf-danger:        #d6453f;
+  --pf-team-ally:     #3f8fd6;
+  --pf-team-enemy:    #d6453f;
+
+  /* Typo */
+  --pf-font-display: 'Bebas Neue', 'Oswald', sans-serif;
+  --pf-font-body:    'Inter', system-ui, sans-serif;
+
+  /* Rythme */
+  --pf-radius:       3px;
+  --pf-radius-lg:    6px;
+  --pf-gap-xs: 4px; --pf-gap-sm: 8px; --pf-gap-md: 14px; --pf-gap-lg: 22px; --pf-gap-xl: 36px;
+
+  /* Ombres */
+  --pf-shadow-panel: 0 4px 18px rgba(0,0,0,.55);
+  --pf-shadow-lift:  0 8px 28px rgba(0,0,0,.65);
+
+  --pf-safe-b: env(safe-area-inset-bottom, 0px);
+  --pf-safe-t: env(safe-area-inset-top, 0px);
+}
+
+/* ── Panneau à bordure métallique — motif central du style Pixels of Force ── */
+.pf-panel{
+  background: linear-gradient(180deg, var(--pf-panel-raised), var(--pf-panel));
+  border: 1px solid var(--pf-panel-border);
+  border-radius: var(--pf-radius-lg);
+  box-shadow: var(--pf-shadow-panel), inset 0 1px 0 rgba(255,255,255,.03);
+  position: relative;
+}
+.pf-panel::before{
+  content:"";
+  position:absolute; inset:0;
+  border-radius: inherit;
+  padding:1px;
+  background: linear-gradient(160deg, rgba(255,255,255,.06), transparent 40%);
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor; mask-composite: exclude;
+  pointer-events:none;
+}
+.pf-panel-header{
+  display:flex; align-items:center; justify-content:space-between;
+  padding: 8px 12px;
+  border-bottom: 1px solid var(--pf-panel-border);
+  font-family: var(--pf-font-display);
+  letter-spacing: 1.5px;
+  font-size: 13px;
+  color: var(--pf-text-dim);
+}
+
+/* ── Typo de base ── */
+.pf-title{ font-family: var(--pf-font-display); letter-spacing: 2px; color: var(--pf-text); }
+.pf-label{ font-family: var(--pf-font-body); font-size: 11px; letter-spacing: 1px; color: var(--pf-text-dim); }
+
+/* ── Bouton de base ── */
+.pf-btn{
+  font-family: var(--pf-font-display);
+  letter-spacing: 1.5px;
+  font-size: 14px;
+  padding: 10px 18px;
+  border-radius: var(--pf-radius);
+  border: 1px solid var(--pf-panel-border-lit);
+  background: linear-gradient(180deg, #232332, #171720);
+  color: var(--pf-text);
+  cursor: pointer;
+  transition: filter .12s ease, transform .08s ease;
+}
+.pf-btn:hover{ filter: brightness(1.15); }
+.pf-btn:active{ transform: scale(.97); }
+.pf-btn-brand{
+  background: linear-gradient(180deg, var(--pf-brand-lit), var(--pf-brand));
+  border-color: var(--pf-brand-lit);
+  color: #fff2ef;
+}
+.pf-btn-ghost{
+  background: transparent;
+  border-color: var(--pf-panel-border);
+  color: var(--pf-text-dim);
+}
+
+/* ── Barre de ressource (vie / mana / xp) ── */
+.pf-bar{
+  position:relative;
+  height: 14px;
+  border-radius: 2px;
+  background: #1a1a24;
+  border: 1px solid #000;
+  overflow:hidden;
+}
+.pf-bar-fill{
+  position:absolute; inset:0; width:100%;
+  transform-origin:left;
+  transition: transform .25s ease;
+  background: linear-gradient(180deg, rgba(255,255,255,.18), rgba(255,255,255,0) 40%), var(--fill, var(--pf-hp));
+}
+.pf-bar-hp .pf-bar-fill{ --fill: linear-gradient(90deg, var(--pf-hp-dim), var(--pf-hp)); background: linear-gradient(180deg, rgba(255,255,255,.18), rgba(255,255,255,0) 40%), linear-gradient(90deg, var(--pf-hp-dim), var(--pf-hp)); }
+.pf-bar-mana .pf-bar-fill{ background: linear-gradient(180deg, rgba(255,255,255,.18), rgba(255,255,255,0) 40%), linear-gradient(90deg, var(--pf-mana-dim), var(--pf-mana)); }
+.pf-bar-xp .pf-bar-fill{ background: linear-gradient(180deg, rgba(255,255,255,.18), rgba(255,255,255,0) 40%), linear-gradient(90deg, var(--pf-gold-dim), var(--pf-gold)); }

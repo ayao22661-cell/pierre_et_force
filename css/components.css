@@ -1,0 +1,83 @@
+/* ============================================================
+   COMPOSANTS — briques réutilisables du style Pixels of Force
+   ============================================================ */
+
+/* ── Carte de mission ── */
+.mission-card{
+  flex: 0 0 148px;
+  padding: 10px;
+  cursor: pointer;
+  display:flex; flex-direction:column; gap:6px;
+  transition: transform .1s ease, filter .1s ease;
+}
+.mission-card:active{ transform: scale(.97); }
+.mission-card.locked{ filter: grayscale(1) brightness(.55); cursor: not-allowed; }
+.mission-card .m-num{ font-family: var(--pf-font-display); font-size: 22px; color: var(--pf-gold); line-height:1; }
+.mission-card .m-name{ font-size: 12px; font-weight:600; line-height:1.25; }
+.mission-card .m-mode{ font-size: 10px; color: var(--pf-text-dim); letter-spacing:.5px; }
+.mission-card .m-status{
+  margin-top:auto; font-size:10px; letter-spacing:1px; padding:3px 6px;
+  border-radius: 2px; text-align:center; font-family: var(--pf-font-display);
+}
+.m-status.done{ background: rgba(74,168,118,.15); color: var(--pf-good); }
+.m-status.avail{ background: rgba(63,143,214,.15); color: var(--pf-mana); }
+.m-status.lock{ background: rgba(255,255,255,.04); color: var(--pf-text-faint); }
+
+/* ── Portrait de champion (procédural, pas d'image) ── */
+.pf-portrait{
+  width: 56px; height: 56px; border-radius: 50%;
+  display:flex; align-items:center; justify-content:center;
+  font-family: var(--pf-font-display); font-size: 20px;
+  border: 2px solid var(--pf-panel-border-lit);
+  flex-shrink:0;
+  position:relative;
+}
+.pf-portrait::after{
+  content:""; position:absolute; inset:-4px; border-radius:50%;
+  border: 1px solid var(--accent, var(--pf-gold)); opacity:.5;
+}
+.pf-portrait-sm{ width:40px; height:40px; font-size:15px; }
+.pf-portrait-lg{ width:88px; height:88px; font-size:30px; }
+
+/* ── Sélecteur d'allié ── */
+.ally-chip{
+  display:flex; align-items:center; gap:8px;
+  padding: 8px 10px; cursor:pointer;
+}
+.ally-chip.selected{ border-color: var(--pf-brand-lit); background: rgba(165,52,43,.12); }
+.ally-chip.locked{ opacity:.35; cursor:not-allowed; }
+.ally-chip-name{ font-size:13px; font-weight:600; }
+.ally-chip-role{ font-size:11px; color: var(--pf-text-dim); }
+
+/* ── Icône de sort avec cooldown ── */
+.spell-slot{
+  width: 52px; height: 52px; border-radius: var(--pf-radius);
+  border: 1px solid var(--pf-panel-border-lit);
+  background: var(--pf-panel);
+  display:flex; align-items:center; justify-content:center;
+  position:relative; font-family: var(--pf-font-display); font-size:16px;
+  color: var(--pf-text-dim);
+}
+.spell-slot .key{ position:absolute; bottom:1px; right:3px; font-size:9px; color: var(--pf-text-faint); }
+.spell-slot.ult{ border-color: var(--pf-gold-dim); }
+
+/* ── Badge de statut ── */
+.pf-badge{
+  display:inline-flex; align-items:center; gap:4px;
+  font-size: 10px; letter-spacing: 1px;
+  padding: 2px 7px; border-radius: 2px;
+  background: rgba(255,255,255,.06); color: var(--pf-text-dim);
+}
+.pf-badge-brand{ background: rgba(165,52,43,.18); color: #f0a89f; }
+.pf-badge-gold{ background: rgba(201,162,74,.15); color: var(--pf-gold); }
+
+/* ── Toast ── */
+#pf-toast{
+  position: fixed; left:50%; bottom: calc(24px + var(--pf-safe-b));
+  transform: translateX(-50%) translateY(8px);
+  padding: 8px 16px; border-radius: var(--pf-radius);
+  background: rgba(10,10,16,.95); border:1px solid var(--pf-panel-border-lit);
+  font-size: 12px; opacity:0; pointer-events:none; transition:.25s;
+  z-index: 500; white-space:nowrap;
+}
+#pf-toast.show{ opacity:1; transform: translateX(-50%) translateY(0); }

@@ -1,0 +1,68 @@
+/* ============================================================
+   LAYOUT — structure des écrans
+   ============================================================ */
+*{ box-sizing: border-box; margin:0; padding:0; }
+html, body{
+  height: 100%; overflow: hidden;
+  background: var(--pf-bg);
+  color: var(--pf-text);
+  font-family: var(--pf-font-body);
+  -webkit-user-select: none; user-select: none;
+  -webkit-tap-highlight-color: transparent;
+}
+#app{ position: fixed; inset: 0; }
+
+.screen{
+  position: absolute; inset: 0;
+  display: none; flex-direction: column;
+  padding-top: var(--pf-safe-t); padding-bottom: var(--pf-safe-b);
+}
+.screen.active{ display: flex; animation: pfFade .25s ease-out; }
+@keyframes pfFade{ from{ opacity:0; transform: translateY(6px);} to{ opacity:1; transform:none;} }
+
+/* ── Titre ── */
+#screen-title{
+  align-items: center; justify-content: center; gap: var(--pf-gap-lg);
+  background:
+    radial-gradient(ellipse 90% 60% at 50% -10%, rgba(165,52,43,.10), transparent 60%),
+    var(--pf-bg);
+}
+.pf-logo{ width: 132px; height: auto; filter: drop-shadow(0 6px 22px rgba(165,52,43,.35)); }
+.pf-hero-title{ font-family: var(--pf-font-display); font-size: 44px; letter-spacing: 6px; text-align:center; }
+.pf-hero-sub{ font-family: var(--pf-font-display); font-size: 15px; letter-spacing: 8px; color: var(--pf-gold); }
+.pf-title-btns{ display:flex; flex-direction: column; gap: 10px; width: min(300px, 80vw); margin-top: var(--pf-gap-lg); }
+
+/* ── Hub ── */
+#screen-hub{ padding: var(--pf-gap-md); gap: var(--pf-gap-md); overflow: hidden; }
+.hub-header{ display:flex; align-items:center; justify-content:space-between; flex-shrink:0; }
+.hub-body{ flex:1; min-height:0; overflow-y:auto; display:flex; flex-direction:column; gap: var(--pf-gap-md); }
+.acte-block{ display:flex; flex-direction:column; gap: var(--pf-gap-sm); }
+.acte-title{ font-family: var(--pf-font-display); letter-spacing: 2px; font-size: 14px; color: var(--pf-gold); padding-left: 2px; }
+.mission-row{ display:flex; gap: var(--pf-gap-sm); overflow-x:auto; padding-bottom: 4px; }
+
+.hub-tabs{ display:flex; gap: 6px; flex-shrink:0; }
+.hub-tab{ flex:1; text-align:center; padding: 10px 0; }
+.hub-tab.active{ border-color: var(--pf-brand-lit); color: var(--pf-text); }
+
+/* ── Déploiement ── */
+#screen-deploy{ padding: var(--pf-gap-md); gap: var(--pf-gap-md); }
+.deploy-body{ flex:1; min-height:0; overflow-y:auto; display:grid; grid-template-columns: 1fr; gap: var(--pf-gap-md); }
+.deploy-footer{ display:flex; gap: var(--pf-gap-sm); align-items:center; flex-shrink:0; }
+.deploy-footer .pf-btn-brand{ flex:1; }
+
+/* ── Combat plein écran ── */
+#screen-game{ padding: 0; }
+#game-mount{ position:absolute; inset:0; }
+#game-hud{ position:absolute; inset:0; pointer-events:none; }
+#game-hud > *{ pointer-events:auto; }
+
+/* ── Fin de match ── */
+#screen-end{ align-items:center; padding: var(--pf-gap-lg); gap: var(--pf-gap-md); overflow:hidden; }
+#end-rewards{ width:100%; max-width: 460px; overflow-y:auto; flex:1; min-height:0; }
+.end-btns{ width:100%; max-width:460px; display:flex; gap: var(--pf-gap-sm); flex-shrink:0; }
+.end-btns .pf-btn{ flex:1; }
+
+/* ── Scrollbars discrètes ── */
+::-webkit-scrollbar{ width:6px; height:6px; }
+::-webkit-scrollbar-thumb{ background: var(--pf-panel-border-lit); border-radius:3px; }
+::-webkit-scrollbar-track{ background: transparent; }

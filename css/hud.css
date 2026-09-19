@@ -1,0 +1,76 @@
+/* ============================================================
+   HUD DE COMBAT — superposé au canvas PixiJS
+   ============================================================ */
+
+.hud-top{
+  position:absolute; top: calc(10px + var(--pf-safe-t)); left:0; right:0;
+  display:flex; justify-content:center; align-items:flex-start;
+}
+.hud-objective{
+  padding: 6px 18px; font-size: 13px; letter-spacing:.5px;
+  text-align:center; min-width: 220px;
+}
+.hud-timer{ font-family: var(--pf-font-display); font-size:16px; color: var(--pf-gold); margin-left:10px; }
+
+.hud-minimap{
+  position:absolute; top: calc(10px + var(--pf-safe-t)); right:10px;
+  width: 130px; height: 84px; padding:4px;
+}
+
+.hud-bottom{
+  position:absolute; left:0; right:0; bottom: calc(10px + var(--pf-safe-b));
+  display:flex; align-items:flex-end; justify-content:space-between;
+  padding: 0 12px; gap: 12px;
+}
+
+.hud-portrait{
+  display:flex; align-items:center; gap:8px;
+  padding: 8px; flex-shrink:0;
+}
+.hud-bars{ display:flex; flex-direction:column; gap:4px; width:150px; }
+.hud-bars .pf-bar{ width:100%; }
+.hud-bars .pf-label-row{ display:flex; justify-content:space-between; font-size:10px; color: var(--pf-text-dim); }
+
+.hud-spells{ display:flex; gap:6px; }
+
+.hud-pause-btn{
+  width:38px; height:38px; display:flex; align-items:center; justify-content:center;
+  font-size:16px; cursor:pointer; flex-shrink:0;
+}
+
+/* ── Réactivité mobile — resserre portrait/barres/sorts pour tenir en largeur ── */
+@media (max-width: 480px){
+  .hud-bottom{ padding: 0 6px; gap: 6px; }
+  .hud-portrait{ padding: 5px; gap:5px; }
+  .hud-portrait .pf-portrait{ width:40px; height:40px; font-size:15px; }
+  .hud-bars{ width: 92px; }
+  .hud-bars .pf-label-row{ font-size:8px; }
+  .hud-spells{ gap:4px; }
+  .spell-slot{ width:38px; height:38px; font-size:13px; }
+  .spell-slot .key{ font-size:7px; }
+  .hud-pause-btn{ width:32px; height:32px; font-size:13px; }
+  .hud-minimap{ width:92px; height:60px; }
+  .hud-objective{ padding:5px 10px; font-size:11px; min-width:160px; }
+}
+
+/* ── Bannière d'annonce (victoire proche, vague...) ── */
+.hud-banner{
+  position:absolute; top: 30%; left:50%; transform: translate(-50%,-50%);
+  font-family: var(--pf-font-display); font-size: 34px; letter-spacing:4px;
+  color: var(--pf-text); text-shadow: 0 3px 14px rgba(0,0,0,.8);
+  opacity:0; pointer-events:none; transition: opacity .3s, transform .3s;
+}
+.hud-banner.show{ opacity:1; transform: translate(-50%,-50%) scale(1.04); }
+
+/* ── Joystick virtuel (mobile) ── */
+.hud-joyzone{ position:absolute; left:0; bottom:0; width:45%; height:55%; touch-action:none; }
+.hud-joy{
+  position:absolute; width:96px; height:96px; border-radius:50%;
+  border:2px solid rgba(255,255,255,.15); background: rgba(255,255,255,.04);
+  display:none;
+}
+.hud-joy-knob{
+  position:absolute; width:40px; height:40px; border-radius:50%;
+  background: rgba(255,255,255,.25); left:28px; top:28px;
+}
+.hud-joy.on{ display:block; }
