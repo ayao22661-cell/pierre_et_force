@@ -18,7 +18,12 @@ export class CombatHud{
     this._build(onPause);
     const miniEl = this.root.querySelector('.hud-minimap');
     if (miniEl && this.match.sim) {
-      this.minimap = new Minimap(miniEl, { w: renderer.worldSize?.w || 2200, h: renderer.worldSize?.h || 1500 });
+      const sim = this.match.sim;
+      this.minimap = new Minimap(
+        miniEl,
+        { w: renderer.worldSize?.w || 2200, h: renderer.worldSize?.h || 1500 },
+        { path: sim.path || null }  // fond schématique lane en mode Siège/Défense
+      );
     }
     this._tickFn = (dt) => this._update(dt);
     renderer.addFrameListener(this._tickFn);
@@ -179,6 +184,32 @@ export class CombatHud{
     this.banner.classList.add('show');
     clearTimeout(this._bannerT);
     this._bannerT = setTimeout(() => this.banner.classList.remove('show'), 1800);
+  }
+
+  /** Affiche la barre de PV du boss en haut au centre (mode Boss). */
+  showBossBar(boss){
+    if(this._bossBarEl) return; // déjà créé
+    const bar = el('div', 'pf-panel hud-boss-bar');
+    const label = el('div', 'hud-boss-name', boss.name.toUpperCase());
+    const track = el('div', 'pf-bar pf-bar-boss');
+    const fill = el('div', 'pf-bar-fill');
+    fill.id = 'hud-boss-fill';
+    track.appendChild(fill);
+    bar.appendChild(label);
+    bar.appendChild(track);
+    this.root.insertBefore(bar, this.root.firstChild);
+    this._bossBarEl = bar;
+    this._bossUnit = boss;
+  }
+
+  /** Met à jour la largeur de la barre de boss. */
+  updateBossBar(boss){
+    const fill = document.getElementById('hud-boss-fill');
+    if(!fill) return;
+    const pct = Math.max(0, boss.hp / boss.maxHp);
+    fill.style.transform = `scaleX(${pct})`;
+    // Changement de couleur progressif
+    fill.style.background = pct > 0.5 ? '#e05a20' : pct > 0.25 ? '#ff3a3a' : '#ff0000';
   }
 
   _update(dt){

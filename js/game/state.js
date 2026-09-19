@@ -14,6 +14,9 @@ export function defaultSave(){
     cauris: 0,
     lastChamp: 'TARINE',
     stats: { wins: 0, games: 0, kills: 0 },
+    // Niveaux de sorts par champion : { TARINE: [0,0,0,0], ... }
+    // Chaque valeur est un entier 0-4 correspondant au rang du sort.
+    spellLevels: {},
   };
 }
 

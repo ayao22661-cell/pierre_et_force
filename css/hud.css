@@ -82,3 +82,25 @@
   background:rgba(255,255,255,.08); color:var(--pf-text-dim);
   border:1px solid rgba(255,255,255,.1);
 }
+
+/* ── Barre de Boss ── */
+.hud-boss-bar{
+  position:absolute; top:56px; left:50%; transform:translateX(-50%);
+  min-width:260px; max-width:380px; padding:6px 12px;
+  background:rgba(0,0,0,.7); border:1px solid rgba(220,50,30,.55);
+  border-radius:8px; text-align:center; z-index:30;
+  animation: bossBarIn .4s cubic-bezier(.2,.8,.3,1.1) both;
+}
+@keyframes bossBarIn{
+  from{ opacity:0; transform:translateX(-50%) scaleY(.6); }
+  to  { opacity:1; transform:translateX(-50%) scaleY(1); }
+}
+.hud-boss-name{
+  font-size:10px; letter-spacing:.12em; color:#ff8060;
+  font-weight:700; margin-bottom:4px;
+}
+.pf-bar-boss{ height:10px; border-radius:5px; background:rgba(255,255,255,.1); }
+.pf-bar-boss .pf-bar-fill{
+  background: linear-gradient(90deg, #e05a20, #ff2222);
+  transition: none;
+}

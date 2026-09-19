@@ -51,6 +51,8 @@ export function makeChampionUnit(key, team, opts = {}){
     bns: bns || {},
     // Revive : reset à true en début de match, consommé une seule fois
     reviveReady: bns?.revive || false,
+    // Niveaux de sorts (0-4) lus depuis save.spellLevels[champKey] pour le joueur/alliés
+    _spellLevels: (team === 0 && opts.save?.spellLevels?.[key]) ? opts.save.spellLevels[key] : null,
   };
 }
 
@@ -92,41 +94,105 @@ export class Sim{
   _build(){
     const path = this.cfg.path;
     if(this.mode === 'siege' && path){
-      const p0 = path[0], p1 = path[path.length-1];
-      this.player = makeChampionUnit(this.cfg.champ, 0, { isPlayer: true, x: p0.x, y: p0.y - 40, path, wp: 1, save: this.cfg.save });
-      this.units.push(this.player);
-      (this.cfg.allies || []).forEach((k, i) => {
-        const u = makeChampionUnit(k, 0, { isAlly: true, x: p0.x, y: p0.y + 40 + i*40, path, wp: 1, save: this.cfg.save });
-        this.units.push(u);
-      });
-      const foes = this.cfg.foes || ['BABA'];
-      for(let i = 0; i < (this.cfg.foeCount || 2); i++){
-        const k = foes[i % foes.length];
-        const u = makeChampionUnit(k, 1, { x: p1.x, y: p1.y + (i-1)*44, mult: this.cfg.foeMult || 1, path, wp: path.length-2 });
-        this.units.push(u);
-      }
-      this.nexusAlly = makeStructure('nexus', 0, p0.x - 60, p0.y, 3500);
-      this.nexusEnemy = makeStructure('nexus', 1, p1.x + 60, p1.y, 3500 * (this.cfg.foeMult || 1));
-      this.units.push(this.nexusAlly, this.nexusEnemy);
-      this.path = path;
-      this.waveTimer = 6; this.waveN = 0;
+      this._buildSiege(path);
+    } else if(this.mode === 'defense' && path){
+      this._buildDefense(path);
+    } else if(this.mode === 'boss'){
+      this._buildBoss();
     } else {
-      // Arena — cercle simple, pas de lane.
-      const cx = this.cfg.w/2 || 1100, cy = this.cfg.h/2 || 750;
-      this.player = makeChampionUnit(this.cfg.champ, 0, { isPlayer: true, x: cx - 500, y: cy, save: this.cfg.save });
-      this.units.push(this.player);
-      (this.cfg.allies || []).forEach((k, i) => {
-        this.units.push(makeChampionUnit(k, 0, { isAlly: true, x: cx - 500, y: cy + 60 + i*50, save: this.cfg.save }));
-      });
-      const foes = this.cfg.foes || ['BABA'];
-      for(let i = 0; i < (this.cfg.foeCount || 2); i++){
-        const k = foes[i % foes.length];
-        this.units.push(makeChampionUnit(k, 1, { x: cx + 500, y: cy + (i-1)*50, mult: this.cfg.foeMult || 1 }));
-      }
-      this.teamKills = [0, 0];
-      this.killGoal = this.cfg.killGoal || 8;
-      this.timeLimit = this.cfg.timeLimit || 300;
+      this._buildArena();
     }
+  }
+
+  _buildSiege(path){
+    const p0 = path[0], p1 = path[path.length-1];
+    this.player = makeChampionUnit(this.cfg.champ, 0, { isPlayer: true, x: p0.x, y: p0.y - 40, path, wp: 1, save: this.cfg.save });
+    this.units.push(this.player);
+    (this.cfg.allies || []).forEach((k, i) => {
+      const u = makeChampionUnit(k, 0, { isAlly: true, x: p0.x, y: p0.y + 40 + i*40, path, wp: 1, save: this.cfg.save });
+      this.units.push(u);
+    });
+    const foes = this.cfg.foes || ['BABA'];
+    for(let i = 0; i < (this.cfg.foeCount || 2); i++){
+      const k = foes[i % foes.length];
+      const u = makeChampionUnit(k, 1, { x: p1.x, y: p1.y + (i-1)*44, mult: this.cfg.foeMult || 1, path, wp: path.length-2 });
+      this.units.push(u);
+    }
+    this.nexusAlly = makeStructure('nexus', 0, p0.x - 60, p0.y, 3500);
+    this.nexusEnemy = makeStructure('nexus', 1, p1.x + 60, p1.y, 3500 * (this.cfg.foeMult || 1));
+    this.units.push(this.nexusAlly, this.nexusEnemy);
+    this.path = path;
+    this.waveTimer = 6; this.waveN = 0;
+    this.teamKills = [0, 0]; // suivi des éliminations de champions, tous modes confondus
+  }
+
+  /**
+   * Défense — le joueur protège son nexus allié à gauche pendant N vagues.
+   * Les ennemis arrivent par la droite et convergent sur le nexus.
+   * Victoire : survivre à toutes les vagues. Défaite : nexus détruit.
+   */
+  _buildDefense(path){
+    const p0 = path[0], p1 = path[path.length-1];
+    // Le joueur commence côté allié (gauche)
+    this.player = makeChampionUnit(this.cfg.champ, 0, { isPlayer: true, x: p0.x + 80, y: p0.y, path, wp: 1, save: this.cfg.save });
+    this.units.push(this.player);
+    (this.cfg.allies || []).forEach((k, i) => {
+      const u = makeChampionUnit(k, 0, { isAlly: true, x: p0.x + 80, y: p0.y + 60 + i*50, path, wp: 1, save: this.cfg.save });
+      this.units.push(u);
+    });
+    // Nexus allié à défendre, pas de nexus ennemi
+    this.nexusAlly = makeStructure('nexus', 0, p0.x - 60, p0.y, 4500);
+    this.units.push(this.nexusAlly);
+    this.path = path;
+    // Nombre de vagues à survivre (foeMult conditionne leur force)
+    this.defenseWaveTotal = this.cfg.waveTotal || 5;
+    this.defenseWaveN = 0;
+    this.waveTimer = 3; // première vague dans 3 s
+    this._defenseSpawnSide = p1; // les ennemis arrivent depuis p1
+    this.defenseOver = false;
+    this.teamKills = [0, 0]; // suivi des éliminations de champions, tous modes confondus
+  }
+
+  /**
+   * Boss — arène mais avec un seul champion ennemi très puissant (mult élevé)
+   * qui ne respawn pas. Il a aussi des PV affichés séparément.
+   * Victoire : tuer le boss. Défaite : joueur mort ou temps écoulé.
+   */
+  _buildBoss(){
+    const cx = this.cfg.w/2 || 1100, cy = this.cfg.h/2 || 750;
+    this.player = makeChampionUnit(this.cfg.champ, 0, { isPlayer: true, x: cx - 480, y: cy, save: this.cfg.save });
+    this.units.push(this.player);
+    (this.cfg.allies || []).forEach((k, i) => {
+      this.units.push(makeChampionUnit(k, 0, { isAlly: true, x: cx - 480, y: cy + 60 + i*50, save: this.cfg.save }));
+    });
+    // Boss — multiplicateur fort, ne respawn pas
+    const bossMult = this.cfg.foeMult ? this.cfg.foeMult * 2.5 : 3.0;
+    const bossKey = (this.cfg.foes && this.cfg.foes[0]) || 'BABA';
+    this.boss = makeChampionUnit(bossKey, 1, { x: cx + 480, y: cy, mult: bossMult });
+    this.boss.isBoss = true;
+    this.boss.respawnDisabled = true;
+    this.units.push(this.boss);
+    this.teamKills = [0, 0];
+    this.timeLimit = this.cfg.timeLimit || 240; // boss : 4 min max
+    this.onEvent({ type: 'boss-spawn', boss: this.boss });
+  }
+
+  _buildArena(){
+    // Arena — cercle simple, pas de lane.
+    const cx = this.cfg.w/2 || 1100, cy = this.cfg.h/2 || 750;
+    this.player = makeChampionUnit(this.cfg.champ, 0, { isPlayer: true, x: cx - 500, y: cy, save: this.cfg.save });
+    this.units.push(this.player);
+    (this.cfg.allies || []).forEach((k, i) => {
+      this.units.push(makeChampionUnit(k, 0, { isAlly: true, x: cx - 500, y: cy + 60 + i*50, save: this.cfg.save }));
+    });
+    const foes = this.cfg.foes || ['BABA'];
+    for(let i = 0; i < (this.cfg.foeCount || 2); i++){
+      const k = foes[i % foes.length];
+      this.units.push(makeChampionUnit(k, 1, { x: cx + 500, y: cy + (i-1)*50, mult: this.cfg.foeMult || 1 }));
+    }
+    this.teamKills = [0, 0];
+    this.killGoal = this.cfg.killGoal || 8;
+    this.timeLimit = this.cfg.timeLimit || 300;
   }
 
   setPlayerInput(dx, dy){ this.playerInput = { dx, dy }; }
@@ -145,6 +211,8 @@ export class Sim{
     this._processCastQueue();
 
     if(this.mode === 'siege') this._tickSiege(dt);
+    else if(this.mode === 'defense') this._tickDefense(dt);
+    else if(this.mode === 'boss') this._tickBoss(dt);
     else this._tickArena(dt);
 
     // Nettoyage des unités temporaires (invocations expirées).
@@ -327,7 +395,10 @@ export class Sim{
       t.dead = true;
       this.onEvent({ type: 'death', unit: t, killer: u });
       if(t.kind === 'nexus') this._endMatch(u.team === 0);
-      if(t.kind === 'champ' && this.mode === 'arena'){
+      // Élimination d'un champion — comptabilisée dans tous les modes (pas
+      // seulement en Arène), pour que la récompense de fin de match reflète
+      // les vraies éliminations en Siège/Défense/Boss aussi.
+      if(t.kind === 'champ' && this.teamKills){
         this.teamKills[u.team]++;
         this.onEvent({ type: 'score', teamKills: this.teamKills.slice() });
       }
@@ -341,8 +412,11 @@ export class Sim{
 
   _respawn(t){
     if(this.over) return;
+    // Boss et ennemis en mode défense ne respawnent pas
+    if(t.respawnDisabled) return;
+    if(this.mode === 'defense' && t.team === 1) return;
     t.dead = false; t.hp = t.maxHp;
-    if(this.mode === 'siege' && this.path){
+    if((this.mode === 'siege' || this.mode === 'defense') && this.path){
       const p = t.team === 0 ? this.path[0] : this.path[this.path.length-1];
       t.x = p.x; t.y = p.y; t.wp = t.team === 0 ? 1 : this.path.length-2;
     }
@@ -383,6 +457,71 @@ export class Sim{
     if(this.teamKills[0] >= this.killGoal) this._endMatch(true);
     else if(this.teamKills[1] >= this.killGoal) this._endMatch(false);
     else if(this.time >= this.timeLimit) this._endMatch(this.teamKills[0] >= this.teamKills[1]);
+  }
+
+  /**
+   * Défense — spawn des vagues d'ennemis depuis le côté droit de la lane.
+   * Victoire : avoir survécu à toutes les vagues (plus aucun ennemi vivant après la dernière).
+   * Défaite : nexus allié détruit.
+   */
+  _tickDefense(dt){
+    if(this.nexusAlly && this.nexusAlly.dead){ this._endMatch(false); return; }
+    this.waveTimer -= dt;
+    if(this.waveTimer <= 0 && this.defenseWaveN < this.defenseWaveTotal){
+      this.defenseWaveN++;
+      this.waveTimer = 20 + this.defenseWaveN * 2; // vagues de plus en plus rapprochées
+      this._spawnDefenseWave();
+      this.onEvent({ type: 'announce', text: `VAGUE ${this.defenseWaveN} / ${this.defenseWaveTotal}` });
+    }
+    // Déplacer les sbires ennemis en mode défense
+    this.units.forEach(u => { if(u.kind === 'minion' && !u.dead && u.team === 1) this._minionMove(u, dt); });
+
+    // Vérifier la fin : toutes les vagues lancées + plus d'ennemis vivants
+    if(this.defenseWaveN >= this.defenseWaveTotal && this.waveTimer <= 0){
+      const aliveEnemies = this.units.filter(u => !u.dead && u.team === 1);
+      if(aliveEnemies.length === 0) this._endMatch(true);
+    }
+  }
+
+  _spawnDefenseWave(){
+    const path = this.path;
+    if(!path) return;
+    const spawn = this._defenseSpawnSide || path[path.length-1];
+    const waveMult = (this.cfg.foeMult || 1) * (1 + this.defenseWaveN * 0.12);
+    // Sbires
+    const minionCount = 2 + Math.floor(this.defenseWaveN * 1.2);
+    for(let i = 0; i < minionCount; i++){
+      const m = makeMinion(1, path, path.length - 2);
+      m.x = spawn.x + (i - Math.floor(minionCount/2)) * 28;
+      m.y = spawn.y;
+      m.hp *= waveMult; m.maxHp = m.hp; m.atk *= waveMult;
+      this.units.push(m);
+    }
+    // À partir de la vague 3, un champion ennemi accompagne la vague
+    if(this.defenseWaveN >= 3){
+      const foes = this.cfg.foes || ['BABA'];
+      const k = foes[this.defenseWaveN % foes.length];
+      const champ = makeChampionUnit(k, 1, { x: spawn.x, y: spawn.y - 50, mult: waveMult, path, wp: path.length - 2 });
+      champ.respawnDisabled = true; // les champions de vague ne respawnent pas
+      this.units.push(champ);
+    }
+  }
+
+  /**
+   * Boss — surveille uniquement si le boss est mort (victoire) ou le joueur mort
+   * + temps écoulé (défaite). Les alliés/ennemis secondaires respawnent normalement.
+   */
+  _tickBoss(dt){
+    if(this.boss && this.boss.dead) { this._endMatch(true); return; }
+    if(this.player.dead) { this._endMatch(false); return; }
+    if(this.time >= this.timeLimit) this._endMatch(false);
+    // Annonce à mi-temps si le boss est sous 50% PV
+    if(this.boss && !this._bossHalfAnnounced && (this.boss.hp / this.boss.maxHp) < 0.5){
+      this._bossHalfAnnounced = true;
+      this.onEvent({ type: 'announce', text: `${this.boss.name} est affaibli !` });
+    }
+    // Mise à jour HUD : HP du boss
+    this.onEvent({ type: 'boss-hp', boss: this.boss });
   }
 
   _endMatch(victory){

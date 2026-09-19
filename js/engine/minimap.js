@@ -8,10 +8,13 @@ export class Minimap {
   /**
    * @param {HTMLElement} container — .hud-minimap déjà dans le DOM
    * @param {{ w:number, h:number }} worldSize
+   * @param {{ path?: {x,y}[], structures?: Unit[] }} [opts] — fond schématique optionnel
    */
-  constructor(container, worldSize) {
+  constructor(container, worldSize, opts = {}) {
     this.W = worldSize.w;
     this.H = worldSize.h;
+    this.path = opts.path || null;          // waypoints de la lane (mode Siège/Défense)
+    this.staticStructures = opts.structures || []; // tours/nexus pour fond figé
 
     this.canvas = document.createElement('canvas');
     this.canvas.width  = container.clientWidth  || 130;
@@ -34,6 +37,29 @@ export class Minimap {
 
     const tx = x => (x / W) * cw;
     const ty = y => (y / H) * ch;
+
+    // ── Fond schématique : lane + points fixes ───────────────────────────────
+    if(this.path && this.path.length > 1){
+      // Trait de lane
+      ctx.beginPath();
+      ctx.moveTo(tx(this.path[0].x), ty(this.path[0].y));
+      for(const p of this.path) ctx.lineTo(tx(p.x), ty(p.y));
+      ctx.strokeStyle = 'rgba(160,130,80,.45)';
+      ctx.lineWidth = 3;
+      ctx.lineJoin = 'round';
+      ctx.stroke();
+      ctx.lineWidth = 1;
+
+      // Points de nexus/structures (passés à la construction ou lus des unités live)
+      const structures = this.staticStructures.length ? this.staticStructures
+        : units.filter(u => u.kind === 'nexus' || u.kind === 'tower');
+      for(const s of structures){
+        const color = s.team === 0 ? 'rgba(90,169,255,.5)' : 'rgba(255,100,80,.5)';
+        const size  = s.kind === 'nexus' ? 5 : 3;
+        ctx.fillStyle = color;
+        ctx.fillRect(tx(s.x) - size/2, ty(s.y) - size/2, size, size);
+      }
+    }
 
     for (const u of units) {
       if (u.dead) continue;

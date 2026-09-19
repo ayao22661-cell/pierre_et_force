@@ -121,8 +121,14 @@ export class Match{
         this.onHud({ teamKills: e.teamKills });
         break;
       case 'announce':
-        // Utilisé par le revive, le burn, etc.
+        // Utilisé par le revive, le burn, les vagues, etc.
         if(this._hud) this._hud.announce(e.text);
+        break;
+      case 'boss-spawn':
+        if(this._hud) this._hud.showBossBar(e.boss);
+        break;
+      case 'boss-hp':
+        if(this._hud) this._hud.updateBossBar(e.boss);
         break;
       case 'end':
         this._running = false;
@@ -159,9 +165,21 @@ export class Match{
   }
 
   _objectiveText(){
-    if(this.sim.mode === 'siege'){
-      const na = this.sim.nexusAlly, ne = this.sim.nexusEnemy;
+    const m = this.sim.mode;
+    if(m === 'siege'){
+      const ne = this.sim.nexusEnemy;
       return `Nexus ennemi ${Math.round(100*ne.hp/ne.maxHp)}%`;
+    }
+    if(m === 'defense'){
+      const na = this.sim.nexusAlly;
+      const wave = this.sim.defenseWaveN, total = this.sim.defenseWaveTotal;
+      return `Défense — Nexus ${Math.round(100*na.hp/na.maxHp)}% • Vague ${wave}/${total}`;
+    }
+    if(m === 'boss'){
+      if(this.sim.boss){
+        return `BOSS — ${this.sim.boss.name} ${Math.round(100*this.sim.boss.hp/this.sim.boss.maxHp)}% PV`;
+      }
+      return 'BOSS';
     }
     return `Score ${this.sim.teamKills[0]} – ${this.sim.teamKills[1]} / ${this.sim.killGoal}`;
   }

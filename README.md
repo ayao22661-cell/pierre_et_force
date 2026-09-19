@@ -69,18 +69,24 @@ Pour rester honnête sur l'ampleur du travail — prochaines couches dans l'ordr
    (DoT après sort), cdKill (−CDs à l'élim). Le HUD affiche un résumé compact
    des bonus actifs sous les barres HP/Mana.
 
-3. **Mode Défense et Boss** — seuls Siège et Arène sont simulés. Défense
-   et Boss utilisent la même structure `Sim` mais avec des règles différentes
-   à ajouter dans `js/game/sim.js` (vagues défensives, HP de boss inflé).
+3. ~~**Mode Défense et Boss**~~ ✅ — `js/game/sim.js` implémente désormais
+   quatre modes distincts via `_buildDefense` / `_buildBoss` / `_buildSiege` /
+   `_buildArena`. Défense : vagues d'ennemis progressives sur la lane, les
+   ennemis ne respawnent pas, victoire = survivre toutes les vagues. Boss :
+   arène avec un champion ennemi ×2,5 mult, pas de respawn, barre de PV dédiée
+   en haut du HUD (rouge → rouge vif sous 25%). `deploy.js` route correctement
+   les labels DÉFENSE → `defense` et BOSS → `boss`.
 
-4. **Onglet Éveil — niveau de sort** — les sorts ont 5 niveaux dans
-   `champions.js` (`cd`, `dmg`, `heal`…), mais `abilities.js` utilise
-   toujours `[0]` (niveau 1). Il faut lire `save.spellLevels[champ][slot]`
-   et accéder au bon index du tableau.
+4. ~~**Onglet Éveil — niveau de sort**~~ ✅ — `abilities.js` lit désormais
+   `save.spellLevels[champKey][slot]` (entier 0-4) via `_spellLevels` stocké
+   sur chaque unité alliée. Toutes les fonctions `dmgOf / healOf / shieldOf /
+   buffArmOf` et les CD utilisent l'index de rang correct. La sauvegarde
+   initialise `spellLevels: {}` dans `defaultSave()`.
 
-5. **Minimap active en mode Siège** — la minimap affiche déjà les unités,
-   mais elle ne dessine pas la lane ni les tours. Ajouter un fond schématique
-   (ligne de lane, points tours/nexus) rendrait la carte lisible sans unités.
+5. ~~**Minimap active en mode Siège**~~ ✅ — `minimap.js` dessine désormais
+   un fond schématique : trait de lane (beige translucide) tracé depuis les
+   waypoints du `path`, et petits carrés colorés pour les nexus/tours.
+   Le `CombatHud` transmet `sim.path` au constructeur de `Minimap`.
 
 6. **Faille (mode infini)**, **succès et quêtes**, **système de slots de
    sauvegarde multiples** — non commencés.

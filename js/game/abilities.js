@@ -8,6 +8,18 @@
 // l'allié le plus pertinent à portée).
 // ============================================================
 
+/**
+ * Renvoie l'index de niveau d'un sort (0-based) pour une unité.
+ * Lit save.spellLevels[champKey][slot] si disponible (0-4),
+ * sinon utilise le rang 0 (niveau 1).
+ */
+function spellRankOf(u, slot){
+  const levels = u._spellLevels;
+  if(!levels) return 0;
+  const rank = levels[slot];
+  return (rank >= 0 && rank <= 4) ? rank : 0;
+}
+
 /** Tente de lancer le sort au slot donné (0=A,1=Z,2=E,3=R). Renvoie true si lancé. */
 export function tryCastAbility(sim, u, slot){
   if(!u || u.dead) return false;
@@ -20,45 +32,54 @@ export function tryCastAbility(sim, u, slot){
   if((u.mana||0) < cost) return false;
 
   u.mana -= cost;
-  u.cds[slot] = Array.isArray(a.cd) ? a.cd[0] : (a.cd || 6);
-  sim.onEvent({ type: 'cast', unit: u, slot, ability: a });
+  // Utilise le rang du sort pour le CD (tableau si plusieurs niveaux, sinon valeur fixe)
+  const rank = spellRankOf(u, slot);
+  const baseCd = Array.isArray(a.cd) ? (a.cd[rank] ?? a.cd[0]) : (a.cd || 6);
+  // Accélération de capacité (objets + talents) — même formule de rendements
+  // décroissants que l'armure : CD réel = CD de base * 100 / (100 + ah).
+  const ah = u.bns?.ah || 0;
+  u.cds[slot] = baseCd * 100 / (100 + ah);
+  sim.onEvent({ type: 'cast', unit: u, slot, ability: a, rank });
 
   const fn = EXECUTORS[a.type] || EXECUTORS.self;
-  fn(sim, u, a);
+  fn(sim, u, a, rank);
 
   // Burn (talent Feu — Brasier) : après chaque capacité, les ennemis
   // dans un rayon standard reçoivent un DoT léger pendant 3 s.
   if(u.bns?.burn > 0){
-    _applyBurn(sim, u, a);
+    _applyBurn(sim, u, a, rank);
   }
 
   return true;
 }
 
-function dmgOf(a, u){
-  const base = Array.isArray(a.dmg) ? (a.dmg[0]||0) : (a.dmg||0);
+/** Récupère la valeur scalaire à l'index de rang dans un tableau, ou la valeur brute. */
+function ranked(val, rank){ return Array.isArray(val) ? (val[rank] ?? val[0] ?? 0) : (val || 0); }
+
+function dmgOf(a, u, rank){
+  const base = ranked(a.dmg, rank ?? 0);
   let total = base + (u.atk||0) * (a.ratio||0);
   // Bonus ultime (talent Feu — Cœur ardent)
   if(a.ult && u.bns?.ultDmg) total *= (1 + u.bns.ultDmg);
   return total;
 }
-function healOf(a, u){
-  const base = Array.isArray(a.heal) ? (a.heal[0]||0) : (a.heal||0);
+function healOf(a, u, rank){
+  const base = ranked(a.heal, rank ?? 0);
   let total = base + (u.maxHp||0) * (a.healR||0);
   // Bonus soins prodigués (talent Eau — Source)
   if(u.bns?.healP) total *= (1 + u.bns.healP);
   return total;
 }
-function shieldOf(a, u){
-  const base = Array.isArray(a.shield) ? (a.shield[0]||0) : (a.shield||0);
+function shieldOf(a, u, rank){
+  const base = ranked(a.shield, rank ?? 0);
   let total = base + (u.maxHp||0) * (a.shieldR||0);
   // Bonus boucliers (talent Terre — Granit)
   if(u.bns?.shieldP) total *= (1 + u.bns.shieldP);
   return total;
 }
-function buffArmOf(a){
+function buffArmOf(a, rank){
   const buf = a.buff && a.buff.arm;
-  return Array.isArray(buf) ? (buf[0]||0) : (buf||0);
+  return ranked(buf, rank ?? 0);
 }
 
 function applyCC(sim, u, t, a){
@@ -78,25 +99,25 @@ function heal(sim, target, amount){
 
 const EXECUTORS = {
   // Buff/bouclier sur soi (ex. "Mur de Pierre" de Tarine).
-  self(sim, u, a){
-    if(a.shield) u.shield += shieldOf(a, u);
-    const arm = buffArmOf(a);
+  self(sim, u, a, rank){
+    if(a.shield) u.shield += shieldOf(a, u, rank);
+    const arm = buffArmOf(a, rank);
     if(arm){ u.tempArm = arm; u.tempArmUntil = sim.time + ((a.buff&&a.buff.d)||3); }
     sim.onEvent({ type: 'fx-self', unit: u, color: a.color });
   },
 
   // Projectile visé sur l'ennemi le plus proche — "line" (ultimes à portée
   // longue) traité comme une variante plus large du même schéma.
-  shot(sim, u, a){ castProjectile(sim, u, a); },
-  line(sim, u, a){ castProjectile(sim, u, a); },
+  shot(sim, u, a, rank){ castProjectile(sim, u, a, rank); },
+  line(sim, u, a, rank){ castProjectile(sim, u, a, rank); },
 
   // Ruée vers l'ennemi le plus proche puis impact en zone à l'arrivée.
   // "blink" (téléportation) réutilise la même logique avec une portée dédiée.
-  dash(sim, u, a){ castDash(sim, u, a); },
-  blink(sim, u, a){ castDash(sim, u, a); },
+  dash(sim, u, a, rank){ castDash(sim, u, a, rank); },
+  blink(sim, u, a, rank){ castDash(sim, u, a, rank); },
 
   // Zone ciblée au sol, avec un court délai avant l'impact (télégraphié).
-  circle(sim, u, a){
+  circle(sim, u, a, rank){
     const foe = sim._nearestFoe(u, a.range || 500);
     const tx = foe ? foe.x : u.x + u.facing.x * (a.range||300);
     const ty = foe ? foe.y : u.y + u.facing.y * (a.range||300);
@@ -107,7 +128,7 @@ const EXECUTORS = {
       for(const t of sim.units){
         if(t.dead || t.team === u.team || t.team === undefined) continue;
         if(Math.hypot(t.x-tx, t.y-ty) <= (a.radius||150)){
-          sim._applyDamage(u, t, dmgOf(a, u));
+          sim._applyDamage(u, t, dmgOf(a, u, rank));
           applyCC(sim, u, t, a);
         }
       }
@@ -115,7 +136,7 @@ const EXECUTORS = {
   },
 
   // Cône mêlée dans la direction actuelle du lanceur.
-  cone(sim, u, a){
+  cone(sim, u, a, rank){
     const range = a.range || 220, half = (a.angle||1.2)/2;
     sim.onEvent({ type: 'fx-cone', unit: u, range, angle: a.angle||1.2, color: a.color });
     for(const t of sim.units){
@@ -125,38 +146,38 @@ const EXECUTORS = {
       const ang = Math.atan2(dy,dx) - Math.atan2(u.facing.y, u.facing.x);
       const norm = Math.atan2(Math.sin(ang), Math.cos(ang));
       if(Math.abs(norm) <= half){
-        sim._applyDamage(u, t, dmgOf(a, u));
+        sim._applyDamage(u, t, dmgOf(a, u, rank));
         applyCC(sim, u, t, a);
       }
     }
   },
 
   // Explosion centrée sur soi — vers les ennemis (dégâts) ou les alliés (soin/bouclier).
-  nova(sim, u, a){
+  nova(sim, u, a, rank){
     const radius = a.radius || 260;
     sim.onEvent({ type: 'ground-impact', x: u.x, y: u.y, radius, color: a.color });
     if(a.team === 'ally'){
       for(const t of sim.units){
         if(t.dead || t.team !== u.team || t.kind !== 'champ') continue;
         if(Math.hypot(t.x-u.x, t.y-u.y) > radius) continue;
-        if(a.heal) heal(sim, t, healOf(a, u));
-        if(a.shield) t.shield += shieldOf(a, u);
+        if(a.heal) heal(sim, t, healOf(a, u, rank));
+        if(a.shield) t.shield += shieldOf(a, u, rank);
       }
     } else {
       for(const t of sim.units){
         if(t.dead || t.team === u.team || t.team === undefined) continue;
         if(Math.hypot(t.x-u.x, t.y-u.y) > radius) continue;
-        if(a.dmg) sim._applyDamage(u, t, dmgOf(a, u));
+        if(a.dmg) sim._applyDamage(u, t, dmgOf(a, u, rank));
         applyCC(sim, u, t, a);
       }
     }
-    const arm = buffArmOf(a);
+    const arm = buffArmOf(a, rank);
     if(arm){ u.tempArm = arm; u.tempArmUntil = sim.time + ((a.buff&&a.buff.d)||3); }
   },
 
   // Zone persistante simplifiée en impact instantané (dégâts aux ennemis,
   // soin aux alliés présents dans le rayon) — pas encore de tick continu.
-  zone(sim, u, a){
+  zone(sim, u, a, rank){
     const foe = sim._nearestFoe(u, a.range || 400);
     const tx = foe ? foe.x : u.x + u.facing.x * (a.range||250);
     const ty = foe ? foe.y : u.y + u.facing.y * (a.range||250);
@@ -165,25 +186,25 @@ const EXECUTORS = {
       if(t.dead) continue;
       const dist = Math.hypot(t.x-tx, t.y-ty);
       if(dist > (a.radius||170)) continue;
-      if(t.team === u.team && t.kind === 'champ' && a.heal) heal(sim, t, healOf(a, u)*3);
+      if(t.team === u.team && t.kind === 'champ' && a.heal) heal(sim, t, healOf(a, u, rank)*3);
       else if(t.team !== u.team && t.team !== undefined && a.dmg){
-        sim._applyDamage(u, t, dmgOf(a, u)*3);
+        sim._applyDamage(u, t, dmgOf(a, u, rank)*3);
         applyCC(sim, u, t, a);
       }
     }
   },
 
   // Soin ciblé sur l'allié le plus blessé à portée (ou soi-même).
-  ally(sim, u, a){
+  ally(sim, u, a, rank){
     const target = sim._nearestWoundedAlly(u, a.range || 500);
-    if(a.heal) heal(sim, target, healOf(a, u));
+    if(a.heal) heal(sim, target, healOf(a, u, rank));
     if(a.buff && a.buff.ms){ target.ms = target.baseMs * 1.001 + a.buff.ms; setTimeout(() => { if(!target.dead) target.ms = target.baseMs; }, (a.buff.d||2)*1000); }
     sim.onEvent({ type: 'fx-beam', from: u, to: target, color: a.color });
   },
 
   // Invocation temporaire — un allié fantôme qui combat quelques secondes.
-  summon(sim, u, a){
-    const power = Array.isArray(a.power) ? (a.power[0]||0.5) : (a.power||0.5);
+  summon(sim, u, a, rank){
+    const power = ranked(a.power, rank) || 0.5;
     const ghost = {
       id: -Math.floor(Math.random()*1e9), kind: 'champ', key: u.key, d: u.d,
       name: u.name + ' (Lieutenant)', team: u.team,
@@ -203,9 +224,9 @@ const EXECUTORS = {
   },
 };
 
-function _applyBurn(sim, u, a){
+function _applyBurn(sim, u, a, rank){
   const burnPct = u.bns.burn;
-  const burnDps = dmgOf(a, u) * burnPct; // % des dégâts de base du sort
+  const burnDps = dmgOf(a, u, rank) * burnPct; // % des dégâts de base du sort
   const burnDur = 3;
   const burnTick = 0.5;
   // Cible les unités adverses à portée de la capacité (rayon max 300)
@@ -223,7 +244,7 @@ function _applyBurn(sim, u, a){
   }
 }
 
-function castProjectile(sim, u, a){
+function castProjectile(sim, u, a, rank){
   const foe = sim._nearestFoe(u, a.range || 600);
   if(!foe) return;
   sim.onEvent({ type: 'projectile', from: u, to: foe, color: a.color || u.proj || u.fx, isAbility: true });
@@ -231,13 +252,13 @@ function castProjectile(sim, u, a){
   const travel = Math.max(60, dist / (a.speed || 900)) * 1000;
   setTimeout(() => {
     if(sim.over || foe.dead) return;
-    sim._applyDamage(u, foe, dmgOf(a, u));
+    sim._applyDamage(u, foe, dmgOf(a, u, rank));
     applyCC(sim, u, foe, a);
     if(a.pierce){
       for(const t of sim.units){
         if(t === foe || t.dead || t.team === u.team || t.team === undefined) continue;
         if(Math.hypot(t.x-foe.x, t.y-foe.y) < (a.width||46)*2){
-          sim._applyDamage(u, t, dmgOf(a, u));
+          sim._applyDamage(u, t, dmgOf(a, u, rank));
           applyCC(sim, u, t, a);
         }
       }
@@ -245,7 +266,7 @@ function castProjectile(sim, u, a){
   }, travel);
 }
 
-function castDash(sim, u, a){
+function castDash(sim, u, a, rank){
   const foe = sim._nearestFoe(u, a.range || 350);
   const range = a.range || 350;
   let tx, ty;
@@ -263,10 +284,10 @@ function castDash(sim, u, a){
   for(const t of sim.units){
     if(t.dead || t.team === u.team || t.team === undefined) continue;
     if(Math.hypot(t.x-tx, t.y-ty) <= radius){
-      sim._applyDamage(u, t, dmgOf(a, u));
+      sim._applyDamage(u, t, dmgOf(a, u, rank));
       applyCC(sim, u, t, a);
     }
   }
-  const arm = buffArmOf(a);
+  const arm = buffArmOf(a, rank);
   if(arm){ u.tempArm = arm; u.tempArmUntil = sim.time + ((a.buff&&a.buff.d)||3); }
 }

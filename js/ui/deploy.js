@@ -5,7 +5,7 @@ import { CHAMPS } from '../data/champions.js';
 import { portraitFor, castEntry } from '../engine/portraits.js';
 import { el } from './screens.js';
 
-const MODE_MAP = { 'SIÈGE': 'siege', 'ARÈNE': 'arena', 'DÉFENSE': 'siege', 'BOSS': 'siege' };
+const MODE_MAP = { 'SIÈGE': 'siege', 'ARÈNE': 'arena', 'DÉFENSE': 'defense', 'BOSS': 'boss' };
 
 export function renderDeploy(mission, modeLabel, save, onLaunch){
   document.getElementById('deploy-mission-name').textContent = `${mission.num}. ${mission.name}`;

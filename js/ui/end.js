@@ -42,8 +42,8 @@ export function renderEnd(victory, mission, save, sim, onHub, onRetry){
     save.cauris += cauris;
     save.stats   = save.stats || {};
     save.stats.kills = (save.stats.kills || 0) + kills;
-    save.stats.wins  = (save.stats.wins  || 0) + 1;
-    save.stats.games = (save.stats.games || 0) + 1;
+    // wins/games sont déjà incrémentés par recordVictory() (game/state.js),
+    // appelé avant renderEnd() dans main.js — ne pas les recompter ici.
 
     // Montée de niveau
     let leveled = false;
@@ -68,8 +68,7 @@ export function renderEnd(victory, mission, save, sim, onHub, onRetry){
 
     writeSave(save);
   } else {
-    save.stats   = save.stats || {};
-    save.stats.games = (save.stats.games || 0) + 1;
+    // games est déjà incrémenté par recordDefeat() (game/state.js).
     writeSave(save);
     rewards.appendChild(rewardRow('Conseil', 'Reviens avec un allié pour équilibrer le combat.'));
   }
