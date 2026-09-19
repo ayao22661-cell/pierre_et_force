@@ -5,6 +5,7 @@
 import { CHAMPS } from '../data/champions.js';
 import { portraitFor } from '../engine/portraits.js';
 import { el } from './screens.js';
+import { Minimap } from '../engine/minimap.js';
 
 const KEYS = ['A', 'Z', 'E', 'R'];
 
@@ -15,6 +16,10 @@ export class CombatHud{
     this.root = document.getElementById('game-hud');
     this.root.innerHTML = '';
     this._build(onPause);
+    const miniEl = this.root.querySelector('.hud-minimap');
+    if (miniEl && this.match.sim) {
+      this.minimap = new Minimap(miniEl, { w: renderer.worldSize?.w || 2200, h: renderer.worldSize?.h || 1500 });
+    }
     this._tickFn = (dt) => this._update(dt);
     renderer.addFrameListener(this._tickFn);
   }
@@ -50,13 +55,19 @@ export class CombatHud{
     left.appendChild(bars);
     bottom.appendChild(left);
 
-    // Sorts (affichage seul pour l'instant — pas encore actionnables)
+    // Sorts — jouables au tap (mobile) ou au clic (desktop), en plus des
+    // touches A/Z/E/R gérées directement par Match.
     const spells = el('div', 'hud-spells');
+    this.spellEls = [];
     (d.abil || []).forEach((a, i) => {
       const slot = el('div', 'spell-slot' + (a.ult ? ' ult' : ''), a.name[0]);
       slot.title = a.name;
+      const cd = el('div', 'spell-slot-cd');
+      slot.appendChild(cd);
       slot.appendChild(el('span', 'key', KEYS[i] || ''));
+      slot.addEventListener('click', () => this.match.castSlot(i));
       spells.appendChild(slot);
+      this.spellEls.push({ el: slot, cdEl: cd, cost: a.cost || 0 });
     });
     bottom.appendChild(spells);
 
@@ -170,11 +181,21 @@ export class CombatHud{
     const mpTxt = document.getElementById('hud-mp-txt');
     if(hpTxt) hpTxt.textContent = `${Math.round(p.hp)} / ${Math.round(p.maxHp)}`;
     if(mpTxt) mpTxt.textContent = `${Math.round(p.mana)} / ${Math.round(p.maxMana)}`;
+
+    if (this.minimap) this.minimap.update(this.match.sim.units, p);
+    (this.spellEls || []).forEach((s, i) => {
+      const cd = p.cds ? p.cds[i] : 0;
+      const affordable = p.mana >= s.cost;
+      s.el.classList.toggle('cooling', cd > 0.05);
+      s.el.classList.toggle('no-mana', cd <= 0.05 && !affordable);
+      s.cdEl.textContent = cd > 0.05 ? Math.ceil(cd) : '';
+    });
   }
 
   destroy(){
     this.renderer.removeFrameListener(this._tickFn);
     this._joyCleanup?.();
+    this.minimap?.destroy();
     this.root.innerHTML = '';
   }
 }

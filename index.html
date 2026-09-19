@@ -21,11 +21,18 @@
 
   <!-- ===== TITRE ===== -->
   <div id="screen-title" class="screen active">
-    <img class="pf-logo" src="assets/logo.png" alt="Pierre et Force">
-    <div class="pf-hero-title">PIERRE ET FORCE</div>
-    <div class="pf-hero-sub">L'ÉVEIL</div>
-    <div class="pf-title-btns">
-      <button class="pf-btn pf-btn-brand" id="btn-start">COMMENCER</button>
+    <!-- Art de fond atmosphérique -->
+    <div class="pf-title-bg">
+      <img src="assets/art_divine.png" class="pf-title-bg-img" alt="">
+      <img src="assets/art_warrior.png" class="pf-title-hero-img" alt="">
+    </div>
+    <div class="pf-title-content">
+      <img class="pf-logo" src="assets/logo.png" alt="Pierre et Force">
+      <div class="pf-hero-title">PIERRE ET FORCE</div>
+      <div class="pf-hero-sub">L'ÉVEIL</div>
+      <div class="pf-title-btns">
+        <button class="pf-btn pf-btn-brand" id="btn-start">COMMENCER</button>
+      </div>
     </div>
   </div>
 
@@ -60,12 +67,20 @@
       <div class="hub-panel" id="panel-journal" data-panel="journal">
         <div class="journal-entries" id="journal-entries"></div>
       </div>
+      <div class="hub-panel" id="panel-eveil" data-panel="eveil">
+        <div id="eveil-content"></div>
+      </div>
+      <div class="hub-panel" id="panel-shop" data-panel="shop">
+        <div id="shop-content"></div>
+      </div>
     </div>
     <div class="hub-tabs">
       <button class="hub-tab-btn active" data-tab="missions">MISSIONS</button>
       <button class="hub-tab-btn" data-tab="codex">HÉROS</button>
       <button class="hub-tab-btn" data-tab="profile">PROFIL</button>
       <button class="hub-tab-btn" data-tab="journal">JOURNAL</button>
+      <button class="hub-tab-btn" data-tab="eveil">ÉVEIL</button>
+      <button class="hub-tab-btn" data-tab="shop">BOUTIQUE</button>
     </div>
   </div>
 

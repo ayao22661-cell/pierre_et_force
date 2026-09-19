@@ -11,6 +11,7 @@
 // données nécessaires). Ici : attaque de base + déplacement + mort.
 // ============================================================
 import { CHAMPS } from '../data/champions.js';
+import { tryCastAbility } from './abilities.js';
 
 let UID = 1;
 
@@ -23,12 +24,14 @@ export function makeChampionUnit(key, team, opts = {}){
     x: opts.x ?? 0, y: opts.y ?? 0, r: d.body === 2 ? 30 : 25,
     hp: d.hp * mult, maxHp: d.hp * mult,
     mana: d.mana || 0, maxMana: d.mana || 0,
-    atk: d.atk * mult, arm: d.arm, as: d.as, ms: d.ms, range: d.range,
+    atk: d.atk * mult, arm: d.arm, as: d.as, ms: d.ms, baseMs: d.ms, range: d.range,
     ranged: !!d.ranged, fx: d.fx, proj: d.proj || d.fx,
     role: d.role,
     isPlayer: !!opts.isPlayer, isAlly: !!opts.isAlly,
     atkCd: 0, dead: false, target: null, goal: opts.goal || null,
     path: opts.path || null, wp: opts.wp ?? 0,
+    cds: [0,0,0,0], shield: 0, tempArm: 0, tempArmUntil: 0,
+    cc: null, facing: { x: 1, y: 0 }, temporary: false, expiresAt: 0,
   };
 }
 
@@ -119,23 +122,54 @@ export class Sim{
       this._think(u, dt);
     }
     for(const u of this.units) if(!u.dead) this._tickAttack(u, dt);
+    for(const u of this.units) if(!u.dead && u.kind === 'champ') this._tickResources(u, dt);
+    this._processCastQueue();
 
     if(this.mode === 'siege') this._tickSiege(dt);
     else this._tickArena(dt);
+
+    // Nettoyage des unités temporaires (invocations expirées).
+    for(const u of this.units){
+      if(u.temporary && !u.dead && this.time >= u.expiresAt){
+        u.dead = true;
+        this.onEvent({ type: 'death', unit: u, silent: true });
+      }
+    }
+  }
+
+  _tickResources(u, dt){
+    for(let i = 0; i < u.cds.length; i++) if(u.cds[i] > 0) u.cds[i] = Math.max(0, u.cds[i] - dt);
+    if(u.maxMana) u.mana = Math.min(u.maxMana, u.mana + u.maxMana * 0.03 * dt);
+  }
+
+  /** Demande de lancer un sort — traitée au prochain tick (voir _processCastQueue). */
+  requestCast(unit, slot){
+    this._castQueue = this._castQueue || [];
+    this._castQueue.push({ unit, slot });
+  }
+
+  _processCastQueue(){
+    if(!this._castQueue || !this._castQueue.length) return;
+    const q = this._castQueue; this._castQueue = [];
+    for(const { unit, slot } of q) tryCastAbility(this, unit, slot);
   }
 
   _movePlayer(dt){
     const p = this.player;
     if(p.dead) return;
+    if(p.cc && p.cc.type !== 'slow' && this.time < p.cc.until) return; // étourdi/enraciné : ne bouge pas
     const inp = this.playerInput;
     if(inp && (inp.dx || inp.dy)){
       const len = Math.hypot(inp.dx, inp.dy) || 1;
-      p.x += (inp.dx/len) * p.ms * dt;
-      p.y += (inp.dy/len) * p.ms * dt;
+      const slowMul = (p.cc && p.cc.type === 'slow' && this.time < p.cc.until) ? (1 - p.cc.p) : 1;
+      p.x += (inp.dx/len) * p.ms * slowMul * dt;
+      p.y += (inp.dy/len) * p.ms * slowMul * dt;
+      p.facing = { x: inp.dx/len, y: inp.dy/len };
     }
   }
 
   _think(u, dt){
+    if(u.cc && u.cc.type !== 'slow' && this.time < u.cc.until) return; // étourdi/enraciné
     // Cible la plus proche adverse dans une zone d'agro.
     const foe = this._nearestFoe(u, 480);
     if(foe){
@@ -163,8 +197,10 @@ export class Sim{
 
   _moveToward(u, tx, ty, dt){
     const dx = tx-u.x, dy = ty-u.y, d = Math.hypot(dx,dy) || 1;
-    u.x += (dx/d) * u.ms * dt;
-    u.y += (dy/d) * u.ms * dt;
+    const slowMul = (u.cc && u.cc.type === 'slow' && this.time < u.cc.until) ? (1 - u.cc.p) : 1;
+    u.x += (dx/d) * u.ms * slowMul * dt;
+    u.y += (dy/d) * u.ms * slowMul * dt;
+    u.facing = { x: dx/d, y: dy/d };
   }
 
   _nearestFoe(u, radius){
@@ -178,8 +214,22 @@ export class Sim{
     return best;
   }
 
+  /** Allié le plus blessé (en % PV) à portée — ou soi-même si personne d'autre n'est éligible. */
+  _nearestWoundedAlly(u, radius){
+    let best = u, bestPct = u.hp / u.maxHp;
+    for(const o of this.units){
+      if(o === u || o.dead || o.team !== u.team || o.kind !== 'champ') continue;
+      const d = Math.hypot(o.x-u.x, o.y-u.y);
+      if(d > radius) continue;
+      const pct = o.hp / o.maxHp;
+      if(pct < bestPct){ bestPct = pct; best = o; }
+    }
+    return best;
+  }
+
   _tickAttack(u, dt){
     u.atkCd -= dt;
+    if(u.cc && u.cc.type === 'stun' && this.time < u.cc.until) return; // étourdi : n'attaque pas
     if(!u.target || u.target.dead){
       u.target = this._nearestFoe(u, u.range + 40);
     }
@@ -193,7 +243,8 @@ export class Sim{
   }
 
   _resolveAttack(u, t){
-    const dmg = Math.max(2, (u.atk||10) * (100/(100+(t.arm||0))));
+    const effArm = (t.arm||0) + ((t.tempArm && this.time < t.tempArmUntil) ? t.tempArm : 0);
+    const dmg = Math.max(2, (u.atk||10) * (100/(100+effArm)));
     if(u.ranged){
       this.onEvent({ type: 'projectile', from: u, to: t, color: u.proj || u.fx });
       setTimeout(() => this._applyDamage(u, t, dmg), 140);
@@ -205,6 +256,11 @@ export class Sim{
 
   _applyDamage(u, t, dmg){
     if(t.dead) return;
+    if(t.shield > 0){
+      const absorbed = Math.min(t.shield, dmg);
+      t.shield -= absorbed; dmg -= absorbed;
+    }
+    if(dmg <= 0){ this.onEvent({ type: 'hit', unit: t, dmg: 0, color: u.fx, blocked: true }); return; }
     t.hp -= dmg;
     this.onEvent({ type: 'hit', unit: t, dmg, color: u.fx });
     if(t.hp <= 0 && !t.dead){

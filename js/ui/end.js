@@ -1,9 +1,28 @@
 // ============================================================
-// END — écran de fin de match.
+// END — écran de fin de match (v3+).
+// Gère XP, montée de niveau, cauris, kills, déblocage alliés.
 // ============================================================
 import { el } from './screens.js';
+import { CAMPAIGN } from '../data/campaign.js';
+import { CHAMPS } from '../data/champions.js';
+import { writeSave } from '../game/state.js';
 
-export function renderEnd(victory, mission, save, onHub, onRetry){
+// Alliés débloqués à la fin de chaque acte (boss battu).
+// Génère automatiquement la map mission-fin-d-acte → champion.
+const UNLOCK_BY_MISSION = (() => {
+  const UNLOCK_ORDER = ['SAM','LUNDGREN','BABA','DARK'];
+  const map = {};
+  let idx = 0;
+  CAMPAIGN.forEach(acte => {
+    const last = acte.missions[acte.missions.length - 1];
+    if(last && idx < UNLOCK_ORDER.length){
+      map[last.id] = UNLOCK_ORDER[idx++];
+    }
+  });
+  return map;
+})();
+
+export function renderEnd(victory, mission, save, sim, onHub, onRetry){
   const title = document.getElementById('end-title');
   title.textContent = victory ? 'VICTOIRE' : 'DÉFAITE';
   title.style.color = victory ? 'var(--pf-good)' : 'var(--pf-danger)';
@@ -13,18 +32,50 @@ export function renderEnd(victory, mission, save, onHub, onRetry){
 
   const rewards = document.getElementById('end-rewards');
   rewards.innerHTML = '';
+
   if(victory){
-    const xp = 40 + (mission?.num || 1) * 10;
-    const cauris = 30 + (mission?.num || 1) * 6;
+    const xp     = 40 + (mission?.num || 1) * 10;
+    const cauris  = 30 + (mission?.num || 1) * 6;
+    const kills   = sim?.teamKills?.[0] || 0;
+
+    save.xp     += xp;
+    save.cauris += cauris;
+    save.stats   = save.stats || {};
+    save.stats.kills = (save.stats.kills || 0) + kills;
+    save.stats.wins  = (save.stats.wins  || 0) + 1;
+    save.stats.games = (save.stats.games || 0) + 1;
+
+    // Montée de niveau
+    let leveled = false;
+    while(save.xp >= (100 + save.level * 40) && save.level < 80){
+      save.xp -= (100 + save.level * 40);
+      save.level++;
+      leveled = true;
+    }
+
     rewards.appendChild(rewardRow('Expérience', `+${xp} XP`));
     rewards.appendChild(rewardRow('Cauris', `+${cauris} 🐚`));
-    save.xp += xp; save.cauris += cauris;
+    if(kills) rewards.appendChild(rewardRow('Éliminations', `${kills} ⚔`));
+    if(leveled) rewards.appendChild(rewardRow('NIVEAU+', `Niveau ${save.level} atteint !`));
+
+    // Déblocage d'allié à la fin de l'acte
+    const newAlly = mission?.id ? UNLOCK_BY_MISSION[mission.id] : null;
+    if(newAlly && !save.allies_unlocked.includes(newAlly)){
+      save.allies_unlocked.push(newAlly);
+      const champName = CHAMPS[newAlly]?.name || newAlly;
+      rewards.appendChild(rewardRow('Allié débloqué ! ✨', `${champName} rejoint l'équipe`));
+    }
+
+    writeSave(save);
   } else {
+    save.stats   = save.stats || {};
+    save.stats.games = (save.stats.games || 0) + 1;
+    writeSave(save);
     rewards.appendChild(rewardRow('Conseil', 'Reviens avec un allié pour équilibrer le combat.'));
   }
 
-  document.getElementById('btn-hub').onclick = onHub;
-  document.getElementById('btn-retry').onclick = onRetry;
+  document.getElementById('btn-hub').onclick    = onHub;
+  document.getElementById('btn-retry').onclick   = onRetry;
   document.getElementById('btn-retry').textContent = victory ? 'REJOUER' : 'RÉESSAYER';
 }
 

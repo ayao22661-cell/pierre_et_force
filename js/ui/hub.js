@@ -6,6 +6,7 @@ import { CHAMPS } from '../data/champions.js';
 import { CAST } from '../data/cast.js';
 import { portraitFor } from '../engine/portraits.js';
 import { isMissionDone, isMissionAvailable, writeSave } from '../game/state.js';
+import { renderShop, renderEveil, ensureShopSave } from './shop.js';
 import { el } from './screens.js';
 
 const CAMP_LABEL = { allie: 'ALLIÉ', ennemi: 'EMPIRE', neutre: 'LÉGENDE' };
@@ -69,10 +70,13 @@ export function buildHub(save, onSelectMission){
   const progEl = document.getElementById('hub-progress');
   if(progEl) progEl.textContent = `${doneCount} / ${ids.length} missions`;
 
+  ensureShopSave(save);
   _bindTabs();
   renderCodex();
   renderProfile(save);
   renderJournal(save);
+  renderEveil(save);
+  renderShop(save);
 }
 
 export function updateHubHeader(save){

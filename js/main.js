@@ -4,6 +4,7 @@
 import { Renderer } from './engine/renderer.js';
 import { Match } from './game/match.js';
 import { preloadPortraits } from './engine/unit-view.js';
+import { preloadArtTextures } from './engine/tilemap.js';
 import { PLAYABLE } from './data/champions.js';
 import { loadSave, writeSave, recordVictory, recordDefeat } from './game/state.js';
 import { goTo, toast } from './ui/screens.js';
@@ -12,11 +13,10 @@ import { renderDeploy } from './ui/deploy.js';
 import { CombatHud } from './ui/combat-hud.js';
 import { renderEnd } from './ui/end.js';
 
-// Démarré dès le chargement du script : le temps que le joueur traverse
-// titre → hub → déploiement, les 7 portraits ont largement eu le temps
-// de se décoder. launchMatch() attend quand même cette promesse par
-// sécurité (elle est déjà résolue dans l'immense majorité des cas).
+// Préchargement parallèle : portraits (compatibilité) + images d'art
 const portraitsReady = preloadPortraits(PLAYABLE);
+const artReady = preloadArtTextures();
+const assetsReady = Promise.all([portraitsReady, artReady]);
 
 let save = loadSave();
 let renderer = null;
@@ -46,14 +46,14 @@ function launchMatch(cfg){
   if(!renderer){
     renderer = new Renderer(document.getElementById('game-mount'));
   }
-  Promise.all([renderer.ready, portraitsReady]).then(() => {
+  Promise.all([renderer.ready, assetsReady]).then(() => {
     match = new Match(renderer, {
       ...cfg,
       onEnd: (res) => onMatchEnd(res),
     });
     hud = new CombatHud(renderer, match, () => toast('Pause — bientôt disponible'));
     hud.announce(`${currentMission.num}. ${currentMission.name}`);
-    window.__pf = { match, renderer }; // hook de debug — sans effet sur le jeu
+    window.__pf = { match, renderer };
   });
 }
 
@@ -62,7 +62,7 @@ function onMatchEnd({ victory }){
   else recordDefeat(save);
   setTimeout(() => {
     goTo('screen-end');
-    renderEnd(victory, currentMission, save, toHub, () => {
+    renderEnd(victory, currentMission, save, match?.sim, toHub, () => {
       goTo('screen-deploy');
       renderDeploy(currentMission, 'SIÈGE', save, launchMatch);
     });

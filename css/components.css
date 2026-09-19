@@ -76,10 +76,21 @@
   background: var(--pf-panel);
   display:flex; align-items:center; justify-content:center;
   position:relative; font-family: var(--pf-font-display); font-size:16px;
-  color: var(--pf-text-dim);
+  color: var(--pf-text); cursor:pointer; user-select:none;
+  transition: transform .08s ease;
 }
+.spell-slot:active{ transform: scale(.92); }
 .spell-slot .key{ position:absolute; bottom:1px; right:3px; font-size:9px; color: var(--pf-text-faint); }
 .spell-slot.ult{ border-color: var(--pf-gold-dim); }
+.spell-slot-cd{
+  position:absolute; inset:0; border-radius: inherit;
+  display:flex; align-items:center; justify-content:center;
+  font-family: var(--pf-font-display); font-size:18px; color:#fff;
+  background: rgba(0,0,0,0); pointer-events:none;
+}
+.spell-slot.cooling{ color: var(--pf-text-faint); }
+.spell-slot.cooling .spell-slot-cd{ background: rgba(0,0,0,.62); }
+.spell-slot.no-mana{ opacity:.45; }
 
 /* ── Badge de statut ── */
 .pf-badge{
@@ -163,3 +174,89 @@
 .profile-acte-list{ display:flex; flex-direction:column; gap:4px; }
 .profile-acte-row{ display:flex; justify-content:space-between; padding:8px 12px; font-size:12px; }
 .profile-acte-row .done{ color: var(--pf-good); }
+
+/* ============================================================
+   BOUTIQUE & ÉVEIL — ajout v3+
+   ============================================================ */
+
+/* ── Boutique ── */
+.shop-header{
+  display:flex; justify-content:space-between; align-items:center;
+  padding:10px 14px; margin-bottom:10px;
+}
+.shop-tier-label{
+  font-family: var(--pf-font-display); font-size:11px; letter-spacing:2px;
+  color: var(--pf-text-dim); margin: 14px 0 6px;
+}
+.shop-grid{
+  display:grid; grid-template-columns:repeat(auto-fill, minmax(160px, 1fr)); gap:8px;
+  margin-bottom:8px;
+}
+.shop-card{
+  padding:10px; display:flex; flex-direction:column; gap:4px;
+  border:1px solid var(--pf-border);
+}
+.shop-card.owned{ border-color: var(--pf-good); opacity:.75; }
+.shop-card-ico{ font-size:24px; line-height:1; }
+.shop-card-name{ font-weight:700; font-size:13px; }
+.shop-card-stats{ font-size:10px; color: var(--pf-text-dim); }
+.shop-card-from{ font-size:9px; color: var(--pf-text-faint); font-style:italic; }
+.shop-card-footer{
+  display:flex; align-items:center; justify-content:space-between;
+  margin-top:6px;
+}
+.shop-card-cost{ font-size:12px; color: var(--pf-gold); }
+.shop-owned-badge{ font-size:11px; color: var(--pf-good); font-weight:700; }
+.pf-btn.disabled{ opacity:.4; pointer-events:none; }
+
+/* ── Éveil (arbres de talents) ── */
+.eveil-header{
+  display:flex; justify-content:space-between; align-items:center;
+  padding:10px 14px; margin-bottom:10px;
+}
+.eveil-tree{
+  padding:12px; margin-bottom:10px;
+  border-left: 3px solid var(--tree-color, var(--pf-accent));
+}
+.eveil-tree-title{
+  display:flex; align-items:center; gap:8px;
+  font-family: var(--pf-font-display); font-size:14px; letter-spacing:1.5px;
+  margin-bottom:10px;
+}
+.eveil-gem{
+  display:inline-block; width:12px; height:12px; border-radius:3px;
+  background: var(--pf-accent); flex-shrink:0;
+}
+.eveil-node{
+  display:flex; justify-content:space-between; align-items:center;
+  padding:8px 0; border-bottom:1px solid var(--pf-border-dim);
+  gap:8px;
+}
+.eveil-node:last-child{ border-bottom:none; }
+.eveil-node.locked{ opacity:.4; }
+.eveil-node.maxed .eveil-node-name{ color: var(--tree-color, var(--pf-accent)); }
+.eveil-node-left{ flex:1; min-width:0; }
+.eveil-node-name{ font-size:13px; font-weight:700; }
+.eveil-node-desc{ font-size:11px; color:var(--pf-text-dim); margin-top:2px; }
+.eveil-node-req{ font-size:10px; color:var(--pf-danger); margin-top:2px; }
+.eveil-node-right{
+  display:flex; align-items:center; gap:6px; flex-shrink:0;
+}
+.eveil-pips{ display:flex; gap:3px; }
+.eveil-pip{
+  width:10px; height:10px; border-radius:2px;
+  border:1px solid rgba(255,255,255,.2);
+  background:transparent;
+}
+.eveil-pip.filled{
+  background: var(--pip-color, var(--pf-accent));
+  border-color: var(--pip-color, var(--pf-accent));
+}
+.eveil-btn-plus{
+  width:28px; height:28px; padding:0; font-size:16px; font-weight:700;
+  border-radius:6px;
+}
+.eveil-btn-rst{
+  width:28px; height:28px; padding:0; font-size:13px;
+  border-radius:6px; opacity:.6;
+}
