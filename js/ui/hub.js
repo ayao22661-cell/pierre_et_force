@@ -1,9 +1,20 @@
 // ============================================================
-// HUB — écran principal : liste des actes et missions.
+// HUB — écran principal : missions, codex des héros, profil, journal.
 // ============================================================
 import { CAMPAIGN } from '../data/campaign.js';
+import { CHAMPS } from '../data/champions.js';
+import { CAST } from '../data/cast.js';
+import { portraitFor } from '../engine/portraits.js';
 import { isMissionDone, isMissionAvailable, writeSave } from '../game/state.js';
 import { el } from './screens.js';
+
+const CAMP_LABEL = { allie: 'ALLIÉ', ennemi: 'EMPIRE', neutre: 'LÉGENDE' };
+const CAMP_BADGE = { allie: 'ally', ennemi: 'enemy', neutre: 'legend' };
+const ACCOUNT_MAX = 80;
+function xpForLevel(lvl){ return 100 + lvl*40; }
+
+let currentSave = null;
+let codexFilter = 'tous';
 
 function allMissionIds(){
   const ids = [];
@@ -19,6 +30,7 @@ function modeForMission(m, idx, acte, acteIdx){
 }
 
 export function buildHub(save, onSelectMission){
+  currentSave = save;
   const root = document.getElementById('hub-missions');
   root.innerHTML = '';
   const ids = allMissionIds();
@@ -56,6 +68,11 @@ export function buildHub(save, onSelectMission){
   const doneCount = save.missions_done.length;
   const progEl = document.getElementById('hub-progress');
   if(progEl) progEl.textContent = `${doneCount} / ${ids.length} missions`;
+
+  _bindTabs();
+  renderCodex();
+  renderProfile(save);
+  renderJournal(save);
 }
 
 export function updateHubHeader(save){
@@ -63,4 +80,164 @@ export function updateHubHeader(save){
   if(lvl) lvl.textContent = save.level;
   const cauris = document.getElementById('hub-cauris');
   if(cauris) cauris.textContent = save.cauris.toLocaleString('fr-FR');
+}
+
+// ---------------------------------------------------------------------
+// Onglets
+// ---------------------------------------------------------------------
+let tabsBound = false;
+function _bindTabs(){
+  if(tabsBound) return; // les boutons existent une fois pour toutes dans le DOM statique
+  tabsBound = true;
+  document.querySelectorAll('.hub-tab-btn').forEach(btn => {
+    btn.addEventListener('click', () => switchHubTab(btn.dataset.tab));
+  });
+  document.querySelectorAll('.codex-chip').forEach(chip => {
+    chip.addEventListener('click', () => {
+      codexFilter = chip.dataset.camp;
+      document.querySelectorAll('.codex-chip').forEach(c => c.classList.toggle('active', c === chip));
+      renderCodex();
+    });
+  });
+}
+
+export function switchHubTab(tab){
+  document.querySelectorAll('.hub-panel').forEach(p => p.classList.toggle('active', p.dataset.panel === tab));
+  document.querySelectorAll('.hub-tab-btn').forEach(b => b.classList.toggle('active', b.dataset.tab === tab));
+  const body = document.querySelector('#screen-hub .hub-body');
+  if(body) body.scrollTop = 0;
+}
+
+// ---------------------------------------------------------------------
+// Codex — le casting complet du récit (alliés, Empire, figures légendaires)
+// ---------------------------------------------------------------------
+function renderCodex(){
+  const box = document.getElementById('codex-list');
+  if(!box) return;
+  box.innerHTML = '';
+  for(const k in CAST){
+    const c = CAST[k];
+    if(codexFilter !== 'tous' && c.camp !== codexFilter) continue;
+    const card = el('div', 'champ-card');
+    const img = el('img', 'champ-card-img');
+    img.src = portraitFor(k);
+    img.alt = c.name;
+    card.appendChild(img);
+    card.appendChild(el('div', 'champ-card-overlay'));
+    card.appendChild(el('span', 'champ-card-badge ' + (CAMP_BADGE[c.camp]||'legend'), CAMP_LABEL[c.camp]||'LÉGENDE'));
+    const info = el('div', 'champ-card-info');
+    info.appendChild(el('div', 'champ-card-name', c.name));
+    info.appendChild(el('div', 'champ-card-role', c.role));
+    card.appendChild(info);
+    card.addEventListener('click', () => openChampDetail(k));
+    box.appendChild(card);
+  }
+}
+
+function openChampDetail(key){
+  const c = CAST[key];
+  if(!c) return;
+  const box = document.getElementById('codex-list');
+  if(!box) return;
+  const detail = el('div', 'pf-panel champ-detail');
+  const img = el('img', 'pf-portrait-img pf-portrait-xl');
+  img.src = portraitFor(key);
+  img.alt = c.name;
+  detail.appendChild(img);
+  const info = el('div', '');
+  info.appendChild(el('div', 'champ-detail-name', c.name));
+  info.appendChild(el('div', 'champ-detail-title', c.titre));
+  info.appendChild(el('div', 'champ-detail-bio', c.bio));
+  const back = el('button', 'pf-btn pf-btn-ghost pf-btn-sm', '← RETOUR');
+  back.style.marginTop = '10px';
+  back.addEventListener('click', renderCodex);
+  info.appendChild(back);
+  detail.appendChild(info);
+  box.innerHTML = '';
+  box.appendChild(detail);
+}
+
+// ---------------------------------------------------------------------
+// Profil — progression du compte, statistiques de Tarine, actes complétés
+// ---------------------------------------------------------------------
+function renderProfile(save){
+  const root = document.getElementById('profile-content');
+  if(!root) return;
+  root.innerHTML = '';
+
+  const t = CHAMPS.TARINE;
+  const cast = CAST.TARINE;
+
+  const hero = el('div', 'pf-panel profile-hero');
+  const img = el('img', 'pf-portrait-img pf-portrait-xl');
+  img.src = portraitFor('TARINE');
+  img.style.setProperty('--accent', t.fx);
+  hero.appendChild(img);
+  const info = el('div', '');
+  info.appendChild(el('div', 'profile-name', t.name.toUpperCase()));
+  info.appendChild(el('div', 'profile-title', cast?.titre || t.role));
+  const xpNeed = xpForLevel(save.level);
+  const xpPct = Math.min(100, Math.round(100 * save.xp / xpNeed));
+  const bar = el('div', 'pf-bar pf-bar-xp profile-xp-bar');
+  const fill = el('div', 'pf-bar-fill'); fill.style.transform = `scaleX(${xpPct/100})`;
+  bar.appendChild(fill);
+  info.appendChild(bar);
+  info.appendChild(el('div', 'pf-label', save.level >= ACCOUNT_MAX ? `Niveau ${save.level} (max)` : `${save.xp} / ${xpNeed} XP — Niveau ${save.level}`));
+  hero.appendChild(info);
+  root.appendChild(hero);
+
+  const ids = allMissionIds();
+  const stats = el('div', 'profile-stats-grid');
+  stats.appendChild(statTile('❤', Math.round(t.hp), 'PV de base'));
+  stats.appendChild(statTile('⚔', Math.round(t.atk), 'Attaque de base'));
+  stats.appendChild(statTile('🎯', `${save.missions_done.length}/${ids.length}`, 'Missions'));
+  stats.appendChild(statTile('🛡', save.allies_unlocked.length, 'Alliés débloqués'));
+  root.appendChild(stats);
+
+  const actes = el('div', 'pf-panel profile-acte-list');
+  actes.style.padding = '6px';
+  CAMPAIGN.forEach(acte => {
+    const total = acte.missions.length;
+    const done = acte.missions.filter(m => isMissionDone(save, m.id)).length;
+    const row = el('div', 'profile-acte-row');
+    row.appendChild(el('span', '', acte.label + ' — ' + acte.titre));
+    row.appendChild(el('span', done === total ? 'done' : '', `${done}/${total}`));
+    actes.appendChild(row);
+  });
+  root.appendChild(actes);
+}
+
+function statTile(ico, val, label){
+  const tile = el('div', 'pf-panel profile-stat-tile');
+  tile.appendChild(el('span', '', ico));
+  const wrap = el('div', '');
+  wrap.appendChild(el('div', 'profile-stat-val', String(val)));
+  wrap.appendChild(el('div', 'profile-stat-label', label));
+  tile.appendChild(wrap);
+  return tile;
+}
+
+// ---------------------------------------------------------------------
+// Journal — les pensées de Tarine, débloquées mission après mission
+// ---------------------------------------------------------------------
+function renderJournal(save){
+  const root = document.getElementById('journal-entries');
+  if(!root) return;
+  root.innerHTML = '';
+  const entries = [];
+  CAMPAIGN.forEach(acte => acte.missions.forEach(m => {
+    if(isMissionDone(save, m.id) && m.journal_victoire){
+      entries.push(m);
+    }
+  }));
+  if(!entries.length){
+    root.appendChild(el('div', 'journal-empty', 'Le journal de Tarine se remplit à mesure que tu avances dans l\'histoire.'));
+    return;
+  }
+  entries.forEach(m => {
+    const card = el('div', 'pf-panel journal-entry');
+    card.appendChild(el('div', 'journal-entry-num', `${m.num}. ${m.name}`));
+    card.appendChild(el('div', 'journal-entry-text', '« ' + m.journal_victoire + ' »'));
+    root.appendChild(card);
+  });
 }

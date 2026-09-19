@@ -3,6 +3,7 @@
 // Construite une fois par match, détruite à la fin.
 // ============================================================
 import { CHAMPS } from '../data/champions.js';
+import { portraitFor } from '../engine/portraits.js';
 import { el } from './screens.js';
 
 const KEYS = ['A', 'Z', 'E', 'R'];
@@ -37,9 +38,10 @@ export class CombatHud{
     // Bas gauche : portrait + barres
     const bottom = el('div', 'hud-bottom');
     const left = el('div', 'pf-panel hud-portrait');
-    const portrait = el('div', 'pf-portrait', initials(d.name));
+    const portrait = el('img', 'pf-portrait-img');
+    portrait.src = portraitFor(this.match.sim.player.key);
+    portrait.alt = d.name;
     portrait.style.setProperty('--accent', d.fx);
-    portrait.style.color = d.fx;
     left.appendChild(portrait);
 
     const bars = el('div', 'hud-bars');
@@ -175,8 +177,4 @@ export class CombatHud{
     this._joyCleanup?.();
     this.root.innerHTML = '';
   }
-}
-
-function initials(name){
-  return name.split(' ').map(w => w[0]).slice(0,2).join('').toUpperCase();
 }

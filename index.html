@@ -42,7 +42,30 @@
       </div>
     </div>
     <div class="hub-body">
-      <div id="hub-missions"></div>
+      <div class="hub-panel active" id="panel-missions" data-panel="missions">
+        <div id="hub-missions"></div>
+      </div>
+      <div class="hub-panel" id="panel-codex" data-panel="codex">
+        <div class="codex-filters" id="codex-filters">
+          <button class="pf-btn pf-btn-sm codex-chip active" data-camp="tous">Tous</button>
+          <button class="pf-btn pf-btn-sm codex-chip" data-camp="allie">Alliés</button>
+          <button class="pf-btn pf-btn-sm codex-chip" data-camp="ennemi">Empire</button>
+          <button class="pf-btn pf-btn-sm codex-chip" data-camp="neutre">Légende</button>
+        </div>
+        <div class="champ-grid" id="codex-list"></div>
+      </div>
+      <div class="hub-panel" id="panel-profile" data-panel="profile">
+        <div id="profile-content"></div>
+      </div>
+      <div class="hub-panel" id="panel-journal" data-panel="journal">
+        <div class="journal-entries" id="journal-entries"></div>
+      </div>
+    </div>
+    <div class="hub-tabs">
+      <button class="hub-tab-btn active" data-tab="missions">MISSIONS</button>
+      <button class="hub-tab-btn" data-tab="codex">HÉROS</button>
+      <button class="hub-tab-btn" data-tab="profile">PROFIL</button>
+      <button class="hub-tab-btn" data-tab="journal">JOURNAL</button>
     </div>
   </div>
 
@@ -56,6 +79,7 @@
       <button class="pf-btn pf-btn-ghost" id="btn-hub-back">RETOUR</button>
     </div>
     <div class="deploy-body">
+      <div id="deploy-player"></div>
       <div class="pf-panel" style="padding:12px;">
         <div class="pf-label" style="margin-bottom:6px;">SITUATION</div>
         <div id="deploy-brief" style="font-size:13px; line-height:1.5; color:var(--pf-text-dim);"></div>

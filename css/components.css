@@ -39,6 +39,26 @@
 .pf-portrait-sm{ width:40px; height:40px; font-size:15px; }
 .pf-portrait-lg{ width:88px; height:88px; font-size:30px; }
 
+/* ── Portrait en image (SVG généré, engine/portrait.js) ── */
+.pf-portrait-img{
+  width: 56px; height: 56px; border-radius: 50%;
+  object-fit: cover; object-position: 50% 30%;
+  border: 2px solid var(--accent, var(--pf-gold));
+  box-shadow: 0 0 0 2px var(--pf-panel-border), 0 4px 12px rgba(0,0,0,.4);
+  flex-shrink:0; background: var(--pf-panel);
+}
+.pf-portrait-img.pf-portrait-sm{ width:44px; height:44px; }
+.pf-portrait-img.pf-portrait-lg{ width:92px; height:92px; border-width:3px; }
+.pf-portrait-img.pf-portrait-xl{ width:132px; height:132px; border-width:3px; }
+
+/* ── Carte du personnage joueur (écran de déploiement) ── */
+.deploy-player-card{
+  display:flex; align-items:center; gap:12px;
+  padding: 12px; margin-bottom: 10px;
+}
+.deploy-player-name{ font-size:15px; font-weight:700; }
+.deploy-player-title{ font-size:12px; color: var(--pf-text-dim); }
+
 /* ── Sélecteur d'allié ── */
 .ally-chip{
   display:flex; align-items:center; gap:8px;
@@ -81,3 +101,65 @@
   z-index: 500; white-space:nowrap;
 }
 #pf-toast.show{ opacity:1; transform: translateX(-50%) translateY(0); }
+
+/* ── Bouton petit format (filtres, onglets secondaires) ── */
+.pf-btn-sm{ padding: 6px 12px; font-size:11px; }
+
+/* ── Codex : filtres de camp ── */
+.codex-filters{ display:flex; gap:6px; flex-shrink:0; }
+.codex-chip{ flex:1; }
+.codex-chip.active{ border-color: var(--pf-brand-lit); background: rgba(165,52,43,.15); color: var(--pf-text); }
+
+/* ── Codex : grille de cartes personnage ── */
+.champ-grid{
+  display:grid; grid-template-columns: repeat(auto-fill, minmax(132px, 1fr));
+  gap: var(--pf-gap-sm);
+}
+.champ-card{
+  position:relative; border-radius: var(--pf-radius-lg); overflow:hidden;
+  aspect-ratio: 200/260; cursor:pointer;
+  border:1px solid var(--pf-panel-border); background: var(--pf-panel);
+}
+.champ-card-img{ width:100%; height:100%; object-fit:cover; display:block; }
+.champ-card-overlay{
+  position:absolute; inset:0;
+  background: linear-gradient(180deg, transparent 40%, rgba(5,5,9,.92) 100%);
+}
+.champ-card-badge{
+  position:absolute; top:6px; left:6px;
+  font-size:9px; letter-spacing:1px; padding:2px 6px; border-radius:2px;
+  font-family: var(--pf-font-display);
+}
+.champ-card-badge.ally{ background: rgba(63,143,214,.85); color:#fff; }
+.champ-card-badge.enemy{ background: rgba(214,69,63,.85); color:#fff; }
+.champ-card-badge.legend{ background: rgba(201,162,74,.85); color:#1a1408; }
+.champ-card-info{ position:absolute; left:8px; right:8px; bottom:8px; }
+.champ-card-name{ font-size:12px; font-weight:700; line-height:1.2; }
+.champ-card-role{ font-size:10px; color: var(--pf-text-dim); }
+
+/* ── Fiche personnage détaillée (au clic sur une carte du codex) ── */
+.champ-detail{ padding:14px; display:flex; gap:14px; align-items:flex-start; }
+.champ-detail > div{ flex:1; min-width:0; max-width: 480px; }
+.champ-detail-bio{ font-size:13px; line-height:1.55; color: var(--pf-text-dim); }
+.champ-detail-name{ font-size:18px; font-weight:700; }
+.champ-detail-title{ font-size:12px; color: var(--pf-gold); margin-bottom:8px; }
+
+/* ── Journal : entrées narratives débloquées mission après mission ── */
+.journal-entries{ display:flex; flex-direction:column; gap:10px; }
+.journal-entry{ padding:14px; }
+.journal-entry-num{ font-family: var(--pf-font-display); color: var(--pf-gold); font-size:13px; letter-spacing:1px; margin-bottom:6px; }
+.journal-entry-text{ font-size:13px; line-height:1.6; color: var(--pf-text-dim); font-style:italic; }
+.journal-empty{ text-align:center; color: var(--pf-text-faint); font-size:13px; padding:40px 20px; }
+
+/* ── Profil ── */
+.profile-hero{ display:flex; align-items:center; gap:14px; padding:14px; }
+.profile-name{ font-size:17px; font-weight:700; }
+.profile-title{ font-size:12px; color: var(--pf-gold); }
+.profile-xp-bar{ margin-top:6px; }
+.profile-stats-grid{ display:grid; grid-template-columns: repeat(2, 1fr); gap:8px; }
+.profile-stat-tile{ padding:10px; display:flex; align-items:center; gap:8px; }
+.profile-stat-val{ font-family: var(--pf-font-display); font-size:18px; }
+.profile-stat-label{ font-size:10px; color: var(--pf-text-dim); }
+.profile-acte-list{ display:flex; flex-direction:column; gap:4px; }
+.profile-acte-row{ display:flex; justify-content:space-between; padding:8px 12px; font-size:12px; }
+.profile-acte-row .done{ color: var(--pf-good); }

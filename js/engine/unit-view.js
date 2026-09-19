@@ -1,12 +1,46 @@
 // ============================================================
 // UNIT VIEW — traduit une unité de simulation en objets PixiJS.
-// Pas de sprite externe : forme géométrique + glow additif +
-// anneau d'équipe + ombre portée. La couleur d'accent par
-// champion vient de CHAMP_COLORS (voir data/champions-visual.js).
+// Les champions affichent leur véritable portrait dessiné (voir
+// engine/portraits.js — génération SVG, aucune image chargée depuis
+// un fichier externe), recadré en médaillon circulaire avec un
+// anneau d'équipe. Sbires, tours et nexus restent en formes
+// géométriques (ce sont des unités anonymes, pas des personnages).
+// Glow additif + ombre portée pour garder le rendu PixiJS.
 // ============================================================
 import { softCircle, unitShadow, softRing } from './textures.js';
+import { portraitFor } from './portraits.js';
 
 const TEAM_COLOR = [0x3f8fd6, 0xd6453f, 0xc9a24a]; // allié / ennemi / neutre
+
+const portraitTextureCache = new Map();
+
+function loadPortraitTexture(key){
+  return new Promise((resolve) => {
+    if(portraitTextureCache.has(key)) return resolve(portraitTextureCache.get(key));
+    const img = new Image();
+    img.onload = () => {
+      const tex = PIXI.Texture.from(img);
+      portraitTextureCache.set(key, tex);
+      resolve(tex);
+    };
+    img.onerror = () => resolve(null);
+    img.src = portraitFor(key);
+  });
+}
+
+/**
+ * Précharge les textures de portrait pour les clés données (attendre cette
+ * promesse avant de lancer un combat évite le cercle vide le temps que le
+ * SVG se décode). Sans appel préalable, UnitView retombe sur la forme
+ * géométrique — aucun crash, juste moins joli le temps du premier chargement.
+ */
+export function preloadPortraits(keys){
+  return Promise.all(keys.map(loadPortraitTexture));
+}
+
+function getPortraitTexture(key){
+  return portraitTextureCache.get(key) || null;
+}
 
 export class UnitView{
   constructor(layers, unit, accentHex = 0x3f8fd6){
@@ -30,6 +64,21 @@ export class UnitView{
 
     this.bg = new PIXI.Graphics();
     this.body.addChild(this.bg);
+
+    // Portrait en médaillon — uniquement pour les champions, et seulement si
+    // la texture a été préchargée (voir preloadPortraits). Sinon repli sur
+    // la forme géométrique, comme pour les unités anonymes.
+    this.portrait = null;
+    this.portraitMask = null;
+    const portraitTex = (unit.kind === 'champ' && unit.key) ? getPortraitTexture(unit.key) : null;
+    if(portraitTex){
+      this.portrait = new PIXI.Sprite(portraitTex);
+      this.portrait.anchor.set(0.5, 0.4); // recentré sur le visage du portrait (SVG 200x260)
+      this.body.addChild(this.portrait);
+      this.portraitMask = new PIXI.Graphics();
+      this.body.addChild(this.portraitMask);
+      this.portrait.mask = this.portraitMask;
+    }
 
     this.ring = new PIXI.Graphics();
     this.body.addChild(this.ring);
@@ -55,21 +104,26 @@ export class UnitView{
     const teamColor = TEAM_COLOR[u.team] ?? TEAM_COLOR[2];
 
     this.bg.clear();
-    if(u.kind === 'tower' || u.kind === 'nexus'){
+    if(this.portrait){
+      // Médaillon : le visage (rayon ~76 en unités SVG, centré à 100,104) remplit
+      // le cercle du personnage. On zoome légèrement au-delà de r pour ne jamais
+      // laisser de bord vide visible une fois le masque appliqué.
+      const size = r * 4.15;
+      this.portrait.width = size; this.portrait.height = size * (260/200);
+      this.portraitMask.clear().circle(0, 0, r).fill(0xffffff);
+      this.ring.clear();
+      this.ring.circle(0, 0, r).stroke({ width: 3, color: teamColor, alpha: 0.95 });
+      this.ring.circle(0, 0, r + 2).stroke({ width: 1, color: 0x000000, alpha: 0.35 });
+    } else if(u.kind === 'tower' || u.kind === 'nexus'){
       const n = u.kind === 'nexus' ? 6 : 5;
       drawPolygon(this.bg, n, r, 0x14141c, teamColor, 3);
-    } else if(u.role === 'TANK' || u.d?.role === 'TANK'){
-      drawPolygon(this.bg, 6, r, 0x14141c, teamColor, 2.5);
-    } else if(u.role === 'ASSASSIN' || u.d?.role === 'ASSASSIN' || u.key === 'DARK'){
-      drawPolygon(this.bg, 4, r, 0x14141c, teamColor, 2.5);
-    } else if(u.role === 'ARCHER' || u.d?.role === 'ARCHER' || u.d?.role === 'MARKSMAN'){
-      drawPolygon(this.bg, 3, r, 0x14141c, teamColor, 2.5);
+      this.bg.circle(0, 0, Math.max(3, r*0.28)).fill({ color: this.accent, alpha: 0.9 });
     } else {
+      // Sbires : un simple disque teinté équipe, sans portrait (unités anonymes).
       this.bg.circle(0, 0, r).fill(0x14141c);
       this.bg.circle(0, 0, r).stroke({ width: 2.5, color: teamColor, alpha: 0.95 });
+      this.bg.circle(0, 0, Math.max(3, r*0.28)).fill({ color: this.accent, alpha: 0.9 });
     }
-    // Point d'accent central — la "couleur du personnage".
-    this.bg.circle(0, 0, Math.max(3, r*0.28)).fill({ color: this.accent, alpha: 0.9 });
 
     this.glow.width = this.glow.height = r * 5.2;
     this.shadow.width = r * 2.3; this.shadow.height = r * 1.1;

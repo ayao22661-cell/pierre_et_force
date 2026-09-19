@@ -35,14 +35,22 @@ html, body{
 /* ── Hub ── */
 #screen-hub{ padding: var(--pf-gap-md); gap: var(--pf-gap-md); overflow: hidden; }
 .hub-header{ display:flex; align-items:center; justify-content:space-between; flex-shrink:0; }
-.hub-body{ flex:1; min-height:0; overflow-y:auto; display:flex; flex-direction:column; gap: var(--pf-gap-md); }
+.hub-body{ flex:1; min-height:0; display:flex; flex-direction:column; }
 .acte-block{ display:flex; flex-direction:column; gap: var(--pf-gap-sm); }
 .acte-title{ font-family: var(--pf-font-display); letter-spacing: 2px; font-size: 14px; color: var(--pf-gold); padding-left: 2px; }
 .mission-row{ display:flex; gap: var(--pf-gap-sm); overflow-x:auto; padding-bottom: 4px; }
 
-.hub-tabs{ display:flex; gap: 6px; flex-shrink:0; }
-.hub-tab{ flex:1; text-align:center; padding: 10px 0; }
-.hub-tab.active{ border-color: var(--pf-brand-lit); color: var(--pf-text); }
+.hub-panel{ display:none; flex:1; min-height:0; overflow-y:auto; flex-direction:column; gap: var(--pf-gap-md); }
+.hub-panel.active{ display:flex; }
+
+.hub-tabs{ display:flex; gap: 6px; flex-shrink:0; padding-top: var(--pf-gap-sm); }
+.hub-tab-btn{
+  flex:1; text-align:center; padding: 10px 0;
+  font-family: var(--pf-font-display); letter-spacing:1.5px; font-size:12px;
+  background: var(--pf-panel); border: 1px solid var(--pf-panel-border);
+  color: var(--pf-text-dim); cursor:pointer; border-radius: var(--pf-radius);
+}
+.hub-tab-btn.active{ border-color: var(--pf-brand-lit); color: var(--pf-text); background: var(--pf-panel-raised); }
 
 /* ── Déploiement ── */
 #screen-deploy{ padding: var(--pf-gap-md); gap: var(--pf-gap-md); }

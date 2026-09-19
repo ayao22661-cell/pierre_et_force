@@ -2,6 +2,7 @@
 // DEPLOY — choix du champion et des alliés avant de lancer un combat.
 // ============================================================
 import { CHAMPS } from '../data/champions.js';
+import { portraitFor, castEntry } from '../engine/portraits.js';
 import { el } from './screens.js';
 
 const MODE_MAP = { 'SIÈGE': 'siege', 'ARÈNE': 'arena', 'DÉFENSE': 'siege', 'BOSS': 'siege' };
@@ -19,6 +20,25 @@ export function renderDeploy(mission, modeLabel, save, onLaunch){
   (mission.allies_requis||[]).forEach(k => { if(pool.includes(k) && !state.allies.includes(k)) state.allies.push(k); });
   state.allies = state.allies.slice(0, 2);
 
+  // Portrait du personnage joueur, mis en avant au-dessus du choix d'alliés.
+  const playerBox = document.getElementById('deploy-player');
+  if(playerBox){
+    playerBox.innerHTML = '';
+    const c = CHAMPS[state.champ];
+    const entry = castEntry(state.champ);
+    const wrap = el('div', 'pf-panel deploy-player-card');
+    const img = el('img', 'pf-portrait-img pf-portrait-lg');
+    img.src = portraitFor(state.champ);
+    img.alt = c.name;
+    img.style.setProperty('--accent', c.fx);
+    wrap.appendChild(img);
+    const info = el('div', '');
+    info.appendChild(el('div', 'deploy-player-name', c.name));
+    info.appendChild(el('div', 'deploy-player-title', entry?.titre || c.role));
+    wrap.appendChild(info);
+    playerBox.appendChild(wrap);
+  }
+
   const grid = document.getElementById('deploy-allies-grid');
   grid.innerHTML = '';
 
@@ -28,10 +48,11 @@ export function renderDeploy(mission, modeLabel, save, onLaunch){
       const c = CHAMPS[k];
       const selected = state.allies.includes(k);
       const chip = el('div', 'pf-panel ally-chip' + (selected ? ' selected' : ''));
-      const portrait = el('div', 'pf-portrait pf-portrait-sm', initials(c.name));
-      portrait.style.setProperty('--accent', c.fx);
-      portrait.style.color = c.fx;
-      chip.appendChild(portrait);
+      const img = el('img', 'pf-portrait-img pf-portrait-sm');
+      img.src = portraitFor(k);
+      img.alt = c.name;
+      img.style.setProperty('--accent', c.fx);
+      chip.appendChild(img);
       const info = el('div', '');
       info.appendChild(el('div', 'ally-chip-name', c.name));
       info.appendChild(el('div', 'ally-chip-role', c.role));
@@ -68,8 +89,4 @@ export function renderDeploy(mission, modeLabel, save, onLaunch){
       foeMult: 0.85,
     });
   };
-}
-
-function initials(name){
-  return name.split(' ').map(w => w[0]).slice(0,2).join('').toUpperCase();
 }

@@ -3,12 +3,20 @@
 // ============================================================
 import { Renderer } from './engine/renderer.js';
 import { Match } from './game/match.js';
+import { preloadPortraits } from './engine/unit-view.js';
+import { PLAYABLE } from './data/champions.js';
 import { loadSave, writeSave, recordVictory, recordDefeat } from './game/state.js';
 import { goTo, toast } from './ui/screens.js';
 import { buildHub, updateHubHeader } from './ui/hub.js';
 import { renderDeploy } from './ui/deploy.js';
 import { CombatHud } from './ui/combat-hud.js';
 import { renderEnd } from './ui/end.js';
+
+// Démarré dès le chargement du script : le temps que le joueur traverse
+// titre → hub → déploiement, les 7 portraits ont largement eu le temps
+// de se décoder. launchMatch() attend quand même cette promesse par
+// sécurité (elle est déjà résolue dans l'immense majorité des cas).
+const portraitsReady = preloadPortraits(PLAYABLE);
 
 let save = loadSave();
 let renderer = null;
@@ -38,7 +46,7 @@ function launchMatch(cfg){
   if(!renderer){
     renderer = new Renderer(document.getElementById('game-mount'));
   }
-  renderer.ready.then(() => {
+  Promise.all([renderer.ready, portraitsReady]).then(() => {
     match = new Match(renderer, {
       ...cfg,
       onEnd: (res) => onMatchEnd(res),
