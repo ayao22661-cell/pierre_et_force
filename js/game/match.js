@@ -51,6 +51,7 @@ export class Match{
     this._tickFn = (dt) => this._tick(dt);
     renderer.addFrameListener(this._tickFn);
     this._running = true;
+    this._hud = null; // assigné par CombatHud après construction
   }
 
   _ensureView(u){
@@ -118,6 +119,10 @@ export class Match{
       }
       case 'score':
         this.onHud({ teamKills: e.teamKills });
+        break;
+      case 'announce':
+        // Utilisé par le revive, le burn, etc.
+        if(this._hud) this._hud.announce(e.text);
         break;
       case 'end':
         this._running = false;

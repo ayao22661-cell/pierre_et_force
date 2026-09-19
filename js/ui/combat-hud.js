@@ -53,6 +53,19 @@ export class CombatHud{
     bars.appendChild(this._bar('hp', 'pf-bar-hp'));
     bars.appendChild(this._bar('mp', 'pf-bar-mana'));
     left.appendChild(bars);
+
+    // Bonus objets/talents : résumé compact sous les barres
+    const bns = this.match?.sim?.player?.bns;
+    if(bns && (bns.atk || bns.hp || bns.arm || bns.crit || bns.ls || bns.regen)){
+      const bonusRow = el('div', 'hud-bonus-row');
+      if(bns.atk)   bonusRow.appendChild(el('span','hud-bonus-chip',`⚔+${Math.round(bns.atk)}`));
+      if(bns.hp)    bonusRow.appendChild(el('span','hud-bonus-chip',`❤+${Math.round(bns.hp)}`));
+      if(bns.arm)   bonusRow.appendChild(el('span','hud-bonus-chip',`🛡+${Math.round(bns.arm)}`));
+      if(bns.crit)  bonusRow.appendChild(el('span','hud-bonus-chip',`🎯${Math.round(bns.crit*100)}%`));
+      if(bns.ls)    bonusRow.appendChild(el('span','hud-bonus-chip',`🩸${Math.round(bns.ls*100)}%`));
+      if(bns.regen + (bns.regenF||0) > 0) bonusRow.appendChild(el('span','hud-bonus-chip',`💚+${Math.round(bns.regen+(bns.regenF||0))}/s`));
+      if(bonusRow.children.length) left.appendChild(bonusRow);
+    }
     bottom.appendChild(left);
 
     // Sorts — jouables au tap (mobile) ou au clic (desktop), en plus des

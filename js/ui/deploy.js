@@ -87,6 +87,7 @@ export function renderDeploy(mission, modeLabel, save, onLaunch){
       foes: mission.ennemis || ['BABA'],
       foeCount: 1 + (mission.ennemis_extra || 1),
       foeMult: 0.85,
+      save,                  // transmis à Sim pour les bonus objets/talents
     });
   };
 }

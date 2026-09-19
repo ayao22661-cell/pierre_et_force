@@ -74,3 +74,11 @@
   background: rgba(255,255,255,.25); left:28px; top:28px;
 }
 .hud-joy.on{ display:block; }
+
+/* ── Bonus chips (objets + talents actifs) ── */
+.hud-bonus-row{ display:flex; flex-wrap:wrap; gap:3px; margin-top:4px; }
+.hud-bonus-chip{
+  font-size:9px; padding:1px 5px; border-radius:10px;
+  background:rgba(255,255,255,.08); color:var(--pf-text-dim);
+  border:1px solid rgba(255,255,255,.1);
+}

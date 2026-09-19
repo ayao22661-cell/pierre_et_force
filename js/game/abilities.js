@@ -25,20 +25,36 @@ export function tryCastAbility(sim, u, slot){
 
   const fn = EXECUTORS[a.type] || EXECUTORS.self;
   fn(sim, u, a);
+
+  // Burn (talent Feu — Brasier) : après chaque capacité, les ennemis
+  // dans un rayon standard reçoivent un DoT léger pendant 3 s.
+  if(u.bns?.burn > 0){
+    _applyBurn(sim, u, a);
+  }
+
   return true;
 }
 
 function dmgOf(a, u){
   const base = Array.isArray(a.dmg) ? (a.dmg[0]||0) : (a.dmg||0);
-  return base + (u.atk||0) * (a.ratio||0);
+  let total = base + (u.atk||0) * (a.ratio||0);
+  // Bonus ultime (talent Feu — Cœur ardent)
+  if(a.ult && u.bns?.ultDmg) total *= (1 + u.bns.ultDmg);
+  return total;
 }
 function healOf(a, u){
   const base = Array.isArray(a.heal) ? (a.heal[0]||0) : (a.heal||0);
-  return base + (u.maxHp||0) * (a.healR||0);
+  let total = base + (u.maxHp||0) * (a.healR||0);
+  // Bonus soins prodigués (talent Eau — Source)
+  if(u.bns?.healP) total *= (1 + u.bns.healP);
+  return total;
 }
 function shieldOf(a, u){
   const base = Array.isArray(a.shield) ? (a.shield[0]||0) : (a.shield||0);
-  return base + (u.maxHp||0) * (a.shieldR||0);
+  let total = base + (u.maxHp||0) * (a.shieldR||0);
+  // Bonus boucliers (talent Terre — Granit)
+  if(u.bns?.shieldP) total *= (1 + u.bns.shieldP);
+  return total;
 }
 function buffArmOf(a){
   const buf = a.buff && a.buff.arm;
@@ -47,7 +63,11 @@ function buffArmOf(a){
 
 function applyCC(sim, u, t, a){
   if(!a.cc) return;
-  t.cc = { type: a.cc.t, until: sim.time + (a.cc.d||1), p: a.cc.p||0.3 };
+  // ccRes réduit la durée des contrôles subis
+  const ccResMul = 1 - Math.min(0.75, (t.bns?.ccRes || 0));
+  const dur = (a.cc.d || 1) * ccResMul;
+  if(dur <= 0.05) return; // contrôle annulé
+  t.cc = { type: a.cc.t, until: sim.time + dur, p: a.cc.p||0.3 };
   sim.onEvent({ type: 'cc', unit: t, cc: a.cc });
 }
 
@@ -182,6 +202,26 @@ const EXECUTORS = {
     sim.onEvent({ type: 'fx-self', unit: u, color: a.color });
   },
 };
+
+function _applyBurn(sim, u, a){
+  const burnPct = u.bns.burn;
+  const burnDps = dmgOf(a, u) * burnPct; // % des dégâts de base du sort
+  const burnDur = 3;
+  const burnTick = 0.5;
+  // Cible les unités adverses à portée de la capacité (rayon max 300)
+  const burnRadius = (a.radius || a.range || 300);
+  for(const t of sim.units){
+    if(t.dead || t.team === u.team || t.team === undefined) continue;
+    if(Math.hypot(t.x - u.x, t.y - u.y) > burnRadius) continue;
+    let elapsed = 0;
+    const interval = setInterval(() => {
+      if(sim.over || t.dead){ clearInterval(interval); return; }
+      sim._applyDamage(u, t, burnDps * burnTick, {});
+      elapsed += burnTick;
+      if(elapsed >= burnDur) clearInterval(interval);
+    }, burnTick * 1000);
+  }
+}
 
 function castProjectile(sim, u, a){
   const foe = sim._nearestFoe(u, a.range || 600);

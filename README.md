@@ -56,16 +56,18 @@ statique — aucune étape de build n'est nécessaire.
 
 Pour rester honnête sur l'ampleur du travail — prochaines couches dans l'ordre :
 
-1. **Application des stats d'objets en combat** — les objets achetés en
-   boutique sont sauvegardés dans `save.items`, mais leurs statistiques
-   (`atk`, `hp`, `arm`, etc.) ne sont pas encore injectées dans les unités
-   au moment de `makeChampionUnit`. Il faut additionner les stats des objets
-   possédés avant de construire le champion.
+1. ~~**Application des stats d'objets en combat**~~ ✅ — `js/game/bonuses.js`
+   calcule la somme de tous les objets possédés et les applique à
+   `makeChampionUnit`. Les stats ATK, PV, ARM, Mana, AS, MS sont injectées
+   au lancement du combat pour le joueur et ses alliés.
 
-2. **Application des talents en combat** — même logique que les objets :
-   `save.talents` est rempli par l'onglet Éveil, mais les bonus (`hpP`,
-   `atkP`, `ah`, `regen`, `burn`, `exec`, etc.) ne sont pas encore lus par
-   `makeChampionUnit` ni `_tickResources` dans `sim.js`.
+2. ~~**Application des talents en combat**~~ ✅ — mêmes `computeBonuses`.
+   Tous les effets passifs actifs : regen PV/s (`_tickResources`), vol de vie
+   (`ls`), critique aléatoire, pénétration d'armure (`pen`), exec (+dmg < 40%
+   PV), thorns (renvoi dégâts), revive (30% PV une fois), ccRes (réduction
+   CC), shieldP/healP (bonus soins/boucliers), ultDmg (+dmg ultime), burn
+   (DoT après sort), cdKill (−CDs à l'élim). Le HUD affiche un résumé compact
+   des bonus actifs sous les barres HP/Mana.
 
 3. **Mode Défense et Boss** — seuls Siège et Arène sont simulés. Défense
    et Boss utilisent la même structure `Sim` mais avec des règles différentes
@@ -125,3 +127,12 @@ assets/
   logo.png
   art_battle1.png … art_battle3.png, art_divine.png, art_warrior.png
 ```
+
+## Nouveau fichier : `js/game/bonuses.js`
+
+Module sans dépendances côté rendu : lit `save.items` et `save.talents`,
+additionne tous les deltas et multiplicateurs, et renvoie un objet `bns`
+plat stocké sur chaque unité alliée. `makeChampionUnit` l'applique au
+moment de la construction pour que les stats de base soient déjà les
+stats finales — aucun calcul n'est nécessaire pendant la boucle de jeu
+(sauf les effets à tick : regen, burn, lifesteal).

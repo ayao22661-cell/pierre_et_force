@@ -12,19 +12,34 @@
 // ============================================================
 import { CHAMPS } from '../data/champions.js';
 import { tryCastAbility } from './abilities.js';
+import { computeBonuses } from './bonuses.js';
 
 let UID = 1;
 
 export function makeChampionUnit(key, team, opts = {}){
   const d = CHAMPS[key];
   const mult = opts.mult ?? 1;
+
+  // Bonus objets + talents — uniquement pour le joueur et ses alliés (team 0).
+  // Les ennemis utilisent leurs stats de base multipliées par foeMult.
+  const bns = (team === 0 && opts.save) ? computeBonuses(opts.save) : null;
+
+  const baseHp  = d.hp  * mult * (bns ? 1 + bns.hpP   : 1) + (bns ? bns.hp   : 0);
+  const baseAtk = d.atk * mult * (bns ? 1 + bns.atkP  : 1) + (bns ? bns.atk  : 0);
+  const baseMs  = d.ms  + (bns ? bns.ms + bns.msF : 0);
+  const baseAs  = d.as  + (bns ? bns.as  : 0);
+  const baseArm = d.arm + (bns ? bns.arm + bns.armF : 0);
+  const baseMana = (d.mana || 0) * (bns ? 1 + bns.manaP : 1) + (bns ? bns.mana : 0);
+
   return {
     id: UID++, kind: 'champ', key, team, d,
     name: d.name,
     x: opts.x ?? 0, y: opts.y ?? 0, r: d.body === 2 ? 30 : 25,
-    hp: d.hp * mult, maxHp: d.hp * mult,
-    mana: d.mana || 0, maxMana: d.mana || 0,
-    atk: d.atk * mult, arm: d.arm, as: d.as, ms: d.ms, baseMs: d.ms, range: d.range,
+    hp: baseHp, maxHp: baseHp,
+    mana: baseMana, maxMana: baseMana,
+    atk: baseAtk, arm: baseArm,
+    as: baseAs, ms: baseMs, baseMs,
+    range: d.range,
     ranged: !!d.ranged, fx: d.fx, proj: d.proj || d.fx,
     role: d.role,
     isPlayer: !!opts.isPlayer, isAlly: !!opts.isAlly,
@@ -32,6 +47,10 @@ export function makeChampionUnit(key, team, opts = {}){
     path: opts.path || null, wp: opts.wp ?? 0,
     cds: [0,0,0,0], shield: 0, tempArm: 0, tempArmUntil: 0,
     cc: null, facing: { x: 1, y: 0 }, temporary: false, expiresAt: 0,
+    // Stats dérivées des bonus — gardées sur l'unité pour y accéder en combat
+    bns: bns || {},
+    // Revive : reset à true en début de match, consommé une seule fois
+    reviveReady: bns?.revive || false,
   };
 }
 
@@ -74,10 +93,10 @@ export class Sim{
     const path = this.cfg.path;
     if(this.mode === 'siege' && path){
       const p0 = path[0], p1 = path[path.length-1];
-      this.player = makeChampionUnit(this.cfg.champ, 0, { isPlayer: true, x: p0.x, y: p0.y - 40, path, wp: 1 });
+      this.player = makeChampionUnit(this.cfg.champ, 0, { isPlayer: true, x: p0.x, y: p0.y - 40, path, wp: 1, save: this.cfg.save });
       this.units.push(this.player);
       (this.cfg.allies || []).forEach((k, i) => {
-        const u = makeChampionUnit(k, 0, { isAlly: true, x: p0.x, y: p0.y + 40 + i*40, path, wp: 1 });
+        const u = makeChampionUnit(k, 0, { isAlly: true, x: p0.x, y: p0.y + 40 + i*40, path, wp: 1, save: this.cfg.save });
         this.units.push(u);
       });
       const foes = this.cfg.foes || ['BABA'];
@@ -94,10 +113,10 @@ export class Sim{
     } else {
       // Arena — cercle simple, pas de lane.
       const cx = this.cfg.w/2 || 1100, cy = this.cfg.h/2 || 750;
-      this.player = makeChampionUnit(this.cfg.champ, 0, { isPlayer: true, x: cx - 500, y: cy });
+      this.player = makeChampionUnit(this.cfg.champ, 0, { isPlayer: true, x: cx - 500, y: cy, save: this.cfg.save });
       this.units.push(this.player);
       (this.cfg.allies || []).forEach((k, i) => {
-        this.units.push(makeChampionUnit(k, 0, { isAlly: true, x: cx - 500, y: cy + 60 + i*50 }));
+        this.units.push(makeChampionUnit(k, 0, { isAlly: true, x: cx - 500, y: cy + 60 + i*50, save: this.cfg.save }));
       });
       const foes = this.cfg.foes || ['BABA'];
       for(let i = 0; i < (this.cfg.foeCount || 2); i++){
@@ -140,6 +159,9 @@ export class Sim{
   _tickResources(u, dt){
     for(let i = 0; i < u.cds.length; i++) if(u.cds[i] > 0) u.cds[i] = Math.max(0, u.cds[i] - dt);
     if(u.maxMana) u.mana = Math.min(u.maxMana, u.mana + u.maxMana * 0.03 * dt);
+    // Régénération de PV : objet (regen fixe/s) + talent Eau (regenF PV/s)
+    const totalRegen = (u.bns?.regen || 0) + (u.bns?.regenF || 0);
+    if(totalRegen > 0) u.hp = Math.min(u.maxHp, u.hp + totalRegen * dt);
   }
 
   /** Demande de lancer un sort — traitée au prochain tick (voir _processCastQueue). */
@@ -244,32 +266,74 @@ export class Sim{
 
   _resolveAttack(u, t){
     const effArm = (t.arm||0) + ((t.tempArm && this.time < t.tempArmUntil) ? t.tempArm : 0);
-    const dmg = Math.max(2, (u.atk||10) * (100/(100+effArm)));
+    // Pénétration d'armure (objet Lame du Vide) — réduit l'armure effective
+    const pen = u.bns?.pen || 0;
+    const reducedArm = effArm * (1 - pen);
+    let dmg = Math.max(2, (u.atk||10) * (100/(100+reducedArm)));
+    // Critique (crit chance) — double les dégâts de base
+    const critChance = (u.bns?.crit || 0);
+    const isCrit = critChance > 0 && Math.random() < critChance;
+    if(isCrit) dmg *= 2;
     if(u.ranged){
       this.onEvent({ type: 'projectile', from: u, to: t, color: u.proj || u.fx });
-      setTimeout(() => this._applyDamage(u, t, dmg), 140);
+      setTimeout(() => this._applyDamage(u, t, dmg, { basic: true }), 140);
     } else {
       this.onEvent({ type: 'melee', from: u, to: t });
-      this._applyDamage(u, t, dmg);
+      this._applyDamage(u, t, dmg, { basic: true });
     }
   }
 
-  _applyDamage(u, t, dmg){
+  _applyDamage(u, t, rawDmg, opts = {}){
     if(t.dead) return;
+
+    // Exec : bonus dégâts sur cibles sous 40% PV
+    let dmg = rawDmg;
+    if(u.bns?.exec && (t.hp / (t.maxHp||1)) < 0.4){
+      dmg *= (1 + u.bns.exec);
+    }
+
+    // Réduction de contrôle (ccRes s'applique dans _applyCC, pas ici)
     if(t.shield > 0){
       const absorbed = Math.min(t.shield, dmg);
       t.shield -= absorbed; dmg -= absorbed;
     }
     if(dmg <= 0){ this.onEvent({ type: 'hit', unit: t, dmg: 0, color: u.fx, blocked: true }); return; }
+
+    // Thorns — renvoie un % des dégâts de base reçus à l'attaquant
+    if(t.bns?.thorns && u && !u.dead && opts.basic){
+      const thornDmg = dmg * t.bns.thorns;
+      u.hp = Math.max(1, u.hp - thornDmg);
+      this.onEvent({ type: 'hit', unit: u, dmg: thornDmg, color: '#fff' });
+    }
+
     t.hp -= dmg;
     this.onEvent({ type: 'hit', unit: t, dmg, color: u.fx });
+
+    // Vol de vie (ls) — seulement pour les attaques de base
+    if(u.bns?.ls && opts.basic && u.team === 0){
+      const lifesteal = dmg * u.bns.ls;
+      u.hp = Math.min(u.maxHp, u.hp + lifesteal);
+      if(lifesteal > 0) this.onEvent({ type: 'heal', unit: u, amount: lifesteal });
+    }
+
     if(t.hp <= 0 && !t.dead){
+      // Revive — survie à 1 PV une fois par combat
+      if(t.reviveReady && t.team === 0){
+        t.reviveReady = false;
+        t.hp = t.maxHp * 0.3;
+        this.onEvent({ type: 'announce', text: 'DEUXIÈME VIE !' });
+        return;
+      }
       t.dead = true;
       this.onEvent({ type: 'death', unit: t, killer: u });
       if(t.kind === 'nexus') this._endMatch(u.team === 0);
       if(t.kind === 'champ' && this.mode === 'arena'){
         this.teamKills[u.team]++;
         this.onEvent({ type: 'score', teamKills: this.teamKills.slice() });
+      }
+      // cdKill — élimination : réduit les CDs du tueur
+      if(t.kind === 'champ' && u?.bns?.cdKill > 0){
+        u.cds = u.cds.map(cd => cd * (1 - u.bns.cdKill));
       }
       if(t.kind === 'champ') setTimeout(() => this._respawn(t), 4000);
     }
