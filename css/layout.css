@@ -80,7 +80,11 @@ html, body{
    (aucune bande noire), pendant que l'image nette reste entière par-dessus
    en "contain" (composition intégrale visible, quel que soit le ratio
    d'écran). Un voile dégradé assure la lisibilité du contenu. ── */
-#screen-title{ position: relative; overflow: hidden; background: #050508; }
+/* ⚠️ Ne PAS mettre position:relative ici : .screen est en
+   position:absolute; inset:0. En relative, l'écran retombait dans le flux
+   et ne faisait plus que la hauteur de son contenu (~283 px), d'où l'image
+   d'accueil tronquée et le grand vide noir en dessous. */
+#screen-title{ overflow: hidden; background: #050508; }
 .pf-bg{
   position: absolute; inset: 0;
   overflow: hidden;
@@ -124,7 +128,24 @@ html, body{
 .pf-hero-title, .pf-hero-sub{ text-shadow: 0 3px 16px rgba(0,0,0,.85), 0 1px 4px rgba(0,0,0,.9); }
 #end-title, #end-subtitle{ text-shadow: 0 3px 16px rgba(0,0,0,.85), 0 1px 4px rgba(0,0,0,.9); }
 
-/* ── Tous les écrans : l'image de premier plan remplit TOUT l'écran (recadrage centré sur le héros),
-   plus de bandes ni de flou visibles sur les côtés. ── */
+/* ── Écrans de jeu : l'image de fond remplit tout l'écran (recadrage
+   centré sur le héros), plus de bandes ni de flou sur les côtés. ── */
 .pf-bg-blur{ display: none; }
 .pf-bg-img{ object-fit: cover; object-position: center 38%; }
+
+/* ── Accueil : l'illustration est verticale (1080 x 1350) et se faisait
+   rogner en haut et en bas sur un écran large. On l'affiche donc en
+   ENTIER, et le flou de la même image comble les côtés. ── */
+#screen-title .pf-bg-blur{ display: block; filter: blur(56px) saturate(1.05) brightness(.28); }
+#screen-title .pf-bg-img{ object-fit: contain; object-position: center top; }
+/* Voile plus marqué en bas : le titre et le bouton se lisent sur une zone
+   sombre, et l'illustration reste dégagée au-dessus. */
+#screen-title .pf-bg-overlay{
+  background:
+    radial-gradient(ellipse 120% 80% at 50% 0%, rgba(5,5,8,.10) 0%, rgba(5,5,8,.45) 70%, rgba(5,5,8,.75) 100%),
+    linear-gradient(180deg, rgba(5,5,8,.30) 0%, rgba(5,5,8,.20) 35%, rgba(5,5,8,.80) 78%, rgba(5,5,8,.96) 100%);
+}
+/* Contenu calé en bas, à la manière d'un écran-titre de jeu. */
+#screen-title{ justify-content: flex-end; }
+.pf-title-content{ padding-bottom: clamp(18px, 6vh, 56px); }
+.pf-logo{ width: clamp(96px, 14vh, 150px); }

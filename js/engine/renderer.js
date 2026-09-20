@@ -21,7 +21,10 @@ export class Renderer{
     this.ready = this.app.init({
       resizeTo: mount,
       antialias: true,
-      backgroundAlpha: 1,
+      // backgroundAlpha à 0 : le canvas PixiJS doit être transparent pour
+      // laisser voir le canvas Babylon (modèles 3D) placé juste en dessous.
+      // Le fond sombre est maintenant géré par Babylon (scene.clearColor).
+      backgroundAlpha: 0,
       background: '#050508',
       preference: 'webgl',
       resolution: Math.min(window.devicePixelRatio || 1, 2),
@@ -76,7 +79,11 @@ export class Renderer{
     if(!this.app.renderer) return;
     const vw = this.app.screen.width, vh = this.app.screen.height;
     // Zoom de base tel qu'une portion confortable de la carte soit visible.
-    const targetView = 1000;
+    // Sur mobile, l'écran est bien plus petit : avec la même valeur qu'au
+    // bureau, les personnages devenaient minuscules. On resserre la vue
+    // (tout grossit ensemble, 3D comprise, via _syncCameraFromPixi).
+    const isMobile = Math.min(vw, vh) < 500 || (matchMedia && matchMedia('(pointer: coarse)').matches);
+    const targetView = isMobile ? 650 : 1000;
     this.camera.baseZoom = Math.min(vw, vh) / targetView;
   }
 

@@ -3,9 +3,7 @@
 // ============================================================
 import { Renderer } from './engine/renderer.js';
 import { Match } from './game/match.js';
-import { preloadPortraits } from './engine/unit-view.js';
-import { preloadArtTextures } from './engine/tilemap.js';
-import { PLAYABLE } from './data/champions.js';
+import { preloadAllPortraits } from './engine/portraits.js';
 import { loadSave, writeSave, recordVictory, recordDefeat } from './game/state.js';
 import { goTo, toast } from './ui/screens.js';
 import { buildHub, updateHubHeader } from './ui/hub.js';
@@ -13,10 +11,13 @@ import { renderDeploy } from './ui/deploy.js';
 import { CombatHud } from './ui/combat-hud.js';
 import { renderEnd } from './ui/end.js';
 
-// Préchargement parallèle : portraits (compatibilité) + images d'art
-const portraitsReady = preloadPortraits(PLAYABLE);
-const artReady = preloadArtTextures();
-const assetsReady = Promise.all([portraitsReady, artReady]);
+// Préchargement des portraits 3D (capture des modèles GLB, voir
+// engine/character-portrait-3d.js). Le Hub s'affiche IMMÉDIATEMENT
+// avec des portraits provisoires (silhouette neutre) dès le clic sur
+// Commencer — plus la peine d'attendre le téléchargement des ~44 Mo
+// de modèles 3D avant de voir quoi que ce soit. Une fois chaque
+// portrait prêt en arrière-plan, le Hub se repeint pour les afficher.
+const assetsReady = preloadAllPortraits();
 
 let save = loadSave();
 let renderer = null;
@@ -38,6 +39,11 @@ function onSelectMission(mission, modeLabel){
   currentModeLabel = modeLabel;
   goTo('screen-deploy');
   renderDeploy(mission, modeLabel, save, launchMatch);
+  assetsReady.then(() => {
+    if(document.getElementById('screen-deploy')?.classList.contains('active') && currentMission === mission){
+      renderDeploy(mission, modeLabel, save, launchMatch);
+    }
+  });
 }
 
 function launchMatch(cfg){
@@ -48,7 +54,11 @@ function launchMatch(cfg){
   if(!renderer){
     renderer = new Renderer(document.getElementById('game-mount'));
   }
-  Promise.all([renderer.ready, assetsReady]).then(() => {
+  // Le combat ne dépend QUE du moteur de rendu (renderer.ready) — les
+  // portraits de l'UI (hub/codex/déploiement) sont une préoccupation
+  // totalement séparée et ne doivent jamais retarder ni bloquer
+  // l'entrée en combat, même s'ils ne sont pas encore prêts.
+  renderer.ready.then(() => {
     match = new Match(renderer, {
       ...cfg,
       onEnd: (res) => onMatchEnd(res),
@@ -72,8 +82,19 @@ function onMatchEnd({ victory }){
   }, 600);
 }
 
-document.getElementById('btn-start').addEventListener('click', () => {
+const btnStart = document.getElementById('btn-start');
+btnStart.addEventListener('click', () => {
   save = loadSave();
   toHub();
+  // Dès que les vrais rendus 3D sont prêts, on repeint le Hub pour
+  // remplacer les silhouettes provisoires — sans bloquer l'affichage
+  // initial. Si le joueur a déjà quitté le Hub entre-temps, ce
+  // repaint est sans effet visible (buildHub() ne fait que remplir
+  // des conteneurs DOM existants).
+  assetsReady.then(() => {
+    if(document.getElementById('screen-hub')?.classList.contains('active')){
+      buildHub(save, onSelectMission);
+    }
+  });
 });
 document.getElementById('btn-hub-back').addEventListener('click', toHub);

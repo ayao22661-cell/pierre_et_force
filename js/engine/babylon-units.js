@@ -1,25 +1,38 @@
 // ============================================================
-// BABYLON UNITS — rendu 3D des personnages (GLB Mixamo + matériaux
-// multi-couches peau/tissu/armure/cuir) superposé au canvas PixiJS.
+// BABYLON UNITS — rendu 3D des personnages (GLB Mixamo) superposé au
+// canvas PixiJS, avec un système d'animations complet : idle variés,
+// marche/course calées sur la vitesse réelle, attaques, sorts,
+// réactions aux coups et morts tirés au hasard dans la bibliothèque
+// de 118 clips Mixamo (assets/animations/).
 //
-// Architecture : deux canvas empilés dans #game-mount.
-//   - Babylon (dessous)  : les modèles 3D des unités (champions,
-//     sbires...), rendus avec une caméra isométrique fixe.
-//   - PixiJS (dessus)    : tilemap, HUD, barres de vie, effets,
-//     projectiles — inchangé, transparent au-dessus de Babylon.
+// Trois règles qui corrigent les défauts d'origine :
 //
-// La synchronisation des deux mondes se fait via une correspondance
-// simple monde-Pixi (x,y en pixels) -> monde-Babylon (X,Z en unités),
-// pilotée par BabylonUnits.worldScale.
+// 1. PAS DE GLISSADE. Les clips Mixamo contiennent du « root motion » :
+//    l'os Hips avance réellement (ex. 1,5 m sur un cycle de marche) puis
+//    revient d'un coup au départ de la boucle. Comme le sim déplace déjà
+//    l'unité, on retire ce déplacement horizontal au chargement du clip
+//    (_loadAnimSource) — on garde seulement le rebond vertical — et on
+//    règle la vitesse de lecture sur la vitesse de déplacement mesurée
+//    (vitesse du clip, calculée avant le retrait, en m/s).
+//
+// 2. ORIENTATION. La racine d'un GLB (__root__) porte un
+//    rotationQuaternion : dans Babylon, `rotation.y` est alors IGNORÉ.
+//    L'ancien code ne tournait donc jamais les personnages : ils se
+//    déplaçaient de côté ou à reculons. Chaque modèle est maintenant
+//    posé sous un pivot dont on tourne la rotation (lissée).
+//
+// 3. VARIÉTÉ. Chaque personnage a son propre profil (listes de clips
+//    par état) ; on tire un clip différent à chaque attaque, sort,
+//    réaction ou mort, les idle s'enchaînent entre plusieurs variantes,
+//    et chaque unité a un léger décalage de tempo pour que les sbires
+//    ne bougent pas tous à l'unisson.
 // ============================================================
 
 const GLB_BASE = 'assets/models/';
+const ANIM_BASE = 'assets/animations/';
 
-// Un seul fichier GLB par rôle — chacun contient déjà les animations
-// Mixamo attachées (idle, walk, attack...) plus les 4 matériaux
-// (skin/cloth/armor/leather) issus du pipeline de texturing.
 const MODEL_BY_KEY = {
-  TARINE:   'personnage-guerrier.glb',
+  TARINE:   'TARINE.glb',        // modèle dédié (Hunyuan 3D + rig Mixamo)
   BABA:     'personnage-guerrier.glb',
   SAM:      'personnage-mage.glb',
   LUNDGREN: 'personnage-mage.glb',
@@ -37,22 +50,145 @@ function modelForUnit(u){
   return null; // tours / nexus restent en PixiJS (Graphics), pas de GLB
 }
 
-// Correspondance monde Pixi (px) -> monde Babylon (unités 3D).
-// 1 unité Babylon = WORLD_SCALE pixels Pixi. Ajuster si les modèles
-// paraissent trop grands/petits une fois en jeu.
+// ---------------------------------------------------------------
+// PROFILS D'ANIMATION — un jeu de clips par personnage.
+// Le premier idle est le plus fréquent (posture « maison »), les
+// autres viennent ponctuer. Attaque / sort / coup / mort : tirage
+// aléatoire sans répéter deux fois de suite le même clip.
+// Vérifié : sword-and-shield-walk est une marche ARRIÈRE (le bassin
+// recule de 1,4 m) — les marches avant utilisées ici avancent bien.
+// ---------------------------------------------------------------
+const PROFILES = {
+  // Tarine — bouclier et pierre : frappes nettes, sorts à une main.
+  tarine: {
+    idle:   ['sword-and-shield-idle-1.glb', 'sword-and-shield-idle.glb', 'sword-and-shield-idle-2.glb'],
+    walk:   ['great-sword-walk.glb'],
+    run:    ['standing-sprint-forward.glb'],
+    attack: ['sword-and-shield-slash.glb', 'sword-and-shield-slash-1.glb', 'sword-and-shield-attack-1.glb', 'sword-and-shield-kick.glb', 'sword-and-shield-attack.glb'],
+    cast:   ['standing-1h-cast-spell-01.glb', 'sword-and-shield-casting.glb', 'standing-2h-magic-attack-02.glb'],
+    hit:    ['sword-and-shield-impact.glb', 'sword-and-shield-impact-1.glb', 'sword-and-shield-block.glb'],
+    death:  ['sword-and-shield-death.glb', 'falling-back-death.glb'],
+  },
+  // Baba Tunde — la star de la cour : bagarreur acrobatique.
+  baba: {
+    idle:   ['standing-idle-03.glb', 'ginga-variation-3.glb', 'sword-and-shield-idle-2.glb'],
+    walk:   ['great-sword-walk.glb'],
+    run:    ['standing-sprint-forward.glb'],
+    attack: ['fist-fight-a.glb', 'headbutt.glb', 'punching.glb', 'flying-knee-punch-combo.glb', 'dual-weapon-combo.glb'],
+    cast:   ['drop-kick.glb', 'butterfly-twirl.glb', 'esquiva-5.glb'],
+    hit:    ['receive-uppercut-to-the-face.glb', 'standing-react-small-from-front.glb', 'reaction.glb'],
+    death:  ['falling-forward-death.glb', 'standing-react-death-right.glb'],
+  },
+  // Sam — mage : projectiles à une main, grands sorts à deux mains.
+  sam: {
+    idle:   ['standing-idle.glb', 'standing-idle-03.glb', 'body-block.glb'],
+    walk:   ['great-sword-walk.glb'],
+    run:    ['standing-sprint-forward.glb'],
+    attack: ['standing-1h-magic-attack-01.glb', 'standing-1h-magic-attack-02.glb', 'standing-1h-magic-attack-03.glb'],
+    cast:   ['standing-2h-magic-attack-02.glb', 'standing-2h-magic-attack-04.glb', 'standing-2h-cast-spell-01.glb', 'standing-2h-magic-attack-03.glb'],
+    hit:    ['standing-react-small-from-front.glb', 'standing-react-small-from-left.glb'],
+    death:  ['standing-react-death-backward.glb', 'standing-react-death-backward-1.glb'],
+  },
+  // Lundgren — l'érudit : gestuelle plus posée.
+  lundgren: {
+    idle:   ['standing-idle-03.glb', 'standing-idle.glb', 'dwarf-idle.glb'],
+    walk:   ['great-sword-walk.glb'],
+    run:    ['standing-sprint-forward.glb'],
+    attack: ['standing-1h-magic-attack-02.glb', 'spell-cast.glb', 'standing-1h-magic-attack-01.glb'],
+    cast:   ['standing-2h-cast-spell-01.glb', 'standing-1h-cast-spell-01.glb', 'standing-2h-magic-attack-04.glb'],
+    hit:    ['standing-react-small-from-left.glb', 'standing-react-small-from-front.glb'],
+    death:  ['standing-react-death-left.glb', 'standing-react-death-backward.glb'],
+  },
+  // Karen — la sentinelle : garde haute, soins.
+  karen: {
+    idle:   ['sword-and-shield-block-idle.glb', 'standing-idle.glb', 'dwarf-idle-1.glb'],
+    walk:   ['great-sword-walk.glb'],
+    run:    ['standing-sprint-forward.glb'],
+    attack: ['standing-1h-magic-attack-01.glb', 'standing-1h-magic-attack-03.glb', 'spell-cast.glb'],
+    cast:   ['standing-2h-cast-spell-01.glb', 'standing-1h-cast-spell-01.glb', 'standing-2h-magic-attack-02.glb'],
+    hit:    ['standing-react-small-from-front.glb', 'sword-and-shield-block.glb'],
+    death:  ['standing-react-death-left.glb', 'standing-react-death-right.glb'],
+  },
+  // Fulgence — le roc : grande épée, coups lourds.
+  fulgence: {
+    idle:   ['dwarf-idle.glb', 'dwarf-idle-1.glb', 'great-sword-crouching-2.glb'],
+    walk:   ['great-sword-walk-1.glb'],
+    run:    ['great-sword-run.glb'],
+    attack: ['great-sword-slash.glb', 'great-sword-slash-1.glb', 'great-sword-kick.glb', 'great-sword-kick-1.glb', 'two-hand-sword-combo.glb'],
+    cast:   ['great-sword-jump-attack.glb', 'great-sword-slide-attack.glb', 'two-hand-club-combo.glb'],
+    hit:    ['great-sword-impact.glb', 'great-sword-blocking-2.glb', 'standing-block-react-large.glb'],
+    death:  ['two-handed-sword-death.glb', 'falling-back-death.glb'],
+  },
+  // Dark — l'ombre : souple, imprévisible.
+  dark: {
+    idle:   ['ginga-variation-3.glb', 'crouch-idle.glb', 'sword-and-shield-crouch-idle.glb'],
+    walk:   ['crouch-walk-forward.glb'],
+    run:    ['standing-sprint-forward.glb'],
+    attack: ['dual-weapon-combo-1.glb', 'one-hand-club-combo.glb', 'mutant-punch.glb', 'flying-knee-punch-combo.glb'],
+    cast:   ['butterfly-twirl.glb', 'run-to-rolling.glb', 'esquiva-5.glb'],
+    hit:    ['standing-react-small-from-left.glb', 'reaction.glb'],
+    death:  ['standing-react-death-right.glb', 'falling-forward-death.glb'],
+  },
+  // Sbires alliés.
+  sbire: {
+    idle:   ['standing-idle.glb', 'sword-and-shield-idle-2.glb', 'dwarf-idle.glb'],
+    walk:   ['great-sword-walk.glb'],
+    run:    ['great-sword-run.glb'],
+    attack: ['punching.glb', 'sword-and-shield-kick.glb', 'mutant-punch.glb', 'sword-and-shield-attack-1.glb'],
+    cast:   [],
+    hit:    ['standing-react-small-from-front.glb', 'reaction.glb'],
+    death:  ['falling-back-death.glb', 'standing-react-death-left.glb', 'standing-react-death-right.glb'],
+  },
+  // Sbires ennemis (orcs).
+  orc: {
+    idle:   ['orc-idle.glb', 'dwarf-idle-2.glb'],
+    walk:   ['orc-walk.glb'],
+    run:    ['great-sword-run.glb'],
+    attack: ['mutant-punch.glb', 'headbutt.glb', 'punching.glb', 'great-sword-kick-1.glb'],
+    cast:   [],
+    hit:    ['receive-uppercut-to-the-face.glb', 'reaction.glb'],
+    death:  ['falling-forward-death.glb', 'falling-back-death.glb', 'standing-react-death-backward.glb'],
+  },
+};
+const PROFILE_BY_KEY = { TARINE:'tarine', BABA:'baba', SAM:'sam', LUNDGREN:'lundgren', KAREN:'karen', FULGENCE:'fulgence', DARK:'dark' };
+function profileForUnit(u){
+  if(u.kind === 'minion') return PROFILES[u.team === 0 ? 'sbire' : 'orc'];
+  return PROFILES[PROFILE_BY_KEY[u.key]] || PROFILES.tarine;
+}
+
+// Correspondance monde Pixi (px) -> monde Babylon (unités 3D = mètres).
 const WORLD_SCALE = 45;
+// Inclinaison de la caméra (angle depuis la verticale). 45° : voir _syncCameraFromPixi.
+const CAM_BETA = Math.PI / 4;
+// Au-dessus de cette vitesse (px/s) l'unité est « en mouvement ».
+const MOVE_SPEED_MIN = 25;
+// Sous cette vitesse réelle (m/s) on marche, au-dessus on court.
+const RUN_THRESHOLD = 2.6;
+// Vitesse de rotation max du personnage (rad/s).
+const TURN_SPEED = 12;
+// Durée pendant laquelle un corps reste visible après sa mort (s).
+const CORPSE_TIME = 3.2;
+
+function pick(list, avoid){
+  if(!list || !list.length) return null;
+  if(list.length === 1) return list[0];
+  let c;
+  do { c = list[Math.floor(Math.random() * list.length)]; } while(c === avoid);
+  return c;
+}
+function clamp(v, a, b){ return Math.max(a, Math.min(b, v)); }
+function angleLerp(a, b, t){
+  let d = ((b - a + Math.PI) % (Math.PI * 2) + Math.PI * 2) % (Math.PI * 2) - Math.PI;
+  return a + d * t;
+}
 
 export class BabylonUnits{
-  /**
-   * @param {HTMLElement} mount - même conteneur que le Renderer PixiJS
-   * @param {Renderer} pixiRenderer - pour lire la caméra (x,y,zoom)
-   */
   constructor(mount, pixiRenderer){
     this.mount = mount;
     this.pixiRenderer = pixiRenderer;
-    this.instances = new Map(); // unit.id -> UnitInstance3D
-    this._meshCache = new Map(); // modelFile -> { meshes, skeletons, animationGroups } (container source)
-    this._loadingPromises = new Map();
+    this.instances = new Map();        // unit.id -> instance
+    this._modelCache = new Map();      // modelFile -> Promise<AssetContainer>
+    this._animSourceCache = new Map(); // animFile -> Promise<AssetContainer>
 
     this.canvas = document.createElement('canvas');
     this.canvas.style.position = 'absolute';
@@ -60,26 +196,45 @@ export class BabylonUnits{
     this.canvas.style.left = '0';
     this.canvas.style.width = '100%';
     this.canvas.style.height = '100%';
-    this.canvas.style.pointerEvents = 'none'; // les clics passent au PixiJS au-dessus
+    this.canvas.style.pointerEvents = 'none';
     this.canvas.style.zIndex = '0';
-    mount.style.position = mount.style.position || 'relative';
+    // Explicite malgré la valeur par défaut CSS, pour éviter toute
+    // ambiguïté de pile selon le navigateur (voir renderer.js).
+    // ⚠️ Ne JAMAIS écraser la position CSS du mount : #game-mount est
+    // `position:absolute; inset:0` dans layout.css. Le forcer en
+    // `relative` (ancien code) lui donnait une hauteur de 0 px → canvas
+    // Babylon de 0 px de haut → terrain et personnages invisibles en
+    // combat (seul le HUD PixiJS/DOM restait visible). On ne corrige que
+    // si le mount est réellement `static`.
+    if(getComputedStyle(mount).position === 'static') mount.style.position = 'relative';
     mount.appendChild(this.canvas);
 
     this.engine = new BABYLON.Engine(this.canvas, true, { preserveDrawingBuffer: true, stencil: true });
     this.scene = new BABYLON.Scene(this.engine);
-    this.scene.clearColor = new BABYLON.Color4(0, 0, 0, 0); // transparent : le fond Pixi reste visible dessous... 
-    // NB : Babylon est en dessous dans le DOM, donc son propre clearColor
-    // opaque suffit ; le canvas Pixi (au-dessus, transparent) laisse
-    // voir Babylon. On garde alpha=1 sur un fond neutre sombre pour
-    // éviter tout flash blanc pendant le chargement.
     this.scene.clearColor = new BABYLON.Color4(0.02, 0.02, 0.03, 1);
+    console.log('[BabylonUnits] moteur créé, canvas', this.canvas.width, 'x', this.canvas.height);
+
+    // Fondu enchaîné entre deux clips (≈ 0,15 s) : plus de sauts de pose
+    // quand on passe d'idle à la course ou d'une attaque à l'autre.
+    this.scene.animationPropertiesOverride = new BABYLON.AnimationPropertiesOverride();
+    this.scene.animationPropertiesOverride.enableBlending = true;
+    this.scene.animationPropertiesOverride.blendingSpeed = 0.1;
 
     this._buildCamera();
     this._buildLights();
 
+    let _frameCount = 0;
     this.engine.runRenderLoop(() => {
       this._syncCameraFromPixi();
       this.scene.render();
+      _frameCount++;
+      if(_frameCount === 1){
+        console.log('[BabylonUnits] frame', _frameCount,
+          '| caméra target=', this.camera.target.asArray().map(n=>n.toFixed(1)),
+          'radius=', this.camera.radius.toFixed(1),
+          '| meshes dans la scène=', this.scene.meshes.length,
+          '| canvas taille=', this.engine.getRenderWidth(), 'x', this.engine.getRenderHeight());
+      }
     });
 
     this._resizeObserver = new ResizeObserver(() => this.engine.resize());
@@ -87,19 +242,22 @@ export class BabylonUnits{
   }
 
   _buildCamera(){
-    // Caméra isométrique douce, même angle que la vue PixiJS existante
-    // (vue du dessus légèrement inclinée). ArcRotateCamera fixe.
+    // Caméra ORTHOGRAPHIQUE inclinée à 45°, calée pixel pour pixel sur la
+    // caméra 2D de PixiJS (voir _syncCameraFromPixi). L'ancienne caméra
+    // perspective ne correspondait pas à la projection PixiJS : le Nexus,
+    // l'anneau du joueur et les barres de vie (dessinés en 2D) n'étaient
+    // pas au même endroit que le sol et les personnages 3D.
     const cam = new BABYLON.ArcRotateCamera(
-      'cam',
-      -Math.PI / 2,      // alpha : orientation horizontale
-      Math.PI / 3.4,     // beta : inclinaison (0=vue de dessus, PI/2=horizon)
-      40,                // radius initial, recalculé selon le zoom Pixi
-      new BABYLON.Vector3(0, 0, 0),
-      this.scene
+      'cam', -Math.PI / 2, CAM_BETA, 100,
+      new BABYLON.Vector3(0, 0, 0), this.scene
     );
-    cam.lowerBetaLimit = cam.upperBetaLimit = cam.beta; // verrouillée
+    cam.mode = BABYLON.Camera.ORTHOGRAPHIC_CAMERA;
+    cam.minZ = 0.1;
+    cam.maxZ = 1000;
+    cam.lowerBetaLimit = cam.upperBetaLimit = cam.beta;
     cam.lowerAlphaLimit = cam.upperAlphaLimit = cam.alpha;
-    cam.inputs.clear(); // pas de contrôle souris : pilotée par le code
+    cam.lowerRadiusLimit = cam.upperRadiusLimit = cam.radius;
+    cam.inputs.clear();
     this.camera = cam;
   }
 
@@ -107,122 +265,378 @@ export class BabylonUnits{
     const hemi = new BABYLON.HemisphericLight('hemi', new BABYLON.Vector3(0.3, 1, 0.2), this.scene);
     hemi.intensity = 0.85;
     hemi.groundColor = new BABYLON.Color3(0.12, 0.10, 0.15);
-
     const sun = new BABYLON.DirectionalLight('sun', new BABYLON.Vector3(-0.5, -1, -0.3), this.scene);
     sun.intensity = 1.1;
     sun.position = new BABYLON.Vector3(20, 40, 20);
   }
 
-  /** Convertit une position monde-Pixi (px) en position monde-Babylon (X,Z). */
   _pixiToBabylon(x, y){
     return new BABYLON.Vector3(x / WORLD_SCALE, 0, -y / WORLD_SCALE);
   }
 
-  /** Recale la caméra Babylon sur la caméra Pixi (pan + zoom) à chaque frame. */
   _syncCameraFromPixi(){
     const pc = this.pixiRenderer.camera;
     if(!pc) return;
-    const target = this._pixiToBabylon(pc.x, pc.y);
-    this.camera.target.copyFrom(target);
-    const z = (pc.baseZoom || 1) * (pc.zoom || 1);
-    // Plus le zoom Pixi est grand, plus on rapproche la caméra Babylon.
-    this.camera.radius = 32 / Math.max(z, 0.05);
+    this.camera.target.copyFrom(this._pixiToBabylon(pc.x, pc.y));
+    const z = Math.max((pc.baseZoom || 1) * (pc.zoom || 1), 0.05);
+    const scr = this.pixiRenderer.app?.screen;
+    const vw = scr?.width  || this.canvas.clientWidth  || 1;
+    const vh = scr?.height || this.canvas.clientHeight || 1;
+    // Demi-largeur/hauteur visibles, en unités Babylon, identiques à
+    // celles de PixiJS (px / zoom / WORLD_SCALE). En vertical, un
+    // déplacement au sol est vu raccourci de cos(beta) par la caméra
+    // inclinée : on applique le même facteur pour que le sol 3D tombe
+    // exactement sous les éléments 2D. À 45°, la hauteur des
+    // personnages garde ses proportions (sin/cos = 1).
+    const halfW = (vw / 2) / z / WORLD_SCALE;
+    const halfH = (vh / 2) / z / WORLD_SCALE * Math.cos(CAM_BETA);
+    this.camera.orthoLeft = -halfW;
+    this.camera.orthoRight = halfW;
+    this.camera.orthoTop = halfH;
+    this.camera.orthoBottom = -halfH;
   }
 
-  /** Charge (ou récupère du cache) le conteneur GLB source pour un fichier modèle. */
-  async _loadModel(fileName){
-    if(this._meshCache.has(fileName)) return this._meshCache.get(fileName);
-    if(this._loadingPromises.has(fileName)) return this._loadingPromises.get(fileName);
+  /** Charge (ou récupère du cache) le conteneur GLB source d'un modèle de personnage. */
+  _loadModel(fileName){
+    if(!this._modelCache.has(fileName)){
+      this._modelCache.set(fileName,
+        BABYLON.SceneLoader.LoadAssetContainerAsync(GLB_BASE, fileName, this.scene));
+    }
+    return this._modelCache.get(fileName);
+  }
 
-    // Forme "namespace complet" : c'est celle exposée par le build UMD
-    // classique chargé en <script> (babylon.js + babylonjs.loaders.min.js) —
-    // la forme raccourcie loadAssetContainerAsync() n'existe que dans le
-    // build ES6 modulaire (@babylonjs/core), pas ici.
-    const p = BABYLON.SceneLoader.LoadAssetContainerAsync(GLB_BASE, fileName, this.scene).then(container => {
-      // Le container reste "hors scène" tant qu'on ne l'instancie pas :
-      // on l'utilise comme moule pour createInstance() par unité.
-      this._meshCache.set(fileName, container);
-      return container;
-    });
-    this._loadingPromises.set(fileName, p);
-    return p;
+  /**
+   * Charge (ou récupère du cache) un clip d'animation, en retire le
+   * déplacement horizontal du bassin (root motion → « en place ») et
+   * mémorise sa vitesse d'origine (m/s) pour caler la lecture.
+   * Résout vers { group, speed, duration } ou null.
+   */
+  _loadAnimSource(fileName){
+    if(!this._animSourceCache.has(fileName)){
+      const p = BABYLON.SceneLoader.LoadAssetContainerAsync(ANIM_BASE, fileName, this.scene).then(container => {
+        const group = container.animationGroups[container.animationGroups.length - 1];
+        if(!group) return null;
+        let speed = 0;
+        const fps = group.targetedAnimations[0]?.animation.framePerSecond || 30;
+        const duration = Math.max((group.to - group.from) / fps, 0.05);
+        for(const ta of group.targetedAnimations){
+          const tname = ta.target?.name || '';
+          if(!/Hips$/.test(tname) || ta.animation.targetProperty !== 'position') continue;
+          const keys = ta.animation.getKeys();
+          if(keys.length < 2) continue;
+          const first = keys[0].value, last = keys[keys.length - 1].value;
+          speed = Math.hypot(last.x - first.x, last.z - first.z) / duration;
+          for(const k of keys){
+            k.value = new BABYLON.Vector3(first.x, k.value.y, first.z);
+          }
+        }
+        return { group, speed, duration };
+      }).catch(e => {
+        console.error('[BabylonUnits] ❌ clip introuvable :', fileName, e);
+        return null;
+      });
+      this._animSourceCache.set(fileName, p);
+    }
+    return this._animSourceCache.get(fileName);
+  }
+
+  /** Clone un clip (déjà chargé ou non) sur le squelette de l'instance. Retourne { ag, speed, duration } ou null. */
+  async _clipFor(inst, file){
+    if(!file) return null;
+    if(inst.clips.has(file)) return inst.clips.get(file);
+    const src = await this._loadAnimSource(file);
+    if(!src || inst.disposed) return null;
+    if(inst.clips.has(file)) return inst.clips.get(file);
+    // Clonage manuel plutôt que src.group.clone(...) : tous les modèles
+    // n'ont pas exactement les mêmes os (un rig Mixamo peut avoir moins
+    // de phalanges). clone() plante sur une cible absente ; ici on passe
+    // simplement les os manquants.
+    const ag = new BABYLON.AnimationGroup(file + '_' + inst.id, this.scene);
+    for(const ta of src.group.targetedAnimations){
+      const target = inst.nodeByBaseName.get(ta.target?.name);
+      if(target) ag.addTargetedAnimation(ta.animation, target);
+    }
+    ag.stop();
+    if(!ag.targetedAnimations.length){
+      console.error('[BabylonUnits] ❌ aucun os commun entre', file, 'et', inst.modelFile);
+      return null;
+    }
+    const clip = { ag, speed: src.speed, duration: src.duration, file };
+    inst.clips.set(file, clip);
+    return clip;
+  }
+
+  /** Clip déjà prêt pour cette instance (synchrone) ; lance son chargement sinon. */
+  _readyClip(inst, file){
+    if(!file) return null;
+    const c = inst.clips.get(file);
+    if(c) return c;
+    this._clipFor(inst, file);
+    return null;
+  }
+
+  /** Démarre un clip en coupant le précédent. */
+  _play(inst, clip, { loop = false, speedRatio = 1, randomStart = false } = {}){
+    if(inst.current && inst.current !== clip) inst.current.ag.stop();
+    inst.current = clip;
+    const ag = clip.ag;
+    ag.onAnimationGroupEndObservable.clear();
+    ag.start(loop, speedRatio * inst.tempo);
+    if(randomStart) ag.goToFrame(ag.from + Math.random() * (ag.to - ag.from));
+    return ag;
   }
 
   /** Crée (si besoin) et retourne l'instance 3D pour une unité du sim. */
   async ensure(unit){
     if(this.instances.has(unit.id)) return this.instances.get(unit.id);
     const fileName = modelForUnit(unit);
-    if(!fileName) return null; // tours/nexus : pas de modèle 3D
+    if(!fileName) return null;
 
     const placeholder = { ready: false };
     this.instances.set(unit.id, placeholder);
 
     const container = await this._loadModel(fileName);
-    // instantiateModelsToScene clone meshes+squelette+animations en gardant
-    // le partage des géométries/textures sources (léger en mémoire).
+    if(this.instances.get(unit.id) !== placeholder) return null; // unité retirée pendant le chargement
     const entry = container.instantiateModelsToScene(name => name + '_' + unit.id, false);
     const root = entry.rootNodes[0];
-    root.scaling.setAll(1);
+    // Animations embarquées dans le modèle : inutiles (on utilise la bibliothèque).
+    for(const ag of entry.animationGroups) ag.dispose();
 
-    const anims = {};
-    for(const ag of entry.animationGroups){
-      // Les noms de groupe viennent tels quels de Mixamo (ex: "mixamo.com" ou
-      // le nom donné à l'export) — à normaliser une fois les vraies
-      // animations branchées ; pour l'instant on garde tel quel et on
-      // référence par index si un seul groupe est présent par fichier.
-      anims[ag.name] = ag;
-      ag.stop();
+    // Pivot d'orientation : le __root__ du GLB a un rotationQuaternion,
+    // donc root.rotation.y n'aurait aucun effet. On tourne le pivot.
+    const pivot = new BABYLON.TransformNode('unit_' + unit.id, this.scene);
+    root.parent = pivot;
+
+    const allNodes = root.getDescendants(false);
+    allNodes.push(root);
+    const suffix = '_' + unit.id;
+    const nodeByBaseName = new Map();
+    for(const n of allNodes){
+      const base = n.name.endsWith(suffix) ? n.name.slice(0, -suffix.length) : n.name;
+      nodeByBaseName.set(base, n);
+      // Mixamo renomme parfois les os « mixamorig1: », « mixamorig9: »…
+      // selon la session d'auto-rig. On les rend tous équivalents.
+      if(/^mixamorig\d+:/.test(base)) nodeByBaseName.set(base.replace(/^mixamorig\d+:/, 'mixamorig:'), n);
     }
 
-    const inst = { root, animGroups: entry.animationGroups, anims, ready: true, facing: 1 };
+    const profile = profileForUnit(unit);
+    const inst = {
+      id: unit.id, pivot, root, nodeByBaseName, profile, modelFile: fileName,
+      ready: true, disposed: false,
+      clips: new Map(), current: null,
+      state: null,          // 'idle' | 'walk' | 'run' | 'attack' | 'cast' | 'hit' | 'death'
+      lastFile: {},         // dernier clip joué par état (évite les répétitions)
+      oneShotUntil: 0,
+      lastX: unit.x, lastY: unit.y, lastT: performance.now(), speedPx: 0,
+      yaw: 0, deadAt: 0, hitCooldownUntil: 0,
+      // Petit décalage de tempo propre à chaque unité : les sbires d'une
+      // même vague ne s'animent plus à l'unisson.
+      tempo: 0.92 + Math.random() * 0.16,
+    };
     this.instances.set(unit.id, inst);
-    this._applyTransform(inst, unit);
-    this._playDefaultAnim(inst);
+
+    // Précharge tous les clips du profil en tâche de fond : le premier
+    // coup, sort ou réaction est ainsi prêt quand il arrive.
+    const all = new Set(Object.values(profile).flat());
+    const idleFirst = profile.idle[0];
+    await this._clipFor(inst, idleFirst);
+    for(const f of all) this._clipFor(inst, f);
+
+    const f = unit.facing || { x: 0, y: 1 };
+    inst.yaw = Math.atan2(f.x, -f.y);
+    this._applyTransform(inst, unit, 1);
+    this._enterIdle(inst, true);
     return inst;
   }
 
-  _playDefaultAnim(inst){
-    const first = inst.animGroups[0];
-    if(first) first.start(true, 1.0);
+  // ---------------------------------------------------------------
+  // États
+  // ---------------------------------------------------------------
+
+  _enterIdle(inst, randomStart = false){
+    const file = inst.state === 'idle' && inst.current
+      ? pick(inst.profile.idle, inst.current.file)
+      : (Math.random() < 0.6 ? inst.profile.idle[0] : pick(inst.profile.idle));
+    const clip = this._readyClip(inst, file) || this._readyClip(inst, inst.profile.idle[0]);
+    inst.state = 'idle';
+    if(!clip) return;
+    const ag = this._play(inst, clip, { loop: false, randomStart });
+    // À la fin d'une variante, on enchaîne sur une autre.
+    ag.onAnimationGroupEndObservable.addOnce(() => {
+      if(inst.state === 'idle' && inst.current === clip && !inst.disposed) this._enterIdle(inst);
+    });
   }
 
-  _applyTransform(inst, unit){
-    const pos = this._pixiToBabylon(unit.x, unit.y);
-    inst.root.position.copyFrom(pos);
-    // Le "body" scale en X (flip gauche/droite) équivalent PixiJS
-    // devient une rotation Y en 3D (demi-tour), plus naturel pour un GLB.
-    const facing = unit.facing?.x < 0 ? -1 : 1;
-    if(facing !== inst.facing){
-      inst.facing = facing;
-      inst.root.rotation.y = facing < 0 ? Math.PI : 0;
+  _enterLocomotion(inst, speedMs){
+    // Hystérésis : évite de basculer marche/course en boucle autour du seuil.
+    const want = inst.state === 'run'
+      ? (speedMs < RUN_THRESHOLD - 0.4 ? 'walk' : 'run')
+      : (speedMs > RUN_THRESHOLD + 0.3 ? 'run' : 'walk');
+    let clip = this._readyClip(inst, inst.lastFile[want] || (inst.lastFile[want] = pick(inst.profile[want])));
+    if(!clip && want === 'run') clip = this._readyClip(inst, inst.profile.walk[0]);
+    if(!clip) return;
+    const ratio = clip.speed > 0.2 ? clamp(speedMs / clip.speed, 0.55, 2.2) : 1;
+    if(inst.state !== want || inst.current !== clip){
+      // Passage marche <-> course : on garde la phase du pas (même pied
+      // en avant) au lieu de repartir au hasard.
+      const prev = inst.current;
+      const wasLoco = prev && (inst.state === 'walk' || inst.state === 'run');
+      const phase = wasLoco ? ((prev.ag.animatables[0]?.masterFrame ?? prev.ag.from) - prev.ag.from) / Math.max(prev.ag.to - prev.ag.from, 1) : null;
+      inst.state = want;
+      const ag = this._play(inst, clip, { loop: true, speedRatio: ratio, randomStart: phase === null });
+      if(phase !== null) ag.goToFrame(ag.from + clamp(phase, 0, 1) * (ag.to - ag.from));
+    } else {
+      // Ajustement continu : la foulée suit la vitesse réelle (anti-glisse).
+      clip.ag.speedRatio = ratio * inst.tempo;
     }
   }
 
-  /** Appelé chaque frame par le boucle de jeu (match.js) avec la liste des unités vivantes. */
-  update(units){
+  /** Joue un clip ponctuel (attaque, sort, coup reçu), puis rend la main à idle/locomotion. */
+  _playOneShot(inst, kind, speedRatio){
+    const file = pick(inst.profile[kind], inst.lastFile[kind]);
+    const clip = this._readyClip(inst, file);
+    if(!clip) return false;
+    inst.lastFile[kind] = file;
+    inst.state = kind;
+    const ratio = speedRatio(clip.duration);
+    const ag = this._play(inst, clip, { loop: false, speedRatio: ratio });
+    inst.oneShotUntil = performance.now() + (clip.duration / (ratio * inst.tempo)) * 1000;
+    ag.onAnimationGroupEndObservable.addOnce(() => {
+      if(inst.state === kind && inst.current === clip && !inst.disposed){
+        inst.state = null;
+        this._enterIdle(inst);
+      }
+    });
+    return true;
+  }
+
+  _enterDeath(inst){
+    if(inst.state === 'death') return;
+    inst.deadAt = performance.now();
+    const file = pick(inst.profile.death);
+    const clip = this._readyClip(inst, file);
+    inst.state = 'death';
+    if(clip) this._play(inst, clip, { loop: false, speedRatio: 1 / inst.tempo });
+    // Le clip reste figé sur sa dernière image (le corps au sol).
+  }
+
+  _applyTransform(inst, unit, turnT, X = unit.x, Y = unit.y){
+    const pos = this._pixiToBabylon(X, Y);
+    inst.pivot.position.copyFrom(pos);
+    // Direction visée : la cible si l'unité est à l'arrêt et engagée
+    // (elle frappe face à l'ennemi), sinon son sens de déplacement.
+    let fx = unit.facing?.x ?? 0, fy = unit.facing?.y ?? 1;
+    const t = unit.target;
+    if(t && !t.dead && inst.speedPx < MOVE_SPEED_MIN){
+      const dx = t.x - unit.x, dy = t.y - unit.y;
+      if(dx || dy){ fx = dx; fy = dy; }
+    }
+    if(fx || fy){
+      const targetYaw = Math.atan2(fx, -fy);
+      inst.yaw = angleLerp(inst.yaw, targetYaw, turnT);
+    }
+    inst.pivot.rotation.y = inst.yaw;
+  }
+
+  /**
+   * Appelé chaque frame par la boucle de jeu (match.js).
+   * @param {Array} units - unités du sim
+   * @param {Map} [views] - UnitView PixiJS par id : le modèle 3D se cale
+   *   sur leur position AFFICHÉE (lissée), pour rester collé à l'anneau
+   *   de sélection et à la barre de vie au lieu de les devancer.
+   */
+  update(units, views){
+    const now = performance.now();
     const seen = new Set();
     for(const u of units){
       seen.add(u.id);
       const inst = this.instances.get(u.id);
       if(!inst || !inst.ready){
-        this.ensure(u); // fire-and-forget ; le mesh apparaîtra dès chargé
+        if(!inst && !u.dead){
+          this.ensure(u).catch(e => console.error('[BabylonUnits] ❌ échec ensure() pour unité', u.id, u.key || u.kind, '—', e));
+        }
         continue;
       }
-      inst.root.setEnabled(!u.dead);
-      if(!u.dead) this._applyTransform(inst, u);
-    }
-    // Nettoyer les instances d'unités disparues (mortes depuis longtemps / retirées du sim)
-    for(const [id, inst] of this.instances){
-      if(!seen.has(id)){
-        if(inst.root) inst.root.dispose();
-        this.instances.delete(id);
+
+      const dt = Math.min(Math.max((now - inst.lastT) / 1000, 0.001), 0.1);
+      inst.lastT = now;
+
+      if(u.dead){
+        this._enterDeath(inst);
+        inst.pivot.setEnabled((now - inst.deadAt) / 1000 < CORPSE_TIME);
+        continue;
       }
+      if(inst.state === 'death'){
+        // Réapparition (respawn) : on repart proprement.
+        inst.pivot.setEnabled(true);
+        inst.state = null;
+        inst.lastX = u.x; inst.lastY = u.y; inst.speedPx = 0;
+        this._enterIdle(inst);
+      }
+
+      const view = views?.get(u.id);
+      const X = view ? view.dispX : u.x, Y = view ? view.dispY : u.y;
+      // Vitesse réelle mesurée à l'écran (px/s), lissée.
+      const inst_v = Math.hypot(X - inst.lastX, Y - inst.lastY) / dt;
+      inst.lastX = X; inst.lastY = Y;
+      inst.speedPx += (inst_v - inst.speedPx) * Math.min(1, dt * 12);
+      const moving = inst.speedPx > MOVE_SPEED_MIN;
+
+      this._applyTransform(inst, u, Math.min(1, dt * TURN_SPEED), X, Y);
+
+      const inOneShot = (inst.state === 'attack' || inst.state === 'cast' || inst.state === 'hit') && now < inst.oneShotUntil;
+      if(moving){
+        // Le déplacement a priorité : jamais d'attaque « glissée ».
+        this._enterLocomotion(inst, inst.speedPx / WORLD_SCALE);
+      } else if(!inOneShot && inst.state !== 'idle'){
+        this._enterIdle(inst);
+      }
+    }
+    for(const [id, inst] of this.instances){
+      if(seen.has(id) || !inst.ready) continue;
+      // Unité retirée du sim (sbire tué) : on laisse jouer la mort, puis on nettoie.
+      if(inst.state !== 'death') this._enterDeath(inst);
+      if((now - inst.deadAt) / 1000 > CORPSE_TIME) this._disposeInstance(id, inst);
+    }
+  }
+
+  _disposeInstance(id, inst){
+    inst.disposed = true;
+    for(const c of inst.clips.values()) c.ag.dispose();
+    inst.pivot?.dispose();
+    this.instances.delete(id);
+  }
+
+  /**
+   * Événements de combat (match.js) :
+   *  - 'attack' : coup de base (mêlée ou tir)      - 'cast' : compétence
+   *  - 'hit'    : l'unité encaisse un coup
+   * @param {object} [info] - pour 'attack' : { interval } (s entre deux coups)
+   */
+  notifyAction(unitId, key, info = {}){
+    const inst = this.instances.get(unitId);
+    if(!inst || !inst.ready || inst.state === 'death') return;
+    if(inst.speedPx > MOVE_SPEED_MIN) return; // en course : la locomotion prime
+    const now = performance.now();
+    if(key === 'attack'){
+      if(inst.state === 'cast' && now < inst.oneShotUntil) return; // ne coupe pas un sort
+      const interval = info.interval || 1.2;
+      // Le clip est accéléré pour tenir dans l'intervalle entre deux coups.
+      this._playOneShot(inst, 'attack', d => clamp(d / (interval * 0.9), 1, 2.4));
+    } else if(key === 'cast'){
+      if(!inst.profile.cast.length){ this._playOneShot(inst, 'attack', d => clamp(d / 1.0, 1, 2.4)); return; }
+      this._playOneShot(inst, 'cast', d => clamp(d / 1.3, 1, 2.2));
+    } else if(key === 'hit'){
+      // Réaction seulement au repos, pas en pleine attaque, et pas à chaque coup.
+      if(inst.state !== 'idle' || now < inst.hitCooldownUntil || Math.random() > 0.45) return;
+      inst.hitCooldownUntil = now + 1800;
+      this._playOneShot(inst, 'hit', d => clamp(d / 0.8, 1, 1.8));
     }
   }
 
   destroy(){
     this._resizeObserver?.disconnect();
-    for(const [, inst] of this.instances){ inst.root?.dispose(); }
+    for(const [id, inst] of this.instances){ if(inst.ready) this._disposeInstance(id, inst); }
     this.instances.clear();
     this.engine.stopRenderLoop();
     this.engine.dispose();

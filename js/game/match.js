@@ -2,7 +2,8 @@
 // MATCH — assemble Sim (logique) + Renderer (PixiJS) + Tilemap
 // ============================================================
 import { Sim, makeChampionUnit } from './sim.js';
-import { Tilemap, siegeLayout, arenaLayout } from '../engine/tilemap.js';
+import { siegeLayout, arenaLayout } from '../engine/tilemap.js';
+import { BabylonTerrain } from '../engine/babylon-terrain.js';
 import { UnitView } from '../engine/unit-view.js';
 import { EffectsLayer } from '../engine/effects.js';
 import { CHAMPS } from '../data/champions.js';
@@ -23,10 +24,17 @@ export class Match{
     const layout = cfg.mode === 'siege' ? siegeLayout() : arenaLayout();
     renderer.worldSize = { w: layout.w, h: layout.h };
 
-    // artSeed basé sur le nom de mission pour varier les images par mission
+    // artSeed basé sur le nom de mission pour varier le terrain par mission
     const artSeed = cfg.missionId ? hashStr(cfg.missionId) : Math.floor(Math.random() * 100);
-    this.tilemap = new Tilemap(theme, layout, artSeed);
-    this.tilemap.addTo(renderer.layers);
+    // Le terrain (sol, voie, bosquets, murs) est rendu en 3D par Babylon,
+    // dans la même scène que les personnages — voir engine/babylon-terrain.js.
+    // Remplace l'ancien tapis de tuiles PixiJS plat (tilemap.js n'est plus
+    // utilisé que pour ses fonctions de layout siegeLayout()/arenaLayout()).
+    if(!renderer.units3d){
+      console.error('[Match] renderer.units3d est introuvable — le terrain et les personnages 3D ne peuvent pas être créés.');
+    } else {
+      this.terrain = new BabylonTerrain(renderer.units3d.scene, theme, layout, artSeed);
+    }
 
     this.fx = new EffectsLayer(renderer.layers);
 
@@ -69,10 +77,13 @@ export class Match{
     switch(e.type){
       case 'projectile':
         this.fx.spawnProjectile({ x: e.from.x, y: e.from.y, target: e.to, color: hexNum(e.color), size: e.isAbility ? 13 : 10 });
+        // Tir de base (mages, soutiens) : animation d'attaque à distance.
+        if(!e.isAbility) this.renderer.units3d?.notifyAction(e.from.id, 'attack', { interval: 1 / (e.from.as || 0.7) });
         break;
       case 'hit': {
         const v = this.views.get(e.unit.id);
         if(v) v.flashHit();
+        if(e.dmg > 0) this.renderer.units3d?.notifyAction(e.unit.id, 'hit');
         if(e.dmg > 0) this.fx.spawnFloatText(e.unit.x, e.unit.y - (e.unit.r||20) - 6, Math.round(e.dmg).toString(), '#ffe27a');
         break;
       }
@@ -82,10 +93,12 @@ export class Match{
         break;
       case 'melee':
         this.fx.spawnImpact((e.from.x+e.to.x)/2, (e.from.y+e.to.y)/2, hexNum(e.from.fx), 24);
+        this.renderer.units3d?.notifyAction(e.from.id, 'attack', { interval: 1 / (e.from.as || 0.7) });
         break;
       case 'cast': {
         const v = this.views.get(e.unit.id);
         if(v) v.flashHit();
+        this.renderer.units3d?.notifyAction(e.unit.id, 'cast');
         break;
       }
       case 'fx-self':
@@ -158,7 +171,7 @@ export class Match{
     // Synchronise les modèles 3D Babylon (position, orientation, mort)
     // sur l'état courant du sim — le rendu 2D ci-dessus ne gère plus
     // que HUD/barres de vie/effets pour les unités concernées.
-    this.renderer.units3d?.update(this.sim.units);
+    this.renderer.units3d?.update(this.sim.units, this.views);
 
     this.renderer.focusOn(this.sim.player.x, this.sim.player.y);
 
@@ -194,7 +207,7 @@ export class Match{
     this.renderer.removeFrameListener(this._tickFn);
     for(const v of this.views.values()) v.destroy();
     this.fx.clear();
-    this.tilemap.destroy();
+    this.terrain?.destroy();
   }
 }
 
