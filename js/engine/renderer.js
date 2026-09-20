@@ -1,7 +1,15 @@
 // ============================================================
 // RENDERER — coeur PixiJS : application, hiérarchie de calques,
 // caméra. Tout le reste du moteur vient se brancher dessus.
+//
+// Depuis le passage à la 3D des personnages, ce Renderer porte
+// aussi un canvas Babylon.js superposé sous le canvas PixiJS
+// (voir engine/babylon-units.js) : PixiJS garde le sol, le HUD,
+// les barres de vie et les effets ; Babylon dessine les modèles
+// 3D des unités (champions, sbires) au-dessus du sol PixiJS mais
+// en dessous des calques d'UI.
 // ============================================================
+import { BabylonUnits } from './babylon-units.js';
 
 export class Renderer{
   /**
@@ -22,7 +30,15 @@ export class Renderer{
   }
 
   _build(){
+    // Le canvas PixiJS doit rester transparent pour laisser voir le
+    // canvas Babylon (les modèles 3D) inséré juste en dessous de lui
+    // dans le DOM — voir _initBabylon() plus bas.
+    this.app.canvas.style.position = 'absolute';
+    this.app.canvas.style.top = '0';
+    this.app.canvas.style.left = '0';
+    this.app.canvas.style.zIndex = '1';
     this.mount.appendChild(this.app.canvas);
+    this._initBabylon();
 
     // Racine du monde — c'est elle qui bouge avec la caméra (pan + zoom).
     this.world = new PIXI.Container();
@@ -101,6 +117,13 @@ export class Renderer{
     this.world.y = vh/2 - this.camera.y * z;
   }
 
+  _initBabylon(){
+    // L'empilement est géré par z-index explicite (Pixi=1 posé plus haut,
+    // Babylon=0 par défaut dans BabylonUnits) — l'ordre d'ajout au DOM
+    // n'a donc pas d'importance ici.
+    this.units3d = new BabylonUnits(this.mount, this);
+  }
+
   /** Abonne une fonction appelée à chaque frame avec le delta-temps (s). */
   addFrameListener(fn){ this._frameListeners.push(fn); }
   removeFrameListener(fn){
@@ -118,6 +141,7 @@ export class Renderer{
 
   destroy(){
     this._resizeObserver?.disconnect();
+    this.units3d?.destroy();
     this.app.destroy(true, { children: true, texture: true });
   }
 }

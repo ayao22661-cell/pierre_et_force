@@ -283,21 +283,24 @@ export class UnitView {
     const r = u.r || 24;
     const teamCol = TEAM_COLOR[u.team] ?? TEAM_COLOR[2];
 
-    if(u.kind === 'champ'){
-      drawChampion(g, u.key, r, teamCol, this._facing, this._state);
-    } else if(u.kind === 'minion'){
-      drawMinion(g, r, teamCol);
-    } else if(u.kind === 'tower'){
+    // Champions et sbires sont maintenant rendus en 3D par Babylon.js
+    // (voir engine/babylon-units.js), superposé sous ce canvas PixiJS.
+    // On ne dessine donc plus leur corps ici : seuls la barre de vie,
+    // le glow et l'anneau de sélection restent en 2D par-dessus.
+    if(u.kind === 'tower'){
       drawTower(g, r, teamCol);
     } else if(u.kind === 'nexus' || u.kind === 'nexus_hidden'){
       drawNexus(g, r, teamCol);
-    } else {
-      // fallback cercle
+    } else if(u.kind !== 'champ' && u.kind !== 'minion'){
+      // fallback cercle pour tout type non géré ailleurs
       g.circle(0, 0, r).fill({ color: teamCol, alpha:0.8 });
     }
 
     this.body.addChild(g);
     this.glow.width = this.glow.height = r * 5.5;
+    // Glow discret pour champ/minion (le relief vient du modèle 3D) ;
+    // gardé plus visible pour tours/nexus qui restent en Graphics.
+    this._is3D = (u.kind === 'champ' || u.kind === 'minion');
   }
 
   setSelected(v){
@@ -343,10 +346,13 @@ export class UnitView {
 
     this.selRing.x = this.dispX; this.selRing.y = this.dispY;
 
-    // Pulsation glow
+    // Pulsation glow — atténuée pour les unités rendues en 3D (Babylon
+    // apporte déjà son propre relief/lumière ; on garde juste un halo
+    // discret pour la lisibilité de l'équipe).
     if(!dead){
       const pulse = 1 + Math.sin(performance.now()/500 + (u.id||0))*0.07;
-      this.glow.alpha = (u.glowBoost ? 0.9 : 0.35) * pulse;
+      const base = u.glowBoost ? 0.9 : (this._is3D ? 0.16 : 0.35);
+      this.glow.alpha = base * pulse;
     }
 
     // Animation de marche légère (oscillation verticale)

@@ -155,6 +155,10 @@ export class Match{
       const v = this._ensureView(u);
       v.update(dt, u);
     }
+    // Synchronise les modèles 3D Babylon (position, orientation, mort)
+    // sur l'état courant du sim — le rendu 2D ci-dessus ne gère plus
+    // que HUD/barres de vie/effets pour les unités concernées.
+    this.renderer.units3d?.update(this.sim.units);
 
     this.renderer.focusOn(this.sim.player.x, this.sim.player.y);
 
