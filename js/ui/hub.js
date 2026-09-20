@@ -5,6 +5,9 @@ import { CAMPAIGN } from '../data/campaign.js';
 import { CHAMPS } from '../data/champions.js';
 import { CAST } from '../data/cast.js';
 import { portraitFor } from '../engine/portraits.js';
+import { icon, iconSvg } from './icons.js';
+import { DEFIS, defisAvailable } from '../data/defis.js';
+import { isDefiDone } from '../game/state.js';
 import { isMissionDone, isMissionAvailable, writeSave } from '../game/state.js';
 import { renderShop, renderEveil, ensureShopSave } from './shop.js';
 import { el } from './screens.js';
@@ -34,6 +37,26 @@ export function buildHub(save, onSelectMission){
   currentSave = save;
   const root = document.getElementById('hub-missions');
   root.innerHTML = '';
+
+  // Deux listes dans l'onglet Missions : la campagne (linéaire) et les
+  // défis (rejouables, débloqués à l'avancement).
+  const switcher = el('div', 'mission-switch');
+  const btnCamp = el('button', 'mission-switch-btn active', 'CAMPAGNE');
+  const btnDefis = el('button', 'mission-switch-btn', 'DÉFIS');
+  switcher.appendChild(btnCamp); switcher.appendChild(btnDefis);
+  root.appendChild(switcher);
+  const listCamp = el('div', 'mission-list');
+  const listDefis = el('div', 'mission-list hidden');
+  root.appendChild(listCamp); root.appendChild(listDefis);
+  const show = (defis) => {
+    listDefis.classList.toggle('hidden', !defis);
+    listCamp.classList.toggle('hidden', defis);
+    btnDefis.classList.toggle('active', defis);
+    btnCamp.classList.toggle('active', !defis);
+  };
+  btnCamp.addEventListener('click', () => show(false));
+  btnDefis.addEventListener('click', () => show(true));
+  buildDefis(save, onSelectMission, listDefis);
   const ids = allMissionIds();
   let globalIdx = 0;
 
@@ -63,7 +86,7 @@ export function buildHub(save, onSelectMission){
     });
 
     block.appendChild(row);
-    root.appendChild(block);
+    listCamp.appendChild(block);
   });
 
   const doneCount = save.missions_done.length;
@@ -79,9 +102,43 @@ export function buildHub(save, onSelectMission){
   renderShop(save);
 }
 
+/**
+ * Liste des défis. Un défi verrouillé reste visible, avec la condition
+ * à remplir : le joueur sait ce qui l'attend et pourquoi continuer.
+ */
+function buildDefis(save, onSelectMission, host){
+  const done = save.missions_done.length;
+  const open = defisAvailable(done);
+  const intro = el('div', 'acte-title', 'DÉFIS — rejouables, pour s\'entraîner et gagner des cauris');
+  host.appendChild(intro);
+  const row = el('div', 'mission-row');
+  DEFIS.forEach(d => {
+    const avail = open.includes(d);
+    const card = el('div', 'pf-panel mission-card' + (avail ? '' : ' locked'));
+    card.appendChild(el('div', 'm-num', String(d.num)));
+    card.appendChild(el('div', 'm-name', d.name));
+    card.appendChild(el('div', 'm-mode', d.mode));
+    const reward = el('div', 'm-reward');
+    reward.appendChild(icon('shell'));
+    reward.appendChild(el('span', '', ` +${d.cauris}`));
+    card.appendChild(reward);
+    const status = avail ? (isDefiDone(save, d.id) ? 'REJOUER' : 'DISPONIBLE') : `${d.req} MISSIONS`;
+    card.appendChild(el('div', 'm-status ' + (avail ? 'avail' : 'lock'), status));
+    if(avail){
+      // isDefi : la fin de match saura ne pas l'ajouter à la campagne.
+      card.addEventListener('click', () => onSelectMission({ ...d, isDefi: true }, d.mode));
+    }
+    row.appendChild(card);
+  });
+  host.appendChild(row);
+}
+
 export function updateHubHeader(save){
   const lvl = document.getElementById('hub-level');
   if(lvl) lvl.textContent = save.level;
+  // Icône cauri devant le compteur (une seule fois, l'en-tête est réutilisé).
+  const caurisBadge = document.getElementById('hub-cauris-badge');
+  if(caurisBadge && !caurisBadge.querySelector('svg')) caurisBadge.insertBefore(icon('shell'), caurisBadge.firstChild);
   const cauris = document.getElementById('hub-cauris');
   if(cauris) cauris.textContent = save.cauris.toLocaleString('fr-FR');
 }
@@ -192,10 +249,10 @@ function renderProfile(save){
 
   const ids = allMissionIds();
   const stats = el('div', 'profile-stats-grid');
-  stats.appendChild(statTile('❤', Math.round(t.hp), 'PV de base'));
-  stats.appendChild(statTile('⚔', Math.round(t.atk), 'Attaque de base'));
-  stats.appendChild(statTile('🎯', `${save.missions_done.length}/${ids.length}`, 'Missions'));
-  stats.appendChild(statTile('🛡', save.allies_unlocked.length, 'Alliés débloqués'));
+  stats.appendChild(statTile('heart', Math.round(t.hp), 'PV de base'));
+  stats.appendChild(statTile('sword', Math.round(t.atk), 'Attaque de base'));
+  stats.appendChild(statTile('target', `${save.missions_done.length}/${ids.length}`, 'Missions'));
+  stats.appendChild(statTile('shield', save.allies_unlocked.length, 'Alliés débloqués'));
   root.appendChild(stats);
 
   const actes = el('div', 'pf-panel profile-acte-list');
@@ -213,7 +270,7 @@ function renderProfile(save){
 
 function statTile(ico, val, label){
   const tile = el('div', 'pf-panel profile-stat-tile');
-  tile.appendChild(el('span', '', ico));
+  tile.appendChild(icon(ico, 'pf-ico-lg'));
   const wrap = el('div', '');
   wrap.appendChild(el('div', 'profile-stat-val', String(val)));
   wrap.appendChild(el('div', 'profile-stat-label', label));

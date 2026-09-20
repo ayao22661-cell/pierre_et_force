@@ -3,7 +3,7 @@
 // Reprend les vraies statistiques des champions (CHAMPS) pour un
 // combat crédible : mouvement, attaque de base (mêlée / à distance
 // via projectile), IA simple d'engagement, vagues de sbires,
-// tours et nexus pour le mode Siège.
+// tours et autel pour le mode Siège.
 //
 // Portée assumée pour cette passe : pas encore le système complet
 // de sorts Q/W/E/R avec cooldowns (c'est la couche suivante à
@@ -78,7 +78,7 @@ export function makeMinion(team, path, wp){
 
 export function makeStructure(kind, team, x, y, hp){
   return {
-    id: UID++, kind, team, x, y, r: kind === 'nexus' ? 55 : 38,
+    id: UID++, kind, team, x, y, r: kind === 'autel' ? 55 : 38,
     hp, maxHp: hp, atk: kind === 'tower' ? 140 : 0, arm: 30, as: 1, ms: 0,
     range: kind === 'tower' ? 340 : 0, ranged: true,
     fx: team === 0 ? '#5aa9ff' : '#ff6a5a',
@@ -128,18 +128,18 @@ export class Sim{
       const u = makeChampionUnit(k, 1, { x: p1.x, y: p1.y + (i-1)*44, mult: this.cfg.foeMult || 1, path, wp: path.length-2 });
       this.units.push(u);
     }
-    this.nexusAlly = makeStructure('nexus', 0, p0.x - 60, p0.y, 3500);
-    this.nexusEnemy = makeStructure('nexus', 1, p1.x + 60, p1.y, 3500 * (this.cfg.foeMult || 1));
-    this.units.push(this.nexusAlly, this.nexusEnemy);
+    this.autelAllie = makeStructure('autel', 0, p0.x - 60, p0.y, 3500);
+    this.autelEnnemi = makeStructure('autel', 1, p1.x + 60, p1.y, 3500 * (this.cfg.foeMult || 1));
+    this.units.push(this.autelAllie, this.autelEnnemi);
     this.path = path;
     this.waveTimer = 6; this.waveN = 0;
     this.teamKills = [0, 0]; // suivi des éliminations de champions, tous modes confondus
   }
 
   /**
-   * Défense — le joueur protège son nexus allié à gauche pendant N vagues.
-   * Les ennemis arrivent par la droite et convergent sur le nexus.
-   * Victoire : survivre à toutes les vagues. Défaite : nexus détruit.
+   * Défense — le joueur protège son autel allié à gauche pendant N vagues.
+   * Les ennemis arrivent par la droite et convergent sur l'autel.
+   * Victoire : survivre à toutes les vagues. Défaite : autel détruit.
    */
   _buildDefense(path){
     const p0 = path[0], p1 = path[path.length-1];
@@ -150,9 +150,9 @@ export class Sim{
       const u = makeChampionUnit(k, 0, { isAlly: true, x: p0.x + 80, y: p0.y + 60 + i*50, path, wp: 1, save: this.cfg.save });
       this.units.push(u);
     });
-    // Nexus allié à défendre, pas de nexus ennemi
-    this.nexusAlly = makeStructure('nexus', 0, p0.x - 60, p0.y, 4500);
-    this.units.push(this.nexusAlly);
+    // Autel allié à défendre, pas de autel ennemi
+    this.autelAllie = makeStructure('autel', 0, p0.x - 60, p0.y, 4500);
+    this.units.push(this.autelAllie);
     this.path = path;
     // Nombre de vagues à survivre (foeMult conditionne leur force)
     this.defenseWaveTotal = this.cfg.waveTotal || 5;
@@ -209,11 +209,43 @@ export class Sim{
 
   setPlayerInput(dx, dy){ this.playerInput = { dx, dy }; }
 
+  /**
+   * Coup de base du joueur, déclenché à la main (bouton ou touche).
+   * Les unités frappent déjà automatiquement quand une cible entre à
+   * portée ; ici le joueur choisit son moment, et frappe même dans le
+   * vide si personne n'est à portée — sans ça, on ne « sent » pas le
+   * personnage taper.
+   */
+  requestBasicAttack(){ this._basicQueued = true; }
+
+  _tickPlayerBasic(){
+    if(!this._basicQueued) return;
+    this._basicQueued = false;
+    const p = this.player;
+    if(!p || p.dead) return;
+    if(p.cc && p.cc.type === 'stun' && this.time < p.cc.until) return;
+    if(p.atkCd > 0) return;
+    const t = this._nearestFoe(p, p.range);
+    if(t){
+      p.target = t;
+      p.atkCd = 1 / (p.as || 0.7);
+      // Oriente le personnage vers sa cible avant de frapper.
+      const dx = t.x - p.x, dy = t.y - p.y, d = Math.hypot(dx, dy) || 1;
+      p.facing = { x: dx/d, y: dy/d };
+      this._resolveAttack(p, t, true);
+    } else {
+      // Coup dans le vide : petit temps de recharge et animation quand même.
+      p.atkCd = 0.45 / (p.as || 0.7);
+      this.onEvent({ type: 'swing', from: p });
+    }
+  }
+
   update(dt){
     if(this.over) return;
     this.time += dt;
 
     this._movePlayer(dt);
+    this._tickPlayerBasic();
     for(const u of this.units){
       if(u.dead || u === this.player) continue;
       this._think(u, dt);
@@ -319,7 +351,7 @@ export class Sim{
     let best = null, bd = radius;
     for(const o of this.units){
       if(o.dead || o.team === u.team || o.team === undefined) continue;
-      if(o.kind === 'nexus' && this.mode !== 'siege') continue;
+      if(o.kind === 'autel' && this.mode !== 'siege') continue;
       const d = Math.hypot(o.x-u.x, o.y-u.y);
       if(d < bd){ bd = d; best = o; }
     }
@@ -354,7 +386,7 @@ export class Sim{
     }
   }
 
-  _resolveAttack(u, t){
+  _resolveAttack(u, t, manual = false){
     const effArm = (t.arm||0) + ((t.tempArm && this.time < t.tempArmUntil) ? t.tempArm : 0);
     // Pénétration d'armure (objet Lame du Vide) — réduit l'armure effective
     const pen = u.bns?.pen || 0;
@@ -365,10 +397,10 @@ export class Sim{
     const isCrit = critChance > 0 && Math.random() < critChance;
     if(isCrit) dmg *= 2;
     if(u.ranged){
-      this.onEvent({ type: 'projectile', from: u, to: t, color: u.proj || u.fx });
+      this.onEvent({ type: 'projectile', from: u, to: t, color: u.proj || u.fx, manual });
       setTimeout(() => this._applyDamage(u, t, dmg, { basic: true }), 140);
     } else {
-      this.onEvent({ type: 'melee', from: u, to: t });
+      this.onEvent({ type: 'melee', from: u, to: t, manual });
       this._applyDamage(u, t, dmg, { basic: true });
     }
   }
@@ -416,7 +448,7 @@ export class Sim{
       }
       t.dead = true;
       this.onEvent({ type: 'death', unit: t, killer: u });
-      if(t.kind === 'nexus') this._endMatch(u.team === 0);
+      if(t.kind === 'autel') this._endMatch(u.team === 0);
       // Élimination d'un champion — comptabilisée dans tous les modes (pas
       // seulement en Arène), pour que la récompense de fin de match reflète
       // les vraies éliminations en Siège/Défense/Boss aussi.
@@ -488,10 +520,10 @@ export class Sim{
   /**
    * Défense — spawn des vagues d'ennemis depuis le côté droit de la lane.
    * Victoire : avoir survécu à toutes les vagues (plus aucun ennemi vivant après la dernière).
-   * Défaite : nexus allié détruit.
+   * Défaite : autel allié détruit.
    */
   _tickDefense(dt){
-    if(this.nexusAlly && this.nexusAlly.dead){ this._endMatch(false); return; }
+    if(this.autelAllie && this.autelAllie.dead){ this._endMatch(false); return; }
     this.waveTimer -= dt;
     if(this.waveTimer <= 0 && this.defenseWaveN < this.defenseWaveTotal){
       this.defenseWaveN++;

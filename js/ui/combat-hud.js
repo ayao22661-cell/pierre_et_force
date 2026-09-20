@@ -3,6 +3,7 @@
 // Construite une fois par match, détruite à la fin.
 // ============================================================
 import { CHAMPS } from '../data/champions.js';
+import { iconSvg } from './icons.js';
 import { portraitFor } from '../engine/portraits.js';
 import { el } from './screens.js';
 import { Minimap } from '../engine/minimap.js';
@@ -63,12 +64,12 @@ export class CombatHud{
     const bns = this.match?.sim?.player?.bns;
     if(bns && (bns.atk || bns.hp || bns.arm || bns.crit || bns.ls || bns.regen)){
       const bonusRow = el('div', 'hud-bonus-row');
-      if(bns.atk)   bonusRow.appendChild(el('span','hud-bonus-chip',`⚔+${Math.round(bns.atk)}`));
-      if(bns.hp)    bonusRow.appendChild(el('span','hud-bonus-chip',`❤+${Math.round(bns.hp)}`));
-      if(bns.arm)   bonusRow.appendChild(el('span','hud-bonus-chip',`🛡+${Math.round(bns.arm)}`));
-      if(bns.crit)  bonusRow.appendChild(el('span','hud-bonus-chip',`🎯${Math.round(bns.crit*100)}%`));
-      if(bns.ls)    bonusRow.appendChild(el('span','hud-bonus-chip',`🩸${Math.round(bns.ls*100)}%`));
-      if(bns.regen + (bns.regenF||0) > 0) bonusRow.appendChild(el('span','hud-bonus-chip',`💚+${Math.round(bns.regen+(bns.regenF||0))}/s`));
+      if(bns.atk)   bonusRow.appendChild(el('span','hud-bonus-chip',iconSvg('sword') + `+${Math.round(bns.atk)}`));
+      if(bns.hp)    bonusRow.appendChild(el('span','hud-bonus-chip',iconSvg('heart') + `+${Math.round(bns.hp)}`));
+      if(bns.arm)   bonusRow.appendChild(el('span','hud-bonus-chip',iconSvg('shield') + `+${Math.round(bns.arm)}`));
+      if(bns.crit)  bonusRow.appendChild(el('span','hud-bonus-chip',iconSvg('target') + `${Math.round(bns.crit*100)}%`));
+      if(bns.ls)    bonusRow.appendChild(el('span','hud-bonus-chip',iconSvg('drop') + `${Math.round(bns.ls*100)}%`));
+      if(bns.regen + (bns.regenF||0) > 0) bonusRow.appendChild(el('span','hud-bonus-chip',iconSvg('leaf') + `+${Math.round(bns.regen+(bns.regenF||0))}/s`));
       if(bonusRow.children.length) left.appendChild(bonusRow);
     }
     bottom.appendChild(left);
@@ -87,9 +88,21 @@ export class CombatHud{
       spells.appendChild(slot);
       this.spellEls.push({ el: slot, cdEl: cd, cost: a.cost || 0 });
     });
+    // Coup de base : une frappe au corps à corps déclenchée à la main,
+    // à côté des sorts. Le personnage frappe même sans cible à portée,
+    // pour que le joueur sente le coup partir.
+    const basic = el('div', 'spell-slot basic-slot', iconSvg('sword', 'pf-ico-lg'));
+    basic.title = 'Coup de base (Espace)';
+    basic.appendChild(el('span', 'key', '⎵'));
+    const fire = (ev) => { ev.preventDefault(); this.match.basicAttack(); };
+    basic.addEventListener('click', fire);
+    basic.addEventListener('touchstart', fire, { passive: false });
+    spells.appendChild(basic);
+    this.basicEl = basic;
+
     bottom.appendChild(spells);
 
-    const pause = el('div', 'pf-panel hud-pause-btn', '❚❚');
+    const pause = el('div', 'pf-panel hud-pause-btn', iconSvg('pause', 'pf-ico-lg'));
     pause.addEventListener('click', onPause);
     bottom.appendChild(pause);
 

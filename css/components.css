@@ -267,3 +267,44 @@
   width:28px; height:28px; padding:0; font-size:13px;
   border-radius:6px; opacity:.6;
 }
+
+
+/* ── Icônes SVG (js/ui/icons.js) ───────────────────────────────
+   Trait fin, couleur héritée du texte : les icônes s'accordent à
+   chaque contexte (chip de bonus, badge doré, tuile de profil)
+   sans jeu de couleurs à maintenir. ── */
+.pf-ico{
+  width: 1.05em; height: 1.05em;
+  vertical-align: -0.16em;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.7;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  flex-shrink: 0;
+}
+.pf-ico-lg{ width: 1.5em; height: 1.5em; vertical-align: -0.3em; }
+.pf-ico-fill{ fill: currentColor; stroke: none; }
+
+
+/* Coup de base : même gabarit que les sorts, teinte de marque pour le
+   distinguer au premier coup d'œil. */
+.spell-slot.basic-slot{
+  border-color: rgba(165,52,43,.55);
+  background: linear-gradient(180deg, rgba(165,52,43,.22), var(--pf-panel));
+  color: #f2d9d4;
+}
+.spell-slot.basic-slot:active{ transform: scale(.9); }
+
+
+/* ── Bascule Campagne / Défis (onglet Missions) ── */
+.mission-switch{ display:flex; gap:8px; margin-bottom: 12px; }
+.mission-switch-btn{
+  flex:1; padding: 9px 10px; border-radius: var(--pf-radius);
+  border:1px solid var(--pf-panel-border); background: var(--pf-panel);
+  color: var(--pf-text-dim); font-family: var(--pf-font-display);
+  font-size: 12px; letter-spacing: .12em; cursor:pointer;
+}
+.mission-switch-btn.active{ border-color: var(--pf-brand-lit); color: var(--pf-text); background: rgba(165,52,43,.14); }
+.mission-list.hidden{ display:none; }
+.m-reward{ display:flex; align-items:center; gap:4px; font-size:11px; color: var(--pf-gold); margin-top:2px; }

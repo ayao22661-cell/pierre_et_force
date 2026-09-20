@@ -50,6 +50,8 @@ export class Match{
       this.keys[k] = true;
       const slot = { a: 0, z: 1, e: 2, r: 3 }[k];
       if(slot !== undefined) this.sim.requestCast(this.sim.player, slot);
+      // Espace (ou W) : coup de base à la main.
+      if(k === ' ' || k === 'spacebar' || k === 'w'){ e.preventDefault(); this.basicAttack(); }
     };
     this._onKeyUp = (e) => { this.keys[e.key.toLowerCase()] = false; };
     window.addEventListener('keydown', this._onKeyDown);
@@ -72,13 +74,19 @@ export class Match{
   }
 
   castSlot(slot){ this.sim.requestCast(this.sim.player, slot); }
+  /** Coup de base du joueur (bouton du HUD, touche Espace). */
+  basicAttack(){ this.sim.requestBasicAttack(); }
 
   _onSimEvent(e){
     switch(e.type){
+      case 'swing':
+        // Coup dans le vide : juste l'animation, aucun dégât.
+        this.renderer.units3d?.notifyAction(e.from.id, 'attack', { interval: 1 / (e.from.as || 0.7), force: true });
+        break;
       case 'projectile':
         this.fx.spawnProjectile({ x: e.from.x, y: e.from.y, target: e.to, color: hexNum(e.color), size: e.isAbility ? 13 : 10 });
         // Tir de base (mages, soutiens) : animation d'attaque à distance.
-        if(!e.isAbility) this.renderer.units3d?.notifyAction(e.from.id, 'attack', { interval: 1 / (e.from.as || 0.7) });
+        if(!e.isAbility) this.renderer.units3d?.notifyAction(e.from.id, 'attack', { interval: 1 / (e.from.as || 0.7), force: e.manual });
         break;
       case 'hit': {
         const v = this.views.get(e.unit.id);
@@ -93,7 +101,7 @@ export class Match{
         break;
       case 'melee':
         this.fx.spawnImpact((e.from.x+e.to.x)/2, (e.from.y+e.to.y)/2, hexNum(e.from.fx), 24);
-        this.renderer.units3d?.notifyAction(e.from.id, 'attack', { interval: 1 / (e.from.as || 0.7) });
+        this.renderer.units3d?.notifyAction(e.from.id, 'attack', { interval: 1 / (e.from.as || 0.7), force: e.manual });
         break;
       case 'cast': {
         const v = this.views.get(e.unit.id);
@@ -184,13 +192,13 @@ export class Match{
   _objectiveText(){
     const m = this.sim.mode;
     if(m === 'siege'){
-      const ne = this.sim.nexusEnemy;
-      return `Nexus ennemi ${Math.round(100*ne.hp/ne.maxHp)}%`;
+      const ne = this.sim.autelEnnemi;
+      return `Autel ennemi ${Math.round(100*ne.hp/ne.maxHp)}%`;
     }
     if(m === 'defense'){
-      const na = this.sim.nexusAlly;
+      const na = this.sim.autelAllie;
       const wave = this.sim.defenseWaveN, total = this.sim.defenseWaveTotal;
-      return `Défense — Nexus ${Math.round(100*na.hp/na.maxHp)}% • Vague ${wave}/${total}`;
+      return `Défense — Autel ${Math.round(100*na.hp/na.maxHp)}% • Vague ${wave}/${total}`;
     }
     if(m === 'boss'){
       if(this.sim.boss){

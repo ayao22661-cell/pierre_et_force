@@ -8,6 +8,9 @@ export function defaultSave(){
   return {
     version: 1,
     missions_done: [],
+    // Défis (missions alternatives) déjà réussis au moins une fois.
+    // Ils restent rejouables : on ne garde la trace que pour l'affichage.
+    defis_done: [],
     diff: {},
     xp: 0, level: 1,
     allies_unlocked: ['KAREN', 'FULGENCE'],
@@ -46,6 +49,22 @@ export function recordVictory(save, missionId){
   if(!isMissionDone(save, missionId)) save.missions_done.push(missionId);
   save.stats.wins++; save.stats.games++;
   writeSave(save);
+}
+
+/**
+ * Victoire sur un défi. Volontairement séparé de recordVictory() :
+ * les défis sont rejouables et ne doivent pas gonfler la progression
+ * de campagne (le compteur « x / 50 missions »).
+ */
+export function recordDefiVictory(save, defiId){
+  if(!save.defis_done) save.defis_done = [];
+  if(save.defis_done.indexOf(defiId) < 0) save.defis_done.push(defiId);
+  save.stats.wins++; save.stats.games++;
+  writeSave(save);
+}
+
+export function isDefiDone(save, id){
+  return (save.defis_done || []).indexOf(id) >= 0;
 }
 
 export function recordDefeat(save){

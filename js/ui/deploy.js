@@ -99,7 +99,11 @@ export function renderDeploy(mission, modeLabel, save, onLaunch){
       // 3 dès la mission 1) avec 85 % des stats de base. Désormais 1 à 3 champions,
       // et des stats qui montent doucement avec la mission (≈ 40 % au début, 80 % à la fin).
       foeCount: Math.min(3, 1 + Math.floor((mission.ennemis_extra || 0) / 3)),
-      foeMult: Math.min(0.8, 0.4 + (mission.num || 1) * 0.008),
+      // Les défis ont un numéro textuel (« D3 ») : on prend leur propre
+      // difficulté, sinon la difficulté suit le numéro de mission.
+      foeMult: mission.foeMult != null
+        ? mission.foeMult
+        : Math.min(0.8, 0.4 + (Number(mission.num) || 1) * 0.008),
       save,                  // transmis à Sim pour les bonus objets/talents
     });
   };

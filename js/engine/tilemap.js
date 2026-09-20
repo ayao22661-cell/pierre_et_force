@@ -9,10 +9,10 @@ const TILE = 96;
 
 // Images d'art chargées dynamiquement (chemins relatifs à index.html)
 const ART_IMAGES = [
-  'assets/art_battle1.png',
-  'assets/art_battle2.png',
-  'assets/art_battle3.png',
-  'assets/art_divine.png',
+  'assets/art_battle1.webp',
+  'assets/art_battle2.webp',
+  'assets/art_battle3.webp',
+  'assets/art_divine.webp',
 ];
 let artTextureCache = {};
 export function preloadArtTextures(){

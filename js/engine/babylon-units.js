@@ -31,23 +31,26 @@
 const GLB_BASE = 'assets/models/';
 const ANIM_BASE = 'assets/animations/';
 
+// Les 7 champions jouables ont chacun leur modèle dédié (Hunyuan 3D +
+// rig Mixamo), comme les 13 autres personnages du récit (portraits,
+// voir character-portrait-3d.js) et les deux sbires.
 const MODEL_BY_KEY = {
-  TARINE:   'TARINE.glb',        // modèle dédié (Hunyuan 3D + rig Mixamo)
-  BABA:     'personnage-guerrier.glb',
-  SAM:      'personnage-mage.glb',
-  LUNDGREN: 'personnage-mage.glb',
-  KAREN:    'personnage-soigneuse.glb',
-  FULGENCE: 'personnage-chevalier.glb',
-  DARK:     'personnage-rodeur.glb',
+  TARINE:   'TARINE.glb',
+  SAM:      'SAM.glb',
+  LUNDGREN: 'LUNDGREN.glb',
+  KAREN:    'KAREN.glb',
+  FULGENCE: 'FULGENCE.glb',
+  BABA:     'BABA_TUNDE.glb',
+  DARK:     'DARK.glb',
 };
-const MODEL_MINION_ALLY  = 'personnage-rodeur.glb';
-const MODEL_MINION_ENEMY = 'personnage-orc.glb';
-const MODEL_FALLBACK     = 'personnage-guerrier.glb';
+const MODEL_MINION_ALLY  = 'SBIRE.glb';
+const MODEL_MINION_ENEMY = 'ORC.glb';
+const MODEL_FALLBACK     = 'TARINE.glb';
 
 function modelForUnit(u){
   if(u.kind === 'champ')  return MODEL_BY_KEY[u.key] || MODEL_FALLBACK;
   if(u.kind === 'minion') return u.team === 0 ? MODEL_MINION_ALLY : MODEL_MINION_ENEMY;
-  return null; // tours / nexus restent en PixiJS (Graphics), pas de GLB
+  return null; // tours / autel restent en PixiJS (Graphics), pas de GLB
 }
 
 // ---------------------------------------------------------------
@@ -244,7 +247,7 @@ export class BabylonUnits{
   _buildCamera(){
     // Caméra ORTHOGRAPHIQUE inclinée à 45°, calée pixel pour pixel sur la
     // caméra 2D de PixiJS (voir _syncCameraFromPixi). L'ancienne caméra
-    // perspective ne correspondait pas à la projection PixiJS : le Nexus,
+    // perspective ne correspondait pas à la projection PixiJS : l'Autel,
     // l'anneau du joueur et les barres de vie (dessinés en 2D) n'étaient
     // pas au même endroit que le sol et les personnages 3D.
     const cam = new BABYLON.ArcRotateCamera(
@@ -616,7 +619,9 @@ export class BabylonUnits{
   notifyAction(unitId, key, info = {}){
     const inst = this.instances.get(unitId);
     if(!inst || !inst.ready || inst.state === 'death') return;
-    if(inst.speedPx > MOVE_SPEED_MIN) return; // en course : la locomotion prime
+    // En course, la locomotion prime — sauf pour un coup demandé à la
+    // main par le joueur (info.force), qu'on doit toujours voir partir.
+    if(inst.speedPx > MOVE_SPEED_MIN && !info.force) return;
     const now = performance.now();
     if(key === 'attack'){
       if(inst.state === 'cast' && now < inst.oneShotUntil) return; // ne coupe pas un sort

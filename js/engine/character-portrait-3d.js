@@ -23,27 +23,29 @@ const PORTRAIT_SIZE = { w: 480, h: 600 };
 // (fiches narratives, y compris les PNJ sans équivalent en combat).
 // Réutilise le rôle pour choisir le modèle le plus proche parmi les
 // 7 disponibles quand le personnage n'a pas de modèle dédié.
+// Les 20 personnages ont chacun leur modèle dédié (Hunyuan 3D + rig
+// Mixamo) — plus aucun ne partage de modèle générique.
 const CAST_MODEL = {
   TARINE:     'TARINE.glb',
-  BABA_TUNDE: 'personnage-guerrier.glb',
-  SAM:        'personnage-mage.glb',
-  LUNDGREN:   'personnage-mage.glb',
-  KAREN:      'personnage-soigneuse.glb',
-  YOURI:      'personnage-soigneuse.glb',
-  FULGENCE:   'personnage-chevalier.glb',
-  OUSMANE:    'personnage-chevalier.glb',
-  GROB:       'personnage-chevalier.glb',
-  KEITA:      'personnage-chevalier.glb',
-  KANKOU:     'personnage-chevalier.glb',
-  DARK:       'personnage-rodeur.glb',
-  SGRUN:      'personnage-rodeur.glb',
-  SCHISSIN:   'personnage-rodeur.glb',
-  SAMIA:      'personnage-rodeur.glb',
-  SYLLA:      'personnage-assassin.glb',
-  SUB:        'personnage-assassin.glb',
-  KRAG:       'personnage-orc.glb',
-  VAEL:       'personnage-orc.glb',
-  MURK:       'personnage-orc.glb',
+  BABA_TUNDE: 'BABA_TUNDE.glb',
+  SAM:        'SAM.glb',
+  LUNDGREN:   'LUNDGREN.glb',
+  KAREN:      'KAREN.glb',
+  YOURI:      'YOURI.glb',
+  FULGENCE:   'FULGENCE.glb',
+  OUSMANE:    'OUSMANE.glb',
+  GROB:       'GROB.glb',
+  KEITA:      'KEITA.glb',
+  KANKOU:     'KANKOU.glb',
+  DARK:       'DARK.glb',
+  SGRUN:      'SGRUN.glb',
+  SCHISSIN:   'SCHISSIN.glb',
+  SAMIA:      'SAMIA.glb',
+  SYLLA:      'SYLLA.glb',
+  SUB:        'SUB.glb',
+  KRAG:       'KRAG.glb',
+  VAEL:       'VAEL.glb',
+  MURK:       'MURK.glb',
 };
 const MODEL_IDLE_ANIM = {
   'personnage-guerrier.glb':  'sword-and-shield-idle-1.glb',
@@ -58,7 +60,7 @@ const MODEL_IDLE_ANIM = {
 // Idle par défaut : tout nouveau modèle rigué sur Mixamo est ainsi
 // capturé dans une posture naturelle, et non en T-pose.
 const DEFAULT_IDLE_ANIM = 'sword-and-shield-idle-1.glb';
-const DEFAULT_MODEL = 'personnage-guerrier.glb';
+const DEFAULT_MODEL = 'TARINE.glb'; // tous les modèles génériques ont été remplacés
 // Timeout de sécurité pour le chargement des GLB (modèle + anim idle) :
 // si un fichier ne charge jamais (mauvais chemin, réseau), on abandonne
 // après ce délai plutôt que de bloquer indéfiniment sans erreur visible.
@@ -185,7 +187,29 @@ function placeholderDataUrl(){
 }
 
 /** Précharge (et met en cache) les portraits 3D pour un ensemble de clés CAST. */
-export async function preloadPortraits3D(keys){
+// ------------------------------------------------------------------
+// MODE STATIQUE (par défaut depuis l'optimisation mobile)
+// Les portraits sont désormais des images pré-rendues dans
+// assets/portraits/ : le Hub s'affiche sans télécharger un seul GLB.
+// Avec 8 modèles, le préchargement 3D représentait ~40 Mo au lancement,
+// d'où les temps de chargement et les ralentissements sur téléphone.
+// Les 8 images pèsent 91 Ko au total.
+// Pour les REGÉNÉRER après un changement de modèle : ouvrir
+// _gen_portraits.html à la racine du jeu, qui appelle renderPortraitsOffline().
+// ------------------------------------------------------------------
+const PORTRAIT_IMG_BASE = 'assets/portraits/';
+
+/** Chemin de l'image de portrait pré-rendue pour une clé du CAST. */
+export function portraitFor3D(key){
+  const modelFile = CAST_MODEL[key] || DEFAULT_MODEL;
+  return PORTRAIT_IMG_BASE + modelFile.replace(/\.glb$/, '') + '.webp';
+}
+
+/** Plus rien à précharger : conservé pour ne pas changer les appelants. */
+export function preloadPortraits3D(){ return Promise.resolve(); }
+
+/** Rendu 3D hors ligne des portraits (outil de régénération, voir plus haut). */
+export async function renderPortraitsOffline(keys){
   const uniqueModels = new Set();
   for(const k of keys) uniqueModels.add(CAST_MODEL[k] || DEFAULT_MODEL);
   console.log('[portrait3D] démarrage —', uniqueModels.size, 'modèles à rendre :', [...uniqueModels]);
@@ -222,7 +246,8 @@ export async function preloadPortraits3D(keys){
 }
 
 /** Retourne le portrait 3D déjà en cache pour une clé CAST (synchrone, comme l'ancien portraitFor). */
-export function portraitFor3D(key){
+/** Data-URI du portrait rendu en 3D (disponible après renderPortraitsOffline). */
+export function portraitDataUrl(key){
   if(keySnapshotCache.has(key)) return keySnapshotCache.get(key);
   const modelFile = CAST_MODEL[key] || DEFAULT_MODEL;
   if(modelSnapshotCache.has(modelFile)) return modelSnapshotCache.get(modelFile);

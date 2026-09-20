@@ -222,7 +222,7 @@ function drawTower(g, r, teamCol){
   g.circle(0, -r*1.1, r*0.22).stroke({ width: sc*2, color: 0xffffff, alpha:0.4 });
 }
 
-function drawNexus(g, r, teamCol){
+function drawAutel(g, r, teamCol){
   g.ellipse(0, r*0.35, r*0.85, r*0.28).fill({ color: 0x000000, alpha:0.45 });
   // Socle hexagonal
   const pts = [];
@@ -289,8 +289,8 @@ export class UnitView {
     // le glow et l'anneau de sélection restent en 2D par-dessus.
     if(u.kind === 'tower'){
       drawTower(g, r, teamCol);
-    } else if(u.kind === 'nexus' || u.kind === 'nexus_hidden'){
-      drawNexus(g, r, teamCol);
+    } else if(u.kind === 'autel' || u.kind === 'autel_hidden'){
+      drawAutel(g, r, teamCol);
     } else if(u.kind !== 'champ' && u.kind !== 'minion'){
       // fallback cercle pour tout type non géré ailleurs
       g.circle(0, 0, r).fill({ color: teamCol, alpha:0.8 });
@@ -299,7 +299,7 @@ export class UnitView {
     this.body.addChild(g);
     this.glow.width = this.glow.height = r * 5.5;
     // Glow discret pour champ/minion (le relief vient du modèle 3D) ;
-    // gardé plus visible pour tours/nexus qui restent en Graphics.
+    // gardé plus visible pour tours/autel qui restent en Graphics.
     this._is3D = (u.kind === 'champ' || u.kind === 'minion');
   }
 
@@ -364,7 +364,7 @@ export class UnitView {
     }
 
     // HP bar
-    this.hpWrap.visible = !dead && !!u.maxHp && u.kind !== 'nexus_hidden';
+    this.hpWrap.visible = !dead && !!u.maxHp && u.kind !== 'autel_hidden';
     if(this.hpWrap.visible){
       const pct = Math.max(0, u.hp / u.maxHp);
       const w = (u.r||24)*2.2, h = 5;

@@ -3,22 +3,22 @@ export const CAMPAIGN = [
   {
     id:"acte1",label:"ACTE I",titre:"LE CADEAU DE PAPA",
     narration_debut:[
-      "Marcory, Abidjan. Décembre 1996.",
-      "Tarine Keïta a treize ans aujourd'hui. Son père, le Général Keïta, est en mission quelque part au loin — mais il n'a jamais oublié un anniversaire.",
+      "Marcory, Abidjan.",
+      "Tarine Keïta fête son anniversaire aujourd'hui. Son père, le Général Keïta, est en mission quelque part au loin — mais il n'a jamais oublié un anniversaire.",
       "Ce matin, un colis est arrivé sans un mot d'explication : une pierre tiède, lisse, qui semble respirer doucement au creux de la main.",
-      "À la Villoise, on surnomme Tarine « le Bricoleur » à cause de ses inventions qui finissent toujours en fumée. Personne ne se doute que celle-ci, cette fois, va vraiment fonctionner.",
+      "À l'atelier de la Villoise, on surnomme Tarine « le Bricoleur » à cause de ses inventions qui finissent toujours en fumée. Personne ne se doute que celle-ci, cette fois, va vraiment fonctionner.",
       "Quelque chose s'éveille dans ses paumes. Et ça promet d'être une sacrée aventure."
     ],
     missions:[
       {
-        id:"m1",num:1,name:"Le Défi de la Récré",
+        id:"m1",num:1,name:"Le Défi de la Cour",
         desc:"Baba Tunde veut sa revanche — cette fois, ça chauffe pour de vrai.",
-        brief:"La cour de la Villoise, pause déjeuner. Baba Tunde, la star auto-proclamée du lycée, cherche un adversaire à sa taille pour épater la galerie. Tarine, la pierre encore tiède dans la poche, décide pour une fois de ne pas se défiler.",
+        brief:"La cour de l'atelier, pause de midi. Baba Tunde, la star auto-proclamée du quartier, cherche un adversaire à sa taille pour épater la galerie. Tarine, la pierre encore tiède dans la poche, décide pour une fois de ne pas se défiler.",
         allies_requis:[],allies_dispo:["KAREN"],
         ennemis:["BABA"],ennemis_extra:2,
         xp:60,
         narr_avant:[
-          "La cour du lycée. Le soleil d'Abidjan tape fort, les vendeuses d'attiéké s'installent déjà à l'ombre du manguier.",
+          "La cour de l'atelier. Le soleil d'Abidjan tape fort, les vendeuses d'attiéké s'installent déjà à l'ombre du manguier.",
           "Baba Tunde traverse la cour en roulant des mécaniques, ses deux copains sur les talons, prêt pour le show.",
           "— Alors, le Bricoleur, tu me montres ton dernier gadget ? lance-t-il en rigolant.",
           "Tarine sourit. Dans sa paume, la pierre se met à chauffer doucement. Cette fois, il a peut-être vraiment un tour à montrer."
@@ -40,7 +40,7 @@ export const CAMPAIGN = [
       {
         id:"m2",num:2,name:"L'Appel de la Forêt du Banco",
         desc:"La pierre s'agite — et elle veut aller quelque part de précis.",
-        brief:"Les abords de la forêt du Banco, au nord d'Abidjan. Ce matin, la pierre ne pulse plus pareil : pas vers l'école, vers les arbres. Tarine décide de suivre le mouvement — et d'embarquer ses amis dans l'aventure.",
+        brief:"Les abords de la forêt du Banco, au nord d'Abidjan. Ce matin, la pierre ne pulse plus pareil : pas vers l'atelier, vers les arbres. Tarine décide de suivre le mouvement — et d'embarquer ses amis dans l'aventure.",
         allies_requis:[],allies_dispo:["KAREN","FULGENCE"],
         ennemis:["DARK"],ennemis_extra:2,
         xp:80,
@@ -715,7 +715,7 @@ export const CAMPAIGN = [
           "Les spectres jugent : indigne.",
           "La porte de pierre commence à se refermer."
         ],
-        journal_victoire:"L'Équilibre. C'est le nom de ma pierre. Elle ne détruit pas, elle ne crée pas. Elle stabilise. C'est pour ça que Baba ne pouvait pas me toucher dans la cour du lycée. C'est pour ça que la magie des autres s'éteint près de moi. Je suis le point d'ancrage."
+        journal_victoire:"L'Équilibre. C'est le nom de ma pierre. Elle ne détruit pas, elle ne crée pas. Elle stabilise. C'est pour ça que Baba ne pouvait pas me toucher dans la cour de l'atelier. C'est pour ça que la magie des autres s'éteint près de moi. Je suis le point d'ancrage."
       },
       {
         id:"m21",num:21,name:"Le Poids de l'Or",
@@ -855,7 +855,7 @@ export const CAMPAIGN = [
         narr_avant:[
           "Le pont s'étire au-dessus de la lagune Ébrié.",
           "Les phares des blindés déchirent la nuit.",
-          "Baba Tunde craque ses phalanges. — Comme à la récréation, Tarine ?",
+          "Baba Tunde craque ses phalanges. — Comme à l'époque, Tarine ?",
           "— En un peu plus bruyant."
         ],
         narr_victoire:[
@@ -873,13 +873,13 @@ export const CAMPAIGN = [
       },
       {
         id:"m26",num:26,name:"La Défense de la Villoise",
-        desc:"Protéger le lycée de l'attaque.",
-        brief:"Sylla attaque les lieux symboliques. Le lycée la Villoise est pris d'assaut par les Émissaires de Sgrün pour briser le moral.",
+        desc:"Protéger l'atelier de l'attaque.",
+        brief:"Sylla attaque les lieux symboliques. L'atelier de la Villoise est pris d'assaut par les Émissaires de Sgrün pour briser le moral.",
         allies_requis:["FULGENCE"],allies_dispo:["KAREN"],
         ennemis:["DARK"],ennemis_extra:4,
         xp:550,
         narr_avant:[
-          "La cour du lycée. Là où Tarine a ressenti la pierre pour la première fois.",
+          "La cour de l'atelier. Là où Tarine a ressenti la pierre pour la première fois.",
           "Sub est de retour. Il flotte au-dessus du terrain de basket.",
           "— Sentimentalisme, dit Sub. Une faille humaine prévisible."
         ],
@@ -889,7 +889,7 @@ export const CAMPAIGN = [
           "Fulgence sourit. — Il était temps qu'on nettoie la cour."
         ],
         narr_defaite:[
-          "Sub est trop rapide. Des parties du lycée prennent feu.",
+          "Sub est trop rapide. Des parties de l'atelier prennent feu.",
           "La bibliothèque brûle.",
           "Tarine sent un morceau de son enfance partir en fumée."
         ],
@@ -1153,7 +1153,7 @@ export const CAMPAIGN = [
           "L'obscurité les engloutit.",
           "Le poids du monde se referme sur eux."
         ],
-        journal_victoire:"J'ai donné un ordre et ils ont obéi. Même Lundgren, même Sam. Ce n'est plus un entraînement. Je ne suis plus le gamin de Marcory qui se défend dans la cour du lycée. Je suis le gardien de trois pierres. La prochaine étape est sous l'eau."
+        journal_victoire:"J'ai donné un ordre et ils ont obéi. Même Lundgren, même Sam. Ce n'est plus un entraînement. Je ne suis plus le jeune bricoleur de Marcory qui se défendait dans la cour de l'atelier. Je suis le gardien de trois pierres. La prochaine étape est sous l'eau."
       }
     ]
   },
@@ -1203,7 +1203,7 @@ export const CAMPAIGN = [
         xp:900,
         narr_avant:[
           "Le temple est fait de corail et d'épaves.",
-          "Une silhouette avance vers Tarine. C'est Baba Tunde, tel qu'il était à treize ans.",
+          "Une silhouette avance vers Tarine. C'est Baba Tunde, plus jeune, tel qu'il était avant tout ça.",
           "Puis Karen. Puis le Général Keïta.",
           "— Ce ne sont pas eux, crie Fulgence. C'est l'eau qui lit ton esprit !"
         ],
@@ -1387,7 +1387,7 @@ export const CAMPAIGN = [
           "Le compas est détruit dans la mêlée.",
           "Sans ce chemin, Sgrün est intouchable."
         ],
-        journal_victoire:"La déchirure dans l'air sent le métal brûlé et l'ozone. C'est l'entrée vers le domaine de Sgrün. Le Nexus de l'Ordre, comme il l'appelle. Sam dit que le temps ne s'y écoule pas de la même façon. On pourrait y passer un jour, et dix ans se seraient écoulés à Abidjan. J'ai appelé Karen. Juste pour entendre sa voix."
+        journal_victoire:"La déchirure dans l'air sent le métal brûlé et l'ozone. C'est l'entrée vers le domaine de Sgrün. L'Autel de l'Ordre, comme il l'appelle. Sam dit que le temps ne s'y écoule pas de la même façon. On pourrait y passer un jour, et dix ans se seraient écoulés à Abidjan. J'ai appelé Karen. Juste pour entendre sa voix."
       },
       {
         id:"m44",num:44,name:"Le Passage du Vide",
@@ -1417,7 +1417,7 @@ export const CAMPAIGN = [
       },
       {
         id:"m45",num:45,name:"La Porte du Maître",
-        desc:"Forcer l'entrée du Nexus.",
+        desc:"Forcer l'entrée de l'Autel.",
         brief:"La porte principale de la forteresse est scellée par la Pierre de l'Air. Il faut forcer l'entrée en utilisant les quatre autres pierres.",
         allies_requis:["LUNDGREN","SAM","BABA","FULGENCE"],allies_dispo:[],
         ennemis:["DARK"],ennemis_extra:10,
@@ -1446,7 +1446,7 @@ export const CAMPAIGN = [
   {
     id:"acte14",label:"ACTE XIV",titre:"LA CONVERGENCE",
     narration_debut:[
-      "Le cœur du Nexus de l'Ordre.",
+      "Le cœur de l'Autel de l'Ordre.",
       "Des couloirs blancs à l'infini. Aucune ombre.",
       "Sgrün n'est pas un homme. C'est une conscience téléchargée dans un avatar parfait.",
       "Mais avant d'atteindre le trône, quelqu'un les attend dans l'Anti-chambre.",
@@ -1582,7 +1582,7 @@ export const CAMPAIGN = [
           "L'univers se brise. Les paradoxes dévorent la réalité.",
           "Il est devenu exactement ce qu'il combattait."
         ],
-        journal_victoire:"C'est fini. J'ai laissé partir les Pierres. Elles trouveront de nouveaux porteurs dans cent ans, ou dans mille ans. Lundgren a souri, il a dit que c'était sa dernière bataille et qu'il pouvait enfin se reposer. Baba Tunde est retourné à la Villoise en légende. Fulgence veut étudier l'Essence. Sam a disparu. Et moi ? Je suis rentré à Marcory. Ma mère préparait le café dans la cuisine jaune pâle. J'ai treize ans, et je viens de sauver le monde."
+        journal_victoire:"C'est fini. J'ai laissé partir les Pierres. Elles trouveront de nouveaux porteurs dans cent ans, ou dans mille ans. Lundgren a souri, il a dit que c'était sa dernière bataille et qu'il pouvait enfin se reposer. Baba Tunde est retourné à la Villoise en légende. Fulgence veut étudier l'Essence. Sam a disparu. Et moi ? Je suis rentré à Marcory. Ma mère préparait le café dans la cuisine jaune pâle. Je viens de sauver le monde."
       }
     ]
   }

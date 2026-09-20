@@ -1,7 +1,7 @@
 // ============================================================
 // MINIMAP — canvas 2D léger superposé au HUD, mis à jour chaque frame.
 // Affiche : joueur (blanc), alliés (vert), ennemis (rouge),
-// sbires (bleu/rouge pâle), structures (nexus/tour).
+// sbires (bleu/rouge pâle), structures (autel/tour).
 // ============================================================
 
 export class Minimap {
@@ -14,7 +14,7 @@ export class Minimap {
     this.W = worldSize.w;
     this.H = worldSize.h;
     this.path = opts.path || null;          // waypoints de la lane (mode Siège/Défense)
-    this.staticStructures = opts.structures || []; // tours/nexus pour fond figé
+    this.staticStructures = opts.structures || []; // tours/autel pour fond figé
 
     this.canvas = document.createElement('canvas');
     this.canvas.width  = container.clientWidth  || 130;
@@ -50,12 +50,12 @@ export class Minimap {
       ctx.stroke();
       ctx.lineWidth = 1;
 
-      // Points de nexus/structures (passés à la construction ou lus des unités live)
+      // Points d'autel/structures (passés à la construction ou lus des unités live)
       const structures = this.staticStructures.length ? this.staticStructures
-        : units.filter(u => u.kind === 'nexus' || u.kind === 'tower');
+        : units.filter(u => u.kind === 'autel' || u.kind === 'tower');
       for(const s of structures){
         const color = s.team === 0 ? 'rgba(90,169,255,.5)' : 'rgba(255,100,80,.5)';
-        const size  = s.kind === 'nexus' ? 5 : 3;
+        const size  = s.kind === 'autel' ? 5 : 3;
         ctx.fillStyle = color;
         ctx.fillRect(tx(s.x) - size/2, ty(s.y) - size/2, size, size);
       }
@@ -64,7 +64,7 @@ export class Minimap {
     for (const u of units) {
       if (u.dead) continue;
       let color, r;
-      if (u.kind === 'nexus') {
+      if (u.kind === 'autel') {
         color = u.team === 0 ? '#5aa9ff' : '#ff6a5a';
         r = 5;
       } else if (u.kind === 'tower') {

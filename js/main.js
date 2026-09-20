@@ -4,7 +4,7 @@
 import { Renderer } from './engine/renderer.js';
 import { Match } from './game/match.js';
 import { preloadAllPortraits } from './engine/portraits.js';
-import { loadSave, writeSave, recordVictory, recordDefeat } from './game/state.js';
+import { loadSave, writeSave, recordVictory, recordDefeat, recordDefiVictory } from './game/state.js';
 import { goTo, toast } from './ui/screens.js';
 import { buildHub, updateHubHeader } from './ui/hub.js';
 import { renderDeploy } from './ui/deploy.js';
@@ -71,7 +71,11 @@ function launchMatch(cfg){
 }
 
 function onMatchEnd({ victory }){
-  if(victory) recordVictory(save, currentMission.id);
+  if(victory){
+    // Un défi est rejouable : il ne compte pas dans la progression de campagne.
+    if(currentMission.isDefi) recordDefiVictory(save, currentMission.id);
+    else recordVictory(save, currentMission.id);
+  }
   else recordDefeat(save);
   setTimeout(() => {
     goTo('screen-end');

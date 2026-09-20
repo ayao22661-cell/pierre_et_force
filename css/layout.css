@@ -148,4 +148,5 @@ html, body{
 /* Contenu calé en bas, à la manière d'un écran-titre de jeu. */
 #screen-title{ justify-content: flex-end; }
 .pf-title-content{ padding-bottom: clamp(18px, 6vh, 56px); }
-.pf-logo{ width: clamp(96px, 14vh, 150px); }
+.pf-logo{ width: clamp(150px, 26vh, 260px); filter: drop-shadow(0 8px 26px rgba(0,0,0,.6)); }
+.pf-hero-sub{ margin-top: 2px; }

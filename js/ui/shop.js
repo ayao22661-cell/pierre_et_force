@@ -5,6 +5,7 @@
 // La sauvegarde garde : save.talents (obj id→rang) et save.items (array id).
 // ============================================================
 import { TALENT_TREES, ITEMS } from '../data/items.js';
+import { iconSvg, icon, iconForStats } from './icons.js';
 import { writeSave } from '../game/state.js';
 import { el } from './screens.js';
 
@@ -29,7 +30,7 @@ export function renderShop(save) {
   ensureShopSave(save);
 
   const header = el('div', 'pf-panel shop-header');
-  header.innerHTML = `<span class="pf-label">OBJETS DISPONIBLES</span><span class="pf-badge pf-badge-gold">🐚 <span id="shop-cauris">${save.cauris}</span></span>`;
+  header.innerHTML = `<span class="pf-label">OBJETS DISPONIBLES</span><span class="pf-badge pf-badge-gold">${iconSvg('shell')} <span id="shop-cauris">${save.cauris}</span></span>`;
   root.appendChild(header);
 
   const tiers = [1, 2, 3];
@@ -40,7 +41,11 @@ export function renderShop(save) {
     ITEMS.filter(it => it.tier === tier).forEach(item => {
       const owned  = save.items.includes(item.id);
       const card   = el('div', 'pf-panel shop-card' + (owned ? ' owned' : ''));
-      card.appendChild(el('div', 'shop-card-ico', item.ico));
+      // Icône dessinée d'après la statistique principale de l'objet :
+      // les emoji d'origine changeaient d'aspect d'un téléphone à l'autre.
+      const ico = el('div', 'shop-card-ico');
+      ico.appendChild(icon(iconForStats(item.st), 'pf-ico-lg'));
+      card.appendChild(ico);
       card.appendChild(el('div', 'shop-card-name', item.name));
       // Stats résumées
       const statsStr = Object.entries(item.st).map(([k, v]) => `${STAT_LABEL[k] || k} ${v > 0 ? '+' : ''}${typeof v === 'number' && v < 1 && v > -1 ? (v * 100).toFixed(0) + '%' : v}`).join('  ');
@@ -50,9 +55,9 @@ export function renderShop(save) {
       }
       const footer = el('div', 'shop-card-footer');
       if (owned) {
-        footer.appendChild(el('span', 'shop-owned-badge', '✓ POSSÉDÉ'));
+        footer.appendChild(el('span', 'shop-owned-badge', iconSvg('check') + ' POSSÉDÉ'));
       } else {
-        const cost = el('span', 'shop-card-cost', `🐚 ${item.cost}`);
+        const cost = el('span', 'shop-card-cost', iconSvg('shell') + ` ${item.cost}`);
         const btn  = el('button', 'pf-btn pf-btn-sm' + (save.cauris < item.cost ? ' disabled' : ''), 'ACHETER');
         if (save.cauris >= item.cost) {
           btn.addEventListener('click', () => {

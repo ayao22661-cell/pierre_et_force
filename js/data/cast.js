@@ -8,7 +8,7 @@
 export const CAST = {
   // ---- Le cercle de Tarine ----
   TARINE:{name:"Tarine Keïta",titre:"L'Éveillé de Marcory",role:"DUELLISTE",camp:"allie",
-    bio:"Treize ans, surnommé « le Bricoleur » à la Villoise. La pierre tiède envoyée par son père s'est réveillée dans ses paumes.",
+    bio:"Surnommé « le Bricoleur » à l'atelier de la Villoise. La pierre tiède envoyée par son père s'est réveillée dans ses paumes.",
     o:{skin:"#8d5524",cloth:"#1c4e3a",accent:"#39FF7A",hair:"#141018",eye:"#c8f5b0",hairStyle:0,mark:2,beard:0,smile:true,prop:"stone"}},
   KAREN:{name:"Karen Keïta",titre:"La Sentinelle",role:"SOUTIEN",camp:"allie",
     bio:"Elle veille sur Tarine avant même de comprendre ce qu'il devient. Sa force est de tenir debout quand les autres reculent.",
@@ -17,7 +17,7 @@ export const CAST = {
     bio:"On ne le contourne pas, on ne le déplace pas. Il s'interpose, et c'est tout ce qu'il a jamais eu à faire.",
     o:{skin:"#6b4226",cloth:"#2a2a4e",accent:"#7F77DD",hair:"#141018",eye:"#e6c98a",hairStyle:6,mark:0,beard:3,smile:false}},
   BABA_TUNDE:{name:"Baba Tunde",titre:"Seigneur de la Cour",role:"ASSASSIN",camp:"allie",
-    bio:"La star auto-proclamée du lycée. Battu dans la cour, il revient en allié — le genre d'ami qu'on préfère devant soi.",
+    bio:"La star auto-proclamée du quartier. Battu dans la cour, il revient en allié — le genre d'ami qu'on préfère devant soi.",
     o:{skin:"#7a4a2b",cloth:"#4e1c2c",accent:"#D85A30",hair:"#2b1a10",eye:"#ffd76b",hairStyle:2,mark:1,beard:2,smile:true}},
   LUNDGREN:{name:"Lundgren",titre:"Le Cartographe",role:"ERUDIT",camp:"allie",
     bio:"Il sait où sont les choses : les ruines, la Chambre des Poids, les emplacements que sept siècles avaient effacés.",

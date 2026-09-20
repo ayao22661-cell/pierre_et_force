@@ -62,7 +62,7 @@ export class BabylonTerrain{
     console.log('[BabylonTerrain] construction — layout w=', layout.w, 'h=', layout.h, '| meshes scène avant=', scene.meshes.length);
     this._buildGround(seed);
     this._buildLane();
-    this._buildBrush();
+    this._buildBrush(seed);
     this._buildWalls();
     console.log('[BabylonTerrain] ✅ terminé — meshes scène après=', scene.meshes.length,
       '| sol position=', this.ground.position.asArray().map(n=>n.toFixed(2)),
@@ -102,6 +102,9 @@ export class BabylonTerrain{
     mat.specularColor = new BABYLON.Color3(0.05, 0.05, 0.05);
     ground.material = mat;
     ground.receiveShadows = true;
+    ground.isPickable = false;
+    ground.freezeWorldMatrix();
+    mat.freeze();
     this.ground = ground;
   }
 
@@ -129,15 +132,31 @@ export class BabylonTerrain{
     ribbon.material = mat;
   }
 
-  _buildBrush(){
+  /**
+   * Bosquets, rochers, touffes d'herbe et arbres de bordure.
+   *
+   * Perf : tout est FUSIONNÉ en un seul mesh par matériau (MergeMeshes),
+   * au lieu d'un mesh + un StandardMaterial par cône comme avant. Sur un
+   * téléphone, les dizaines d'appels de rendu séparés coûtaient plus cher
+   * que la géométrie elle-même. Les matrices et matériaux sont figés :
+   * le décor ne bouge pas.
+   */
+  _buildBrush(seed){
+    const { w, h } = this.layout;
+    const bx = w / WORLD_SCALE, bz = h / WORLD_SCALE;
+    let st = (seed >>> 0) || 7;
+    const rnd = () => { st = (Math.imul(st, 1664525) + 1013904223) >>> 0; return st / 4294967296; };
+    // Moins d'éléments sur petit écran : le décor reste fourni, le coût baisse.
+    const small = Math.min(window.innerWidth || 1280, window.innerHeight || 800) < 500;
+    // Hauteur du sol sous un point : sans ça, le décor flottait au-dessus
+    // des creux et s'enfonçait dans les bosses du relief.
+    const groundY = (x, z) => heightNoise(x, -z, seed) * 0.55;
+    const parts = { foliage: [], trunk: [], rock: [], grass: [] };
+
+    // ── Bosquets (positions du niveau) ───────────────────────────────
     for(const b of (this.layout.brush || [])){
       const pos = this._toBabylon(b.x, b.y);
       const r = b.r / WORLD_SCALE;
-      // Bosquet bas-poly : quelques cônes irréguliers groupés, plutôt
-      // qu'un cercle plat semi-transparent.
-      const group = new BABYLON.TransformNode('brush', this.scene);
-      group.parent = this.root;
-      group.position.set(pos.x, 0, pos.z);
       const n = 4 + Math.floor((b.r || 90) / 40);
       for(let i = 0; i < n; i++){
         const a = (i / n) * Math.PI * 2 + (i * 0.7);
@@ -146,21 +165,105 @@ export class BabylonTerrain{
         const cone = BABYLON.MeshBuilder.CreateCylinder('bush', {
           diameterTop: 0, diameterBottom: bushR * 2, height: bushR * 1.6, tessellation: 6,
         }, this.scene);
-        cone.parent = group;
-        cone.position.set(Math.cos(a) * dist, bushR * 0.8, Math.sin(a) * dist);
-        const mat = new BABYLON.StandardMaterial('bushMat', this.scene);
-        mat.diffuseColor = hexToColor3(this.theme.g2).scale(0.6);
-        cone.material = mat;
+        const cx = pos.x + Math.cos(a) * dist, cz = pos.z + Math.sin(a) * dist;
+        cone.position.set(cx, groundY(cx, cz) + bushR * 0.8, cz);
+        parts.foliage.push(cone);
       }
     }
+
+    // ── Rochers, herbes, arbres semés sur toute la carte ─────────────
+    const onLane = (x, z) => {
+      const path = this.layout.path || [];
+      for(const p of path){
+        const b = this._toBabylon(p.x, p.y);
+        if(Math.hypot(b.x - x, b.z - z) < (this.layout.laneWidth || 210) / WORLD_SCALE * 0.75) return true;
+      }
+      return false;
+    };
+    const place = (count, make) => {
+      let tries = 0;
+      while(count > 0 && tries < count * 12){
+        tries++;
+        const x = rnd() * bx, z = -rnd() * bz;
+        if(onLane(x, z)) continue;       // rien au milieu de la voie : lisibilité du combat
+        make(x, z); count--;
+      }
+    };
+
+    place(small ? 26 : 48, (x, z) => {                 // rochers
+      const sc = 0.18 + rnd() * 0.35;
+      const rock = BABYLON.MeshBuilder.CreatePolyhedron('rock', { type: 1, size: sc }, this.scene);
+      rock.position.set(x, groundY(x, z) + sc * 0.35, z);
+      rock.rotation.set(rnd(), rnd() * Math.PI * 2, rnd() * 0.4);
+      parts.rock.push(rock);
+    });
+
+    place(small ? 60 : 130, (x, z) => {                // touffes d'herbe
+      const hgt = 0.18 + rnd() * 0.22;
+      const tuft = BABYLON.MeshBuilder.CreateCylinder('grass', {
+        diameterTop: 0, diameterBottom: 0.16 + rnd() * 0.12, height: hgt, tessellation: 4,
+      }, this.scene);
+      tuft.position.set(x, groundY(x, z) + hgt * 0.45, z);
+      tuft.rotation.y = rnd() * Math.PI;
+      parts.grass.push(tuft);
+    });
+
+    place(small ? 10 : 20, (x, z) => {                 // arbres
+      const hgt = 1.6 + rnd() * 1.4;
+      const trunk = BABYLON.MeshBuilder.CreateCylinder('trunk', {
+        diameterTop: 0.12, diameterBottom: 0.2, height: hgt * 0.45, tessellation: 5,
+      }, this.scene);
+      const gy = groundY(x, z);
+      trunk.position.set(x, gy + hgt * 0.22, z);
+      parts.trunk.push(trunk);
+      for(let k = 0; k < 2; k++){
+        const cr = (0.75 - k * 0.22) * (0.8 + rnd() * 0.4);
+        const crown = BABYLON.MeshBuilder.CreateCylinder('crown', {
+          diameterTop: 0, diameterBottom: cr * 2, height: hgt * 0.5, tessellation: 6,
+        }, this.scene);
+        crown.position.set(x, gy + hgt * (0.45 + k * 0.28), z);
+        parts.foliage.push(crown);
+      }
+    });
+
+    const merge = (list, color, name, spec) => {
+      if(!list.length) return;
+      const merged = BABYLON.Mesh.MergeMeshes(list, true, true, undefined, false, false);
+      if(!merged) return;
+      merged.name = name;
+      merged.parent = this.root;
+      const mat = new BABYLON.StandardMaterial(name + 'Mat', this.scene);
+      mat.diffuseColor = color;
+      mat.specularColor = new BABYLON.Color3(spec, spec, spec);
+      mat.freeze();
+      merged.material = mat;
+      merged.isPickable = false;
+      merged.freezeWorldMatrix();
+      merged.alwaysSelectAsActiveMesh = true; // décor statique : pas de recalcul de visibilité
+    };
+    // Teintes distinctes : sans ça, sur une carte brune, buissons, rochers
+    // et herbe se confondaient avec le sol et le décor semblait vide.
+    const g2 = hexToColor3(this.theme.g2);
+    const greener = (c, k) => new BABYLON.Color3(c.r * 0.7 * k, c.g * 1.25 * k, c.b * 0.75 * k);
+    const stone = hexToColor3(this.theme.wall);
+    const lum = stone.r * 0.3 + stone.g * 0.59 + stone.b * 0.11;
+    const grey = new BABYLON.Color3(lum * 0.95, lum * 0.97, lum * 1.05);
+    merge(parts.foliage, greener(g2, 0.85), 'foliage', 0.02);
+    merge(parts.trunk, stone.scale(0.6), 'trunks', 0.02);
+    merge(parts.rock, grey, 'rocks', 0.10);
+    merge(parts.grass, greener(g2, 1.05), 'grass', 0.02);
+
     for(const c of (this.layout.camps || [])){
       const pos = this._toBabylon(c.x, c.y);
       const ring = BABYLON.MeshBuilder.CreateTorus('camp', { diameter: 46/WORLD_SCALE*2, thickness: 0.06 }, this.scene);
       ring.parent = this.root;
-      ring.position.set(pos.x, 0.05, pos.z);
+      ring.position.set(pos.x, groundY(pos.x, pos.z) + 0.05, pos.z);
       const mat = new BABYLON.StandardMaterial('campMat', this.scene);
       mat.emissiveColor = hexToColor3(this.theme.acc).scale(0.5);
+      mat.freeze();
       ring.material = mat;
+      ring.isPickable = false;
+      ring.freezeWorldMatrix();
     }
   }
 
@@ -170,6 +273,7 @@ export class BabylonTerrain{
     const t = 60 / WORLD_SCALE;
     const mat = new BABYLON.StandardMaterial('wallMat', this.scene);
     mat.diffuseColor = hexToColor3(this.theme.wall);
+    mat.freeze();
 
     const specs = [
       { w: bx + t*2, h: t, x: bx/2, z: t/2 },
@@ -182,6 +286,8 @@ export class BabylonTerrain{
       wall.parent = this.root;
       wall.position.set(s.x, 0.25, s.z);
       wall.material = mat;
+      wall.isPickable = false;
+      wall.freezeWorldMatrix();
     }
   }
 

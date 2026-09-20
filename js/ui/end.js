@@ -3,6 +3,7 @@
 // Gère XP, montée de niveau, cauris, kills, déblocage alliés.
 // ============================================================
 import { el } from './screens.js';
+import { iconSvg } from './icons.js';
 import { CAMPAIGN } from '../data/campaign.js';
 import { CHAMPS } from '../data/champions.js';
 import { writeSave } from '../game/state.js';
@@ -34,8 +35,11 @@ export function renderEnd(victory, mission, save, sim, onHub, onRetry){
   rewards.innerHTML = '';
 
   if(victory){
-    const xp     = 40 + (mission?.num || 1) * 10;
-    const cauris  = 30 + (mission?.num || 1) * 6;
+    // Les défis portent leurs propres récompenses (et leur numéro est du
+    // texte, « D3 » : le calcul de campagne donnerait NaN).
+    const num    = Number(mission?.num) || 1;
+    const xp     = mission?.xp     != null ? mission.xp     : 40 + num * 10;
+    const cauris = mission?.cauris != null ? mission.cauris : 30 + num * 6;
     const kills   = sim?.teamKills?.[0] || 0;
 
     save.xp     += xp;
@@ -54,8 +58,8 @@ export function renderEnd(victory, mission, save, sim, onHub, onRetry){
     }
 
     rewards.appendChild(rewardRow('Expérience', `+${xp} XP`));
-    rewards.appendChild(rewardRow('Cauris', `+${cauris} 🐚`));
-    if(kills) rewards.appendChild(rewardRow('Éliminations', `${kills} ⚔`));
+    rewards.appendChild(rewardRow('Cauris', `+${cauris} ` + iconSvg('shell')));
+    if(kills) rewards.appendChild(rewardRow('Éliminations', `${kills} ` + iconSvg('sword')));
     if(leveled) rewards.appendChild(rewardRow('NIVEAU+', `Niveau ${save.level} atteint !`));
 
     // Déblocage d'allié à la fin de l'acte
@@ -63,7 +67,7 @@ export function renderEnd(victory, mission, save, sim, onHub, onRetry){
     if(newAlly && !save.allies_unlocked.includes(newAlly)){
       save.allies_unlocked.push(newAlly);
       const champName = CHAMPS[newAlly]?.name || newAlly;
-      rewards.appendChild(rewardRow('Allié débloqué ! ✨', `${champName} rejoint l'équipe`));
+      rewards.appendChild(rewardRow('Allié débloqué ' + iconSvg('spark'), `${champName} rejoint l'équipe`));
     }
 
     writeSave(save);
