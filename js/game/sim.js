@@ -573,6 +573,9 @@ export class Sim{
   // Code mort retiré pour éviter toute confusion future.
 
   _tickSiege(dt){
+    // Mort du héros = défaite immédiate, comme en mode Boss — sans
+    // respawn, un héros mort ne peut plus rien faire gagner tout seul.
+    if(this.player.dead) { this._endMatch(false); return; }
     this.waveTimer -= dt;
     if(this.waveTimer <= 0){
       this.waveTimer = 22; this.waveN++;
@@ -607,6 +610,9 @@ export class Sim{
   }
 
   _tickArena(dt){
+    // Mort du héros = défaite immédiate, comme en mode Boss — sans
+    // respawn, un héros mort ne peut plus rien faire gagner tout seul.
+    if(this.player.dead) { this._endMatch(false); return; }
     if(this.teamKills[0] >= this.killGoal) this._endMatch(true);
     else if(this.teamKills[1] >= this.killGoal) this._endMatch(false);
     else if(this.time >= this.timeLimit) this._endMatch(this.teamKills[0] >= this.teamKills[1]);
@@ -618,6 +624,9 @@ export class Sim{
    * Défaite : autel allié détruit.
    */
   _tickDefense(dt){
+    // Mort du héros = défaite immédiate, comme en mode Boss — sans
+    // respawn, un héros mort ne peut plus rien faire gagner tout seul.
+    if(this.player.dead) { this._endMatch(false); return; }
     if(this.autelAllie && this.autelAllie.dead){ this._endMatch(false); return; }
     this.waveTimer -= dt;
     if(this.waveTimer <= 0 && this.defenseWaveN < this.defenseWaveTotal){
@@ -666,7 +675,8 @@ export class Sim{
 
   /**
    * Boss — surveille uniquement si le boss est mort (victoire) ou le joueur mort
-   * + temps écoulé (défaite). Les alliés/ennemis secondaires respawnent normalement.
+   * + temps écoulé (défaite). Même logique de mort du héros = défaite
+   * reprise dans les trois autres modes (Arène, Siège, Défense).
    */
   _tickBoss(dt){
     if(this.boss && this.boss.dead) { this._endMatch(true); return; }
