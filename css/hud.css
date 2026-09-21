@@ -21,6 +21,9 @@
   position:absolute; left:0; right:0; bottom: calc(10px + var(--pf-safe-b));
   display:flex; align-items:flex-end; justify-content:space-between;
   padding: 0 12px; gap: 12px;
+  /* Les pastilles de rang dépassent sous chaque icône de sort (position
+     négative) : on réserve la place pour qu'elles ne soient jamais rognées. */
+  padding-bottom: 14px;
 }
 
 .hud-portrait{
@@ -31,7 +34,7 @@
 .hud-bars .pf-bar{ width:100%; }
 .hud-bars .pf-label-row{ display:flex; justify-content:space-between; font-size:10px; color: var(--pf-text-dim); }
 
-.hud-spells{ display:flex; gap:6px; }
+.hud-spells{ display:flex; gap:9px; }
 
 .hud-pause-btn{
   width:38px; height:38px; display:flex; align-items:center; justify-content:center;
@@ -45,9 +48,13 @@
   .hud-portrait .pf-portrait{ width:40px; height:40px; font-size:15px; }
   .hud-bars{ width: 92px; }
   .hud-bars .pf-label-row{ font-size:8px; }
-  .hud-spells{ gap:4px; }
-  .spell-slot{ width:38px; height:38px; font-size:13px; }
-  .spell-slot .key{ font-size:7px; }
+  .hud-spells{ gap:6px; }
+  .spell-slot{ width:40px; height:40px; font-size:13px; }
+  .spell-ico{ width:20px; height:20px; }
+  .spell-slot .key{ font-size:7px; width:12px; height:12px; }
+  .spell-slot-cost{ font-size:7px; }
+  .spell-pip{ width:4px; height:4px; }
+  .spell-slot-pips{ bottom:-11px; }
   .hud-pause-btn{ width:32px; height:32px; font-size:13px; }
   .hud-minimap{ width:92px; height:60px; }
   .hud-objective{ padding:5px 10px; font-size:11px; min-width:160px; }

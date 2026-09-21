@@ -4,11 +4,11 @@
 import { CAMPAIGN } from '../data/campaign.js';
 import { CHAMPS } from '../data/champions.js';
 import { CAST } from '../data/cast.js';
-import { portraitFor } from '../engine/portraits.js';
-import { icon, iconSvg } from './icons.js';
+import { portraitFor, champKeyFor } from '../engine/portraits.js';
+import { icon, iconSvg, iconForAbility, iconForMode } from './icons.js';
 import { DEFIS, defisAvailable } from '../data/defis.js';
 import { isDefiDone } from '../game/state.js';
-import { isMissionDone, isMissionAvailable, writeSave } from '../game/state.js';
+import { isMissionDone, isMissionAvailable, writeSave, spellRank, maxSpellRank, spellPointsLeft, spendSpellPoint } from '../game/state.js';
 import { renderShop, renderEveil, ensureShopSave } from './shop.js';
 import { el } from './screens.js';
 
@@ -71,10 +71,13 @@ export function buildHub(save, onSelectMission){
       const mode = modeForMission(m, globalIdx, acte, acteIdx);
       globalIdx++;
 
-      const card = el('div', 'pf-panel mission-card' + (done ? '' : avail ? '' : ' locked'));
+      const card = el('div', 'pf-panel mission-card mode-' + mode.toLowerCase() + (done ? '' : avail ? '' : ' locked'));
       card.appendChild(el('div', 'm-num', String(m.num)));
       card.appendChild(el('div', 'm-name', m.name));
-      card.appendChild(el('div', 'm-mode', mode));
+      const modeRow = el('div', 'm-mode');
+      modeRow.appendChild(icon(iconForMode(mode), 'pf-ico-sm'));
+      modeRow.appendChild(el('span', '', mode));
+      card.appendChild(modeRow);
       const status = done ? 'REJOUER' : avail ? 'DISPONIBLE' : 'VERROUILLÉE';
       const statusCls = done ? 'done' : avail ? 'avail' : 'lock';
       card.appendChild(el('div', 'm-status ' + statusCls, status));
@@ -114,10 +117,13 @@ function buildDefis(save, onSelectMission, host){
   const row = el('div', 'mission-row');
   DEFIS.forEach(d => {
     const avail = open.includes(d);
-    const card = el('div', 'pf-panel mission-card' + (avail ? '' : ' locked'));
+    const card = el('div', 'pf-panel mission-card mode-' + d.mode.toLowerCase() + (avail ? '' : ' locked'));
     card.appendChild(el('div', 'm-num', String(d.num)));
     card.appendChild(el('div', 'm-name', d.name));
-    card.appendChild(el('div', 'm-mode', d.mode));
+    const modeRow = el('div', 'm-mode');
+    modeRow.appendChild(icon(iconForMode(d.mode), 'pf-ico-sm'));
+    modeRow.appendChild(el('span', '', d.mode));
+    card.appendChild(modeRow);
     const reward = el('div', 'm-reward');
     reward.appendChild(icon('shell'));
     reward.appendChild(el('span', '', ` +${d.cauris}`));
@@ -209,6 +215,13 @@ function openChampDetail(key){
   info.appendChild(el('div', 'champ-detail-name', c.name));
   info.appendChild(el('div', 'champ-detail-title', c.titre));
   info.appendChild(el('div', 'champ-detail-bio', c.bio));
+  // Panneau de compétences : uniquement pour les personnages jouables en
+  // combat (les 13 autres n'ont qu'une bio — ce sont des figures du récit,
+  // sans capacités propres). Voir _renderAbilityPanel plus bas.
+  const champKey = champKeyFor(key);
+  if(champKey && currentSave){
+    info.appendChild(_renderAbilityPanel(champKey));
+  }
   const back = el('button', 'pf-btn pf-btn-ghost pf-btn-sm', '← RETOUR');
   back.style.marginTop = '10px';
   back.addEventListener('click', renderCodex);
@@ -216,6 +229,75 @@ function openChampDetail(key){
   detail.appendChild(info);
   box.innerHTML = '';
   box.appendChild(detail);
+}
+
+/**
+ * Panneau « Compétences » d'un champion jouable : les 4 sorts (A/Z/E/R),
+ * chacun avec son icône, sa description AU RANG ACTUEL (les chiffres
+ * suivent vraiment le rang investi, pas juste le rang 1), ses pastilles
+ * de rang, et un bouton + pour dépenser un point. Un point de compétence
+ * est gagné à chaque victoire jouée avec ce champion (voir
+ * game/state.js, awardSpellPoint) — indépendant des points de talent
+ * (dépensés dans l'onglet Éveil, communs à tous les champions).
+ */
+const SLOT_KEYS = ['A', 'Z', 'E', 'R'];
+function _renderAbilityPanel(champKey){
+  const d = CHAMPS[champKey];
+  const panel = el('div', 'ability-panel');
+  const header = el('div', 'ability-panel-header');
+  header.appendChild(el('span', 'pf-label', 'COMPÉTENCES'));
+  const ptsEl = el('span', 'pf-badge pf-badge-gold', '');
+  header.appendChild(ptsEl);
+  panel.appendChild(header);
+
+  const list = el('div', 'ability-list');
+  panel.appendChild(list);
+
+  const refresh = () => {
+    const pts = spellPointsLeft(currentSave, champKey);
+    ptsEl.textContent = `${pts} point${pts > 1 ? 's' : ''}`;
+    list.innerHTML = '';
+    (d.abil || []).forEach((a, slot) => {
+      const rank = spellRank(currentSave, champKey, slot);
+      const max = maxSpellRank(champKey, slot);
+      const row = el('div', 'ability-row' + (a.ult ? ' ult' : ''));
+      const ico = el('div', 'ability-row-ico', iconSvg(iconForAbility(a), 'pf-ico-lg'));
+      row.appendChild(ico);
+      const mid = el('div', 'ability-row-mid');
+      const nameRow = el('div', 'ability-row-name');
+      nameRow.appendChild(el('span', '', a.name + (a.ult ? ' (Ultime)' : '')));
+      nameRow.appendChild(el('span', 'ability-row-key', SLOT_KEYS[slot]));
+      mid.appendChild(nameRow);
+      mid.appendChild(el('div', 'ability-row-desc', a.desc || ''));
+      // Chiffres au rang ACTUEL (rang 0 = premier point déjà utile) :
+      // dégâts/soin/bouclier et cooldown suivent l'investissement réel.
+      const stat = [];
+      const atRank = (v) => Array.isArray(v) ? (v[rank] ?? v[v.length - 1]) : v;
+      if(a.dmg) stat.push(`Dégâts ${Math.round(atRank(a.dmg))}`);
+      if(a.heal) stat.push(`Soin ${Math.round(atRank(a.heal))}`);
+      if(a.shield) stat.push(`Bouclier ${Math.round(atRank(a.shield))}`);
+      if(a.cd) stat.push(`Recharge ${atRank(a.cd)}s`);
+      if(a.cost) stat.push(`Coût ${a.cost}`);
+      mid.appendChild(el('div', 'ability-row-stats', stat.join('  ·  ')));
+      const pips = el('div', 'ability-row-pips');
+      for(let r = 0; r < max; r++) pips.appendChild(el('span', 'spell-pip' + (r < rank ? ' filled' : '')));
+      mid.appendChild(pips);
+      row.appendChild(mid);
+
+      const canSpend = rank < max && spellPointsLeft(currentSave, champKey) > 0;
+      const btn = el('button', 'pf-btn pf-btn-sm ability-row-plus' + (canSpend ? '' : ' disabled'), rank >= max ? 'MAX' : '+');
+      if(canSpend){
+        btn.addEventListener('click', () => {
+          spendSpellPoint(currentSave, champKey, slot);
+          refresh();
+        });
+      }
+      row.appendChild(btn);
+      list.appendChild(row);
+    });
+  };
+  refresh();
+  return panel;
 }
 
 // ---------------------------------------------------------------------
@@ -266,6 +348,11 @@ function renderProfile(save){
     actes.appendChild(row);
   });
   root.appendChild(actes);
+
+  const slotBtn = el('button', 'pf-btn pf-btn-ghost pf-btn-sm', 'CHANGER DE SAUVEGARDE');
+  slotBtn.style.marginTop = '10px';
+  slotBtn.addEventListener('click', () => window.dispatchEvent(new Event('pf-go-to-slots')));
+  root.appendChild(slotBtn);
 }
 
 function statTile(ico, val, label){

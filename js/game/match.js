@@ -21,7 +21,12 @@ export class Match{
     this.touchVec = { x: 0, y: 0 };
 
     const theme = cfg.theme || THEME_DEFAULT;
-    const layout = cfg.mode === 'siege' ? siegeLayout() : arenaLayout();
+    // Le mode Défense a lui aussi besoin d'une voie (les ennemis y
+    // convergent vers l'autel allié) : sans ce chemin, Sim._build()
+    // retombait silencieusement sur l'arène (pas de chemin => pas d'autel,
+    // pas de vagues) — la carte semblait vide dès la première mission en
+    // Défense (mission 4).
+    const layout = (cfg.mode === 'siege' || cfg.mode === 'defense') ? siegeLayout() : arenaLayout();
     renderer.worldSize = { w: layout.w, h: layout.h };
 
     // artSeed basé sur le nom de mission pour varier le terrain par mission

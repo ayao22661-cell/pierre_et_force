@@ -3,7 +3,8 @@
 // Construite une fois par match, détruite à la fin.
 // ============================================================
 import { CHAMPS } from '../data/champions.js';
-import { iconSvg } from './icons.js';
+import { spellRank, maxSpellRank } from '../game/state.js';
+import { iconSvg, iconForAbility } from './icons.js';
 import { portraitFor } from '../engine/portraits.js';
 import { el } from './screens.js';
 import { Minimap } from '../engine/minimap.js';
@@ -78,16 +79,30 @@ export class CombatHud{
     // touches A/Z/E/R gérées directement par Match.
     const spells = el('div', 'hud-spells');
     this.spellEls = [];
+    const save = this.match.sim.cfg?.save;
+    const champKey = this.match.sim.player.key;
     (d.abil || []).forEach((a, i) => {
-      const slot = el('div', 'spell-slot' + (a.ult ? ' ult' : ''), a.name[0]);
+      // Icône façon MOBA : pictogramme de mécanique + disque de recharge
+      // radial (balayage conique) + pastilles de rang + coût en mana.
+      // Remplace l'ancien slot qui n'affichait qu'une lettre nue.
+      const slot = el('div', 'spell-slot' + (a.ult ? ' ult' : ''));
       slot.title = a.name;
+      slot.appendChild(el('div', 'spell-ico', iconSvg(iconForAbility(a), 'pf-ico-lg')));
+      const sweep = el('div', 'spell-slot-sweep');
+      slot.appendChild(sweep);
       const cd = el('div', 'spell-slot-cd');
       slot.appendChild(cd);
       slot.appendChild(el('span', 'key', KEYS[i] || ''));
+      if(a.cost) slot.appendChild(el('span', 'spell-slot-cost', String(a.cost)));
+      const max = maxSpellRank(champKey, i);
+      const pips = el('div', 'spell-slot-pips');
+      for(let r = 0; r < max; r++) pips.appendChild(el('span', 'spell-pip'));
+      slot.appendChild(pips);
       slot.addEventListener('click', () => this.match.castSlot(i));
       spells.appendChild(slot);
-      this.spellEls.push({ el: slot, cdEl: cd, cost: a.cost || 0 });
+      this.spellEls.push({ el: slot, cdEl: cd, sweepEl: sweep, pipsEl: pips, cost: a.cost || 0, maxRank: max, slot: i });
     });
+    this._refreshPips(save, champKey);
     // Coup de base : une frappe au corps à corps déclenchée à la main,
     // à côté des sorts. Le personnage frappe même sans cible à portée,
     // pour que le joueur sente le coup partir.
@@ -175,6 +190,15 @@ export class CombatHud{
     };
   }
 
+  /** Colore les pastilles de rang selon le niveau actuel du sort (0 = aucune remplie). */
+  _refreshPips(save, champKey){
+    if(!save) return;
+    (this.spellEls || []).forEach(s => {
+      const rank = spellRank(save, champKey, s.slot);
+      [...s.pipsEl.children].forEach((pip, i) => pip.classList.toggle('filled', i < rank));
+    });
+  }
+
   _bar(kind, cls){
     const wrap = el('div', '');
     const row = el('div', 'pf-label-row');
@@ -242,10 +266,15 @@ export class CombatHud{
     if (this.minimap) this.minimap.update(this.match.sim.units, p);
     (this.spellEls || []).forEach((s, i) => {
       const cd = p.cds ? p.cds[i] : 0;
+      const baseCd = Array.isArray(p.d?.abil?.[i]?.cd) ? p.d.abil[i].cd[0] : (p.d?.abil?.[i]?.cd || 1);
       const affordable = p.mana >= s.cost;
       s.el.classList.toggle('cooling', cd > 0.05);
       s.el.classList.toggle('no-mana', cd <= 0.05 && !affordable);
       s.cdEl.textContent = cd > 0.05 ? Math.ceil(cd) : '';
+      // Balayage conique : la portion « grisée » représente le temps
+      // restant, exactement comme le disque de recharge d'un MOBA.
+      const frac = cd > 0.05 ? Math.max(0, Math.min(1, cd / (baseCd || 1))) : 0;
+      s.sweepEl.style.setProperty('--cd-frac', frac.toFixed(3));
     });
   }
 

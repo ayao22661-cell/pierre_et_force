@@ -38,7 +38,65 @@ const PATHS = {
   bolt: '<path d="M13 3L5.5 13.5H11L10.5 21 18.5 10H13z"/>',
   // Parchemin — journal
   scroll: '<path d="M7 4h9a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H7"/><path d="M7 4a2 2 0 0 0-2 2v1h3"/><path d="M9.5 9h6M9.5 12.5h6M9.5 16h3.5"/>',
+
+  // ---- Icônes de sorts, par MÉCANIQUE (abil[].type) — voir iconForAbility()
+  // Projectile visé (shot/line)
+  ability_shot: '<path d="M4 12h13"/><path d="M13 6.5L19.5 12 13 17.5"/>',
+  // Ruée / téléportation (dash/blink)
+  ability_dash: '<path d="M3 16l6-6-6-6" opacity=".45"/><path d="M10 18l8-8-8-8"/>',
+  // Zone ciblée au sol (circle/zone)
+  ability_circle: '<circle cx="12" cy="12" r="7.5"/><circle cx="12" cy="12" r="2.2"/><path d="M12 3v2.3M12 18.7V21M3 12h2.3M18.7 12H21"/>',
+  // Cône mêlée (cone)
+  ability_cone: '<path d="M12 4l7 15H5z"/><path d="M12 10.5v5"/>',
+  // Explosion centrée sur soi (nova)
+  ability_nova: '<circle cx="12" cy="12" r="3"/><path d="M12 2v4M12 18v4M2 12h4M18 12h4M5 5l3 3M16 16l3 3M19 5l-3 3M8 16l-3 3"/>',
+  // Soin ciblé (ally / heal)
+  ability_heal: '<path d="M12 20.5s-7-4.3-7-9.8A4 4 0 0 1 12 8a4 4 0 0 1 7 2.7c0 5.5-7 9.8-7 9.8z"/><path d="M12 9.5v6M9 12.5h6"/>',
+  // Invocation (summon)
+  ability_summon: '<circle cx="12" cy="7" r="2.6"/><path d="M6 20c0-3.6 2.7-6 6-6s6 2.4 6 6"/><path d="M4 20h16" opacity=".4"/>',
+  // Buff / voile sur soi, sans bouclier (self sans shield)
+  ability_aura: '<path d="M12 3c3 2.4 5 5.7 5 9a5 5 0 0 1-10 0c0-3.3 2-6.6 5-9z"/>',
+
+  // ---- Icônes de RÔLE (sélection de champion) ----
+  role_combattant: '<path d="M12 3l2.2 4.4L19 8.5l-3.5 3.4.8 4.9-4.3-2.3-4.3 2.3.8-4.9L5 8.5l4.8-1.1z"/>',
+  role_mage: '<path d="M12 3v6M12 15v6M6 9l4 3-4 3M18 9l-4 3 4 3"/>',
+  role_soutien: '<path d="M12 20.5s-7-4.3-7-9.8A4 4 0 0 1 12 8a4 4 0 0 1 7 2.7c0 5.5-7 9.8-7 9.8z"/>',
+  role_tank: '<path d="M12 3l7 3v5.5c0 4-3 7.5-7 9-4-1.5-7-5-7-9V6z"/><path d="M9 12l2 2 4-4"/>',
+  role_assassin: '<path d="M5 19L17 7"/><path d="M13 3l4.5 4.5L21 4"/><path d="M5 19l-1.5 3L7 20.5"/>',
+
+  // ---- Icônes de MODE de mission ----
+  mode_siege: '<path d="M4 21V10l4-3 4 3 4-3 4 3v11"/><path d="M4 21h16M9 21v-5h6v5"/>',
+  mode_arena: '<circle cx="12" cy="12" r="8.5"/><path d="M12 6v3M12 15v3M6 12h3M15 12h3"/>',
+  mode_defense: '<path d="M12 3l7 3v5.5c0 4-3 7.5-7 9-4-1.5-7-5-7-9V6z"/>',
+  mode_boss: '<path d="M12 3l2 3.5L18 5l-1 4 3 2-3 2 1 4-4-1.5L12 19l-2-3.5L6 17l1-4-3-2 3-2-1-4 4 1.5z"/>',
 };
+
+const ROLE_ICON = {
+  Combattant: 'role_combattant', Mage: 'role_mage', Soutien: 'role_soutien',
+  Tank: 'role_tank', Assassin: 'role_assassin',
+};
+/** Icône de rôle (sélection de champion) — repli neutre si rôle inconnu. */
+export function iconForRole(role){ return ROLE_ICON[role] || 'role_combattant'; }
+
+/**
+ * Icône représentative d'un sort d'après sa MÉCANIQUE (le champ `type`
+ * dans data/champions.js), pas son thème visuel propre — un seul jeu
+ * d'icônes suffit donc pour tous les personnages, présents et à venir.
+ * Le bouclier prime sur "self" nu (Mur de Pierre vs Voile Maudit), et
+ * le cœur prime sur "nova" quand la nova soigne l'équipe au lieu de
+ * frapper les ennemis.
+ */
+export function iconForAbility(a){
+  if(a.type === 'self' && a.shield) return 'shield';
+  if(a.type === 'self') return 'ability_aura';
+  if(a.type === 'ally') return 'ability_heal';
+  if(a.type === 'nova') return a.team === 'ally' ? 'ability_heal' : 'ability_nova';
+  if(a.type === 'circle' || a.type === 'zone') return 'ability_circle';
+  if(a.type === 'cone') return 'ability_cone';
+  if(a.type === 'dash' || a.type === 'blink') return 'ability_dash';
+  if(a.type === 'summon') return 'ability_summon';
+  return 'ability_shot'; // shot / line / par défaut
+}
 
 /** Chaîne SVG de l'icône, à insérer dans un innerHTML ou un template. */
 export function iconSvg(name, cls = ''){
@@ -46,6 +104,10 @@ export function iconSvg(name, cls = ''){
   if(!d) return '';
   return `<svg class="pf-ico ${cls}" viewBox="0 0 24 24" aria-hidden="true" focusable="false">${d}</svg>`;
 }
+
+const MODE_ICON = { 'SIÈGE': 'mode_siege', 'ARÈNE': 'mode_arena', 'DÉFENSE': 'mode_defense', 'BOSS': 'mode_boss' };
+/** Icône représentative du mode d'une mission (affichage des cartes de mission). */
+export function iconForMode(mode){ return MODE_ICON[mode] || 'mode_arena'; }
 
 /**
  * Icône la plus parlante pour un objet, d'après sa statistique principale.

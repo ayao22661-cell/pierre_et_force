@@ -150,3 +150,12 @@ html, body{
 .pf-title-content{ padding-bottom: clamp(18px, 6vh, 56px); }
 .pf-logo{ width: clamp(150px, 26vh, 260px); filter: drop-shadow(0 8px 26px rgba(0,0,0,.6)); }
 .pf-hero-sub{ margin-top: 2px; }
+
+
+/* ── Écran de sélection de sauvegarde ── */
+#screen-slots{ justify-content:center; align-items:center; }
+.slots-content{
+  position:relative; z-index:1; display:flex; flex-direction:column; align-items:center;
+  width:100%; max-width:520px; padding: 0 18px;
+}
+.slots-list{ display:flex; flex-direction:column; gap:10px; width:100%; }

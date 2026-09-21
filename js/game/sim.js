@@ -16,6 +16,17 @@ import { computeBonuses } from './bonuses.js';
 
 let UID = 1;
 
+/**
+ * Découplage PV/dégâts pour les ennemis renforcés (foeMult élevé en fin
+ * de campagne) : leurs PV montent pleinement avec `mult` (c'est ce qui
+ * les rend réellement plus durs à tuer), mais leurs DÉGÂTS montent
+ * beaucoup plus lentement (racine adoucie). Sans ça, un ennemi 3× plus
+ * costaud inflige aussi 3× plus de dégâts par coup, et la fin de
+ * campagne devient mortelle pour le joueur (qui, lui, ne monte jamais
+ * en puissance) au lieu de simplement durer plus longtemps.
+ */
+function dampenedAtkMult(mult){ return Math.pow(Math.max(mult, 0.01), 0.45); }
+
 // Vitesse relative des champions ennemis par rapport à leur valeur de base.
 const FOE_SPEED = 0.85;
 // Rayon dans lequel un ennemi remarque le joueur (avant : 480 pour tout le monde).
@@ -125,7 +136,8 @@ export class Sim{
     const foes = this.cfg.foes || ['BABA'];
     for(let i = 0; i < (this.cfg.foeCount || 1); i++){
       const k = foes[i % foes.length];
-      const u = makeChampionUnit(k, 1, { x: p1.x, y: p1.y + (i-1)*44, mult: this.cfg.foeMult || 1, path, wp: path.length-2 });
+      const fm = this.cfg.foeMult || 1;
+      const u = makeChampionUnit(k, 1, { x: p1.x, y: p1.y + (i-1)*44, mult: fm, atkMult: dampenedAtkMult(fm), path, wp: path.length-2 });
       this.units.push(u);
     }
     this.autelAllie = makeStructure('autel', 0, p0.x - 60, p0.y, 3500);
@@ -179,8 +191,14 @@ export class Sim{
     // Beaucoup de PV (×3,5) mais des dégâts à peine supérieurs à un ennemi normal (×1,3) :
     // avant, le boss avait ×2,5 sur les deux et tuait le joueur en quelques secondes.
     const fm = this.cfg.foeMult || 0.5;
+    // Courbe propre au boss (indépendante de la formule de fm ci-dessus,
+    // recalée pour la nouvelle plage 0,6-2,8) : PV 1,4x à 4,3x la base au
+    // fil de la campagne, dégâts 0,9x à 1,5x seulement — un boss doit
+    // durer longtemps, pas foudroyer le joueur en trois coups.
+    const bossHpMult  = 1.4 + (fm - 0.6) * 1.336;
+    const bossAtkMult = 0.9 + (fm - 0.6) * 0.267;
     const bossKey = (this.cfg.foes && this.cfg.foes[0]) || 'BABA';
-    this.boss = makeChampionUnit(bossKey, 1, { x: cx + 480, y: cy, mult: fm * 3.5, atkMult: fm * 1.3 });
+    this.boss = makeChampionUnit(bossKey, 1, { x: cx + 480, y: cy, mult: bossHpMult, atkMult: bossAtkMult });
     this.boss.isBoss = true;
     this.boss.respawnDisabled = true;
     this.units.push(this.boss);
@@ -198,9 +216,10 @@ export class Sim{
       this.units.push(makeChampionUnit(k, 0, { isAlly: true, x: cx - 500, y: cy + 60 + i*50, save: this.cfg.save }));
     });
     const foes = this.cfg.foes || ['BABA'];
+    const fmArena = this.cfg.foeMult || 1;
     for(let i = 0; i < (this.cfg.foeCount || 2); i++){
       const k = foes[i % foes.length];
-      this.units.push(makeChampionUnit(k, 1, { x: cx + 500, y: cy + (i-1)*50, mult: this.cfg.foeMult || 1 }));
+      this.units.push(makeChampionUnit(k, 1, { x: cx + 500, y: cy + (i-1)*50, mult: fmArena, atkMult: dampenedAtkMult(fmArena) }));
     }
     this.teamKills = [0, 0];
     this.killGoal = this.cfg.killGoal || 8;
@@ -252,6 +271,11 @@ export class Sim{
     }
     for(const u of this.units) if(!u.dead) this._tickAttack(u, dt);
     for(const u of this.units) if(!u.dead && u.kind === 'champ') this._tickResources(u, dt);
+    // IA de sorts — alliés (hors joueur) et ennemis choisissent et lancent
+    // leurs propres capacités (soin, bouclier, contrôle, dégâts). Avant
+    // cet ajout, seul le joueur lançait jamais un sort : chaque champion,
+    // le sien compris pour ses alliés, ne servait qu'à l'attaque de base.
+    for(const u of this.units) if(!u.dead && u.kind === 'champ' && !u.isPlayer) this._aiTick(u, dt);
     this._processCastQueue();
 
     if(this.mode === 'siege') this._tickSiege(dt);
@@ -274,6 +298,54 @@ export class Sim{
     // Régénération de PV : objet (regen fixe/s) + talent Eau (regenF PV/s)
     const totalRegen = (u.bns?.regen || 0) + (u.bns?.regenF || 0);
     if(totalRegen > 0) u.hp = Math.min(u.maxHp, u.hp + totalRegen * dt);
+  }
+
+  /**
+   * IA de sorts pour toute unité "champ" qui n'est pas le joueur (alliés
+   * ET ennemis partagent la même logique — un ennemi n'est qu'un
+   * "champ" côté équipe 1). Décision simple, réévaluée toutes les
+   * ~0,35-0,6 s par unité (décalées aléatoirement pour ne pas voir tout
+   * le monde lancer un sort à la même frame) :
+   *   1) Soutien (soin / bouclier) si soi-même ou l'allié le plus blessé
+   *      à portée est sous le seuil — priorité absolue, même hors combat
+   *      (un soin en retard ne sert à rien).
+   *   2) Sinon, si un ennemi est à portée d'engagement, lance la première
+   *      capacité offensive disponible (ultime en priorité).
+   * Le ciblage lui-même (plus proche ennemi, allié le plus blessé...)
+   * est déjà géré par les EXECUTORS de abilities.js — l'IA choisit
+   * seulement QUAND et QUELLE capacité, pas QUI viser.
+   */
+  _aiTick(u, dt){
+    if(!u.d || !u.d.abil || !u.d.abil.length) return;
+    u.aiNext = (u.aiNext || 0) - dt;
+    if(u.aiNext > 0) return;
+    u.aiNext = 0.35 + Math.random() * 0.25;
+
+    if(u.cc && u.cc.type === 'stun' && this.time < u.cc.until) return;
+
+    const abil = u.d.abil;
+    const isSupport = a => a.type === 'ally' || (a.type === 'self' && a.shield) || (a.type === 'nova' && a.team === 'ally');
+
+    // 1) Soutien prioritaire.
+    for(let slot = 0; slot < abil.length; slot++){
+      const a = abil[slot];
+      if(!a || !isSupport(a) || u.cds[slot] > 0 || (u.mana||0) < (a.cost||0)) continue;
+      const target = a.type === 'self' ? u : this._nearestWoundedAlly(u, a.range || 500);
+      const pct = target.hp / (target.maxHp || 1);
+      if(pct < (a.type === 'self' ? 0.55 : 0.65)){ this.requestCast(u, slot); return; }
+    }
+
+    // 2) Offensif — seulement si un ennemi est à portée d'engagement,
+    //    pour ne pas gaspiller un sort dans le vide.
+    const engageRange = Math.max((u.range || 100) + 260, 420);
+    if(!this._nearestFoe(u, engageRange)) return;
+    const order = [3, 0, 1, 2]; // ultime d'abord, puis A/Z/E dans l'ordre
+    for(const slot of order){
+      const a = abil[slot];
+      if(!a || isSupport(a) || u.cds[slot] > 0 || (u.mana||0) < (a.cost||0)) continue;
+      this.requestCast(u, slot);
+      return;
+    }
   }
 
   /** Demande de lancer un sort — traitée au prochain tick (voir _processCastQueue). */
@@ -387,14 +459,12 @@ export class Sim{
   }
 
   _resolveAttack(u, t, manual = false){
-    const effArm = (t.arm||0) + ((t.tempArm && this.time < t.tempArmUntil) ? t.tempArm : 0);
-    // Pénétration d'armure (objet Lame du Vide) — réduit l'armure effective
-    const pen = u.bns?.pen || 0;
-    const reducedArm = effArm * (1 - pen);
-    let dmg = Math.max(2, (u.atk||10) * (100/(100+reducedArm)));
-    // Critique (crit chance) — double les dégâts de base
+    // Critique (crit chance) — double les dégâts de base. La réduction
+    // d'armure est appliquée uniformément dans _applyDamage (voir plus
+    // bas) — pour l'attaque de base comme pour les sorts.
     const critChance = (u.bns?.crit || 0);
     const isCrit = critChance > 0 && Math.random() < critChance;
+    let dmg = u.atk || 10;
     if(isCrit) dmg *= 2;
     if(u.ranged){
       this.onEvent({ type: 'projectile', from: u, to: t, color: u.proj || u.fx, manual });
@@ -412,6 +482,23 @@ export class Sim{
     let dmg = rawDmg;
     if(u.bns?.exec && (t.hp / (t.maxHp||1)) < 0.4){
       dmg *= (1 + u.bns.exec);
+    }
+
+    // Réduction par l'armure — s'applique à TOUTE source de dégâts,
+    // attaque de base ET sorts. Avant ce correctif, seule l'attaque de
+    // base la subissait (elle était calculée dans _resolveAttack) : les
+    // sorts ignoraient entièrement l'armure de la cible. Sans effet
+    // visible tant que l'IA de sorts n'existait pas (seul le joueur
+    // lançait un sort), mais une fois les ennemis capables de lancer les
+    // leurs, leurs sorts frappaient à dégâts pleins quelle que soit
+    // l'armure du joueur — d'où des pertes de PV bien plus rapides que
+    // prévu par l'équilibrage.
+    {
+      const effArm = (t.arm||0) + ((t.tempArm && this.time < t.tempArmUntil) ? t.tempArm : 0);
+      const pen = u?.bns?.pen || 0;
+      const reducedArm = Math.max(0, effArm * (1 - pen));
+      dmg *= 100 / (100 + reducedArm);
+      if(opts.basic) dmg = Math.max(2, dmg);
     }
 
     // Réduction de contrôle (ccRes s'applique dans _applyCC, pas ici)
@@ -546,20 +633,21 @@ export class Sim{
     if(!path) return;
     const spawn = this._defenseSpawnSide || path[path.length-1];
     const waveMult = (this.cfg.foeMult || 1) * (1 + this.defenseWaveN * 0.12);
+    const waveAtkMult = dampenedAtkMult(waveMult);
     // Sbires
     const minionCount = 2 + Math.floor(this.defenseWaveN * 1.2);
     for(let i = 0; i < minionCount; i++){
       const m = makeMinion(1, path, path.length - 2);
       m.x = spawn.x + (i - Math.floor(minionCount/2)) * 28;
       m.y = spawn.y;
-      m.hp *= waveMult; m.maxHp = m.hp; m.atk *= waveMult;
+      m.hp *= waveMult; m.maxHp = m.hp; m.atk *= waveAtkMult;
       this.units.push(m);
     }
     // À partir de la vague 3, un champion ennemi accompagne la vague
     if(this.defenseWaveN >= 3){
       const foes = this.cfg.foes || ['BABA'];
       const k = foes[this.defenseWaveN % foes.length];
-      const champ = makeChampionUnit(k, 1, { x: spawn.x, y: spawn.y - 50, mult: waveMult, path, wp: path.length - 2 });
+      const champ = makeChampionUnit(k, 1, { x: spawn.x, y: spawn.y - 50, mult: waveMult, atkMult: waveAtkMult, path, wp: path.length - 2 });
       champ.respawnDisabled = true; // les champions de vague ne respawnent pas
       this.units.push(champ);
     }

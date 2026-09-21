@@ -10,6 +10,7 @@ import { buildHub, updateHubHeader } from './ui/hub.js';
 import { renderDeploy } from './ui/deploy.js';
 import { CombatHud } from './ui/combat-hud.js';
 import { renderEnd } from './ui/end.js';
+import { renderSlots } from './ui/slots.js';
 
 // Préchargement des portraits 3D (capture des modèles GLB, voir
 // engine/character-portrait-3d.js). Le Hub s'affiche IMMÉDIATEMENT
@@ -86,8 +87,8 @@ function onMatchEnd({ victory }){
   }, 600);
 }
 
-const btnStart = document.getElementById('btn-start');
-btnStart.addEventListener('click', () => {
+/** Choix d'un emplacement (nouvelle partie ou reprise) → charge cette sauvegarde et entre dans le Hub. */
+function pickSlot(){
   save = loadSave();
   toHub();
   // Dès que les vrais rendus 3D sont prêts, on repeint le Hub pour
@@ -98,7 +99,24 @@ btnStart.addEventListener('click', () => {
   assetsReady.then(() => {
     if(document.getElementById('screen-hub')?.classList.contains('active')){
       buildHub(save, onSelectMission);
+      updateHubHeader(save);
     }
   });
+}
+
+const btnStart = document.getElementById('btn-start');
+btnStart.addEventListener('click', () => {
+  goTo('screen-slots');
+  renderSlots(pickSlot);
 });
+document.getElementById('btn-slots-back')?.addEventListener('click', () => goTo('screen-title'));
+
+// Retour à l'écran de sauvegardes depuis l'intérieur du jeu (bouton dans
+// l'onglet Profil, ui/hub.js) — un évènement plutôt qu'un import direct,
+// pour éviter une dépendance circulaire entre main.js et ui/hub.js.
+window.addEventListener('pf-go-to-slots', () => {
+  goTo('screen-slots');
+  renderSlots(pickSlot);
+});
+
 document.getElementById('btn-hub-back').addEventListener('click', toHub);

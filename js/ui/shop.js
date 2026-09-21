@@ -41,6 +41,10 @@ export function renderShop(save) {
     ITEMS.filter(it => it.tier === tier).forEach(item => {
       const owned  = save.items.includes(item.id);
       const card   = el('div', 'pf-panel shop-card' + (owned ? ' owned' : ''));
+      // Couleur de palier (bronze/argent/or), comme les objets d'un MOBA :
+      // un simple coup d'œil au liseré du haut indique le tier.
+      const TIER_COLOR = { 1: '#a3714b', 2: '#b9c3d4', 3: '#c9a24a' };
+      card.style.setProperty('--tier-color', TIER_COLOR[tier] || TIER_COLOR[1]);
       // Icône dessinée d'après la statistique principale de l'objet :
       // les emoji d'origine changeaient d'aspect d'un téléphone à l'autre.
       const ico = el('div', 'shop-card-ico');

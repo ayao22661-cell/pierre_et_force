@@ -5,10 +5,19 @@
 // character-portrait-3d.js), préchargée avant l'affichage du Hub.
 // ============================================================
 import { CAST } from '../data/cast.js';
+import { CHAMPS } from '../data/champions.js';
 import { portraitFor3D, preloadPortraits3D } from './character-portrait-3d.js';
 
 // Alias utilisés côté combat (CHAMPS.BABA) vers la fiche narrative (CAST.BABA_TUNDE).
 const ALIASES = { BABA: 'BABA_TUNDE' };
+// Sens inverse : fiche narrative -> clé jouable en combat (CHAMPS).
+const REVERSE_ALIASES = { BABA_TUNDE: 'BABA' };
+
+/** Clé CHAMPS (jouable en combat) pour une clé de CAST, ou null si le personnage ne combat pas. */
+export function champKeyFor(castKey){
+  if(CHAMPS[castKey]) return castKey;
+  return REVERSE_ALIASES[castKey] || null;
+}
 
 /** Retourne le data-URI PNG (rendu 3D) du portrait pour une clé de CAST (ou un alias). */
 export function portraitFor(key){

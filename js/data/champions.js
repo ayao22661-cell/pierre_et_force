@@ -8,7 +8,7 @@ export const CHAMPS = {
       {name:"Onde d'Éveil",desc:"Projette une onde qui traverse les ennemis et les ralentit.",type:"shot",cd:[8,7.5,7,6.5,6],cost:45,range:520,width:46,speed:900,pierce:true,dmg:[70,110,150,190,230],ratio:0.9,cc:{t:"slow",d:1.5,p:0.3},color:"#39FF7A"},
       {name:"Chaleur Ancestrale",desc:"Bond vers l'avant puis frappe la zone d'arrivée.",type:"dash",cd:[13,12,11,10,9],cost:60,range:330,radius:120,dmg:[60,95,130,165,200],ratio:0.7,color:"#b6ff5c"},
       {name:"Mur de Pierre",desc:"Bouclier de pierre et bonus d'armure pendant 3 s.",type:"self",cd:[16,15,14,13,12],cost:50,shield:[90,140,190,240,290],shieldR:0.08,buff:{arm:[15,20,25,30,35],d:3},color:"#c9a86a"},
-      {name:"Cinq Pierres",desc:"Cinq pierres s'abattent sur la zone : dégâts massifs et étourdissement.",type:"circle",cd:[90,75,60],cost:100,range:560,radius:230,delay:0.6,dmg:[260,400,540],ratio:1.3,cc:{t:"stun",d:1.25},color:"#39FF7A",ult:true}
+      {name:"Cinq Pierres",desc:"Cinq pierres s'abattent sur la zone : dégâts massifs et étourdissement.",type:"circle",cd:[90,75,60],cost:100,range:560,radius:180,delay:0.6,dmg:[190,320,460],ratio:1.3,cc:{t:"stun",d:1.25},color:"#39FF7A",ult:true}
     ]},
   SAM:{name:"Sam Grün",title:"Le Passeur",role:"Mage",
     body:0, hp:540,hpL:84, mana:420,manaL:55, atk:52,atkL:2.8, arm:22,armL:3.5, as:0.64,asL:0.015, ms:320, range:300, ranged:true,

@@ -5,6 +5,7 @@
 // ============================================================
 import { CHAMPS, PLAYABLE } from '../data/champions.js';
 import { portraitFor, castEntry } from '../engine/portraits.js';
+import { icon, iconSvg, iconForRole } from './icons.js';
 import { el } from './screens.js';
 
 const MODE_MAP = { 'SIÈGE': 'siege', 'ARÈNE': 'arena', 'DÉFENSE': 'defense', 'BOSS': 'boss' };
@@ -35,56 +36,89 @@ export function renderDeploy(mission, modeLabel, save, onLaunch){
     preview.textContent = 'Équipe : ' + names.join(', ');
   }
 
-  function championChip(k, selected, onClick, size){
+  // Tuile de sélection façon « champion select » MOBA : portrait carré,
+  // badge de rôle, halo dans la couleur du personnage quand sélectionné.
+  function championTile(k, selected, onClick){
     const c = CHAMPS[k];
     const entry = castEntry(k);
-    const chip = el('div', 'pf-panel ally-chip' + (selected ? ' selected' : ''));
-    const img = el('img', 'pf-portrait-img ' + (size || 'pf-portrait-sm'));
+    const tile = el('div', 'champ-tile' + (selected ? ' selected' : ''));
+    tile.style.setProperty('--accent', c.fx);
+    const img = el('img', 'champ-tile-img');
     img.src = portraitFor(k);
     img.alt = c.name;
-    img.style.setProperty('--accent', c.fx);
-    chip.appendChild(img);
-    const info = el('div', '');
-    info.appendChild(el('div', 'ally-chip-name', c.name));
-    info.appendChild(el('div', 'ally-chip-role', entry?.titre || c.role));
-    chip.appendChild(info);
-    chip.addEventListener('click', onClick);
-    return chip;
+    tile.appendChild(img);
+    tile.appendChild(el('div', 'champ-tile-overlay'));
+    const role = el('div', 'champ-tile-role', iconSvg(iconForRole(c.role), 'pf-ico-sm'));
+    role.title = c.role;
+    tile.appendChild(role);
+    tile.appendChild(el('div', 'champ-tile-name', c.name.split(' ')[0]));
+    tile.addEventListener('click', onClick);
+    return tile;
   }
 
-  // ── Sélecteur du personnage joueur (cliquable, remplace le portrait figé) ──
+  // ── Bandeau du champion actuellement sélectionné (grand portrait) ──
+  // renderDeploy() est appelé deux fois par mission (voir main.js) : on
+  // réutilise le bandeau déjà en place plutôt que d'en empiler un second.
+  let heroBanner = playerGrid.parentElement.querySelector('.hero-banner');
+  if(!heroBanner){
+    heroBanner = el('div', 'hero-banner');
+    playerGrid.parentElement.insertBefore(heroBanner, playerGrid);
+  }
+
+  function renderHeroBanner(){
+    const c = CHAMPS[state.champ];
+    const entry = castEntry(state.champ);
+    heroBanner.innerHTML = '';
+    heroBanner.style.setProperty('--accent', c.fx);
+    const img = el('img', 'hero-banner-img');
+    img.src = portraitFor(state.champ);
+    img.alt = c.name;
+    heroBanner.appendChild(img);
+    const info = el('div', 'hero-banner-info');
+    const roleRow = el('div', 'hero-banner-role');
+    roleRow.appendChild(icon(iconForRole(c.role), 'pf-ico-sm'));
+    roleRow.appendChild(el('span', '', c.role.toUpperCase()));
+    info.appendChild(roleRow);
+    info.appendChild(el('div', 'hero-banner-name', c.name));
+    info.appendChild(el('div', 'hero-banner-title', entry?.titre || ''));
+    heroBanner.appendChild(info);
+  }
+
+  // ── Sélecteur du personnage joueur : rangée de tuiles ──
   function renderPlayerGrid(){
     playerGrid.innerHTML = '';
     playerPool.forEach(k => {
-      const chip = championChip(k, k === state.champ, () => {
+      const tile = championTile(k, k === state.champ, () => {
         if(k === state.champ) return;
         state.champ = k;
         // Le champion choisi comme joueur ne peut plus être un allié en double.
         const idx = state.allies.indexOf(k);
         if(idx >= 0) state.allies.splice(idx, 1);
+        renderHeroBanner();
         renderPlayerGrid();
         renderAllyGrid();
         updatePreview();
-      }, 'pf-portrait-lg');
-      playerGrid.appendChild(chip);
+      });
+      playerGrid.appendChild(tile);
     });
   }
 
-  // ── Sélecteur des alliés (jusqu'à 2) ──
+  // ── Sélecteur des alliés (jusqu'à 2) : rangée de tuiles ──
   function renderAllyGrid(){
     allyGrid.innerHTML = '';
     allyPool.filter(k => k !== state.champ).forEach(k => {
-      const chip = championChip(k, state.allies.includes(k), () => {
+      const tile = championTile(k, state.allies.includes(k), () => {
         const idx = state.allies.indexOf(k);
         if(idx >= 0) state.allies.splice(idx, 1);
         else if(state.allies.length < 2) state.allies.push(k);
         renderAllyGrid();
         updatePreview();
       });
-      allyGrid.appendChild(chip);
+      allyGrid.appendChild(tile);
     });
   }
 
+  renderHeroBanner();
   renderPlayerGrid();
   renderAllyGrid();
   updatePreview();
@@ -101,9 +135,16 @@ export function renderDeploy(mission, modeLabel, save, onLaunch){
       foeCount: Math.min(3, 1 + Math.floor((mission.ennemis_extra || 0) / 3)),
       // Les défis ont un numéro textuel (« D3 ») : on prend leur propre
       // difficulté, sinon la difficulté suit le numéro de mission.
+      // Courbe élargie (0,6 → 2,8) : l'ancienne courbe (0,4 → 0,8, plafonnée
+      // dès la mission ~50) laissait les ennemis bien trop fragiles face à
+      // l'ultime de Tarine (« Cinq Pierres » tuait un champion normal en un
+      // seul cast dès la mission 1, et la fin de campagne n'était pas plus
+      // dure que le début). Voir sim.js pour le découplage PV/dégâts qui
+      // empêche cette hausse de PV ennemis de se retourner en excès de
+      // dégâts subis par le joueur.
       foeMult: mission.foeMult != null
         ? mission.foeMult
-        : Math.min(0.8, 0.4 + (Number(mission.num) || 1) * 0.008),
+        : Math.min(2.8, 0.6 + (((Number(mission.num) || 1) - 1) * 0.0449)),
       save,                  // transmis à Sim pour les bonus objets/talents
     });
   };
