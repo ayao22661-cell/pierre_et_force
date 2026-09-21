@@ -27,6 +27,17 @@ let UID = 1;
  */
 function dampenedAtkMult(mult){ return Math.pow(Math.max(mult, 0.01), 0.45); }
 
+/**
+ * Rééquilibrage du rythme de combat (validé avec Yao) : les duels se
+ * terminaient en 15-20 s aux coups de base (ultimes non compris), bien
+ * en dessous de la cible de 2 min+ par affrontement. Les PV de TOUS les
+ * champions (joueur, alliés, ennemis, boss) sont multipliés uniformément
+ * — les dégâts de base ne changent pas, seule la durée pour vider une
+ * barre de vie augmente. Le pendant côté sorts/ultimes (réduction de
+ * dégâts + rallongement des CD) est dans abilities.js.
+ */
+const CHAMP_HP_MULT = 2.2;
+
 // Vitesse relative des champions ennemis par rapport à leur valeur de base.
 const FOE_SPEED = 0.85;
 // Rayon dans lequel un ennemi remarque le joueur (avant : 480 pour tout le monde).
@@ -44,7 +55,7 @@ export function makeChampionUnit(key, team, opts = {}){
   // Les champions ennemis courent ~15 % moins vite que le joueur : on peut leur échapper.
   const foeSpeed = team === 1 ? FOE_SPEED : 1;
 
-  const baseHp  = d.hp  * mult * (bns ? 1 + bns.hpP   : 1) + (bns ? bns.hp   : 0);
+  const baseHp  = d.hp  * CHAMP_HP_MULT * mult * (bns ? 1 + bns.hpP   : 1) + (bns ? bns.hp   : 0);
   const baseAtk = d.atk * atkMult * (bns ? 1 + bns.atkP  : 1) + (bns ? bns.atk  : 0);
   const baseMs  = d.ms * foeSpeed + (bns ? bns.ms + bns.msF : 0);
   const baseAs  = d.as  + (bns ? bns.as  : 0);
@@ -203,7 +214,10 @@ export class Sim{
     this.boss.respawnDisabled = true;
     this.units.push(this.boss);
     this.teamKills = [0, 0];
-    this.timeLimit = this.cfg.timeLimit || 240; // boss : 4 min max
+    // 4 min ne suffisent plus depuis le rééquilibrage (PV du boss ×2,2
+    // en plus de bossHpMult ci-dessus) : remonté à 6 min pour laisser le
+    // temps de vider la barre sans que le combat time out injustement.
+    this.timeLimit = this.cfg.timeLimit || 360; // boss : 6 min max
     this.onEvent({ type: 'boss-spawn', boss: this.boss });
   }
 

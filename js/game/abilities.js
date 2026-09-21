@@ -20,6 +20,17 @@ function spellRankOf(u, slot){
   return (rank >= 0 && rank <= 4) ? rank : 0;
 }
 
+/**
+ * Rééquilibrage du rythme de combat (voir sim.js, CHAMP_HP_MULT) : les
+ * ultimes pouvaient à eux seuls retirer 40-70 % des PV d'un ennemi de
+ * leur niveau en un seul coup, ce qui tranchait le combat avant même
+ * que les PV doublés aient un effet. Dégâts des ultimes réduits de 30 %
+ * et leur CD rallongé de 18 %, pour forcer plusieurs échanges au lieu
+ * d'un burst qui décide tout.
+ */
+const ULT_DMG_MULT = 0.7;
+const ULT_CD_MULT = 1.18;
+
 /** Tente de lancer le sort au slot donné (0=A,1=Z,2=E,3=R). Renvoie true si lancé. */
 export function tryCastAbility(sim, u, slot){
   if(!u || u.dead) return false;
@@ -35,10 +46,11 @@ export function tryCastAbility(sim, u, slot){
   // Utilise le rang du sort pour le CD (tableau si plusieurs niveaux, sinon valeur fixe)
   const rank = spellRankOf(u, slot);
   const baseCd = Array.isArray(a.cd) ? (a.cd[rank] ?? a.cd[0]) : (a.cd || 6);
+  const rawCd = a.ult ? baseCd * ULT_CD_MULT : baseCd;
   // Accélération de capacité (objets + talents) — même formule de rendements
   // décroissants que l'armure : CD réel = CD de base * 100 / (100 + ah).
   const ah = u.bns?.ah || 0;
-  u.cds[slot] = baseCd * 100 / (100 + ah);
+  u.cds[slot] = rawCd * 100 / (100 + ah);
   sim.onEvent({ type: 'cast', unit: u, slot, ability: a, rank });
 
   const fn = EXECUTORS[a.type] || EXECUTORS.self;
@@ -59,6 +71,7 @@ function ranked(val, rank){ return Array.isArray(val) ? (val[rank] ?? val[0] ?? 
 function dmgOf(a, u, rank){
   const base = ranked(a.dmg, rank ?? 0);
   let total = base + (u.atk||0) * (a.ratio||0);
+  if(a.ult) total *= ULT_DMG_MULT;
   // Bonus ultime (talent Feu — Cœur ardent)
   if(a.ult && u.bns?.ultDmg) total *= (1 + u.bns.ultDmg);
   return total;
