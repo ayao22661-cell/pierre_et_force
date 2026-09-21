@@ -558,22 +558,19 @@ export class Sim{
       if(t.kind === 'champ' && u?.bns?.cdKill > 0){
         u.cds = u.cds.map(cd => cd * (1 - u.bns.cdKill));
       }
-      if(t.kind === 'champ') setTimeout(() => this._respawn(t), 4000);
+      // Plus AUCUN respawn, pour aucune unité, dans aucun mode — sur
+      // demande explicite : un ennemi tué reste mort, point final.
+      // Corrigé : le mode ARÈNE ne visait avant que killGoal victoires
+      // (8 par défaut) alors qu'il ne pose que foeCount (1 à 3) champions
+      // ennemis au départ — mission impossible sans respawn. killGoal est
+      // désormais égal à foeCount (voir deploy.js) : l'Arène est un duel
+      // court plutôt qu'un gantelet à 8 kills. Choix validé avec Yao.
     }
   }
 
-  _respawn(t){
-    if(this.over) return;
-    // Boss et ennemis en mode défense ne respawnent pas
-    if(t.respawnDisabled) return;
-    if(this.mode === 'defense' && t.team === 1) return;
-    t.dead = false; t.hp = t.maxHp;
-    if((this.mode === 'siege' || this.mode === 'defense') && this.path){
-      const p = t.team === 0 ? this.path[0] : this.path[this.path.length-1];
-      t.x = p.x; t.y = p.y; t.wp = t.team === 0 ? 1 : this.path.length-2;
-    }
-    this.onEvent({ type: 'respawn', unit: t });
-  }
+  // _respawn(t) supprimée : plus jamais appelée depuis que le respawn a
+  // été retiré du gestionnaire de mort des champions (voir plus haut).
+  // Code mort retiré pour éviter toute confusion future.
 
   _tickSiege(dt){
     this.waveTimer -= dt;

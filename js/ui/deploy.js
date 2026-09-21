@@ -126,15 +126,24 @@ export function renderDeploy(mission, modeLabel, save, onLaunch){
   updatePreview();
 
   document.getElementById('btn-launch').onclick = () => {
+    // Équilibrage : avant, foeCount = 1 + ennemis_extra (jusqu'à 13 champions d'un coup,
+    // 3 dès la mission 1) avec 85 % des stats de base. Désormais 1 à 3 champions,
+    // et des stats qui montent doucement avec la mission (≈ 40 % au début, 80 % à la fin).
+    const foeCount = Math.min(3, 1 + Math.floor((mission.ennemis_extra || 0) / 3));
     onLaunch({
       mode: MODE_MAP[modeLabel] || 'siege',
       champ: state.champ,
       allies: state.allies.slice(),
       foes: mission.ennemis || ['BABA'],
-      // Équilibrage : avant, foeCount = 1 + ennemis_extra (jusqu'à 13 champions d'un coup,
-      // 3 dès la mission 1) avec 85 % des stats de base. Désormais 1 à 3 champions,
-      // et des stats qui montent doucement avec la mission (≈ 40 % au début, 80 % à la fin).
-      foeCount: Math.min(3, 1 + Math.floor((mission.ennemis_extra || 0) / 3)),
+      foeCount,
+      // Arène, sans respawn : l'objectif de victoire (killGoal) ne peut plus
+      // dépasser le nombre de champions posés au départ (foeCount), sinon la
+      // mission devient infaisable dès qu'ils sont tous morts une fois. Le
+      // mode devient donc un duel simple (1 à 3 éliminations selon la
+      // mission) plutôt qu'un gantelet à 8 victoires. Choix validé avec Yao
+      // (voir passation) — les autres pistes (critère de victoire différent,
+      // plus de champions au départ) ont été écartées.
+      killGoal: foeCount,
       // Les défis ont un numéro textuel (« D3 ») : on prend leur propre
       // difficulté, sinon la difficulté suit le numéro de mission.
       //
