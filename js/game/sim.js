@@ -192,8 +192,8 @@ export class Sim{
     // avant, le boss avait ×2,5 sur les deux et tuait le joueur en quelques secondes.
     const fm = this.cfg.foeMult || 0.5;
     // Courbe propre au boss (indépendante de la formule de fm ci-dessus,
-    // recalée pour la nouvelle plage 0,6-2,8) : PV 1,4x à 4,3x la base au
-    // fil de la campagne, dégâts 0,9x à 1,5x seulement — un boss doit
+    // recalée pour la plage de fm ci-dessus, 1,3-5,0) : PV 1,4x à 6,3x la
+    // base au fil de la campagne, dégâts 0,9x à 2x seulement — un boss doit
     // durer longtemps, pas foudroyer le joueur en trois coups.
     const bossHpMult  = 1.4 + (fm - 0.6) * 1.336;
     const bossAtkMult = 0.9 + (fm - 0.6) * 0.267;
@@ -468,10 +468,10 @@ export class Sim{
     if(isCrit) dmg *= 2;
     if(u.ranged){
       this.onEvent({ type: 'projectile', from: u, to: t, color: u.proj || u.fx, manual });
-      setTimeout(() => this._applyDamage(u, t, dmg, { basic: true }), 140);
+      setTimeout(() => this._applyDamage(u, t, dmg, { basic: true, crit: isCrit }), 140);
     } else {
-      this.onEvent({ type: 'melee', from: u, to: t, manual });
-      this._applyDamage(u, t, dmg, { basic: true });
+      this.onEvent({ type: 'melee', from: u, to: t, manual, crit: isCrit });
+      this._applyDamage(u, t, dmg, { basic: true, crit: isCrit });
     }
   }
 
@@ -516,7 +516,10 @@ export class Sim{
     }
 
     t.hp -= dmg;
-    this.onEvent({ type: 'hit', unit: t, dmg, color: u.fx });
+    // crit/heavy : purement décoratifs (texte de dégâts plus gros,
+    // impact plus large, léger tremblement caméra sur un ultime) — voir
+    // match.js. « heavy » marque les dégâts venant d'un ultime.
+    this.onEvent({ type: 'hit', unit: t, dmg, color: u.fx, crit: !!opts.crit, heavy: !!opts.heavy, from: u });
 
     // Vol de vie (ls) — seulement pour les attaques de base
     if(u.bns?.ls && opts.basic && u.team === 0){
@@ -614,7 +617,10 @@ export class Sim{
     this.waveTimer -= dt;
     if(this.waveTimer <= 0 && this.defenseWaveN < this.defenseWaveTotal){
       this.defenseWaveN++;
-      this.waveTimer = 20 + this.defenseWaveN * 2; // vagues de plus en plus rapprochées
+      // Vagues de plus en plus rapprochées (20s -> 12s) : le code faisait
+      // l'inverse jusqu'ici (+2s/vague), contredisant ce commentaire —
+      // les défenses traînaient en longueur au lieu de monter en intensité.
+      this.waveTimer = Math.max(10, 20 - this.defenseWaveN * 2);
       this._spawnDefenseWave();
       this.onEvent({ type: 'announce', text: `VAGUE ${this.defenseWaveN} / ${this.defenseWaveTotal}` });
     }

@@ -25,7 +25,9 @@ export function renderDeploy(mission, modeLabel, save, onLaunch){
     .filter(k => save.allies_unlocked.includes(k) && CHAMPS[k]);
 
   (mission.allies_requis||[]).forEach(k => { if(allyPool.includes(k) && k !== state.champ && !state.allies.includes(k)) state.allies.push(k); });
-  state.allies = state.allies.slice(0, 2);
+  // Un seul coéquipier : à deux alliés en plus du joueur, le combat se
+  // faisait quasi tout seul (trois sources de dégâts sur un ennemi).
+  state.allies = state.allies.slice(0, 1);
 
   const playerGrid = document.getElementById('deploy-player');
   const allyGrid = document.getElementById('deploy-allies-grid');
@@ -110,7 +112,7 @@ export function renderDeploy(mission, modeLabel, save, onLaunch){
       const tile = championTile(k, state.allies.includes(k), () => {
         const idx = state.allies.indexOf(k);
         if(idx >= 0) state.allies.splice(idx, 1);
-        else if(state.allies.length < 2) state.allies.push(k);
+        else if(state.allies.length < 1) state.allies.push(k);
         renderAllyGrid();
         updatePreview();
       });
@@ -135,16 +137,23 @@ export function renderDeploy(mission, modeLabel, save, onLaunch){
       foeCount: Math.min(3, 1 + Math.floor((mission.ennemis_extra || 0) / 3)),
       // Les défis ont un numéro textuel (« D3 ») : on prend leur propre
       // difficulté, sinon la difficulté suit le numéro de mission.
-      // Courbe élargie (0,6 → 2,8) : l'ancienne courbe (0,4 → 0,8, plafonnée
-      // dès la mission ~50) laissait les ennemis bien trop fragiles face à
-      // l'ultime de Tarine (« Cinq Pierres » tuait un champion normal en un
-      // seul cast dès la mission 1, et la fin de campagne n'était pas plus
-      // dure que le début). Voir sim.js pour le découplage PV/dégâts qui
-      // empêche cette hausse de PV ennemis de se retourner en excès de
-      // dégâts subis par le joueur.
+      //
+      // Deuxième passe d'équilibrage : la courbe précédente (0,6 → 2,8)
+      // corrigeait bien la fin de campagne, mais un joueur qui presse ses
+      // 4 sorts (A/Z/E/R) dès le début d'un combat — tous utilisables au
+      // même instant, la mana le permet une fois par combat — inflige
+      // environ 450 dégâts BRUTS en 1,5 s. Un ennemi normal à 560 PV de
+      // base × 0,6 = 336 PV ne survit pas à cette seule ouverture, même
+      // hors ultime dédié. Nouveau plancher (1,3) : cette salve d'ouverture
+      // entame sérieusement un ennemi sans le vider d'un coup — il faut
+      // enchaîner avec les attaques de base et une deuxième vague de sorts
+      // pour finir le combat. Plafond relevé en proportion (5,0) pour que
+      // la fin de campagne reste plus dure que le début.
+      // Voir sim.js pour le découplage PV/dégâts qui empêche cette hausse
+      // de PV ennemis de se retourner en excès de dégâts subis par le joueur.
       foeMult: mission.foeMult != null
         ? mission.foeMult
-        : Math.min(2.8, 0.6 + (((Number(mission.num) || 1) - 1) * 0.0449)),
+        : Math.min(5.0, 1.3 + (((Number(mission.num) || 1) - 1) * 0.0755)),
       save,                  // transmis à Sim pour les bonus objets/talents
     });
   };

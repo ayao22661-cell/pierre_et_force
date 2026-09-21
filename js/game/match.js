@@ -96,18 +96,33 @@ export class Match{
       case 'hit': {
         const v = this.views.get(e.unit.id);
         if(v) v.flashHit();
-        if(e.dmg > 0) this.renderer.units3d?.notifyAction(e.unit.id, 'hit');
-        if(e.dmg > 0) this.fx.spawnFloatText(e.unit.x, e.unit.y - (e.unit.r||20) - 6, Math.round(e.dmg).toString(), '#ffe27a');
+        if(e.dmg > 0){
+          this.renderer.units3d?.notifyAction(e.unit.id, 'hit');
+          this.fx.spawnFloatText(e.unit.x, e.unit.y - (e.unit.r||20) - 6, Math.round(e.dmg).toString(), '#ffe27a', e.heavy, e.crit);
+          // Coup critique ou dégât d'ultime : impact au sol plus large sous
+          // la cible (pas seulement le texte) + tremblement de caméra bref,
+          // pour que le coup se RESSENTE, pas juste se lise en chiffres.
+          if(e.crit || e.heavy){
+            this.fx.spawnImpact(e.unit.x, e.unit.y + (e.unit.r||20)*0.6, hexNum(e.color), e.heavy ? 46 : 30, { crit: e.crit, heavy: e.heavy });
+          }
+          if(e.heavy) this.renderer.shakeCamera(10, 0.2);
+          else if(e.crit) this.renderer.shakeCamera(5, 0.12);
+        }
         break;
       }
       case 'heal':
         this.fx.spawnFloatText(e.unit.x, e.unit.y - (e.unit.r||20) - 6, '+' + Math.round(e.amount), '#7dffb0');
         this.fx.spawnImpact(e.unit.x, e.unit.y, 0x7dffb0, 34);
         break;
-      case 'melee':
-        this.fx.spawnImpact((e.from.x+e.to.x)/2, (e.from.y+e.to.y)/2, hexNum(e.from.fx), 24);
+      case 'melee': {
+        // Impact posé au sol, juste devant la cible plutôt qu'au milieu
+        // des deux unités : lisible comme « le coup a frappé LÀ », plus
+        // large qu'avant (24 -> 34) et un peu plus si le coup est critique.
+        const mx = e.to.x - (e.to.x - e.from.x) * 0.15, my = e.to.y - (e.to.y - e.from.y) * 0.15 + (e.to.r||20)*0.5;
+        this.fx.spawnImpact(mx, my, hexNum(e.from.fx), e.crit ? 30 : 22, { crit: e.crit });
         this.renderer.units3d?.notifyAction(e.from.id, 'attack', { interval: 1 / (e.from.as || 0.7), force: e.manual });
         break;
+      }
       case 'cast': {
         const v = this.views.get(e.unit.id);
         if(v) v.flashHit();
@@ -134,7 +149,8 @@ export class Match{
         this.fx.spawnGroundPulse(e.x, e.y, hexNum(e.color), e.radius);
         break;
       case 'ground-impact':
-        this.fx.spawnImpact(e.x, e.y, hexNum(e.color), e.radius);
+        this.fx.spawnImpact(e.x, e.y, hexNum(e.color), e.radius, { heavy: e.heavy });
+        if(e.heavy) this.renderer.shakeCamera(9, 0.2);
         break;
       case 'death': {
         this.fx.spawnImpact(e.unit.x, e.unit.y, 0xffffff, 70);

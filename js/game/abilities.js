@@ -124,11 +124,11 @@ const EXECUTORS = {
     sim.onEvent({ type: 'ground-tell', x: tx, y: ty, radius: a.radius||150, color: a.color, delay: a.delay||0.6 });
     setTimeout(() => {
       if(sim.over) return;
-      sim.onEvent({ type: 'ground-impact', x: tx, y: ty, radius: a.radius||150, color: a.color });
+      sim.onEvent({ type: 'ground-impact', x: tx, y: ty, radius: a.radius||150, color: a.color, heavy: a.ult });
       for(const t of sim.units){
         if(t.dead || t.team === u.team || t.team === undefined) continue;
         if(Math.hypot(t.x-tx, t.y-ty) <= (a.radius||150)){
-          sim._applyDamage(u, t, dmgOf(a, u, rank));
+          sim._applyDamage(u, t, dmgOf(a, u, rank), { heavy: a.ult });
           applyCC(sim, u, t, a);
         }
       }
@@ -146,7 +146,7 @@ const EXECUTORS = {
       const ang = Math.atan2(dy,dx) - Math.atan2(u.facing.y, u.facing.x);
       const norm = Math.atan2(Math.sin(ang), Math.cos(ang));
       if(Math.abs(norm) <= half){
-        sim._applyDamage(u, t, dmgOf(a, u, rank));
+        sim._applyDamage(u, t, dmgOf(a, u, rank), { heavy: a.ult });
         applyCC(sim, u, t, a);
       }
     }
@@ -155,7 +155,7 @@ const EXECUTORS = {
   // Explosion centrée sur soi — vers les ennemis (dégâts) ou les alliés (soin/bouclier).
   nova(sim, u, a, rank){
     const radius = a.radius || 260;
-    sim.onEvent({ type: 'ground-impact', x: u.x, y: u.y, radius, color: a.color });
+    sim.onEvent({ type: 'ground-impact', x: u.x, y: u.y, radius, color: a.color, heavy: a.ult });
     if(a.team === 'ally'){
       for(const t of sim.units){
         if(t.dead || t.team !== u.team || t.kind !== 'champ') continue;
@@ -167,7 +167,7 @@ const EXECUTORS = {
       for(const t of sim.units){
         if(t.dead || t.team === u.team || t.team === undefined) continue;
         if(Math.hypot(t.x-u.x, t.y-u.y) > radius) continue;
-        if(a.dmg) sim._applyDamage(u, t, dmgOf(a, u, rank));
+        if(a.dmg) sim._applyDamage(u, t, dmgOf(a, u, rank), { heavy: a.ult });
         applyCC(sim, u, t, a);
       }
     }
@@ -181,14 +181,14 @@ const EXECUTORS = {
     const foe = sim._nearestFoe(u, a.range || 400);
     const tx = foe ? foe.x : u.x + u.facing.x * (a.range||250);
     const ty = foe ? foe.y : u.y + u.facing.y * (a.range||250);
-    sim.onEvent({ type: 'ground-impact', x: tx, y: ty, radius: a.radius||170, color: a.color });
+    sim.onEvent({ type: 'ground-impact', x: tx, y: ty, radius: a.radius||170, color: a.color, heavy: a.ult });
     for(const t of sim.units){
       if(t.dead) continue;
       const dist = Math.hypot(t.x-tx, t.y-ty);
       if(dist > (a.radius||170)) continue;
       if(t.team === u.team && t.kind === 'champ' && a.heal) heal(sim, t, healOf(a, u, rank)*3);
       else if(t.team !== u.team && t.team !== undefined && a.dmg){
-        sim._applyDamage(u, t, dmgOf(a, u, rank)*3);
+        sim._applyDamage(u, t, dmgOf(a, u, rank)*3, { heavy: a.ult });
         applyCC(sim, u, t, a);
       }
     }
@@ -252,13 +252,13 @@ function castProjectile(sim, u, a, rank){
   const travel = Math.max(60, dist / (a.speed || 900)) * 1000;
   setTimeout(() => {
     if(sim.over || foe.dead) return;
-    sim._applyDamage(u, foe, dmgOf(a, u, rank));
+    sim._applyDamage(u, foe, dmgOf(a, u, rank), { heavy: a.ult });
     applyCC(sim, u, foe, a);
     if(a.pierce){
       for(const t of sim.units){
         if(t === foe || t.dead || t.team === u.team || t.team === undefined) continue;
         if(Math.hypot(t.x-foe.x, t.y-foe.y) < (a.width||46)*2){
-          sim._applyDamage(u, t, dmgOf(a, u, rank));
+          sim._applyDamage(u, t, dmgOf(a, u, rank), { heavy: a.ult });
           applyCC(sim, u, t, a);
         }
       }
@@ -280,11 +280,11 @@ function castDash(sim, u, a, rank){
   sim.onEvent({ type: 'fx-dash', unit: u, x0: u.x, y0: u.y, x1: tx, y1: ty, color: a.color });
   u.x = tx; u.y = ty;
   const radius = a.radius || 110;
-  sim.onEvent({ type: 'ground-impact', x: tx, y: ty, radius, color: a.color });
+  sim.onEvent({ type: 'ground-impact', x: tx, y: ty, radius, color: a.color, heavy: a.ult });
   for(const t of sim.units){
     if(t.dead || t.team === u.team || t.team === undefined) continue;
     if(Math.hypot(t.x-tx, t.y-ty) <= radius){
-      sim._applyDamage(u, t, dmgOf(a, u, rank));
+      sim._applyDamage(u, t, dmgOf(a, u, rank), { heavy: a.ult });
       applyCC(sim, u, t, a);
     }
   }

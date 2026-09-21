@@ -65,7 +65,7 @@ export class Renderer{
     this.layers.units.sortableChildren = true;
     this.layers.glow.blendMode = 'add';
 
-    this.camera = { x: 0, y: 0, zoom: 1, targetZoom: 1 };
+    this.camera = { x: 0, y: 0, zoom: 1, targetZoom: 1, shake: { t: 0, dur: 0, mag: 0 } };
     this.worldSize = { w: 3000, h: 1700 };
 
     this._frameListeners = [];
@@ -90,7 +90,19 @@ export class Renderer{
   _onTick(ticker){
     const dt = Math.min(ticker.deltaMS / 1000, 0.1);
     for(const fn of this._frameListeners) fn(dt);
+    this.camera.shake.t += dt;
     this._applyCameraTransform();
+  }
+
+  /**
+   * Petit tremblement de caméra — coups critiques et ultimes, pour que
+   * l'impact se ressente au-delà du seul texte de dégâts. Décroît
+   * linéairement sur `dur` secondes ; un nouvel appel pendant un
+   * tremblement en cours le remplace (le plus fort des deux gagne en
+   * pratique, puisqu'un gros coup arrive rarement juste après un autre).
+   */
+  shakeCamera(mag = 8, dur = 0.16){
+    this.camera.shake = { t: 0, dur, mag };
   }
 
   /** Centre la caméra sur un point du monde (en général le joueur), bornée aux limites de la carte. */
@@ -120,8 +132,15 @@ export class Renderer{
     const z = (this.camera.baseZoom || 1) * (this.camera.zoom || 1);
     const vw = this.app.screen.width, vh = this.app.screen.height;
     this.world.scale.set(z);
-    this.world.x = vw/2 - this.camera.x * z;
-    this.world.y = vh/2 - this.camera.y * z;
+    const sh = this.camera.shake;
+    let ox = 0, oy = 0;
+    if(sh && sh.t < sh.dur){
+      const k = 1 - sh.t / sh.dur;
+      ox = (Math.random() * 2 - 1) * sh.mag * k;
+      oy = (Math.random() * 2 - 1) * sh.mag * k;
+    }
+    this.world.x = vw/2 - this.camera.x * z + ox;
+    this.world.y = vh/2 - this.camera.y * z + oy;
   }
 
   _initBabylon(){
