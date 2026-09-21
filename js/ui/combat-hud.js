@@ -108,7 +108,10 @@ export class CombatHud{
     // pour que le joueur sente le coup partir.
     const basic = el('div', 'spell-slot basic-slot', iconSvg('sword', 'pf-ico-lg'));
     basic.title = 'Coup de base (Espace)';
-    basic.appendChild(el('span', 'key', '⎵'));
+    // Le glyphe U+23B5 (⎵) ne s'affiche pas proprement dans toutes les
+    // polices/systèmes (rendu cassé/quasi invisible) — texte simple à la
+    // place, cohérent avec les badges A/Z/E/R à côté.
+    basic.appendChild(el('span', 'key key-wide', 'ESP'));
     const fire = (ev) => { ev.preventDefault(); this.match.basicAttack(); };
     basic.addEventListener('click', fire);
     basic.addEventListener('touchstart', fire, { passive: false });

@@ -101,6 +101,7 @@
   background: #0b0a10; border:1px solid var(--pf-panel-border-lit);
   font-size:9px; color: var(--pf-text-dim); font-family: var(--pf-font-display);
 }
+.spell-slot .key.key-wide{ width:auto; padding:0 3px; }
 .spell-slot-cost{
   position:absolute; top:-6px; right:-6px; z-index:3;
   font-size:8px; color:#7fc7ff; background:#0b0a10; border:1px solid rgba(127,199,255,.35);
