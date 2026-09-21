@@ -60,6 +60,27 @@
   .hud-objective{ padding:5px 10px; font-size:11px; min-width:160px; }
 }
 
+/* ── Petits écrans (téléphones étroits, ~360-390px) — la rangée du bas
+   (portrait + 5 cases de sorts + pause) dépassait tout juste la largeur
+   de l'écran à ≤480px : la dernière case (coup de base) se retrouvait
+   poussée hors du cadre visible. On resserre encore. ── */
+@media (max-width: 400px){
+  .hud-bottom{ padding: 0 4px; gap: 4px; }
+  .hud-portrait{ padding: 4px; gap:4px; }
+  .hud-portrait .pf-portrait{ width:34px; height:34px; font-size:13px; }
+  .hud-bars{ width: 74px; }
+  .hud-bars .pf-label-row{ font-size:7px; }
+  .hud-spells{ gap:4px; }
+  .spell-slot{ width:34px; height:34px; }
+  .spell-ico{ width:17px; height:17px; }
+  .spell-slot .key{ width:10px; height:10px; font-size:6px; }
+  .spell-slot .key.key-wide{ width:auto; padding:0 2px; font-size:6px; }
+  .spell-slot-cost{ font-size:6px; }
+  .spell-pip{ width:3px; height:3px; }
+  .spell-slot-pips{ bottom:-9px; }
+  .hud-pause-btn{ width:28px; height:28px; }
+}
+
 /* ── Bannière d'annonce (victoire proche, vague...) ── */
 .hud-banner{
   position:absolute; top: 30%; left:50%; transform: translate(-50%,-50%);

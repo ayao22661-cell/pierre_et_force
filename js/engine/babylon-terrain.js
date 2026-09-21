@@ -11,6 +11,7 @@
 // ============================================================
 
 const WORLD_SCALE = 45; // doit rester identique à celui de babylon-units.js
+const PROPS_BASE = 'assets/props/';
 
 function hexToColor3(hex){
   const n = parseInt((hex || '#808080').replace('#',''), 16);
@@ -64,6 +65,11 @@ export class BabylonTerrain{
     this._buildLane();
     this._buildBrush(seed);
     this._buildWalls();
+    // Modèles de décor réels (rochers, buissons, coffre, brasero) —
+    // chargés à part et de façon asynchrone : le terrain s'affiche tout
+    // de suite avec son décor procédural, ces props détaillés viennent
+    // l'enrichir dès qu'ils sont prêts, sans rien bloquer.
+    this._scatterPropModels(seed).catch(e => console.error('[BabylonTerrain] ❌ échec décor 3D', e));
     console.log('[BabylonTerrain] ✅ terminé — meshes scène après=', scene.meshes.length,
       '| sol position=', this.ground.position.asArray().map(n=>n.toFixed(2)),
       '| sol dimensions(w,h)=', (layout.w/WORLD_SCALE).toFixed(1), (layout.h/WORLD_SCALE).toFixed(1));
@@ -264,6 +270,125 @@ export class BabylonTerrain{
       ring.material = mat;
       ring.isPickable = false;
       ring.freezeWorldMatrix();
+    }
+  }
+
+  /**
+   * Décor 3D réel (rochers, buissons, coffre, brasero — voir MATERIEL2 du
+   * document de passation), en complément du décor procédural déjà posé
+   * par _buildBrush(). Chargé une fois par fichier, puis dupliqué par
+   * instanciation GPU (createInstance) : coût quasi nul par copie
+   * supplémentaire. Même règle qu'ailleurs : rien au milieu de la voie.
+   */
+  async _scatterPropModels(seed){
+    const { w, h } = this.layout;
+    const bx = w / WORLD_SCALE, bz = h / WORLD_SCALE;
+    let st = ((seed >>> 0) || 7) ^ 0x9e3779b9;
+    const rnd = () => { st = (Math.imul(st, 1664525) + 1013904223) >>> 0; return st / 4294967296; };
+    const small = Math.min(window.innerWidth || 1280, window.innerHeight || 800) < 500;
+    const groundY = (x, z) => heightNoise(x, -z, seed) * 0.55;
+    const onLane = (x, z) => {
+      const path = this.layout.path || [];
+      for(const p of path){
+        const b = this._toBabylon(p.x, p.y);
+        if(Math.hypot(b.x - x, b.z - z) < (this.layout.laneWidth || 210) / WORLD_SCALE * 0.75) return true;
+      }
+      return false;
+    };
+    const randomSpot = (tries = 40) => {
+      for(let i = 0; i < tries; i++){
+        const x = rnd() * bx, z = -rnd() * bz;
+        if(!onLane(x, z)) return { x, z };
+      }
+      return null;
+    };
+
+    // Charge un GLB et renvoie son premier mesh « gabarit » (source des
+    // instances), mis à l'échelle pour une hauteur cible en mètres, la
+    // pointe/base au sol posée sur y=0 local (les instances n'ont plus
+    // qu'à être posées à la bonne hauteur de terrain ensuite).
+    const loadTemplate = async (file, targetH) => {
+      const container = await BABYLON.SceneLoader.LoadAssetContainerAsync(PROPS_BASE, file, this.scene);
+      container.addAllToScene();
+      const meshes = container.meshes.filter(m => m.getTotalVertices() > 0);
+      if(!meshes.length) return null;
+      // Un seul mesh racine visible : les sous-parties restent group ées
+      // dessous pour garder les multi-matériaux (arme/déco à plusieurs textures).
+      const root = meshes[0].parent && meshes[0].parent.getClassName?.() === 'TransformNode'
+        ? meshes[0].parent : meshes[0];
+      let minY = 1e9, maxY = -1e9;
+      for(const m of meshes){
+        m.computeWorldMatrix(true);
+        const bb = m.getBoundingInfo().boundingBox;
+        minY = Math.min(minY, bb.minimumWorld.y); maxY = Math.max(maxY, bb.maximumWorld.y);
+      }
+      const rawH = Math.max(maxY - minY, 0.01);
+      const scale = targetH / rawH;
+      for(const m of meshes){ m.scaling.scaleInPlace(scale); m.isVisible = false; m.setEnabled(false); }
+      return meshes; // gabarits désactivés — seules leurs instances seront visibles
+    };
+
+    const scatterInstances = (templates, count, targetY0 = true) => {
+      if(!templates || !templates.length) return;
+      for(let i = 0; i < count; i++){
+        const spot = randomSpot();
+        if(!spot) continue;
+        const gy = targetY0 ? groundY(spot.x, spot.z) : 0;
+        const rotY = rnd() * Math.PI * 2;
+        for(const tpl of templates){
+          const inst = tpl.createInstance(tpl.name + '_i' + i);
+          inst.parent = this.root;
+          inst.position.set(spot.x, gy, spot.z);
+          inst.rotation.y = rotY;
+          inst.isPickable = false;
+          inst.alwaysSelectAsActiveMesh = true;
+          inst.freezeWorldMatrix();
+        }
+      }
+    };
+
+    try{
+      const [rockT, bushT] = await Promise.all([
+        loadTemplate('DECOR1.glb', 0.9),
+        loadTemplate('DECOR2.glb', 0.75),
+      ]);
+      scatterInstances(rockT, small ? 5 : 9);
+      scatterInstances(bushT, small ? 5 : 9);
+
+      // Coffre et brasero : accents rares, posés près des camps plutôt
+      // que semés partout — ce sont des repères, pas du remplissage.
+      const [chestT, brazierT] = await Promise.all([
+        loadTemplate('DECOR3.glb', 0.55),
+        loadTemplate('DECOR4.glb', 0.7),
+      ]);
+      const camps = this.layout.camps || [];
+      if(brazierT && camps.length){
+        for(const c of camps){
+          const pos = this._toBabylon(c.x, c.y);
+          const a = rnd() * Math.PI * 2, d = 1.6 + rnd() * 0.6;
+          const x = pos.x + Math.cos(a) * d, z = pos.z + Math.sin(a) * d;
+          for(const tpl of brazierT){
+            const inst = tpl.createInstance('brazier_' + c.x);
+            inst.parent = this.root;
+            inst.position.set(x, groundY(x, z), z);
+            inst.isPickable = false; inst.alwaysSelectAsActiveMesh = true; inst.freezeWorldMatrix();
+          }
+        }
+      }
+      if(chestT){
+        const spot = randomSpot();
+        if(spot){
+          for(const tpl of chestT){
+            const inst = tpl.createInstance('chest');
+            inst.parent = this.root;
+            inst.position.set(spot.x, groundY(spot.x, spot.z), spot.z);
+            inst.rotation.y = rnd() * Math.PI * 2;
+            inst.isPickable = false; inst.alwaysSelectAsActiveMesh = true; inst.freezeWorldMatrix();
+          }
+        }
+      }
+    }catch(e){
+      console.error('[BabylonTerrain] ❌ un modèle de décor n\'a pas pu être chargé —', e);
     }
   }
 

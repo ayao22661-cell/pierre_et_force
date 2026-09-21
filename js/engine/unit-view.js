@@ -290,7 +290,8 @@ export class UnitView {
     if(u.kind === 'tower'){
       drawTower(g, r, teamCol);
     } else if(u.kind === 'autel' || u.kind === 'autel_hidden'){
-      drawAutel(g, r, teamCol);
+      // Rendu en 3D désormais (voir engine/babylon-units.js, ensureStructure) —
+      // seuls restent ici la barre de vie, le halo et l'anneau, ajoutés plus bas.
     } else if(u.kind !== 'champ' && u.kind !== 'minion'){
       // fallback cercle pour tout type non géré ailleurs
       g.circle(0, 0, r).fill({ color: teamCol, alpha:0.8 });

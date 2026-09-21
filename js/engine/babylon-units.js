@@ -47,6 +47,39 @@ const MODEL_MINION_ALLY  = 'SBIRE.glb';
 const MODEL_MINION_ENEMY = 'ORC.glb';
 const MODEL_FALLBACK     = 'TARINE.glb';
 
+// ---------------------------------------------------------------
+// ARMES — objets statiques (aucun squelette propre) attachés à l'os de
+// la main d'un champion. Chaque entrée : fichier, main ('RightHand' /
+// 'LeftHand'), échelle, et un ajustement fin position/rotation pour que
+// l'arme se pose naturellement dans le poing (réglé à l'œil sur des
+// rendus de contrôle — voir le document de passation).
+// ---------------------------------------------------------------
+const PROPS_BASE = 'assets/props/';
+// ---------------------------------------------------------------
+// STRUCTURES — l'autel (kind:'autel'), un objet 3D statique (pas de
+// squelette, pas d'animation), à la différence des champions/sbires.
+// ---------------------------------------------------------------
+const STRUCTURE_MODEL = { autel: 'AUTEL.glb' };
+// Hauteur cible en mètres (l'obélisque doit rester un repère visible sur
+// la carte) — le modèle brut mesure environ 1,1 m après compression.
+const AUTEL_HEIGHT_M = 2.6;
+
+const WEAPON_BY_KEY = {
+  TARINE:   [
+    { file: 'EPEE.glb',     hand: 'RightHand', scale: 0.62, pos: [0.02, 0.05, 0.0],  rot: [Math.PI/2 + 0.25, 0, 0.15] },
+    { file: 'BOUCLIER.glb', hand: 'LeftForeArm', scale: 0.42, pos: [0.0, 0.30, 0.0], rot: [Math.PI/2, 0, 0] },
+  ],
+  FULGENCE: [
+    { file: 'EPEE1.glb',    hand: 'RightHand', scale: 1.0,  pos: [0.02, 0.05, 0.0],  rot: [Math.PI/2 + 0.25, 0, 0.15] },
+  ],
+  LUNDGREN: [
+    { file: 'BATON_MAGIQUE.glb', hand: 'RightHand', scale: 0.85, pos: [0.0, 0.05, 0.0], rot: [Math.PI + 0.2, 0, 0] },
+  ],
+  DARK:     [
+    { file: 'EPEE3.glb',    hand: 'RightHand', scale: 0.55, pos: [0.02, 0.04, 0.0],  rot: [Math.PI/2 + 0.2, 0, 0.1] },
+  ],
+};
+
 function modelForUnit(u){
   if(u.kind === 'champ')  return MODEL_BY_KEY[u.key] || MODEL_FALLBACK;
   if(u.kind === 'minion') return u.team === 0 ? MODEL_MINION_ALLY : MODEL_MINION_ENEMY;
@@ -190,8 +223,10 @@ export class BabylonUnits{
     this.mount = mount;
     this.pixiRenderer = pixiRenderer;
     this.instances = new Map();        // unit.id -> instance
+    this.structures = new Map();       // unit.id -> { pivot, ready } (autel)
     this._modelCache = new Map();      // modelFile -> Promise<AssetContainer>
     this._animSourceCache = new Map(); // animFile -> Promise<AssetContainer>
+    this._propCache = new Map();       // propFile -> Promise<AssetContainer> (armes, objets statiques)
 
     this.canvas = document.createElement('canvas');
     this.canvas.style.position = 'absolute';
@@ -306,6 +341,46 @@ export class BabylonUnits{
         BABYLON.SceneLoader.LoadAssetContainerAsync(GLB_BASE, fileName, this.scene));
     }
     return this._modelCache.get(fileName);
+  }
+
+  /** Charge (ou récupère du cache) un objet statique — arme, décor. */
+  _loadProp(fileName){
+    if(!this._propCache.has(fileName)){
+      this._propCache.set(fileName,
+        BABYLON.SceneLoader.LoadAssetContainerAsync(PROPS_BASE, fileName, this.scene));
+    }
+    return this._propCache.get(fileName);
+  }
+
+  /**
+   * Attache les armes d'un champion à ses os de main (WEAPON_BY_KEY).
+   * Un objet statique parenté à un os de squelette suit son animation
+   * comme n'importe quel enfant de la scène — pas besoin de rig propre
+   * à l'arme, Babylon recalcule sa matrice monde avec le reste du corps
+   * à chaque frame.
+   */
+  async _attachWeapons(inst, unit){
+    const list = WEAPON_BY_KEY[unit.key];
+    if(!list || !list.length) return;
+    for(const w of list){
+      const handNode = inst.nodeByBaseName.get('mixamorig:' + w.hand);
+      if(!handNode){
+        console.error('[BabylonUnits] ❌ os introuvable pour l\'arme', w.file, '(', w.hand, ') sur', unit.key);
+        continue;
+      }
+      let container;
+      try{ container = await this._loadProp(w.file); }
+      catch(e){ console.error('[BabylonUnits] ❌ arme introuvable :', w.file, e); continue; }
+      if(inst.disposed) return;
+      const entry = container.instantiateModelsToScene(name => name + '_w' + list.indexOf(w) + '_' + unit.id, false);
+      const root = entry.rootNodes[0];
+      root.parent = handNode;
+      root.position.set(w.pos[0], w.pos[1], w.pos[2]);
+      root.rotation.set(w.rot[0], w.rot[1], w.rot[2]);
+      root.scaling.setAll(w.scale);
+      inst.weapons = inst.weapons || [];
+      inst.weapons.push(root);
+    }
   }
 
   /**
@@ -449,6 +524,7 @@ export class BabylonUnits{
     inst.yaw = Math.atan2(f.x, -f.y);
     this._applyTransform(inst, unit, 1);
     this._enterIdle(inst, true);
+    this._attachWeapons(inst, unit).catch(e => console.error('[BabylonUnits] ❌ échec attache d\'arme pour', unit.key, e));
     return inst;
   }
 
@@ -553,6 +629,15 @@ export class BabylonUnits{
     const seen = new Set();
     for(const u of units){
       seen.add(u.id);
+
+      // Structures (autel) : objet statique, chemin dédié séparé des
+      // champions/sbires animés (pas de squelette, pas d'attente d'un
+      // clip idle, juste position + visibilité).
+      if(STRUCTURE_MODEL[u.kind]){
+        this._updateStructure(u);
+        continue;
+      }
+
       const inst = this.instances.get(u.id);
       if(!inst || !inst.ready){
         if(!inst && !u.dead){
@@ -639,10 +724,54 @@ export class BabylonUnits{
     }
   }
 
+  /**
+   * Structure statique (autel) : chargée une fois, mise à l'échelle
+   * d'après sa propre boîte englobante (le modèle brut mesure environ
+   * 1,1 m après compression, on le remet à une hauteur cible fixe),
+   * puis simplement montrée/masquée selon `u.dead` — aucune animation.
+   */
+  _updateStructure(u){
+    let st = this.structures.get(u.id);
+    if(!st){
+      const placeholder = { ready: false };
+      this.structures.set(u.id, placeholder);
+      this._loadProp(STRUCTURE_MODEL[u.kind]).then(container => {
+        if(this.structures.get(u.id) !== placeholder) return; // retirée entre-temps
+        const entry = container.instantiateModelsToScene(name => name + '_' + u.id, false);
+        for(const ag of entry.animationGroups) ag.dispose();
+        const root = entry.rootNodes[0];
+        const pivot = new BABYLON.TransformNode('struct_' + u.id, this.scene);
+        root.parent = pivot;
+
+        let minY = 1e9, maxY = -1e9;
+        for(const m of root.getChildMeshes(false)){
+          m.computeWorldMatrix(true);
+          const bb = m.getBoundingInfo().boundingBox;
+          minY = Math.min(minY, bb.minimumWorld.y);
+          maxY = Math.max(maxY, bb.maximumWorld.y);
+        }
+        const rawH = Math.max(maxY - minY, 0.01);
+        root.scaling.setAll(AUTEL_HEIGHT_M / rawH);
+
+        const pos = this._pixiToBabylon(u.x, u.y);
+        pivot.position.copyFrom(pos);
+        this.structures.set(u.id, { pivot, ready: true });
+      }).catch(e => {
+        console.error('[BabylonUnits] ❌ échec chargement structure', u.kind, e);
+        this.structures.delete(u.id);
+      });
+      return;
+    }
+    if(!st.ready) return;
+    st.pivot.setEnabled(!u.dead);
+  }
+
   destroy(){
     this._resizeObserver?.disconnect();
     for(const [id, inst] of this.instances){ if(inst.ready) this._disposeInstance(id, inst); }
     this.instances.clear();
+    for(const [, st] of this.structures){ st.pivot?.dispose(); }
+    this.structures.clear();
     this.engine.stopRenderLoop();
     this.engine.dispose();
     this.canvas.remove();
