@@ -138,22 +138,20 @@ export function renderDeploy(mission, modeLabel, save, onLaunch){
       // Les défis ont un numéro textuel (« D3 ») : on prend leur propre
       // difficulté, sinon la difficulté suit le numéro de mission.
       //
-      // Deuxième passe d'équilibrage : la courbe précédente (0,6 → 2,8)
-      // corrigeait bien la fin de campagne, mais un joueur qui presse ses
-      // 4 sorts (A/Z/E/R) dès le début d'un combat — tous utilisables au
-      // même instant, la mana le permet une fois par combat — inflige
-      // environ 450 dégâts BRUTS en 1,5 s. Un ennemi normal à 560 PV de
-      // base × 0,6 = 336 PV ne survit pas à cette seule ouverture, même
-      // hors ultime dédié. Nouveau plancher (1,3) : cette salve d'ouverture
-      // entame sérieusement un ennemi sans le vider d'un coup — il faut
-      // enchaîner avec les attaques de base et une deuxième vague de sorts
-      // pour finir le combat. Plafond relevé en proportion (5,0) pour que
-      // la fin de campagne reste plus dure que le début.
-      // Voir sim.js pour le découplage PV/dégâts qui empêche cette hausse
-      // de PV ennemis de se retourner en excès de dégâts subis par le joueur.
+      // Troisième passe d'équilibrage. La deuxième (plancher 1,3, plafond
+      // 5,0) corrigeait bien l'alpha strike d'ouverture, mais combinée à
+      // la limite à 1 seul allié (moins de PV/dégâts en jeu côté joueur)
+      // rendait la mission 1 quasi invivable : joueur à 74 % de PV perdus
+      // en 20 s de jeu actif, ennemi encore à 36 % de vie. Nouveau
+      // plancher (1,05) et plafond réduit en proportion (4,0) : la salve
+      // d'ouverture (~450 dégâts bruts) laisse l'ennemi à environ 23 % de
+      // ses PV — un vrai duel de quelques secondes, gagnable sans jeu
+      // parfait, plutôt qu'un mur ou un one-shot. Voir sim.js pour le
+      // découplage PV/dégâts qui protège le joueur de la hausse de PV
+      // ennemis côté dégâts subis.
       foeMult: mission.foeMult != null
         ? mission.foeMult
-        : Math.min(5.0, 1.3 + (((Number(mission.num) || 1) - 1) * 0.0755)),
+        : Math.min(4.0, 1.05 + (((Number(mission.num) || 1) - 1) * 0.0602)),
       save,                  // transmis à Sim pour les bonus objets/talents
     });
   };

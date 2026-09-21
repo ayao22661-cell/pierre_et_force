@@ -295,8 +295,16 @@ export class Sim{
   _tickResources(u, dt){
     for(let i = 0; i < u.cds.length; i++) if(u.cds[i] > 0) u.cds[i] = Math.max(0, u.cds[i] - dt);
     if(u.maxMana) u.mana = Math.min(u.maxMana, u.mana + u.maxMana * 0.03 * dt);
-    // Régénération de PV : objet (regen fixe/s) + talent Eau (regenF PV/s)
-    const totalRegen = (u.bns?.regen || 0) + (u.bns?.regenF || 0);
+    // Régénération de PV : un socle de base (1,5 %/s des PV max, pour
+    // TOUS les champions — joueur, alliés ET ennemis, à égalité) + objet
+    // (regen fixe/s) + talent Eau (regenF PV/s). Avant ce socle, un
+    // champion sans objet ni talent n'avait AUCUNE régénération : une
+    // mission sans allié (certaines Arènes/Défenses en ont aucun) était
+    // une pure usure sans la moindre récupération entre deux affrontements,
+    // ce qui rendait les missions à enchaînements — 8 éliminations d'affilée,
+    // 5 vagues de suite — bien plus punitives qu'un duel unique.
+    const baseRegen = (u.maxHp || 0) * 0.015;
+    const totalRegen = baseRegen + (u.bns?.regen || 0) + (u.bns?.regenF || 0);
     if(totalRegen > 0) u.hp = Math.min(u.maxHp, u.hp + totalRegen * dt);
   }
 
