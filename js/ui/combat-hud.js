@@ -122,8 +122,10 @@ export class CombatHud{
     basic.addEventListener('touchstart', fire, { passive: false });
     this.basicEl = basic;
 
-    // Le poing a sa propre rangée, au-dessus des sorts : à droite, il
-    // sortait de l'écran sur téléphone.
+    // Deux rangées de boutons (poing au-dessus, sorts en dessous), toutes
+    // deux alignées à droite et capables de revenir à la ligne (voir
+    // .hud-actions/.hud-basic-row/.hud-spells dans hud.css) : plus aucun
+    // bouton ne peut sortir de l'écran, même sur petit téléphone.
     const actions = el('div', 'hud-actions');
     const basicRow = el('div', 'hud-basic-row');
     basicRow.appendChild(basic);
