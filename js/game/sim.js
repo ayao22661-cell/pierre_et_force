@@ -185,14 +185,19 @@ export class Sim{
     this._defenseSpawnSide = p1; // les ennemis arrivent depuis p1
     this.defenseOver = false;
     this.teamKills = [0, 0]; // suivi des éliminations de champions, tous modes confondus
-    // Champions ennemis spawnés une seule fois au départ — ils ne respawnent pas.
+    // Champion ennemi spawné une seule fois au départ, il ne respawne pas.
+    // Toujours exactement 1 champion pour toute la mission, quel que soit
+    // cfg.foeCount (1 à 3, pensé pour un duel Siège/Arène) : en Défense ce
+    // champion reste seul en jeu sur la durée entière des 5 vagues, pas
+    // juste le temps d'un duel — 2 ou 3 champions plein foeMult en plus des
+    // vagues de sbires serait ingérable sur la durée. mission.ennemis[0]
+    // (le premier ennemi listé) est utilisé comme unique adversaire.
+    const foes = this.cfg.foes || ['BABA'];
     const fm = this.cfg.foeMult || 1;
     const atkM = dampenedAtkMult(fm);
-    (this.cfg.foes || ['BABA']).forEach((k, i) => {
-      const champ = makeChampionUnit(k, 1, { x: p1.x, y: p1.y - 50 - i * 60, mult: fm, atkMult: atkM, path, wp: path.length - 2 });
-      champ.respawnDisabled = true;
-      this.units.push(champ);
-    });
+    const champ = makeChampionUnit(foes[0], 1, { x: p1.x, y: p1.y - 50, mult: fm, atkMult: atkM, path, wp: path.length - 2 });
+    champ.respawnDisabled = true;
+    this.units.push(champ);
   }
 
   /**
@@ -507,7 +512,14 @@ export class Sim{
     let best = null, bd = radius;
     for(const o of this.units){
       if(o.dead || o.team === u.team || o.team === undefined) continue;
-      if(o.kind === 'autel' && this.mode !== 'siege') continue;
+      // L'autel est une cible de combat valide en Siège (autel ennemi à
+      // détruire) ET en Défense (autel allié à protéger) — seuls Arène et
+      // Boss n'ont pas d'autel en jeu. Avant ce correctif, l'exclusion ne
+      // couvrait que "hors Siège", ce qui rendait l'autel allié totalement
+      // inciblable en Défense : les vagues ne pouvaient jamais l'attaquer et
+      // reportaient 100% de leur agressivité sur le joueur/alliés, sans
+      // aucun partage de dégâts — d'où des missions Défense écrasantes.
+      if(o.kind === 'autel' && this.mode !== 'siege' && this.mode !== 'defense') continue;
       const d = Math.hypot(o.x-u.x, o.y-u.y);
       if(d < bd){ bd = d; best = o; }
     }
@@ -759,8 +771,12 @@ export class Sim{
     // Déplacer les sbires ennemis en mode défense
     this.units.forEach(u => { if(u.kind === 'minion' && !u.dead && u.team === 1) this._minionMove(u, dt); });
 
-    // Vérifier la fin : toutes les vagues lancées + plus d'ennemis vivants
-    if(this.defenseWaveN >= this.defenseWaveTotal && this.waveTimer <= 0){
+    // Vérifier la fin : toutes les vagues lancées + plus d'ennemis vivants.
+    // Avant : gardé derrière "waveTimer <= 0", qui après la dernière vague
+    // ne mesure plus que le délai (jusqu'à 10-18 s) avant une 6e vague
+    // fictive qui ne spawnera jamais — la victoire restait donc bloquée
+    // tout ce temps même quand le terrain était déjà vide.
+    if(this.defenseWaveN >= this.defenseWaveTotal){
       const aliveEnemies = this.units.filter(u => !u.dead && u.team === 1);
       if(aliveEnemies.length === 0) this._endMatch(true);
     }
@@ -770,7 +786,16 @@ export class Sim{
     const path = this.path;
     if(!path) return;
     const spawn = this._defenseSpawnSide || path[path.length-1];
-    const waveMult = (this.cfg.foeMult || 1) * (1 + this.defenseWaveN * 0.12);
+    // Les sbires ne doivent PAS hériter de cfg.foeMult : ce multiplicateur
+    // de campagne (jusqu'à ×4) est calibré pour un duel de champion en
+    // tête-à-tête (voir deploy.js), pas pour une horde. Avant ce correctif,
+    // il se cumulait avec la montée en puissance propre aux vagues
+    // (×1 à ×1,6) ET avec le nombre croissant de sbires par vague (3 à 8) :
+    // les deux axes (stat ET nombre) explosaient ensemble en fin de
+    // campagne, sur des missions qui posent déjà 1-2 champions ennemis à
+    // plein foeMult dès le départ. En Siège, à titre de comparaison, les
+    // sbires gardent toujours leurs stats de base, sans lien avec foeMult.
+    const waveMult = 1 + this.defenseWaveN * 0.12;
     const waveAtkMult = dampenedAtkMult(waveMult);
     // Sbires
     const minionCount = 2 + Math.floor(this.defenseWaveN * 1.2);
