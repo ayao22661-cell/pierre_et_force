@@ -108,6 +108,16 @@ export class BabylonTerrain{
     mat.specularColor = new BABYLON.Color3(0.05, 0.05, 0.05);
     ground.material = mat;
     ground.receiveShadows = true;
+    // Hauteur du sol lisible par les personnages (babylon-units.js) : ils
+    // étaient posés à y = 0 alors que le relief monte jusqu'à ~0,55, et la
+    // voie épouse désormais ce relief — leurs pieds s'enfonçaient dedans.
+    ground.updateCoordinateHeights?.();
+    const scene = this.scene;
+    scene.metadata = scene.metadata || {};
+    scene.metadata.groundHeight = (x, z) => {
+      const h = ground.getHeightAtCoordinates ? ground.getHeightAtCoordinates(x, z) : NaN;
+      return (Number.isFinite(h) ? h : heightNoise(x, -z, seed) * 0.55) + 0.1; // +0,1 : au-dessus de la voie
+    };
     ground.isPickable = false;
     ground.freezeWorldMatrix();
     mat.freeze();
@@ -427,6 +437,7 @@ export class BabylonTerrain{
   }
 
   destroy(){
+    if(this.scene?.metadata) delete this.scene.metadata.groundHeight;
     this.root.dispose(false, true); // détruit aussi les meshes/matériaux enfants
   }
 }

@@ -312,6 +312,14 @@ export class BabylonUnits{
     return new BABYLON.Vector3(x / WORLD_SCALE, 0, -y / WORLD_SCALE);
   }
 
+  /** Même conversion, mais posée SUR le sol (relief du terrain). */
+  _groundPos(x, y){
+    const v = this._pixiToBabylon(x, y);
+    const gh = this.scene.metadata?.groundHeight;
+    if(gh) v.y = gh(v.x, v.z);
+    return v;
+  }
+
   _syncCameraFromPixi(){
     const pc = this.pixiRenderer.camera;
     if(!pc) return;
@@ -600,7 +608,7 @@ export class BabylonUnits{
   }
 
   _applyTransform(inst, unit, turnT, X = unit.x, Y = unit.y){
-    const pos = this._pixiToBabylon(X, Y);
+    const pos = this._groundPos(X, Y);
     inst.pivot.position.copyFrom(pos);
     // Direction visée : la cible si l'unité est à l'arrêt et engagée
     // (elle frappe face à l'ennemi), sinon son sens de déplacement.
@@ -753,7 +761,7 @@ export class BabylonUnits{
         const rawH = Math.max(maxY - minY, 0.01);
         root.scaling.setAll(AUTEL_HEIGHT_M / rawH);
 
-        const pos = this._pixiToBabylon(u.x, u.y);
+        const pos = this._groundPos(u.x, u.y);
         pivot.position.copyFrom(pos);
         this.structures.set(u.id, { pivot, ready: true });
       }).catch(e => {
