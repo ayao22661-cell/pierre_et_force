@@ -64,7 +64,7 @@ function launchMatch(cfg){
       ...cfg,
       onEnd: (res) => onMatchEnd(res),
     });
-    hud = new CombatHud(renderer, match, () => toast('Pause — bientôt disponible'));
+    hud = new CombatHud(renderer, match, () => toHub());
     match._hud = hud;
     hud.announce(`${currentMission.num}. ${currentMission.name}`);
     window.__pf = { match, renderer };

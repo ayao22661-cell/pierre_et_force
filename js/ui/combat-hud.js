@@ -117,13 +117,19 @@ export class CombatHud{
     // polices/systèmes (rendu cassé/quasi invisible) — texte simple à la
     // place, cohérent avec les badges A/Z/E/R à côté.
     basic.appendChild(el('span', 'key key-wide', 'ESP'));
-    const fire = (ev) => { ev.preventDefault(); this.match.basicAttack(); };
+    const fire = (ev) => { ev.preventDefault(); if(!this.match.paused) this.match.basicAttack(); };
     basic.addEventListener('click', fire);
     basic.addEventListener('touchstart', fire, { passive: false });
-    spells.appendChild(basic);
     this.basicEl = basic;
 
-    bottom.appendChild(spells);
+    // Le poing a sa propre rangée, au-dessus des sorts : à droite, il
+    // sortait de l'écran sur téléphone.
+    const actions = el('div', 'hud-actions');
+    const basicRow = el('div', 'hud-basic-row');
+    basicRow.appendChild(basic);
+    actions.appendChild(basicRow);
+    actions.appendChild(spells);
+    bottom.appendChild(actions);
 
     // Pause en haut à gauche (comme sur les MOBA mobiles) : en bas, elle
     // se retrouvait coincée contre les sorts et sortait de l'écran sur
@@ -131,8 +137,20 @@ export class CombatHud{
     const pause = el('button', 'hud-pause-btn', iconSvg('pause'));
     pause.type = 'button';
     pause.setAttribute('aria-label', 'Pause');
-    pause.addEventListener('click', onPause);
+    pause.addEventListener('click', () => this.togglePause());
     this.root.appendChild(pause);
+
+    // Menu de pause : reprendre ou quitter la mission (sans défaite enregistrée).
+    this.onQuit = onPause;
+    const menu = el('div', 'hud-pause-menu hidden');
+    menu.appendChild(el('div', 'hud-pause-title', 'Pause'));
+    const resume = el('button', 'pf-btn pf-btn-brand', 'Reprendre');
+    resume.addEventListener('click', () => this.togglePause(false));
+    const quit = el('button', 'pf-btn pf-btn-ghost', 'Quitter la mission');
+    quit.addEventListener('click', () => { this.togglePause(false); this.onQuit?.(); });
+    menu.appendChild(resume); menu.appendChild(quit);
+    this.root.appendChild(menu);
+    this.pauseMenu = menu;
 
     this.root.appendChild(bottom);
 
@@ -291,7 +309,14 @@ export class CombatHud{
     });
   }
 
+  togglePause(force){
+    const on = force === undefined ? !this.match.paused : !!force;
+    this.match.setPaused(on);
+    this.pauseMenu?.classList.toggle('hidden', !on);
+  }
+
   destroy(){
+    if(this.match?.paused) this.match.setPaused(false);
     this.renderer.removeFrameListener(this._tickFn);
     this._joyCleanup?.();
     this.minimap?.destroy();

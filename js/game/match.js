@@ -52,6 +52,9 @@ export class Match{
 
     this._onKeyDown = (e) => {
       const k = e.key.toLowerCase();
+      // Échap / P : pause (gérée par le HUD, qui affiche le menu).
+      if(k === 'escape' || k === 'p'){ this._hud?.togglePause(); return; }
+      if(this.paused) return;
       this.keys[k] = true;
       const slot = { a: 0, z: 1, e: 2, r: 3 }[k];
       if(slot !== undefined) this.sim.requestCast(this.sim.player, slot);
@@ -179,8 +182,17 @@ export class Match{
     }
   }
 
+  /** Met le combat en pause (simulation, effets, animations 3D) ou le relance. */
+  setPaused(on){
+    this.paused = !!on;
+    this.keys = {};
+    this.touchVec.x = this.touchVec.y = 0;
+    const scene = this.renderer.units3d?.scene;
+    if(scene) scene.animationsEnabled = !this.paused;
+  }
+
   _tick(dt){
-    if(!this._running) return;
+    if(!this._running || this.paused) return;
 
     let dx = 0, dy = 0;
     if(this.keys['arrowup'])    dy -= 1;
