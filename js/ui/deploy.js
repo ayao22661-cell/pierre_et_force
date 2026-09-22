@@ -29,9 +29,8 @@ export function renderDeploy(mission, modeLabel, save, onLaunch){
     .filter(k => save.allies_unlocked.includes(k) && CHAMPS[k]);
 
   (mission.allies_requis||[]).forEach(k => { if(allyPool.includes(k) && k !== state.champ && !state.allies.includes(k)) state.allies.push(k); });
-  // Un seul coéquipier : à deux alliés en plus du joueur, le combat se
-  // faisait quasi tout seul (trois sources de dégâts sur un ennemi).
-  state.allies = state.allies.slice(0, 1);
+  // Jusqu'à deux coéquipiers sélectionnables.
+  state.allies = state.allies.slice(0, 2);
 
   const playerGrid = document.getElementById('deploy-player');
   const allyGrid = document.getElementById('deploy-allies-grid');
@@ -116,7 +115,7 @@ export function renderDeploy(mission, modeLabel, save, onLaunch){
       const tile = championTile(k, state.allies.includes(k), () => {
         const idx = state.allies.indexOf(k);
         if(idx >= 0) state.allies.splice(idx, 1);
-        else if(state.allies.length < 1) state.allies.push(k);
+        else if(state.allies.length < 2) state.allies.push(k);
         renderAllyGrid();
         updatePreview();
       });

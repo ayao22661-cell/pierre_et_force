@@ -185,6 +185,14 @@ export class Sim{
     this._defenseSpawnSide = p1; // les ennemis arrivent depuis p1
     this.defenseOver = false;
     this.teamKills = [0, 0]; // suivi des éliminations de champions, tous modes confondus
+    // Champions ennemis spawnés une seule fois au départ — ils ne respawnent pas.
+    const fm = this.cfg.foeMult || 1;
+    const atkM = dampenedAtkMult(fm);
+    (this.cfg.foes || ['BABA']).forEach((k, i) => {
+      const champ = makeChampionUnit(k, 1, { x: p1.x, y: p1.y - 50 - i * 60, mult: fm, atkMult: atkM, path, wp: path.length - 2 });
+      champ.respawnDisabled = true;
+      this.units.push(champ);
+    });
   }
 
   /**
@@ -774,14 +782,7 @@ export class Sim{
       m.hp *= waveMult; m.maxHp = m.hp; m.atk *= waveAtkMult;
       this.units.push(m);
     }
-    // À partir de la vague 3, un champion ennemi accompagne la vague
-    if(this.defenseWaveN >= 3){
-      const foes = this.cfg.foes || ['BABA'];
-      const k = foes[this.defenseWaveN % foes.length];
-      const champ = makeChampionUnit(k, 1, { x: spawn.x, y: spawn.y - 50, mult: waveMult, atkMult: waveAtkMult, path, wp: path.length - 2 });
-      champ.respawnDisabled = true; // les champions de vague ne respawnent pas
-      this.units.push(champ);
-    }
+
   }
 
   /**
