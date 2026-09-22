@@ -1,478 +1,493 @@
 /* ============================================================
-   COMPOSANTS — briques réutilisables du style Pixels of Force
+   COMPONENTS — cartes, portraits, tiles, shop, éveil, slots,
+   deploy, mission, profil, journal, codex, end
    ============================================================ */
 
-/* ── Carte de mission ── */
-.mission-card{
-  flex: 0 0 148px;
-  padding: 10px;
-  cursor: pointer;
-  display:flex; flex-direction:column; gap:6px;
-  transition: transform .1s ease, filter .1s ease;
-}
-.mission-card:active{ transform: scale(.97); }
-.mission-card.locked{ filter: grayscale(1) brightness(.55); cursor: not-allowed; }
-.mission-card .m-num{ font-family: var(--pf-font-display); font-size: 22px; color: var(--pf-gold); line-height:1; }
-.mission-card .m-name{ font-size: 12px; font-weight:600; line-height:1.25; }
-.mission-card .m-mode{ font-size: 10px; color: var(--pf-text-dim); letter-spacing:.5px; display:flex; align-items:center; gap:4px; }
-/* Liseré de couleur par mode — repérage au coup d'œil, comme le badge de
-   file d'attente d'un MOBA (siège/arène/défense/boss n'ont jamais la
-   même teinte). */
-.mission-card{ border-top: 2px solid transparent; }
-.mission-card.mode-siège{ border-top-color: #c9a24a; }
-.mission-card.mode-arène{ border-top-color: #c94436; }
-.mission-card.mode-défense{ border-top-color: #3f8fd6; }
-.mission-card.mode-boss{ border-top-color: #8b2ecf; }
-.mission-card.locked{ border-top-color: transparent; }
-.mission-card .m-status{
-  margin-top:auto; font-size:10px; letter-spacing:1px; padding:3px 6px;
-  border-radius: 2px; text-align:center; font-family: var(--pf-font-display);
-}
-.m-status.done{ background: rgba(74,168,118,.15); color: var(--pf-good); }
-.m-status.avail{ background: rgba(63,143,214,.15); color: var(--pf-mana); }
-.m-status.lock{ background: rgba(255,255,255,.04); color: var(--pf-text-faint); }
-
-/* ── Portrait de champion (procédural, pas d'image) ── */
+/* ══════════════════════════════════════════════════════════════
+   PORTRAIT JOUEUR — cadre hexagonal angulaire style MOBA
+   ══════════════════════════════════════════════════════════════ */
 .pf-portrait{
-  width: 56px; height: 56px; border-radius: 50%;
+  width:52px; height:52px; border-radius:4px;
   display:flex; align-items:center; justify-content:center;
-  font-family: var(--pf-font-display); font-size: 20px;
-  border: 2px solid var(--pf-panel-border-lit);
-  flex-shrink:0;
+  font-family:var(--pf-font-display); font-size:20px;
+  position:relative; overflow:hidden; flex-shrink:0;
+  background: linear-gradient(160deg, #1c1b2c 0%, #0e0d18 100%);
+}
+.pf-portrait img{ width:100%; height:100%; object-fit:cover; display:block; }
+/* Bordure couleur personnage */
+.pf-portrait::before{
+  content:"";
+  position:absolute; inset:0;
+  border-radius:inherit;
+  border:2px solid var(--accent,var(--pf-brand));
+  box-shadow: 0 0 10px var(--accent,var(--pf-brand-glow)),
+              inset 0 0 8px rgba(0,0,0,.4);
+  pointer-events:none; z-index:2;
+}
+/* Reflet lumière coin haut */
+.pf-portrait::after{
+  content:"";
+  position:absolute; inset:0; z-index:3; pointer-events:none;
+  background: linear-gradient(135deg, rgba(255,255,255,.12) 0%, transparent 45%);
+}
+
+/* ══════════════════════════════════════════════════════════════
+   TUILE CHAMPION (sélection / codex)
+   ══════════════════════════════════════════════════════════════ */
+.champ-tile{
+  width:72px; flex-shrink:0; cursor:pointer;
+  display:flex; flex-direction:column; align-items:center; gap:4px;
   position:relative;
 }
-.pf-portrait::after{
-  content:""; position:absolute; inset:-4px; border-radius:50%;
-  border: 1px solid var(--accent, var(--pf-gold)); opacity:.5;
+.champ-tile-img{
+  width:72px; height:90px;
+  object-fit:cover; object-position:top center;
+  display:block;
+  /* Coins coupés style carte MOBA */
+  clip-path: polygon(6px 0%, calc(100% - 6px) 0%, 100% 6px, 100% calc(100% - 6px), calc(100% - 6px) 100%, 6px 100%, 0% calc(100% - 6px), 0% 6px);
+  border:1px solid var(--pf-panel-border-lit);
+  transition: border-color .15s, filter .15s;
+  filter: saturate(.75) brightness(.85);
 }
-.pf-portrait-sm{ width:40px; height:40px; font-size:15px; }
-.pf-portrait-lg{ width:88px; height:88px; font-size:30px; }
-
-/* ── Portrait en image (SVG généré, engine/portrait.js) ── */
-.pf-portrait-img{
-  width: 56px; height: 56px; border-radius: 50%;
-  object-fit: cover; object-position: 50% 30%;
-  border: 2px solid var(--accent, var(--pf-gold));
-  box-shadow: 0 0 0 2px var(--pf-panel-border), 0 4px 12px rgba(0,0,0,.4);
-  flex-shrink:0; background: var(--pf-panel);
+.champ-tile:hover .champ-tile-img{
+  filter:saturate(1) brightness(1);
+  border-color: rgba(255,255,255,.2);
 }
-.pf-portrait-img.pf-portrait-sm{ width:44px; height:44px; }
-.pf-portrait-img.pf-portrait-lg{ width:92px; height:92px; border-width:3px; }
-.pf-portrait-img.pf-portrait-xl{ width:132px; height:132px; border-width:3px; }
-
-/* ── Carte du personnage joueur (écran de déploiement) ── */
-.deploy-player-card{
-  display:flex; align-items:center; gap:12px;
-  padding: 12px; margin-bottom: 10px;
+.champ-tile.selected .champ-tile-img{
+  border-color: var(--accent, var(--pf-brand-lit));
+  filter: saturate(1.15) brightness(1.05);
+  box-shadow: 0 0 14px var(--accent, var(--pf-brand-glow));
 }
-.deploy-player-name{ font-size:15px; font-weight:700; }
-.deploy-player-title{ font-size:12px; color: var(--pf-text-dim); }
-
-/* ── Sélecteur d'allié ── */
-.ally-chip{
-  display:flex; align-items:center; gap:8px;
-  padding: 8px 10px; cursor:pointer;
-}
-.ally-chip.selected{ border-color: var(--pf-brand-lit); background: rgba(165,52,43,.12); }
-.ally-chip.locked{ opacity:.35; cursor:not-allowed; }
-.ally-chip-name{ font-size:13px; font-weight:600; }
-.ally-chip-role{ font-size:11px; color: var(--pf-text-dim); }
-
-/* ── Icône de sort façon MOBA : pictogramme + disque de recharge radial
-   (balayage conique, comme League/Wild Rift) + pastilles de rang +
-   coût en mana. Remplace l'ancienne case qui n'affichait qu'une lettre. ── */
-.spell-slot{
-  width: 54px; height: 54px; border-radius: 10px;
-  border: 1px solid var(--pf-panel-border-lit);
-  background: linear-gradient(155deg, #232231, #16151f 65%);
-  box-shadow: inset 0 0 0 1px rgba(255,255,255,.04), 0 2px 6px rgba(0,0,0,.35);
-  display:flex; align-items:center; justify-content:center;
-  position:relative; font-family: var(--pf-font-display); font-size:16px;
-  color: var(--pf-text); cursor:pointer; user-select:none;
-  transition: transform .08s ease;
-  overflow: visible;
-}
-.spell-slot:active{ transform: scale(.92); }
-.spell-ico{ color: var(--pf-text); opacity: .92; width:26px; height:26px; z-index:1; }
-.spell-slot .key{
-  position:absolute; top:-6px; left:-6px; z-index:3;
-  width:15px; height:15px; border-radius:4px;
-  display:flex; align-items:center; justify-content:center;
-  background: #0b0a10; border:1px solid var(--pf-panel-border-lit);
-  font-size:9px; color: var(--pf-text-dim); font-family: var(--pf-font-display);
-}
-.spell-slot .key.key-wide{ width:auto; padding:0 3px; }
-.spell-slot-cost{
-  position:absolute; top:-6px; right:-6px; z-index:3;
-  font-size:8px; color:#7fc7ff; background:#0b0a10; border:1px solid rgba(127,199,255,.35);
-  border-radius:4px; padding:0 3px; line-height:1.3; font-family: var(--pf-font-display);
-}
-/* Ultime : cadre doré + lueur, comme la touche R dans tous les MOBA. */
-.spell-slot.ult{
-  border-color: var(--pf-gold);
-  box-shadow: inset 0 0 0 1px rgba(255,255,255,.04), 0 0 10px rgba(201,162,74,.35), 0 2px 6px rgba(0,0,0,.35);
-}
-.spell-slot.ult .key{ border-color: var(--pf-gold); color: var(--pf-gold); }
-/* Balayage conique : la portion grisée = temps de recharge restant. */
-.spell-slot-sweep{
-  position:absolute; inset:0; border-radius: inherit; pointer-events:none;
-  --cd-frac: 0;
-  background: conic-gradient(rgba(0,0,0,.72) calc(var(--cd-frac) * 360deg), transparent 0deg);
-  transition: background .1s linear;
-}
-.spell-slot-cd{
-  position:absolute; inset:0; border-radius: inherit; z-index:2;
-  display:flex; align-items:center; justify-content:center;
-  font-family: var(--pf-font-display); font-size:19px; color:#fff;
-  text-shadow: 0 1px 3px rgba(0,0,0,.8);
+.champ-tile-overlay{
+  position:absolute; top:0; left:0; width:72px; height:90px;
+  clip-path: polygon(6px 0%, calc(100% - 6px) 0%, 100% 6px, 100% calc(100% - 6px), calc(100% - 6px) 100%, 6px 100%, 0% calc(100% - 6px), 0% 6px);
+  background: linear-gradient(180deg, transparent 55%, rgba(0,0,0,.7) 100%);
   pointer-events:none;
 }
-.spell-slot.cooling .spell-ico{ opacity:.35; }
-.spell-slot.no-mana{ filter: saturate(.3) brightness(.7); }
-/* Pastilles de rang — remplies = rang appris, comme les points de sort
-   sous chaque icône en partie (qrank/wrank/erank/rrank d'un MOBA). */
-.spell-slot-pips{
-  position:absolute; bottom:-13px; left:50%; transform:translateX(-50%);
-  display:flex; gap:2px; z-index:3;
+.champ-tile-role{
+  position:absolute; top:4px; right:4px;
+  width:18px; height:18px;
+  background:rgba(7,8,15,.85);
+  border-radius:2px; border:1px solid var(--pf-panel-border-lit);
+  display:flex; align-items:center; justify-content:center;
+  font-size:11px;
 }
-.spell-pip{
-  width:5px; height:5px; border-radius:50%;
-  background: #2a2836; border:1px solid rgba(255,255,255,.15);
+.champ-tile-name{
+  font-family:var(--pf-font-display); font-size:9px; letter-spacing:1.5px;
+  color:var(--pf-text-dim); text-transform:uppercase; text-align:center;
+  line-height:1;
 }
-.spell-pip.filled{ background: var(--pf-brand-lit); border-color: var(--pf-brand-lit); }
-.spell-slot.ult .spell-pip.filled{ background: var(--pf-gold); border-color: var(--pf-gold); }
+.champ-tile.selected .champ-tile-name{ color:var(--pf-text); }
 
-/* ── Badge de statut ── */
-.pf-badge{
-  display:inline-flex; align-items:center; gap:4px;
-  font-size: 10px; letter-spacing: 1px;
-  padding: 2px 7px; border-radius: 2px;
-  background: rgba(255,255,255,.06); color: var(--pf-text-dim);
+/* ══════════════════════════════════════════════════════════════
+   HERO BANNER — grand portrait dans l'écran de déploiement
+   Inspiré Dota 2 hero page : splash art côté + infos lisibles
+   ══════════════════════════════════════════════════════════════ */
+.hero-banner{
+  display:flex; align-items:center; gap:14px;
+  padding:14px;
+  background:
+    linear-gradient(90deg,
+      rgba(7,8,15,.96) 0%,
+      rgba(7,8,15,.7) 50%,
+      rgba(7,8,15,.2) 100%);
+  border: 1px solid var(--pf-panel-border);
+  border-left: 2px solid var(--accent, var(--pf-brand));
+  box-shadow: -4px 0 18px var(--accent-glow, var(--pf-brand-glow));
+  border-radius: var(--pf-radius-lg);
+  position:relative; overflow:hidden;
 }
-.pf-badge-brand{ background: rgba(165,52,43,.18); color: #f0a89f; }
-.pf-badge-gold{ background: rgba(201,162,74,.15); color: var(--pf-gold); }
-
-/* ── Toast ── */
-#pf-toast{
-  position: fixed; left:50%; bottom: calc(24px + var(--pf-safe-b));
-  transform: translateX(-50%) translateY(8px);
-  padding: 8px 16px; border-radius: var(--pf-radius);
-  background: rgba(10,10,16,.95); border:1px solid var(--pf-panel-border-lit);
-  font-size: 12px; opacity:0; pointer-events:none; transition:.25s;
-  z-index: 500; white-space:nowrap;
+/* Splash art en fond right, estompé */
+.hero-banner::before{
+  content:""; position:absolute;
+  right:-20px; top:-20px; bottom:-20px; width:65%;
+  background: var(--hero-splash, none) center / cover no-repeat;
+  filter:blur(2px) saturate(1.1) brightness(.35);
+  pointer-events:none;
 }
-#pf-toast.show{ opacity:1; transform: translateX(-50%) translateY(0); }
-
-/* ── Bouton petit format (filtres, onglets secondaires) ── */
-.pf-btn-sm{ padding: 6px 12px; font-size:11px; }
-
-/* ── Codex : filtres de camp ── */
-.codex-filters{ display:flex; gap:6px; flex-shrink:0; }
-.codex-chip{ flex:1; }
-.codex-chip.active{ border-color: var(--pf-brand-lit); background: rgba(165,52,43,.15); color: var(--pf-text); }
-
-/* ── Codex : grille de cartes personnage ── */
-.champ-grid{
-  display:grid; grid-template-columns: repeat(auto-fill, minmax(132px, 1fr));
-  gap: var(--pf-gap-sm);
+.hero-banner-img{
+  width:80px; height:100px;
+  object-fit:cover; object-position:top;
+  border-radius:2px; flex-shrink:0; z-index:1;
+  clip-path: polygon(8px 0%,100% 0%,100% calc(100% - 8px),calc(100% - 8px) 100%,0% 100%,0% 8px);
+  border:1px solid var(--accent, var(--pf-brand));
+  box-shadow: 0 0 14px var(--accent, var(--pf-brand-glow));
 }
-.champ-card{
-  position:relative; border-radius: var(--pf-radius-lg); overflow:hidden;
-  aspect-ratio: 200/260; cursor:pointer;
-  border:1px solid var(--pf-panel-border); background: var(--pf-panel);
+.hero-banner-info{ display:flex; flex-direction:column; gap:5px; z-index:1; }
+.hero-banner-role{
+  display:flex; align-items:center; gap:5px;
+  font-size:9px; letter-spacing:2px; color:var(--pf-text-dim);
+  text-transform:uppercase;
 }
-.champ-card-img{ width:100%; height:100%; object-fit:cover; display:block; }
-.champ-card-overlay{
-  position:absolute; inset:0;
-  background: linear-gradient(180deg, transparent 40%, rgba(5,5,9,.92) 100%);
+.hero-banner-name{
+  font-family:var(--pf-font-display); font-size:22px; letter-spacing:3px;
+  color:var(--pf-text); text-transform:uppercase; line-height:1;
 }
-.champ-card-badge{
-  position:absolute; top:6px; left:6px;
-  font-size:9px; letter-spacing:1px; padding:2px 6px; border-radius:2px;
-  font-family: var(--pf-font-display);
+.hero-banner-title{
+  font-size:11px; color:var(--accent, var(--pf-brand-lit)); letter-spacing:1px;
+  font-style:italic;
 }
-.champ-card-badge.ally{ background: rgba(63,143,214,.85); color:#fff; }
-.champ-card-badge.enemy{ background: rgba(214,69,63,.85); color:#fff; }
-.champ-card-badge.legend{ background: rgba(201,162,74,.85); color:#1a1408; }
-.champ-card-info{ position:absolute; left:8px; right:8px; bottom:8px; }
-.champ-card-name{ font-size:12px; font-weight:700; line-height:1.2; }
-.champ-card-role{ font-size:10px; color: var(--pf-text-dim); }
 
-/* ── Fiche personnage détaillée (au clic sur une carte du codex) ── */
-/* La fiche est insérée dans .champ-grid : sans grid-column elle
-   n'occupait qu'UNE colonne (132 px) → texte d'un mot par ligne. */
-.champ-detail{ grid-column: 1 / -1; padding:14px; display:flex; gap:18px; align-items:flex-start; }
-.champ-detail > img{ flex-shrink:0; }
-.champ-detail > div{ flex:1; min-width:0; max-width: 560px; }
-@media (max-width: 520px){
-  .champ-detail{ flex-direction:column; align-items:center; text-align:center; }
-  .champ-detail > div{ max-width:none; }
+/* ══════════════════════════════════════════════════════════════
+   CARD MISSION
+   ══════════════════════════════════════════════════════════════ */
+.mission-card{
+  flex-shrink:0;
+  width:min(156px, 42vw); padding:10px 12px;
+  display:flex; flex-direction:column; gap:6px;
+  cursor:pointer;
+  border-left:2px solid var(--pf-panel-border);
+  transition: border-color .15s, box-shadow .15s, filter .15s;
 }
-.champ-detail-bio{ font-size:13px; line-height:1.55; color: var(--pf-text-dim); }
-.champ-detail-name{ font-size:18px; font-weight:700; }
-.champ-detail-title{ font-size:12px; color: var(--pf-gold); margin-bottom:8px; }
+.mission-card:hover{
+  border-left-color: var(--pf-brand);
+  box-shadow: -2px 0 12px var(--pf-brand-glow), var(--pf-shadow-panel);
+  filter:brightness(1.08);
+}
+.mission-card.done{ opacity:.5; filter:saturate(.4); }
+.mission-card.done:hover{ opacity:.65; filter:saturate(.55); }
+.mission-num{
+  font-family:var(--pf-font-display); font-size:9px; letter-spacing:2px;
+  color:var(--pf-brand-lit);
+}
+.mission-name{
+  font-family:var(--pf-font-display); font-size:13px; letter-spacing:1px;
+  color:var(--pf-text); line-height:1.15;
+}
+.mission-mode{ font-size:9px; letter-spacing:1.5px; color:var(--pf-text-dim); }
+.mission-rewards{ display:flex; gap:4px; flex-wrap:wrap; }
+.mission-tag{
+  font-size:8px; letter-spacing:1px; padding:1px 5px; border-radius:2px;
+  background:rgba(201,162,74,.1); border:1px solid var(--pf-gold-dim);
+  color:var(--pf-gold);
+}
+.mission-tag-mode{
+  background:rgba(165,52,43,.12); border-color:var(--pf-brand-dim);
+  color:#f09080;
+}
 
-/* ── Journal : entrées narratives débloquées mission après mission ── */
-.journal-entries{ display:flex; flex-direction:column; gap:10px; }
-.journal-entry{ padding:14px; }
-.journal-entry-num{ font-family: var(--pf-font-display); color: var(--pf-gold); font-size:13px; letter-spacing:1px; margin-bottom:6px; }
-.journal-entry-text{ font-size:13px; line-height:1.6; color: var(--pf-text-dim); font-style:italic; }
-.journal-empty{ text-align:center; color: var(--pf-text-faint); font-size:13px; padding:40px 20px; }
+/* ══════════════════════════════════════════════════════════════
+   STATS (profil)
+   ══════════════════════════════════════════════════════════════ */
+.pf-stat-row{
+  display:flex; justify-content:space-between; align-items:baseline;
+  padding:6px 0; border-bottom:1px solid var(--pf-panel-border);
+}
+.pf-stat-row:last-child{ border-bottom:none; }
+.pf-stat-label{ font-size:10px; letter-spacing:1px; color:var(--pf-text-dim); text-transform:uppercase; }
+.pf-stat-val{ font-family:var(--pf-font-display); font-size:16px; color:var(--pf-text); }
 
-/* ── Profil ── */
-.profile-hero{ display:flex; align-items:center; gap:14px; padding:14px; }
-.profile-name{ font-size:17px; font-weight:700; }
-.profile-title{ font-size:12px; color: var(--pf-gold); }
-.profile-xp-bar{ margin-top:6px; }
-.profile-stats-grid{ display:grid; grid-template-columns: repeat(2, 1fr); gap:8px; }
-.profile-stat-tile{ padding:10px; display:flex; align-items:center; gap:8px; }
-.profile-stat-val{ font-family: var(--pf-font-display); font-size:18px; }
-.profile-stat-label{ font-size:10px; color: var(--pf-text-dim); }
-.profile-acte-list{ display:flex; flex-direction:column; gap:4px; }
-.profile-acte-row{ display:flex; justify-content:space-between; padding:8px 12px; font-size:12px; }
-.profile-acte-row .done{ color: var(--pf-good); }
+/* Barre XP sous les stats profil */
+.profile-xp-wrap{ display:flex; flex-direction:column; gap:4px; }
+.profile-xp-label{ display:flex; justify-content:space-between; }
+.profile-xp-label span:first-child{ font-size:10px; letter-spacing:1.5px; color:var(--pf-gold); }
+.profile-xp-label span:last-child{ font-size:10px; color:var(--pf-text-dim); }
 
-/* ============================================================
-   BOUTIQUE & ÉVEIL — ajout v3+
-   ============================================================ */
-
-/* ── Boutique ── */
+/* ══════════════════════════════════════════════════════════════
+   SHOP — cartes d'objet avec bord de tier
+   ══════════════════════════════════════════════════════════════ */
 .shop-header{
-  display:flex; justify-content:space-between; align-items:center;
-  padding:10px 14px; margin-bottom:10px;
+  display:flex; align-items:center; justify-content:space-between;
+  padding:10px 14px; flex-shrink:0;
 }
 .shop-tier-label{
-  font-family: var(--pf-font-display); font-size:11px; letter-spacing:2px;
-  color: var(--pf-text-dim); margin: 14px 0 6px;
+  font-family:var(--pf-font-display); font-size:9px; letter-spacing:3px;
+  color:var(--pf-text-dim); padding:0 2px 6px;
+  border-bottom:1px solid var(--pf-panel-border); margin-bottom:8px;
 }
 .shop-grid{
-  display:grid; grid-template-columns:repeat(auto-fill, minmax(160px, 1fr)); gap:8px;
-  margin-bottom:8px;
+  display:grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(140px, 44vw), 1fr));
+  gap:8px; margin-bottom:16px;
 }
 .shop-card{
-  padding:10px; display:flex; flex-direction:column; gap:4px;
-  border:1px solid var(--pf-panel-border);
-  border-top: 2px solid var(--tier-color, var(--pf-panel-border-lit));
-  transition: transform .1s ease, border-color .1s ease;
+  display:flex; flex-direction:column; gap:6px;
+  padding:10px 10px 8px;
+  border-top:2px solid var(--tier-color, var(--pf-panel-border));
+  cursor:default;
+  transition:box-shadow .15s, filter .15s;
 }
-.shop-card:hover{ border-color: var(--pf-panel-border-lit); }
-.shop-card.owned{ border-color: var(--pf-good); opacity:.75; }
-/* Icône dans un médaillon, comme un objet de boutique MOBA — au lieu du
-   simple pictogramme nu affiché auparavant. */
+.shop-card:not(.owned):hover{
+  box-shadow: 0 0 14px color-mix(in srgb, var(--tier-color,#888) 40%, transparent),
+              var(--pf-shadow-panel);
+  filter:brightness(1.08);
+}
+.shop-card.owned{ opacity:.6; }
 .shop-card-ico{
-  width:34px; height:34px; border-radius:8px; display:flex; align-items:center; justify-content:center;
-  background: linear-gradient(155deg, #232231, #16151f 65%);
-  border:1px solid var(--pf-panel-border-lit); color: var(--tier-color, var(--pf-text));
-  margin-bottom:2px;
+  font-size:22px; display:flex; align-items:center; justify-content:center;
+  height:32px; color:var(--tier-color,var(--pf-text-dim));
 }
-.shop-card-name{ font-weight:700; font-size:13px; }
-.shop-card-stats{ font-size:10px; color: var(--pf-text-dim); }
-.shop-card-from{ font-size:9px; color: var(--pf-text-faint); font-style:italic; }
+.shop-card-name{
+  font-family:var(--pf-font-display); font-size:13px; letter-spacing:1px;
+  color:var(--pf-text); line-height:1.1; text-align:center;
+}
+.shop-card-stats{ font-size:9px; color:var(--pf-text-dim); text-align:center; line-height:1.5; }
+.shop-card-from{ font-size:8px; color:var(--pf-text-faint); text-align:center; }
 .shop-card-footer{
   display:flex; align-items:center; justify-content:space-between;
-  margin-top:6px;
+  margin-top:2px; border-top:1px solid var(--pf-panel-border); padding-top:6px;
 }
-.shop-card-cost{ font-size:12px; color: var(--pf-gold); display:flex; align-items:center; gap:3px; }
-.shop-owned-badge{ font-size:11px; color: var(--pf-good); font-weight:700; }
-.pf-btn.disabled{ opacity:.4; pointer-events:none; }
+.shop-card-cost{
+  font-family:var(--pf-font-display); font-size:12px; color:var(--pf-gold);
+  display:flex; align-items:center; gap:3px;
+}
+.shop-owned-badge{
+  font-size:9px; letter-spacing:1px; color:var(--pf-good);
+  display:flex; align-items:center; gap:3px;
+}
 
-/* ── Éveil (arbres de talents) ── */
+/* ══════════════════════════════════════════════════════════════
+   ÉVEIL — arbres de talents
+   ══════════════════════════════════════════════════════════════ */
 .eveil-header{
-  display:flex; justify-content:space-between; align-items:center;
-  padding:10px 14px; margin-bottom:10px;
+  display:flex; align-items:center; justify-content:space-between;
+  padding:10px 14px; flex-shrink:0; margin-bottom:4px;
 }
 .eveil-tree{
   padding:12px; margin-bottom:10px;
-  border-left: 3px solid var(--tree-color, var(--pf-accent));
+  border-left:2px solid var(--tree-color,var(--pf-panel-border));
+  box-shadow: -3px 0 12px color-mix(in srgb, var(--tree-color,transparent) 25%, transparent),
+              var(--pf-shadow-panel);
 }
 .eveil-tree-title{
-  display:flex; align-items:center; gap:8px;
-  font-family: var(--pf-font-display); font-size:14px; letter-spacing:1.5px;
-  margin-bottom:10px;
+  font-family:var(--pf-font-display); font-size:12px; letter-spacing:2px;
+  color:var(--pf-text); text-transform:uppercase;
+  display:flex; align-items:center; gap:8px; margin-bottom:10px;
 }
 .eveil-gem{
-  display:inline-block; width:12px; height:12px; border-radius:3px;
-  background: var(--pf-accent); flex-shrink:0;
+  width:10px; height:10px; border-radius:2px; flex-shrink:0;
+  box-shadow: 0 0 6px currentColor;
 }
 .eveil-node{
-  display:flex; justify-content:space-between; align-items:center;
-  padding:8px 0; border-bottom:1px solid var(--pf-border-dim);
-  gap:8px;
+  display:flex; align-items:center; justify-content:space-between;
+  padding:8px 6px; border-bottom:1px solid var(--pf-panel-border);
+  gap:10px; transition: opacity .15s;
 }
 .eveil-node:last-child{ border-bottom:none; }
-.eveil-node.locked{ opacity:.4; }
-.eveil-node.maxed .eveil-node-name{ color: var(--tree-color, var(--pf-accent)); }
-.eveil-node-left{ flex:1; min-width:0; }
-.eveil-node-name{ font-size:13px; font-weight:700; }
-.eveil-node-desc{ font-size:11px; color:var(--pf-text-dim); margin-top:2px; }
-.eveil-node-req{ font-size:10px; color:var(--pf-danger); margin-top:2px; }
-.eveil-node-right{
-  display:flex; align-items:center; gap:6px; flex-shrink:0;
+.eveil-node.locked{ opacity:.35; pointer-events:none; }
+.eveil-node.maxed .eveil-node-name{ color:var(--tree-color,var(--pf-text)); }
+.eveil-node-left{ flex:1; }
+.eveil-node-name{
+  font-size:12px; font-weight:500; color:var(--pf-text); margin-bottom:2px;
 }
+.eveil-node-desc{ font-size:10px; color:var(--pf-text-dim); line-height:1.4; }
+.eveil-node-req{ font-size:9px; color:var(--pf-brand-lit); margin-top:2px; }
+.eveil-node-right{ display:flex; align-items:center; gap:6px; flex-shrink:0; }
 .eveil-pips{ display:flex; gap:3px; }
 .eveil-pip{
   width:10px; height:10px; border-radius:2px;
-  border:1px solid rgba(255,255,255,.2);
-  background:transparent;
+  background:rgba(255,255,255,.07); border:1px solid rgba(255,255,255,.12);
+  transition:background .15s;
 }
 .eveil-pip.filled{
-  background: var(--pip-color, var(--pf-accent));
-  border-color: var(--pip-color, var(--pf-accent));
+  background:var(--pip-color,var(--pf-brand));
+  border-color:var(--pip-color,var(--pf-brand));
+  box-shadow:0 0 5px var(--pip-color,var(--pf-brand-glow));
 }
-.eveil-btn-plus{
-  width:28px; height:28px; padding:0; font-size:16px; font-weight:700;
-  border-radius:6px;
-}
-.eveil-btn-rst{
-  width:28px; height:28px; padding:0; font-size:13px;
-  border-radius:6px; opacity:.6;
-}
+.eveil-btn-plus{ min-width:28px; font-size:14px; padding:3px 8px; }
+.eveil-btn-rst{ min-width:28px; font-size:13px; padding:3px 8px; }
 
-
-/* ── Icônes SVG (js/ui/icons.js) ───────────────────────────────
-   Trait fin, couleur héritée du texte : les icônes s'accordent à
-   chaque contexte (chip de bonus, badge doré, tuile de profil)
-   sans jeu de couleurs à maintenir. ── */
-.pf-ico{
-  width: 1.05em; height: 1.05em;
-  vertical-align: -0.16em;
-  fill: none;
-  stroke: currentColor;
-  stroke-width: 1.7;
-  stroke-linecap: round;
-  stroke-linejoin: round;
-  flex-shrink: 0;
-}
-.pf-ico-lg{ width: 1.5em; height: 1.5em; vertical-align: -0.3em; }
-.pf-ico-sm{ width: 0.85em; height: 0.85em; vertical-align: -0.12em; }
-.pf-ico-fill{ fill: currentColor; stroke: none; }
-
-
-/* Coup de base : même gabarit que les sorts, teinte de marque pour le
-   distinguer au premier coup d'œil. */
-.spell-slot.basic-slot{
-  border-color: rgba(165,52,43,.55);
-  background: linear-gradient(180deg, rgba(165,52,43,.22), var(--pf-panel));
-  color: #f2d9d4;
-}
-.spell-slot.basic-slot:active{ transform: scale(.9); }
-
-
-/* ── Bascule Campagne / Défis (onglet Missions) ── */
-.mission-switch{ display:flex; gap:8px; margin-bottom: 12px; }
-.mission-switch-btn{
-  flex:1; padding: 9px 10px; border-radius: var(--pf-radius);
-  border:1px solid var(--pf-panel-border); background: var(--pf-panel);
-  color: var(--pf-text-dim); font-family: var(--pf-font-display);
-  font-size: 12px; letter-spacing: .12em; cursor:pointer;
-}
-.mission-switch-btn.active{ border-color: var(--pf-brand-lit); color: var(--pf-text); background: rgba(165,52,43,.14); }
-.mission-list.hidden{ display:none; }
-.m-reward{ display:flex; align-items:center; gap:4px; font-size:11px; color: var(--pf-gold); margin-top:2px; }
-
-
-/* ── Panneau Compétences (fiche d'un champion jouable, onglet Héros) ── */
-.ability-panel{ margin-top: 14px; }
-.ability-panel-header{ display:flex; align-items:center; justify-content:space-between; margin-bottom:8px; }
-.ability-list{ display:flex; flex-direction:column; gap:8px; }
-.ability-row{
-  display:flex; align-items:flex-start; gap:10px;
-  padding:8px; border-radius: var(--pf-radius);
-  border:1px solid var(--pf-panel-border); background: var(--pf-panel);
-}
-.ability-row.ult{ border-color: var(--pf-gold-dim); background: linear-gradient(155deg, rgba(201,162,74,.08), var(--pf-panel)); }
-.ability-row-ico{
-  width:40px; height:40px; flex-shrink:0; border-radius:9px;
-  display:flex; align-items:center; justify-content:center;
-  background: linear-gradient(155deg, #232231, #16151f 65%);
-  border:1px solid var(--pf-panel-border-lit); color: var(--pf-text);
-}
-.ability-row.ult .ability-row-ico{ border-color: var(--pf-gold); color: var(--pf-gold); }
-.ability-row-mid{ flex:1; min-width:0; }
-.ability-row-name{ display:flex; align-items:center; gap:6px; font-family: var(--pf-font-display); font-size:13px; }
-.ability-row-key{
-  width:15px; height:15px; border-radius:4px; display:inline-flex; align-items:center; justify-content:center;
-  background:#0b0a10; border:1px solid var(--pf-panel-border-lit); font-size:9px; color: var(--pf-text-dim);
-}
-.ability-row-desc{ font-size:11px; color: var(--pf-text-dim); margin-top:2px; line-height:1.4; }
-.ability-row-stats{ font-size:10px; color: var(--pf-text-faint); margin-top:4px; }
-.ability-row-pips{ display:flex; gap:3px; margin-top:6px; }
-.ability-row-pips .spell-pip{ width:7px; height:7px; }
-.ability-row-plus{
-  flex-shrink:0; width:30px; height:30px; padding:0;
-  display:flex; align-items:center; justify-content:center; font-size:15px;
-}
-.ability-row-plus.disabled{ opacity:.35; pointer-events:none; }
-
-
-/* ── Bandeau du champion sélectionné (écran de déploiement) ──
-   Grand portrait + rôle + titre, comme l'aperçu de personnage d'un
-   sélecteur MOBA — pour identifier le héros choisi sans avoir à
-   déchiffrer une petite tuile. ── */
-.hero-banner{
-  display:flex; align-items:center; gap:14px;
-  padding: 12px; margin-bottom: 12px; border-radius: var(--pf-radius);
-  background:
-    linear-gradient(100deg, color-mix(in srgb, var(--accent, var(--pf-gold)) 16%, transparent), transparent 60%),
-    var(--pf-panel);
-  border: 1px solid var(--pf-panel-border-lit);
-  box-shadow: inset 0 0 0 1px rgba(255,255,255,.03);
-}
-.hero-banner-img{
-  width: 76px; height: 76px; border-radius: 14px; object-fit: cover; object-position: 50% 25%;
-  border: 2px solid var(--accent, var(--pf-gold));
-  box-shadow: 0 0 16px color-mix(in srgb, var(--accent, var(--pf-gold)) 55%, transparent);
-  flex-shrink:0; background: #000;
-}
-.hero-banner-role{
-  display:flex; align-items:center; gap:5px; font-size:10px; letter-spacing:.1em;
-  color: var(--accent, var(--pf-gold));
-}
-.hero-banner-name{ font-size:17px; font-weight:700; margin-top:2px; }
-.hero-banner-title{ font-size:12px; color: var(--pf-text-dim); }
-
-/* ── Tuiles de sélection de champion (rangée défilante) ── */
-.champ-tile-row{ display:flex; gap:8px; overflow-x:auto; padding-bottom:2px; }
-.champ-tile{
-  position:relative; flex-shrink:0; width:64px; height:64px;
-  border-radius:10px; overflow:hidden; cursor:pointer;
-  border: 2px solid var(--pf-panel-border-lit);
-  filter: grayscale(.55) brightness(.75);
-  transition: filter .12s ease, border-color .12s ease, transform .1s ease;
-}
-.champ-tile:active{ transform: scale(.94); }
-.champ-tile.selected{
-  border-color: var(--accent, var(--pf-brand-lit));
-  filter: none;
-  box-shadow: 0 0 12px color-mix(in srgb, var(--accent, var(--pf-brand-lit)) 60%, transparent);
-}
-.champ-tile-img{ width:100%; height:100%; object-fit:cover; object-position:50% 25%; display:block; }
-.champ-tile-overlay{
-  position:absolute; inset:0;
-  background: linear-gradient(180deg, transparent 40%, rgba(0,0,0,.85) 100%);
-}
-.champ-tile-role{
-  position:absolute; top:3px; left:3px; width:16px; height:16px; border-radius:4px;
-  display:flex; align-items:center; justify-content:center;
-  background: rgba(11,10,16,.75); color:#fff;
-}
-.champ-tile-name{
-  position:absolute; bottom:3px; left:0; right:0; text-align:center;
-  font-size:9px; font-family: var(--pf-font-display); color:#fff;
-  text-shadow: 0 1px 2px rgba(0,0,0,.8);
-}
-
-
-/* ── Carte d'emplacement de sauvegarde ── */
+/* ══════════════════════════════════════════════════════════════
+   SLOTS — sélection de sauvegarde
+   ══════════════════════════════════════════════════════════════ */
 .slot-card{
-  display:flex; align-items:center; justify-content:space-between; gap:8px;
-  padding:12px 14px; flex-wrap: wrap;
+  display:flex; align-items:center; justify-content:space-between;
+  padding:14px; gap:12px;
+  border-left:2px solid var(--pf-panel-border);
+  transition:border-color .15s, box-shadow .15s;
 }
-.slot-card.current{ border-color: var(--pf-brand-lit); background: rgba(165,52,43,.08); }
-.slot-card-left{ display:flex; align-items:center; gap:10px; min-width:0; }
-.slot-card-title{ font-family: var(--pf-font-display); font-size:13px; letter-spacing:.06em; }
-.slot-card-sub{ font-size:11px; color: var(--pf-text-dim); margin-top:2px; }
-.slot-card-empty{ color: var(--pf-text-faint); font-style:italic; }
-.slot-card-right{ display:flex; align-items:center; gap:6px; flex-shrink:0; }
-.slot-card-del{ width:30px; padding:0; color: var(--pf-text-faint); }
-.slot-card-del.confirm{ color: var(--pf-brand-lit); font-size:9px; width:auto; padding:0 8px; }
+.slot-card:hover,
+.slot-card.current{
+  border-left-color:var(--pf-brand-lit);
+  box-shadow: -3px 0 14px var(--pf-brand-glow), var(--pf-shadow-panel);
+}
+.slot-card-left{ display:flex; align-items:center; gap:12px; }
+.slot-card-title{
+  font-family:var(--pf-font-display); font-size:13px; letter-spacing:2px;
+  color:var(--pf-text);
+}
+.slot-card-sub{ font-size:10px; color:var(--pf-text-dim); margin-top:2px; }
+.slot-card-empty{ color:var(--pf-text-faint); font-style:italic; }
+.slot-card-right{ display:flex; gap:6px; }
+.slot-card-del.confirm{ color:var(--pf-danger); border-color:var(--pf-danger); }
+
+/* ══════════════════════════════════════════════════════════════
+   JOURNAL / CODEX
+   ══════════════════════════════════════════════════════════════ */
+.journal-entry{
+  padding:12px 14px; border-left:2px solid var(--pf-panel-border);
+  margin-bottom:8px; transition:border-color .15s;
+}
+.journal-entry:hover{ border-left-color:var(--pf-gold-dim); }
+.journal-entry-title{
+  font-family:var(--pf-font-display); font-size:13px; letter-spacing:1.5px;
+  color:var(--pf-text); margin-bottom:4px;
+}
+.journal-entry-body{ font-size:11px; color:var(--pf-text-dim); line-height:1.6; }
+/* Ligne décorative entre titre et texte style Dota Lore */
+.journal-entry-divider{
+  display:flex; align-items:center; gap:8px; margin:6px 0;
+}
+.journal-entry-divider::before,
+.journal-entry-divider::after{
+  content:""; flex:1; height:1px;
+  background:linear-gradient(90deg,transparent,var(--pf-panel-border-lit),transparent);
+}
+.journal-entry-divider span{
+  font-family:var(--pf-font-display); font-size:8px; letter-spacing:2px;
+  color:var(--pf-gold); opacity:.6;
+}
+
+/* Codex — carte de champion avec coins ornementaux */
+.codex-card{
+  cursor:pointer; transition:filter .15s, box-shadow .15s;
+  overflow:hidden;
+  border-top:1px solid var(--pf-panel-border-lit);
+  position:relative;
+}
+.codex-card::after{
+  content:"";
+  position:absolute; top:0; right:0;
+  border-style:solid;
+  border-width:0 14px 14px 0;
+  border-color:transparent var(--pf-panel-border-lit) transparent transparent;
+  pointer-events:none;
+}
+.codex-card:hover{ filter:brightness(1.1); }
+.codex-card.selected{
+  box-shadow: 0 0 16px var(--pf-brand-glow), var(--pf-shadow-panel);
+  border-top-color:var(--pf-brand-lit);
+}
+.codex-card.selected::after{ border-right-color:var(--pf-brand-lit); }
+.codex-card-header{
+  display:flex; align-items:center; gap:10px;
+  padding:10px 12px 8px;
+}
+.codex-card-name{
+  font-family:var(--pf-font-display); font-size:15px; letter-spacing:1.5px; color:var(--pf-text);
+}
+.codex-card-role{ font-size:9px; color:var(--pf-text-dim); letter-spacing:1px; }
+.codex-card-body{ padding:0 12px 10px; display:flex; flex-direction:column; gap:4px; }
+
+/* ══════════════════════════════════════════════════════════════
+   FIN DE MATCH — lignes de récompenses
+   ══════════════════════════════════════════════════════════════ */
+.end-reward-row{
+  display:flex; align-items:center; justify-content:space-between;
+  padding:10px 14px; margin-bottom:6px;
+  border-left:2px solid var(--pf-panel-border-lit);
+  transition:border-color .2s;
+  animation: pfFade .35s ease-out both;
+}
+.end-reward-row:nth-child(2){ animation-delay:.06s; }
+.end-reward-row:nth-child(3){ animation-delay:.12s; }
+.end-reward-row:nth-child(4){ animation-delay:.18s; }
+.end-reward-row.highlight{ border-left-color:var(--pf-gold); }
+.end-reward-row.highlight .pf-label{ color:var(--pf-gold); }
+
+/* ══════════════════════════════════════════════════════════════
+   DEPLOY — section labels
+   ══════════════════════════════════════════════════════════════ */
+.deploy-section-title{
+  font-family:var(--pf-font-display); font-size:9px; letter-spacing:3px;
+  color:var(--pf-text-dim); text-transform:uppercase; margin-bottom:8px;
+  display:flex; align-items:center; gap:8px;
+}
+.deploy-section-title::after{
+  content:""; flex:1; height:1px;
+  background:linear-gradient(90deg,var(--pf-panel-border),transparent);
+}
+.deploy-allies-wrap{ display:flex; gap:8px; flex-wrap:wrap; }
+.deploy-team-preview{
+  font-size:10px; color:var(--pf-text-dim); letter-spacing:1px;
+  border-top:1px solid var(--pf-panel-border); padding-top:8px;
+}
+
+/* ══════════════════════════════════════════════════════════════
+   CHAMP GRID — grille de champion dans le codex
+   ══════════════════════════════════════════════════════════════ */
+.champ-grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fill,minmax(min(148px,44vw),1fr));
+  gap:8px;
+}
+.champ-filter-row{
+  display:flex; gap:6px; flex-wrap:wrap; margin-bottom:10px;
+}
+.champ-filter-btn{
+  font-family:var(--pf-font-display); font-size:9px; letter-spacing:1.5px;
+  padding:4px 10px; border-radius:2px;
+  background:transparent; border:1px solid var(--pf-panel-border-lit);
+  color:var(--pf-text-dim); cursor:pointer; transition:all .12s;
+  text-transform:uppercase;
+}
+.champ-filter-btn:hover{ border-color:var(--pf-text-dim); color:var(--pf-text); }
+.champ-filter-btn.active{
+  background:rgba(165,52,43,.15); border-color:var(--pf-brand-lit); color:var(--pf-text);
+}
+
+/* ══════════════════════════════════════════════════════════════
+   HUB — bloc de stats joueur dans le header
+   ══════════════════════════════════════════════════════════════ */
+.hub-player{
+  display:flex; align-items:center; gap:10px;
+}
+.hub-player-name{
+  font-family:var(--pf-font-display); font-size:14px; letter-spacing:2px;
+  color:var(--pf-text); line-height:1;
+}
+.hub-player-level{
+  font-size:9px; color:var(--pf-text-dim); letter-spacing:1px; margin-top:2px;
+}
+.hub-currency{
+  display:flex; align-items:center; gap:6px;
+}
+
+/* ══════════════════════════════════════════════════════════════
+   HUB TITLE (logo en haut du hub)
+   ══════════════════════════════════════════════════════════════ */
+.hub-logo{
+  font-family:var(--pf-font-display); font-size:15px; letter-spacing:3px;
+  color:var(--pf-brand-lit); text-transform:uppercase;
+}
+
+/* ══════════════════════════════════════════════════════════════
+   MINIMAP HUD
+   ══════════════════════════════════════════════════════════════ */
+.hud-minimap{
+  border:1px solid var(--pf-panel-border-lit);
+  border-radius:2px;
+  box-shadow: 0 0 10px rgba(0,0,0,.6), inset 0 1px 0 rgba(255,255,255,.05);
+  overflow:hidden;
+  background:#05060c;
+}
+
+/* ══════════════════════════════════════════════════════════════
+   ÉCRAN TITRE — logo textuel si image absente
+   ══════════════════════════════════════════════════════════════ */
+.pf-wordmark{
+  font-family:var(--pf-font-display);
+  font-size:clamp(38px,10vw,72px);
+  letter-spacing:8px;
+  color:var(--pf-text);
+  text-transform:uppercase;
+  text-shadow: 0 0 60px var(--pf-brand-glow), 0 4px 14px rgba(0,0,0,.9);
+  line-height:1;
+}
+.pf-wordmark em{
+  font-style:normal;
+  color:var(--pf-brand-lit);
+  text-shadow: 0 0 40px var(--pf-brand-glow);
+}
+
+/* ══════════════════════════════════════════════════════════════
+   RESPONSIVE
+   ══════════════════════════════════════════════════════════════ */
+@media(max-width:480px){
+  .hero-banner-img{ width:64px; height:80px; }
+  .hero-banner-name{ font-size:18px; }
+  .champ-tile{ width:60px; }
+  .champ-tile-img{ width:60px; height:75px; }
+  .shop-grid{ grid-template-columns: repeat(auto-fill, minmax(120px,1fr)); }
+  .pf-wordmark{ font-size:clamp(30px,9vw,52px); letter-spacing:5px; }
+}

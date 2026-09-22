@@ -2,133 +2,180 @@
    HUD DE COMBAT — superposé au canvas PixiJS
    ============================================================ */
 
+/* ── Barre du haut (objectif + timer) ── */
 .hud-top{
-  position:absolute; top: calc(10px + var(--pf-safe-t)); left:0; right:0;
-  display:flex; justify-content:center; align-items:flex-start;
+  position:absolute; top:calc(8px + var(--pf-safe-t)); left:0; right:0;
+  display:flex; justify-content:center; align-items:flex-start; pointer-events:none;
 }
 .hud-objective{
-  padding: 6px 18px; font-size: 13px; letter-spacing:.5px;
-  text-align:center; min-width: 220px;
+  padding:6px 20px; font-size:12px; letter-spacing:1px;
+  text-align:center; min-width:200px;
+  background:
+    linear-gradient(180deg, rgba(14,13,24,.95) 0%, rgba(10,9,18,.9) 100%);
+  border:1px solid var(--pf-panel-border);
+  border-top:none; border-radius:0 0 4px 4px;
+  box-shadow: 0 4px 12px rgba(0,0,0,.5), inset 0 -1px 0 rgba(255,255,255,.04);
+  pointer-events:auto;
 }
-.hud-timer{ font-family: var(--pf-font-display); font-size:16px; color: var(--pf-gold); margin-left:10px; }
+.hud-timer{
+  font-family:var(--pf-font-display); font-size:17px;
+  color:var(--pf-gold); margin-left:8px;
+  text-shadow: 0 0 8px var(--pf-gold-glow);
+}
 
+/* ── Minimap ── */
 .hud-minimap{
-  position:absolute; top: calc(10px + var(--pf-safe-t)); right:10px;
-  width: 130px; height: 84px; padding:4px;
+  position:absolute; top:calc(8px + var(--pf-safe-t)); right:8px;
+  width:120px; height:78px;
+  border:1px solid var(--pf-panel-border-lit); border-radius:2px;
+  box-shadow: 0 0 12px rgba(0,0,0,.6), inset 0 1px 0 rgba(255,255,255,.05);
+  overflow:hidden; background:#050609;
 }
 
+/* ── Barre du bas ── */
 .hud-bottom{
-  position:absolute; left:0; right:0; bottom: calc(10px + var(--pf-safe-b));
+  position:absolute; left:0; right:0; bottom:0;
   display:flex; align-items:flex-end; justify-content:space-between;
-  padding: 0 12px; gap: 12px;
-  /* Les pastilles de rang dépassent sous chaque icône de sort (position
-     négative) : on réserve la place pour qu'elles ne soient jamais rognées. */
-  padding-bottom: 14px;
+  padding:0 10px calc(10px + var(--pf-safe-b)) 10px;
+  gap:10px;
+  /* Fond barre noir texturé — comme la barre d'items Dota/LoL */
+  background:
+    linear-gradient(180deg,
+      transparent 0%,
+      rgba(5,6,10,.88) 30%,
+      rgba(4,5,9,.97) 100%);
+  padding-top:16px;
+  /* Séparateur haut lumineux */
+  border-top:1px solid var(--pf-panel-border);
+  box-shadow: 0 -1px 0 rgba(255,255,255,.04);
 }
 
+/* ── Portrait + barres ── */
 .hud-portrait{
   display:flex; align-items:center; gap:8px;
-  padding: 8px; flex-shrink:0;
+  padding:8px 10px;
+  background:rgba(7,8,15,.75);
+  border:1px solid var(--pf-panel-border);
+  border-top-color:rgba(255,255,255,.06);
+  border-radius:var(--pf-radius-lg);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.05);
+  flex-shrink:0;
 }
-.hud-bars{ display:flex; flex-direction:column; gap:4px; width:150px; }
+.hud-bars{ display:flex; flex-direction:column; gap:5px; width:140px; }
 .hud-bars .pf-bar{ width:100%; }
-.hud-bars .pf-label-row{ display:flex; justify-content:space-between; font-size:10px; color: var(--pf-text-dim); }
+.hud-bars .pf-label-row{
+  display:flex; justify-content:space-between;
+  font-size:9px; color:var(--pf-text-dim); letter-spacing:.5px;
+}
 
-.hud-spells{ display:flex; gap:9px; }
+/* ── Sorts ── */
+.hud-spells{
+  display:flex; gap:8px;
+  padding:8px 10px;
+  background:rgba(7,8,15,.75);
+  border:1px solid var(--pf-panel-border);
+  border-top-color:rgba(255,255,255,.06);
+  border-radius:var(--pf-radius-lg);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.05);
+}
 
+/* ── Bouton pause ── */
 .hud-pause-btn{
-  width:38px; height:38px; display:flex; align-items:center; justify-content:center;
-  font-size:16px; cursor:pointer; flex-shrink:0;
+  width:40px; height:40px;
+  display:flex; align-items:center; justify-content:center;
+  font-size:15px; cursor:pointer; flex-shrink:0;
+  background:rgba(7,8,15,.75);
+  border:1px solid var(--pf-panel-border);
+  border-radius:var(--pf-radius-lg);
+  color:var(--pf-text-dim); transition:color .12s, border-color .12s;
 }
+.hud-pause-btn:hover{ color:var(--pf-text); border-color:var(--pf-panel-border-lit); }
 
-/* ── Réactivité mobile — resserre portrait/barres/sorts pour tenir en largeur ── */
-@media (max-width: 480px){
-  .hud-bottom{ padding: 0 6px; gap: 6px; }
-  .hud-portrait{ padding: 5px; gap:5px; }
-  .hud-portrait .pf-portrait{ width:40px; height:40px; font-size:15px; }
-  .hud-bars{ width: 92px; }
-  .hud-bars .pf-label-row{ font-size:8px; }
-  .hud-spells{ gap:6px; }
-  .spell-slot{ width:40px; height:40px; font-size:13px; }
-  .spell-ico{ width:20px; height:20px; }
-  .spell-slot .key{ font-size:7px; width:12px; height:12px; }
-  .spell-slot-cost{ font-size:7px; }
-  .spell-pip{ width:4px; height:4px; }
-  .spell-slot-pips{ bottom:-11px; }
-  .hud-pause-btn{ width:32px; height:32px; font-size:13px; }
-  .hud-minimap{ width:92px; height:60px; }
-  .hud-objective{ padding:5px 10px; font-size:11px; min-width:160px; }
-}
-
-/* ── Petits écrans (téléphones étroits, ~360-390px) — la rangée du bas
-   (portrait + 5 cases de sorts + pause) dépassait tout juste la largeur
-   de l'écran à ≤480px : la dernière case (coup de base) se retrouvait
-   poussée hors du cadre visible. On resserre encore. ── */
-@media (max-width: 400px){
-  .hud-bottom{ padding: 0 4px; gap: 4px; }
-  .hud-portrait{ padding: 4px; gap:4px; }
-  .hud-portrait .pf-portrait{ width:34px; height:34px; font-size:13px; }
-  .hud-bars{ width: 74px; }
-  .hud-bars .pf-label-row{ font-size:7px; }
-  .hud-spells{ gap:4px; }
-  .spell-slot{ width:34px; height:34px; }
-  .spell-ico{ width:17px; height:17px; }
-  .spell-slot .key{ width:10px; height:10px; font-size:6px; }
-  .spell-slot .key.key-wide{ width:auto; padding:0 2px; font-size:6px; }
-  .spell-slot-cost{ font-size:6px; }
-  .spell-pip{ width:3px; height:3px; }
-  .spell-slot-pips{ bottom:-9px; }
-  .hud-pause-btn{ width:28px; height:28px; }
-}
-
-/* ── Bannière d'annonce (victoire proche, vague...) ── */
+/* ── Bannière annonce ── */
 .hud-banner{
-  position:absolute; top: 30%; left:50%; transform: translate(-50%,-50%);
-  font-family: var(--pf-font-display); font-size: 34px; letter-spacing:4px;
-  color: var(--pf-text); text-shadow: 0 3px 14px rgba(0,0,0,.8);
-  opacity:0; pointer-events:none; transition: opacity .3s, transform .3s;
+  position:absolute; top:28%; left:50%; transform:translate(-50%,-50%);
+  font-family:var(--pf-font-display); font-size:36px; letter-spacing:5px;
+  color:var(--pf-text); text-shadow:0 0 30px var(--pf-brand-glow), 0 3px 14px rgba(0,0,0,.9);
+  opacity:0; pointer-events:none; transition:opacity .3s, transform .3s;
+  text-transform:uppercase;
 }
-.hud-banner.show{ opacity:1; transform: translate(-50%,-50%) scale(1.04); }
+.hud-banner.show{ opacity:1; transform:translate(-50%,-50%) scale(1.04); }
 
-/* ── Joystick virtuel (mobile) ── */
+/* ── Joystick virtuel ── */
 .hud-joyzone{ position:absolute; left:0; bottom:0; width:45%; height:55%; touch-action:none; }
 .hud-joy{
   position:absolute; width:96px; height:96px; border-radius:50%;
-  border:2px solid rgba(255,255,255,.15); background: rgba(255,255,255,.04);
+  border:2px solid rgba(255,255,255,.12); background:rgba(255,255,255,.04);
   display:none;
 }
 .hud-joy-knob{
-  position:absolute; width:40px; height:40px; border-radius:50%;
-  background: rgba(255,255,255,.25); left:28px; top:28px;
+  position:absolute; width:38px; height:38px; border-radius:50%;
+  background:rgba(255,255,255,.22); left:29px; top:29px;
 }
 .hud-joy.on{ display:block; }
 
-/* ── Bonus chips (objets + talents actifs) ── */
+/* ── Bonus chips ── */
 .hud-bonus-row{ display:flex; flex-wrap:wrap; gap:3px; margin-top:4px; }
 .hud-bonus-chip{
-  font-size:9px; padding:1px 5px; border-radius:10px;
-  background:rgba(255,255,255,.08); color:var(--pf-text-dim);
-  border:1px solid rgba(255,255,255,.1);
+  font-size:8px; padding:1px 5px; border-radius:10px;
+  background:rgba(255,255,255,.07); color:var(--pf-text-dim);
+  border:1px solid rgba(255,255,255,.08); letter-spacing:.5px;
 }
 
 /* ── Barre de Boss ── */
 .hud-boss-bar{
-  position:absolute; top:56px; left:50%; transform:translateX(-50%);
-  min-width:260px; max-width:380px; padding:6px 12px;
-  background:rgba(0,0,0,.7); border:1px solid rgba(220,50,30,.55);
-  border-radius:8px; text-align:center; z-index:30;
-  animation: bossBarIn .4s cubic-bezier(.2,.8,.3,1.1) both;
+  position:absolute; top:54px; left:50%; transform:translateX(-50%);
+  min-width:240px; max-width:360px; padding:7px 14px;
+  background:rgba(5,6,10,.92);
+  border:1px solid rgba(220,50,30,.4);
+  border-top:2px solid #d63020;
+  border-radius:0 0 4px 4px; text-align:center; z-index:30;
+  box-shadow: 0 0 16px rgba(200,40,20,.25);
+  animation:bossBarIn .4s cubic-bezier(.2,.8,.3,1.1) both;
 }
 @keyframes bossBarIn{
   from{ opacity:0; transform:translateX(-50%) scaleY(.6); }
   to  { opacity:1; transform:translateX(-50%) scaleY(1); }
 }
 .hud-boss-name{
-  font-size:10px; letter-spacing:.12em; color:#ff8060;
-  font-weight:700; margin-bottom:4px;
+  font-size:10px; letter-spacing:.14em; color:#ff8060;
+  font-family:var(--pf-font-display); margin-bottom:5px; text-transform:uppercase;
 }
-.pf-bar-boss{ height:10px; border-radius:5px; background:rgba(255,255,255,.1); }
+.pf-bar-boss{ height:9px; border-radius:1px; background:rgba(255,255,255,.08); }
 .pf-bar-boss .pf-bar-fill{
-  background: linear-gradient(90deg, #e05a20, #ff2222);
-  transition: none;
+  background:linear-gradient(90deg,#b03010,#ff2222);
+}
+
+/* ── Responsive ── */
+@media(max-width:480px){
+  .hud-bottom{ padding:0 6px calc(8px + var(--pf-safe-b)) 6px; gap:6px; padding-top:12px; }
+  .hud-portrait{ padding:5px 7px; gap:6px; }
+  .hud-portrait .pf-portrait{ width:40px; height:40px; font-size:15px; }
+  .hud-bars{ width:90px; }
+  .hud-bars .pf-label-row{ font-size:8px; }
+  .hud-spells{ gap:5px; padding:6px 8px; }
+  .spell-slot{ width:42px; height:42px; font-size:13px; }
+  .spell-ico{ width:20px; height:20px; }
+  .spell-slot .key{ font-size:7px; width:12px; height:12px; }
+  .spell-slot-cost{ font-size:7px; }
+  .spell-pip{ width:4px; height:4px; }
+  .spell-slot-pips{ bottom:-12px; }
+  .hud-pause-btn{ width:34px; height:34px; font-size:13px; }
+  .hud-minimap{ width:90px; height:58px; }
+}
+@media(max-width:400px){
+  .hud-bottom{ padding:0 4px calc(6px + var(--pf-safe-b)) 4px; gap:4px; }
+  .hud-portrait{ padding:4px; gap:4px; }
+  .hud-portrait .pf-portrait{ width:34px; height:34px; font-size:12px; }
+  .hud-bars{ width:72px; }
+  .hud-bars .pf-label-row{ font-size:7px; }
+  .hud-spells{ gap:4px; padding:5px 6px; }
+  .spell-slot{ width:34px; height:34px; }
+  .spell-ico{ width:17px; height:17px; }
+  .spell-slot .key{ width:10px; height:10px; font-size:6px; }
+  .spell-slot .key.key-wide{ width:auto; padding:0 2px; }
+  .spell-slot-cost{ font-size:6px; }
+  .spell-pip{ width:3px; height:3px; }
+  .spell-slot-pips{ bottom:-10px; }
+  .hud-pause-btn{ width:28px; height:28px; }
 }

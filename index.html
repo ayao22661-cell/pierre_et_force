@@ -7,7 +7,7 @@
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
 
 <link rel="stylesheet" href="css/tokens.css">
 <link rel="stylesheet" href="css/layout.css">
@@ -15,36 +15,86 @@
 <link rel="stylesheet" href="css/hud.css">
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pixi.js/8.17.1/pixi.min.js"></script>
-<!-- Babylon.js : rendu 3D des personnages (modèles GLB), superposé au canvas PixiJS.
-     CDN officiel Babylon (toujours la dernière version stable) — voir
-     https://doc.babylonjs.com/setup/frameworkPackages/frameworkVers -->
 <script src="https://cdn.babylonjs.com/babylon.js"></script>
 <script src="https://cdn.babylonjs.com/loaders/babylonjs.loaders.min.js"></script>
+
+<style>
+/* ── Ligne décorative dorée sous le hub-header ── */
+.hub-header::after{
+  content:"";
+  position:absolute; bottom:-1px; left:14px; right:14px; height:1px;
+  background:linear-gradient(90deg,transparent,var(--pf-gold-dim),transparent);
+  opacity:.5; pointer-events:none;
+}
+/* ── champ-tile-row : flex horizontal scrollable ── */
+.champ-tile-row{
+  display:flex; gap:8px; flex-wrap:wrap;
+}
+/* ── codex filter chips → style button remplacé par champ-filter-btn ── */
+.codex-chip{
+  font-family:var(--pf-font-display); font-size:9px; letter-spacing:1.5px;
+  padding:4px 10px; border-radius:2px;
+  background:transparent; border:1px solid var(--pf-panel-border-lit);
+  color:var(--pf-text-dim); cursor:pointer; transition:all .12s;
+  text-transform:uppercase;
+}
+.codex-chip:hover{ border-color:var(--pf-text-dim); color:var(--pf-text); }
+.codex-chip.active{
+  background:rgba(165,52,43,.15); border-color:var(--pf-brand-lit); color:var(--pf-text);
+}
+.codex-filters{ display:flex; gap:6px; flex-wrap:wrap; margin-bottom:12px; }
+/* ── Hub missions : scroll horizontal par acte ── */
+#hub-missions{ display:flex; flex-direction:column; gap:18px; padding-bottom:8px; }
+/* ── Profile panel ── */
+#profile-content{ display:flex; flex-direction:column; gap:12px; }
+/* ── Journal ── */
+.journal-entries{ display:flex; flex-direction:column; gap:6px; }
+/* ── Deploy body panels ── */
+.deploy-section{ padding:12px; }
+.deploy-section + .deploy-section{ margin-top:0; }
+/* ── End rewards list ── */
+#end-rewards{ display:flex; flex-direction:column; gap:0; width:100%; max-width:480px; }
+/* ── Deploy footer layout ── */
+.deploy-footer{
+  display:flex; gap:10px; align-items:center; flex-shrink:0;
+  padding:10px 14px calc(10px + var(--pf-safe-b)) 14px;
+  border-top:1px solid var(--pf-panel-border);
+  background:rgba(7,8,15,.9);
+}
+</style>
 </head>
 <body>
 <div id="app">
 
-  <!-- ===== TITRE ===== -->
+  <!-- ═══════════════════════════════════════════
+       ÉCRAN TITRE
+       Fond plein : splash art divin, estompé.
+       Contenu centré en bas comme Dota 2.
+  ═══════════════════════════════════════════ -->
   <div id="screen-title" class="screen active">
-    <!-- Fond plein écran : l'esprit divin veillant sur le porteur -->
     <div class="pf-bg">
       <img src="assets/art_divine.webp" class="pf-bg-blur" alt="">
       <img src="assets/art_divine.webp" class="pf-bg-img" alt="">
       <div class="pf-bg-overlay"></div>
     </div>
     <div class="pf-title-content">
-      <!-- Version claire du logo : le lettrage d'origine est noir et
-           disparaissait sur l'illustration sombre. Le logo porte déjà le
-           nom du jeu, le titre en double a donc été retiré. -->
-      <img class="pf-logo" src="assets/logo-clair.webp" alt="Pierre et Force">
+      <!-- Logo : si l'image est absente, le wordmark CSS prend le relais -->
+      <img class="pf-logo" src="assets/logo-clair.webp" alt="Pierre et Force"
+           onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
+      <div class="pf-wordmark" style="display:none;">
+        Pierre <em>&</em> Force
+      </div>
       <div class="pf-hero-sub">L'ÉVEIL</div>
       <div class="pf-title-btns">
-        <button class="pf-btn pf-btn-brand" id="btn-start">COMMENCER</button>
+        <button class="pf-btn pf-btn-brand pf-btn-cta" id="btn-start">COMMENCER</button>
       </div>
     </div>
   </div>
 
-  <!-- ===== SÉLECTION DE SAUVEGARDE ===== -->
+  <!-- ═══════════════════════════════════════════
+       SÉLECTION DE SAUVEGARDE
+       Fond identique au titre, panel centré.
+  ═══════════════════════════════════════════ -->
   <div id="screen-slots" class="screen">
     <div class="pf-bg">
       <img src="assets/art_divine.webp" class="pf-bg-blur" alt="">
@@ -52,56 +102,85 @@
       <div class="pf-bg-overlay"></div>
     </div>
     <div class="slots-content">
-      <div class="pf-title" style="font-size:20px; margin-bottom:14px;">SAUVEGARDES</div>
+      <div class="slots-section-title">SAUVEGARDES</div>
       <div id="slots-list" class="slots-list"></div>
-      <button class="pf-btn pf-btn-ghost" id="btn-slots-back" style="margin-top:14px;">← RETOUR</button>
+      <button class="pf-btn pf-btn-ghost" id="btn-slots-back"
+              style="margin-top:16px; align-self:center;">← RETOUR</button>
     </div>
   </div>
 
-  <!-- ===== HUB ===== -->
+  <!-- ═══════════════════════════════════════════
+       HUB PRINCIPAL
+       Fond : splash art du guerrier, voile bas opaque.
+       Header : logo + stats joueur (comme Dota main menu).
+       Body : onglets scrollables.
+       Tabs : barre fixe en bas, ligne active rouge.
+  ═══════════════════════════════════════════ -->
   <div id="screen-hub" class="screen">
-    <!-- Fond plein écran : portrait de Tarine, le porteur -->
     <div class="pf-bg">
       <img src="assets/art_warrior.webp" class="pf-bg-blur" alt="">
       <img src="assets/art_warrior.webp" class="pf-bg-img" alt="">
       <div class="pf-bg-overlay"></div>
     </div>
-    <div class="pf-panel hub-header" style="padding:10px 14px;">
-      <div>
-        <div class="pf-title" style="font-size:18px;">PIERRE ET FORCE</div>
-        <div class="pf-label" id="hub-progress">0 / 0 missions</div>
+
+    <!-- Header hub : identitaire + stats rapides -->
+    <div class="hub-header pf-panel" style="border-radius:0; border-left:none; border-right:none; border-top:none;">
+      <div class="hub-player">
+        <div>
+          <div class="hub-logo">Pierre &amp; Force</div>
+          <div class="hub-player-level pf-label" id="hub-progress">0 / 0 missions</div>
+        </div>
       </div>
-      <div style="display:flex; gap:14px; align-items:center;">
-        <span class="pf-badge pf-badge-gold">NIV. <span id="hub-level">1</span></span>
-        <span class="pf-badge" id="hub-cauris-badge"><span id="hub-cauris">0</span></span>
+      <div class="hub-currency">
+        <span class="pf-badge pf-badge-brand">NIV&nbsp;<span id="hub-level">1</span></span>
+        <span class="pf-badge pf-badge-gold" id="hub-cauris-badge">
+          <span id="hub-cauris">0</span>
+        </span>
       </div>
     </div>
+
+    <!-- Corps : panneaux des onglets -->
     <div class="hub-body">
+
+      <!-- MISSIONS -->
       <div class="hub-panel active" id="panel-missions" data-panel="missions">
         <div id="hub-missions"></div>
       </div>
+
+      <!-- HÉROS / CODEX -->
       <div class="hub-panel" id="panel-codex" data-panel="codex">
         <div class="codex-filters" id="codex-filters">
-          <button class="pf-btn pf-btn-sm codex-chip active" data-camp="tous">Tous</button>
-          <button class="pf-btn pf-btn-sm codex-chip" data-camp="allie">Alliés</button>
-          <button class="pf-btn pf-btn-sm codex-chip" data-camp="ennemi">Empire</button>
-          <button class="pf-btn pf-btn-sm codex-chip" data-camp="neutre">Légende</button>
+          <button class="codex-chip active" data-camp="tous">Tous</button>
+          <button class="codex-chip" data-camp="allie">Alliés</button>
+          <button class="codex-chip" data-camp="ennemi">Empire</button>
+          <button class="codex-chip" data-camp="neutre">Légende</button>
         </div>
         <div class="champ-grid" id="codex-list"></div>
       </div>
+
+      <!-- PROFIL -->
       <div class="hub-panel" id="panel-profile" data-panel="profile">
         <div id="profile-content"></div>
       </div>
+
+      <!-- JOURNAL -->
       <div class="hub-panel" id="panel-journal" data-panel="journal">
         <div class="journal-entries" id="journal-entries"></div>
       </div>
+
+      <!-- ÉVEIL -->
       <div class="hub-panel" id="panel-eveil" data-panel="eveil">
         <div id="eveil-content"></div>
       </div>
+
+      <!-- BOUTIQUE -->
       <div class="hub-panel" id="panel-shop" data-panel="shop">
         <div id="shop-content"></div>
       </div>
-    </div>
+
+    </div><!-- /hub-body -->
+
+    <!-- Tabs nav fixe en bas -->
     <div class="hub-tabs">
       <button class="hub-tab-btn active" data-tab="missions">MISSIONS</button>
       <button class="hub-tab-btn" data-tab="codex">HÉROS</button>
@@ -112,61 +191,97 @@
     </div>
   </div>
 
-  <!-- ===== DÉPLOIEMENT ===== -->
+  <!-- ═══════════════════════════════════════════
+       DÉPLOIEMENT
+       Fond : art_battle1 — tension avant le combat.
+       Header : nom mission + bouton retour.
+       Hero Banner : grand portrait du champion choisi.
+       Body : sélecteur joueur + brief + alliés.
+       Footer collant : preview équipe + bouton.
+  ═══════════════════════════════════════════ -->
   <div id="screen-deploy" class="screen">
-    <!-- Fond plein écran : affrontement, tension avant le combat -->
     <div class="pf-bg">
       <img src="assets/art_battle1.webp" class="pf-bg-blur" alt="">
       <img src="assets/art_battle1.webp" class="pf-bg-img" alt="">
       <div class="pf-bg-overlay"></div>
     </div>
-    <div class="pf-panel" style="padding:10px 14px; display:flex; justify-content:space-between; align-items:center;">
+
+    <!-- Header mission -->
+    <div class="pf-panel deploy-section"
+         style="border-radius:0; border-left:none; border-right:none; border-top:none;
+                display:flex; justify-content:space-between; align-items:center;">
       <div>
         <div class="pf-title" id="deploy-mission-name" style="font-size:16px;">Mission</div>
         <div class="pf-label" id="deploy-mode">SIÈGE</div>
       </div>
-      <button class="pf-btn pf-btn-ghost" id="btn-hub-back">RETOUR</button>
+      <button class="pf-btn pf-btn-ghost pf-btn-sm" id="btn-hub-back">← RETOUR</button>
     </div>
+
+    <!-- Body scrollable -->
     <div class="deploy-body">
-      <div class="pf-panel" style="padding:12px;">
-        <div class="pf-label" style="margin-bottom:8px;">TON PERSONNAGE</div>
-        <div id="deploy-player" class="champ-tile-row"></div>
+
+      <!-- Hero banner + sélecteur joueur -->
+      <div class="pf-panel deploy-section">
+        <div class="deploy-section-title">TON PERSONNAGE</div>
+        <!-- hero-banner injecté ici par deploy.js -->
+        <div id="deploy-player" class="champ-tile-row" style="margin-top:10px;"></div>
       </div>
-      <div class="pf-panel" style="padding:12px;">
-        <div class="pf-label" style="margin-bottom:6px;">SITUATION</div>
-        <div id="deploy-brief" style="font-size:13px; line-height:1.5; color:var(--pf-text-dim);"></div>
+
+      <!-- Brief mission -->
+      <div class="pf-panel deploy-section">
+        <div class="deploy-section-title">SITUATION</div>
+        <div id="deploy-brief"
+             style="font-size:12px; line-height:1.7; color:var(--pf-text-dim);"></div>
       </div>
-      <div class="pf-panel" style="padding:12px;">
-        <div class="pf-label" style="margin-bottom:8px;">ALLIÉ DISPONIBLE (1 max)</div>
+
+      <!-- Alliés -->
+      <div class="pf-panel deploy-section">
+        <div class="deploy-section-title">ALLIÉ (1 max)</div>
         <div id="deploy-allies-grid" class="champ-tile-row"></div>
       </div>
-    </div>
+
+    </div><!-- /deploy-body -->
+
+    <!-- Footer collant : preview + CTA -->
     <div class="deploy-footer">
-      <div class="pf-label" id="deploy-team-preview" style="flex:1;">Équipe : Tarine</div>
-      <button class="pf-btn pf-btn-brand" id="btn-launch">ENTRER EN COMBAT</button>
+      <div class="pf-label deploy-team-preview" id="deploy-team-preview" style="flex:1;">
+        Équipe : Tarine
+      </div>
+      <button class="pf-btn pf-btn-brand" id="btn-launch"
+              style="letter-spacing:2px; font-size:14px; padding:12px 20px;">
+        ENTRER EN COMBAT
+      </button>
     </div>
   </div>
 
-  <!-- ===== COMBAT ===== -->
+  <!-- ═══════════════════════════════════════════
+       COMBAT
+  ═══════════════════════════════════════════ -->
   <div id="screen-game" class="screen">
     <div id="game-mount"></div>
     <div id="game-hud"></div>
   </div>
 
-  <!-- ===== FIN DE MATCH ===== -->
+  <!-- ═══════════════════════════════════════════
+       FIN DE MATCH
+       Fond : art_battle3 — épopée après bataille.
+       Titre VICTOIRE/DÉFAITE en gros, glow de couleur.
+       Lignes de récompenses animées en cascade.
+       Deux boutons en bas.
+  ═══════════════════════════════════════════ -->
   <div id="screen-end" class="screen">
-    <!-- Fond plein écran : élan héroïque au-dessus de l'armée -->
     <div class="pf-bg">
       <img src="assets/art_battle3.webp" class="pf-bg-blur" alt="">
       <img src="assets/art_battle3.webp" class="pf-bg-img" alt="">
       <div class="pf-bg-overlay"></div>
     </div>
-    <div class="pf-title" id="end-title" style="font-size:40px; letter-spacing:5px; margin-top:40px;">VICTOIRE</div>
-    <div class="pf-label" id="end-subtitle" style="font-size:13px; margin-bottom:18px;"></div>
+
+    <div id="end-title">VICTOIRE</div>
+    <div id="end-subtitle" class="pf-label" style="margin-bottom:16px;"></div>
     <div id="end-rewards"></div>
-    <div class="end-btns">
+    <div class="end-btns" style="margin-top:10px;">
       <button class="pf-btn pf-btn-brand" id="btn-hub">RETOUR AU HUB</button>
-      <button class="pf-btn" id="btn-retry">RÉESSAYER</button>
+      <button class="pf-btn pf-btn-ghost" id="btn-retry">RÉESSAYER</button>
     </div>
   </div>
 

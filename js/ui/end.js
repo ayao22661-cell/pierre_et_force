@@ -60,14 +60,14 @@ export function renderEnd(victory, mission, save, sim, onHub, onRetry){
     rewards.appendChild(rewardRow('Expérience', `+${xp} XP`));
     rewards.appendChild(rewardRow('Cauris', `+${cauris} ` + iconSvg('shell')));
     if(kills) rewards.appendChild(rewardRow('Éliminations', `${kills} ` + iconSvg('sword')));
-    if(leveled) rewards.appendChild(rewardRow('NIVEAU+', `Niveau ${save.level} atteint !`));
+    if(leveled) rewards.appendChild(rewardRow('NIVEAU+', `Niveau ${save.level} atteint !`, true));
 
     // Déblocage d'allié à la fin de l'acte
     const newAlly = mission?.id ? UNLOCK_BY_MISSION[mission.id] : null;
     if(newAlly && !save.allies_unlocked.includes(newAlly)){
       save.allies_unlocked.push(newAlly);
       const champName = CHAMPS[newAlly]?.name || newAlly;
-      rewards.appendChild(rewardRow('Allié débloqué ' + iconSvg('spark'), `${champName} rejoint l'équipe`));
+      rewards.appendChild(rewardRow('Allié débloqué ' + iconSvg('spark'), `${champName} rejoint l'équipe`, true));
     }
 
     writeSave(save);
@@ -82,10 +82,12 @@ export function renderEnd(victory, mission, save, sim, onHub, onRetry){
   document.getElementById('btn-retry').textContent = victory ? 'REJOUER' : 'RÉESSAYER';
 }
 
-function rewardRow(label, val){
-  const row = el('div', 'pf-panel', '');
-  row.style.cssText = 'display:flex;justify-content:space-between;padding:10px 14px;margin-bottom:6px;';
-  row.appendChild(el('span', 'pf-label', label));
-  row.appendChild(el('span', '', val));
+function rewardRow(label, val, highlight=false){
+  const row = el('div', 'pf-panel end-reward-row' + (highlight ? ' highlight' : ''), '');
+  const lbl = el('span', 'pf-label', label);
+  const v   = el('span', '', val);
+  v.style.cssText = 'font-family:var(--pf-font-display);font-size:15px;letter-spacing:1px;color:var(--pf-text);';
+  row.appendChild(lbl);
+  row.appendChild(v);
   return row;
 }

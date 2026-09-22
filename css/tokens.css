@@ -1,131 +1,314 @@
 /* ============================================================
-   PIERRE ET FORCE — DESIGN TOKENS
-   Palette inspirée des panneaux à bordure métallique et du logo
-   (bordeaux #a5342b, noir profond, or discret pour les accents rares)
+   PIERRE ET FORCE — DESIGN TOKENS v2
+   Inspiré Dota 2 / LoL : profondeur, glow de couleur, surfaces
+   texturées, ornements angulaires. Palette propre au jeu.
    ============================================================ */
 
 :root{
-  /* Surfaces */
-  --pf-bg:           #0a0a10;
-  --pf-bg-alt:       #0e0e16;
-  --pf-panel:        #12121c;
-  --pf-panel-raised: #171724;
-  --pf-panel-border: #2a2a3c;
-  --pf-panel-border-lit: #3d3d56;
+  /* ── Surfaces (calquées sur le dark de Riot/Valve : bleu-noir chaud) */
+  --pf-bg:           #07080f;
+  --pf-bg-alt:       #090a12;
+  --pf-panel:        #0f1018;
+  --pf-panel-raised: #14151f;
+  --pf-panel-border: #1e1f2e;
+  --pf-panel-border-lit: #2e2f46;
 
-  /* Texte */
-  --pf-text:         #e8e6df;
-  --pf-text-dim:     #9c98a8;
-  --pf-text-faint:   #625f70;
-
-  /* Accent de marque — issu du logo Pierre et Force */
+  /* ── Couleur de marque — bordeaux profond, jamais en fond plein */
   --pf-brand:        #a5342b;
-  --pf-brand-lit:     #c94436;
-  --pf-brand-dim:     #6e211b;
-  --pf-gold:          #c9a24a;
-  --pf-gold-dim:      #8a6f34;
+  --pf-brand-lit:    #c94436;
+  --pf-brand-glow:   rgba(165,52,43,.4);
+  --pf-brand-dim:    #6e211b;
 
-  /* Rôles fonctionnels */
-  --pf-hp:            #d6453f;
-  --pf-hp-dim:        #5a201d;
-  --pf-mana:          #3f8fd6;
-  --pf-mana-dim:      #1d3e5a;
-  --pf-xp:            #c9a24a;
-  --pf-good:          #4aa876;
-  --pf-danger:        #d6453f;
-  --pf-team-ally:     #3f8fd6;
-  --pf-team-enemy:    #d6453f;
+  /* ── Or — accent épique, limité aux états importants */
+  --pf-gold:         #c9a24a;
+  --pf-gold-dim:     #7a5f2a;
+  --pf-gold-glow:    rgba(201,162,74,.35);
 
-  /* Typo */
+  /* ── Texte */
+  --pf-text:         #e8e4d8;
+  --pf-text-soft:    #c8c2b0;
+  --pf-text-dim:     #8a8578;
+  --pf-text-faint:   #4a4840;
+
+  /* ── Rôles fonctionnels */
+  --pf-hp:           #d6453f;
+  --pf-hp-dim:       #5a201d;
+  --pf-mana:         #3f8fd6;
+  --pf-mana-dim:     #1d3e5a;
+  --pf-xp:           #c9a24a;
+  --pf-good:         #4aa876;
+  --pf-danger:       #d6453f;
+  --pf-team-ally:    #3f8fd6;
+  --pf-team-enemy:   #d6453f;
+
+  /* ── Typo */
   --pf-font-display: 'Bebas Neue', 'Oswald', sans-serif;
   --pf-font-body:    'Inter', system-ui, sans-serif;
 
-  /* Rythme */
-  --pf-radius:       3px;
-  --pf-radius-lg:    6px;
-  --pf-gap-xs: 4px; --pf-gap-sm: 8px; --pf-gap-md: 14px; --pf-gap-lg: 22px; --pf-gap-xl: 36px;
+  /* ── Rythme */
+  --pf-radius:    2px;
+  --pf-radius-lg: 4px;
+  --pf-gap-xs: 4px; --pf-gap-sm: 8px; --pf-gap-md: 14px;
+  --pf-gap-lg: 22px; --pf-gap-xl: 36px;
 
-  /* Ombres */
-  --pf-shadow-panel: 0 4px 18px rgba(0,0,0,.55);
-  --pf-shadow-lift:  0 8px 28px rgba(0,0,0,.65);
+  /* ── Ombres avec couleur */
+  --pf-shadow-panel: 0 4px 18px rgba(0,0,0,.7);
+  --pf-shadow-lift:  0 8px 28px rgba(0,0,0,.75);
+  --pf-shadow-brand: 0 0 18px var(--pf-brand-glow);
+  --pf-shadow-gold:  0 0 14px var(--pf-gold-glow);
+
+  /* ── Surface hexmesh (à 4% d'opacité, invisible mais présent — Riot) */
+  --pf-hexmesh: rgba(201,162,74,.04);
 
   --pf-safe-b: env(safe-area-inset-bottom, 0px);
   --pf-safe-t: env(safe-area-inset-top, 0px);
 }
 
-/* ── Panneau à bordure métallique — motif central du style Pixels of Force ── */
+/* ══════════════════════════════════════════════════════════════
+   PANEL — panneau principal avec bord lumineux + micro-texture
+   ══════════════════════════════════════════════════════════════ */
 .pf-panel{
-  background: linear-gradient(180deg, var(--pf-panel-raised), var(--pf-panel));
+  background:
+    radial-gradient(ellipse 120% 80% at 50% 0%, var(--pf-hexmesh), transparent 70%),
+    linear-gradient(180deg, var(--pf-panel-raised), var(--pf-panel));
   border: 1px solid var(--pf-panel-border);
   border-radius: var(--pf-radius-lg);
-  box-shadow: var(--pf-shadow-panel), inset 0 1px 0 rgba(255,255,255,.03);
+  box-shadow:
+    var(--pf-shadow-panel),
+    inset 0 1px 0 rgba(255,255,255,.06),
+    inset 0 -1px 0 rgba(0,0,0,.3);
   position: relative;
 }
+/* Reflet angulaire haut-gauche — la lumière frappe le coin */
 .pf-panel::before{
   content:"";
   position:absolute; inset:0;
   border-radius: inherit;
-  padding:1px;
-  background: linear-gradient(160deg, rgba(255,255,255,.06), transparent 40%);
-  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
-  -webkit-mask-composite: xor; mask-composite: exclude;
   pointer-events:none;
+  background: linear-gradient(135deg,
+    rgba(255,255,255,.05) 0%,
+    rgba(255,255,255,.02) 20%,
+    transparent 50%);
 }
+
 .pf-panel-header{
   display:flex; align-items:center; justify-content:space-between;
   padding: 8px 12px;
   border-bottom: 1px solid var(--pf-panel-border);
   font-family: var(--pf-font-display);
-  letter-spacing: 1.5px;
-  font-size: 13px;
+  letter-spacing: 2px;
+  font-size: 12px;
   color: var(--pf-text-dim);
+  text-transform: uppercase;
 }
 
-/* ── Typo de base ── */
-.pf-title{ font-family: var(--pf-font-display); letter-spacing: 2px; color: var(--pf-text); }
-.pf-label{ font-family: var(--pf-font-body); font-size: 11px; letter-spacing: 1px; color: var(--pf-text-dim); }
+/* ── Typo ── */
+.pf-title{
+  font-family: var(--pf-font-display);
+  letter-spacing: 3px;
+  color: var(--pf-text);
+  text-transform: uppercase;
+}
+.pf-label{
+  font-family: var(--pf-font-body);
+  font-size: 10px;
+  letter-spacing: 1.5px;
+  color: var(--pf-text-dim);
+  text-transform: uppercase;
+}
 
-/* ── Bouton de base ── */
+/* ══════════════════════════════════════════════════════════════
+   BOUTONS — relief physique, lumière sur le bord haut
+   ══════════════════════════════════════════════════════════════ */
 .pf-btn{
   font-family: var(--pf-font-display);
-  letter-spacing: 1.5px;
-  font-size: 14px;
-  padding: 10px 18px;
+  letter-spacing: 2px;
+  font-size: 13px;
+  padding: 10px 20px;
   border-radius: var(--pf-radius);
-  border: 1px solid var(--pf-panel-border-lit);
-  background: linear-gradient(180deg, #232332, #171720);
+  background: linear-gradient(180deg, #1e1f2e 0%, #12131a 100%);
+  border-top:    1px solid rgba(255,255,255,.08);
+  border-left:   1px solid rgba(255,255,255,.04);
+  border-right:  1px solid rgba(0,0,0,.4);
+  border-bottom: 1px solid rgba(0,0,0,.5);
   color: var(--pf-text);
   cursor: pointer;
-  transition: filter .12s ease, transform .08s ease;
+  transition: filter .1s ease, transform .07s ease;
+  text-transform: uppercase;
+  position: relative;
 }
-.pf-btn:hover{ filter: brightness(1.15); }
-.pf-btn:active{ transform: scale(.97); }
+.pf-btn:hover{ filter: brightness(1.2); }
+.pf-btn:active{ transform: scale(.97); filter: brightness(.95); }
+
+/* Bouton brand — rouge bordeaux avec glow */
 .pf-btn-brand{
-  background: linear-gradient(180deg, var(--pf-brand-lit), var(--pf-brand));
-  border-color: var(--pf-brand-lit);
+  background: linear-gradient(180deg, #c94436 0%, #a5342b 55%, #8a2920 100%);
+  border-top:    1px solid rgba(255,255,255,.18);
+  border-bottom: 1px solid rgba(0,0,0,.4);
+  border-left:   1px solid rgba(255,255,255,.08);
+  border-right:  1px solid rgba(0,0,0,.3);
   color: #fff2ef;
+  box-shadow: 0 4px 16px var(--pf-brand-glow), inset 0 1px 0 rgba(255,255,255,.12);
 }
-.pf-btn-ghost{
-  background: transparent;
-  border-color: var(--pf-panel-border);
-  color: var(--pf-text-dim);
+.pf-btn-brand:hover{
+  filter: brightness(1.12);
+  box-shadow: 0 6px 22px var(--pf-brand-glow), inset 0 1px 0 rgba(255,255,255,.15);
 }
 
-/* ── Barre de ressource (vie / mana / xp) ── */
+/* Bouton ghost */
+.pf-btn-ghost{
+  background: transparent;
+  border: 1px solid var(--pf-panel-border-lit);
+  color: var(--pf-text-dim);
+  box-shadow: none;
+}
+.pf-btn-ghost:hover{ border-color: var(--pf-text-dim); color: var(--pf-text); filter: none; }
+
+/* ══════════════════════════════════════════════════════════════
+   BARRES DE RESSOURCE
+   ══════════════════════════════════════════════════════════════ */
 .pf-bar{
   position:relative;
-  height: 14px;
-  border-radius: 2px;
-  background: #1a1a24;
-  border: 1px solid #000;
+  height: 12px;
+  border-radius: 1px;
+  background: rgba(0,0,0,.6);
+  border-top:    1px solid rgba(0,0,0,.5);
+  border-bottom: 1px solid rgba(255,255,255,.04);
   overflow:hidden;
 }
 .pf-bar-fill{
   position:absolute; inset:0; width:100%;
   transform-origin:left;
   transition: transform .25s ease;
-  background: linear-gradient(180deg, rgba(255,255,255,.18), rgba(255,255,255,0) 40%), var(--fill, var(--pf-hp));
 }
-.pf-bar-hp .pf-bar-fill{ --fill: linear-gradient(90deg, var(--pf-hp-dim), var(--pf-hp)); background: linear-gradient(180deg, rgba(255,255,255,.18), rgba(255,255,255,0) 40%), linear-gradient(90deg, var(--pf-hp-dim), var(--pf-hp)); }
-.pf-bar-mana .pf-bar-fill{ background: linear-gradient(180deg, rgba(255,255,255,.18), rgba(255,255,255,0) 40%), linear-gradient(90deg, var(--pf-mana-dim), var(--pf-mana)); }
-.pf-bar-xp .pf-bar-fill{ background: linear-gradient(180deg, rgba(255,255,255,.18), rgba(255,255,255,0) 40%), linear-gradient(90deg, var(--pf-gold-dim), var(--pf-gold)); }
+/* Effet de lumière sur le dessus de la barre */
+.pf-bar-fill::after{
+  content:"";
+  position:absolute; top:0; left:0; right:0;
+  height:40%;
+  background: rgba(255,255,255,.15);
+  border-radius:1px 1px 0 0;
+}
+.pf-bar-hp   .pf-bar-fill{ background: linear-gradient(90deg, #8a2020, #d6453f); }
+.pf-bar-mana .pf-bar-fill{ background: linear-gradient(90deg, #1d3e5a, #3f8fd6); }
+.pf-bar-xp   .pf-bar-fill{ background: linear-gradient(90deg, #7a5f2a, #c9a24a); }
+
+/* ══════════════════════════════════════════════════════════════
+   BADGE
+   ══════════════════════════════════════════════════════════════ */
+.pf-badge{
+  display:inline-flex; align-items:center; gap:4px;
+  font-size: 10px; letter-spacing: 1.5px;
+  padding: 2px 8px; border-radius: 2px;
+  background: rgba(255,255,255,.05);
+  border: 1px solid var(--pf-panel-border);
+  color: var(--pf-text-dim);
+  text-transform: uppercase;
+}
+.pf-badge-brand{
+  background: rgba(165,52,43,.2);
+  border-color: var(--pf-brand-dim);
+  color: #f0a89f;
+}
+.pf-badge-gold{
+  background: rgba(201,162,74,.12);
+  border-color: var(--pf-gold-dim);
+  color: var(--pf-gold);
+}
+
+/* ══════════════════════════════════════════════════════════════
+   SORTS (spell slots) — cadres angulaires style MOBA
+   ══════════════════════════════════════════════════════════════ */
+.spell-slot{
+  width: 54px; height: 54px;
+  border-radius: 8px;
+  background: linear-gradient(160deg, #1a1928, #0f0e18 65%);
+  border-top:    1px solid rgba(255,255,255,.1);
+  border-left:   1px solid rgba(255,255,255,.06);
+  border-right:  1px solid rgba(0,0,0,.5);
+  border-bottom: 1px solid rgba(0,0,0,.6);
+  box-shadow: 0 2px 8px rgba(0,0,0,.5), inset 0 1px 0 rgba(255,255,255,.06);
+  display:flex; align-items:center; justify-content:center;
+  position:relative; font-family: var(--pf-font-display); font-size:16px;
+  color: var(--pf-text); cursor:pointer; user-select:none;
+  transition: transform .08s ease, box-shadow .1s ease;
+  overflow: visible;
+}
+.spell-slot:active{ transform: scale(.92); }
+.spell-ico{ color: var(--pf-text); opacity: .9; width:26px; height:26px; z-index:1; }
+.spell-slot .key{
+  position:absolute; top:-6px; left:-6px; z-index:3;
+  width:15px; height:15px; border-radius:3px;
+  display:flex; align-items:center; justify-content:center;
+  background: #07080f; border:1px solid var(--pf-panel-border-lit);
+  font-size:8px; color: var(--pf-text-dim); font-family: var(--pf-font-display);
+}
+.spell-slot .key.key-wide{ width:auto; padding:0 3px; }
+.spell-slot-cost{
+  position:absolute; top:-6px; right:-6px; z-index:3;
+  font-size:8px; color:#7fc7ff;
+  background:#07080f; border:1px solid rgba(127,199,255,.3);
+  border-radius:3px; padding:0 3px; line-height:1.4;
+  font-family: var(--pf-font-display);
+}
+/* Ultime — or + glow */
+.spell-slot.ult{
+  border-top-color: var(--pf-gold);
+  border-left-color: rgba(201,162,74,.4);
+  box-shadow: 0 0 12px var(--pf-gold-glow), 0 2px 8px rgba(0,0,0,.5), inset 0 1px 0 rgba(255,255,255,.06);
+}
+.spell-slot.ult .key{ border-color: var(--pf-gold); color: var(--pf-gold); }
+.spell-slot-sweep{
+  position:absolute; inset:0; border-radius: inherit; pointer-events:none;
+  --cd-frac: 0;
+  background: conic-gradient(rgba(0,0,0,.75) calc(var(--cd-frac) * 360deg), transparent 0deg);
+  transition: background .1s linear;
+}
+.spell-slot-cd{
+  position:absolute; inset:0; border-radius: inherit; z-index:2;
+  display:flex; align-items:center; justify-content:center;
+  font-family: var(--pf-font-display); font-size:19px; color:#fff;
+  text-shadow: 0 1px 4px rgba(0,0,0,.9);
+  pointer-events:none;
+}
+.spell-slot.cooling .spell-ico{ opacity:.3; }
+.spell-slot.no-mana{ filter: saturate(.2) brightness(.65); }
+.spell-slot-pips{
+  position:absolute; bottom:-13px; left:50%; transform:translateX(-50%);
+  display:flex; gap:2px; z-index:3;
+}
+.spell-pip{
+  width:5px; height:5px; border-radius:1px;
+  background: rgba(255,255,255,.08); border:1px solid rgba(255,255,255,.12);
+}
+.spell-pip.filled{ background: var(--pf-brand-lit); border-color: var(--pf-brand-lit); box-shadow: 0 0 4px var(--pf-brand-glow); }
+.spell-slot.ult .spell-pip.filled{ background: var(--pf-gold); border-color: var(--pf-gold); box-shadow: 0 0 4px var(--pf-gold-glow); }
+.spell-slot.basic-slot{
+  border-top-color: rgba(165,52,43,.5);
+  background: linear-gradient(160deg, rgba(165,52,43,.18), #0f0e18 60%);
+}
+
+/* ══════════════════════════════════════════════════════════════
+   TOAST
+   ══════════════════════════════════════════════════════════════ */
+#pf-toast{
+  position: fixed; left:50%; bottom: calc(24px + var(--pf-safe-b));
+  transform: translateX(-50%) translateY(8px);
+  padding: 8px 18px;
+  background: rgba(7,8,15,.96);
+  border: 1px solid var(--pf-panel-border-lit);
+  border-top-color: rgba(255,255,255,.1);
+  font-size: 12px; letter-spacing: 1px;
+  opacity:0; pointer-events:none; transition:.25s;
+  z-index: 500; white-space:nowrap;
+  box-shadow: 0 4px 18px rgba(0,0,0,.6);
+  text-transform: uppercase;
+}
+#pf-toast.show{ opacity:1; transform: translateX(-50%) translateY(0); }
+
+/* ── Petit bouton ── */
+.pf-btn-sm{ padding: 5px 12px; font-size:11px; letter-spacing:1.5px; }
+.pf-ico{ width:1.05em; height:1.05em; vertical-align:-0.16em; fill:none; stroke:currentColor; stroke-width:1.7; stroke-linecap:round; stroke-linejoin:round; flex-shrink:0; }
+.pf-ico-lg{ width:1.5em; height:1.5em; vertical-align:-0.3em; }
+.pf-ico-sm{ width:0.85em; height:0.85em; vertical-align:-0.12em; }
+.pf-ico-fill{ fill:currentColor; stroke:none; }
