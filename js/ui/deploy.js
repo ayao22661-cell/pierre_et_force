@@ -13,7 +13,11 @@ const MODE_MAP = { 'SIÈGE': 'siege', 'ARÈNE': 'arena', 'DÉFENSE': 'defense', 
 export function renderDeploy(mission, modeLabel, save, onLaunch){
   document.getElementById('deploy-mission-name').textContent = `${mission.num}. ${mission.name}`;
   document.getElementById('deploy-mode').textContent = modeLabel;
-  document.getElementById('deploy-brief').textContent = mission.brief || mission.desc || '';
+  const brief = document.getElementById('deploy-brief');
+  brief.textContent = mission.brief || mission.desc || '';
+  // Brief replié sur 3 lignes : un toucher l'ouvre en entier.
+  brief.classList.remove('open');
+  brief.onclick = () => brief.classList.toggle('open');
 
   const state = { champ: save.lastChamp && CHAMPS[save.lastChamp] ? save.lastChamp : 'TARINE', allies: [] };
 

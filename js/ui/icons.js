@@ -12,6 +12,17 @@
 // ============================================================
 
 const PATHS = {
+  // ---- Navigation du hub et états de carte ----
+  // Poing — coup de base au corps à corps
+  fist: '<path d="M7 11V8.2a1.6 1.6 0 0 1 3.2 0V10"/><path d="M10.2 9.5V7.4a1.6 1.6 0 0 1 3.2 0V10"/><path d="M13.4 9.8V8a1.6 1.6 0 0 1 3.2 0v2.3"/><path d="M16.6 10.2a1.5 1.5 0 0 1 3 .3v2.8c0 3.9-2.8 6.7-6.6 6.7h-1.4C8 20 5.2 17.6 5 14.2l-.2-2a1.6 1.6 0 0 1 2.2-1.6"/><path d="M7 14.5c1.4-.9 3.3-1 4.8-.3"/>',
+  lock: '<rect x="5.5" y="10.5" width="13" height="10" rx="1.5"/><path d="M8.5 10.5V7.5a3.5 3.5 0 0 1 7 0v3"/>',
+  play: '<path d="M8 5l11 7-11 7z"/>',
+  back: '<path d="M15 5l-7 7 7 7"/>',
+  plus: '<path d="M12 5v14M5 12h14"/>',
+  flag: '<path d="M5 21V4"/><path d="M5 4h12l-2.5 4L17 12H5"/>',
+  user: '<circle cx="12" cy="8" r="3.6"/><path d="M5 20.5c0-4 3.1-6.5 7-6.5s7 2.5 7 6.5"/>',
+  gem: '<path d="M7 4h10l4 5-9 11L3 9z"/><path d="M3 9h18M9.5 4L12 20M14.5 4L12 20"/>',
+  bag: '<path d="M5 8h14l-1.2 12H6.2z"/><path d="M9 8V6.5a3 3 0 0 1 6 0V8"/>',
   // Cœur — points de vie
   heart: '<path d="M12 20s-7-4.5-7-9.5A3.8 3.8 0 0 1 12 8a3.8 3.8 0 0 1 7 2.5C19 15.5 12 20 12 20z"/>',
   // Épée — attaque

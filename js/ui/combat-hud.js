@@ -50,11 +50,15 @@ export class CombatHud{
     // Bas gauche : portrait + barres
     const bottom = el('div', 'hud-bottom');
     const left = el('div', 'pf-panel hud-portrait');
-    const portrait = el('img', 'pf-portrait-img');
+    // Portrait recadré sur le visage : les images sont en pied (480×600),
+    // affichées telles quelles elles couvraient la moitié de l'écran.
+    const face = el('div', 'hud-face');
+    face.style.setProperty('--accent', d.fx);
+    const portrait = el('img', '');
     portrait.src = portraitFor(this.match.sim.player.key);
     portrait.alt = d.name;
-    portrait.style.setProperty('--accent', d.fx);
-    left.appendChild(portrait);
+    face.appendChild(portrait);
+    left.appendChild(face);
 
     const bars = el('div', 'hud-bars');
     bars.appendChild(this._bar('hp', 'pf-bar-hp'));
@@ -106,7 +110,8 @@ export class CombatHud{
     // Coup de base : une frappe au corps à corps déclenchée à la main,
     // à côté des sorts. Le personnage frappe même sans cible à portée,
     // pour que le joueur sente le coup partir.
-    const basic = el('div', 'spell-slot basic-slot', iconSvg('sword', 'pf-ico-lg'));
+    const basic = el('div', 'spell-slot basic-slot');
+    basic.appendChild(el('div', 'spell-ico', iconSvg('fist', 'pf-ico-lg')));
     basic.title = 'Coup de base (Espace)';
     // Le glyphe U+23B5 (⎵) ne s'affiche pas proprement dans toutes les
     // polices/systèmes (rendu cassé/quasi invisible) — texte simple à la
@@ -120,9 +125,14 @@ export class CombatHud{
 
     bottom.appendChild(spells);
 
-    const pause = el('div', 'pf-panel hud-pause-btn', iconSvg('pause', 'pf-ico-lg'));
+    // Pause en haut à gauche (comme sur les MOBA mobiles) : en bas, elle
+    // se retrouvait coincée contre les sorts et sortait de l'écran sur
+    // petit téléphone.
+    const pause = el('button', 'hud-pause-btn', iconSvg('pause'));
+    pause.type = 'button';
+    pause.setAttribute('aria-label', 'Pause');
     pause.addEventListener('click', onPause);
-    bottom.appendChild(pause);
+    this.root.appendChild(pause);
 
     this.root.appendChild(bottom);
 

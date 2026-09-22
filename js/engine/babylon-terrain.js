@@ -62,7 +62,7 @@ export class BabylonTerrain{
     this.root = new BABYLON.TransformNode('terrainRoot', scene);
     console.log('[BabylonTerrain] construction — layout w=', layout.w, 'h=', layout.h, '| meshes scène avant=', scene.meshes.length);
     this._buildGround(seed);
-    this._buildLane();
+    this._buildLane(seed);
     this._buildBrush(seed);
     this._buildWalls();
     // Modèles de décor réels (rochers, buissons, coffre, brasero) —
@@ -114,20 +114,30 @@ export class BabylonTerrain{
     this.ground = ground;
   }
 
-  _buildLane(){
+  _buildLane(seed = 0){
     const path = this.layout.path;
     if(!path || path.length < 2) return;
     const laneWidth = (this.layout.laneWidth || 210) / WORLD_SCALE;
-
-    const points = path.map(p => {
-      const b = this._toBabylon(p.x, p.y);
-      return new BABYLON.Vector3(b.x, 0.03, b.z); // légèrement au-dessus du sol pour éviter le z-fighting
+    // La voie épouse le relief : posée à plat (y = 0.03), elle passait
+    // SOUS le sol partout où le bruit de hauteur dépassait ce niveau,
+    // d'où la route coupée net au milieu de l'écran. On rééchantillonne
+    // le tracé finement et on lit la hauteur du sol à chaque bord.
+    const groundY = (x, z) => heightNoise(x, -z, seed) * 0.55 + 0.1;
+    const pts = path.map(p => { const b = this._toBabylon(p.x, p.y); return new BABYLON.Vector3(b.x, 0, b.z); });
+    const dense = [];
+    for(let i = 0; i < pts.length - 1; i++){
+      const a = pts[i], b = pts[i + 1];
+      const n = Math.max(1, Math.ceil(BABYLON.Vector3.Distance(a, b) / 0.5));
+      for(let k = 0; k < n; k++) dense.push(BABYLON.Vector3.Lerp(a, b, k / n));
+    }
+    dense.push(pts[pts.length - 1]);
+    const edge = (sign) => dense.map(p => {
+      const q = p.add(new BABYLON.Vector3(0, 0, sign * laneWidth / 2));
+      q.y = groundY(q.x, q.z);
+      return q;
     });
     const ribbon = BABYLON.MeshBuilder.CreateRibbon('lane', {
-      pathArray: [
-        points.map(p => p.add(new BABYLON.Vector3(0, 0, -laneWidth/2))),
-        points.map(p => p.add(new BABYLON.Vector3(0, 0,  laneWidth/2))),
-      ],
+      pathArray: [edge(-1), edge(1)],
       sideOrientation: BABYLON.Mesh.DOUBLESIDE,
     }, this.scene);
     ribbon.parent = this.root;

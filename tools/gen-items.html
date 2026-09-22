@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="fr"><head><meta charset="utf-8"><title>Générateur — objets 3D</title>
+<script src="https://cdn.babylonjs.com/babylon.js"></script>
+<script src="https://cdn.babylonjs.com/loaders/babylonjs.loaders.min.js"></script>
+<style>
+body{background:#07080f;color:#e8e4d8;font-family:system-ui;margin:20px}
+#grid{display:grid;grid-template-columns:repeat(auto-fill,160px);gap:10px;margin:14px 0}
+figure{margin:0;background:radial-gradient(circle at 50% 60%,#2a2230,#0b0b12);border:1px solid #2e2f46;padding:6px;text-align:center;font-size:11px}
+figure img{width:148px;height:148px;display:block}
+button{padding:10px 16px;background:#a5342b;color:#fff;border:0;font-weight:600;cursor:pointer}
+</style></head>
+<body>
+<h1>Vignettes 3D de la boutique</h1>
+<p>Rend chaque objet avec Babylon.js, puis « Tout télécharger » : copier les fichiers dans <code>assets/items/</code>.</p>
+<button id="dl" disabled>Tout télécharger</button>
+<div id="grid"></div>
+<canvas id="c" width="320" height="320" style="display:none"></canvas>
+<script type="module">
+import { ITEMS } from '../js/data/items.js';
+import { renderItem, ITEM_SIZE } from '../js/engine/item-renders.js';
+const TIER = { 1: '#d08a4e', 2: '#b9c3d4', 3: '#f0c35a' };
+const canvas = document.getElementById('c');
+canvas.width = canvas.height = ITEM_SIZE;
+const engine = new BABYLON.Engine(canvas, true, { preserveDrawingBuffer: true, antialias: true, alpha: true, premultipliedAlpha: false });
+const out = {};
+for(const it of ITEMS){
+  try{
+    const png = await renderItem(engine, it.id, TIER[it.tier]);
+    // conversion en WebP (bien plus léger que le PNG)
+    const img = new Image(); img.src = png; await img.decode();
+    const cv = document.createElement('canvas'); cv.width = cv.height = ITEM_SIZE;
+    cv.getContext('2d').drawImage(img, 0, 0);
+    out[it.id] = cv.toDataURL('image/webp', 0.9);
+    const f = document.createElement('figure');
+    f.innerHTML = `<img src="${out[it.id]}"><figcaption>${it.name}</figcaption>`;
+    document.getElementById('grid').appendChild(f);
+  }catch(e){ console.error(it.id, e); }
+}
+window.__out = out;
+const dl = document.getElementById('dl');
+dl.disabled = false;
+dl.onclick = () => Object.entries(out).forEach(([id, url]) => {
+  const a = document.createElement('a'); a.href = url; a.download = id + '.webp'; a.click();
+});
+document.title = 'DONE ' + Object.keys(out).length;
+</script>
+</body></html>
