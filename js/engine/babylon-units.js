@@ -532,7 +532,16 @@ export class BabylonUnits{
     inst.yaw = Math.atan2(f.x, -f.y);
     this._applyTransform(inst, unit, 1);
     this._enterIdle(inst, true);
-    this._attachWeapons(inst, unit).catch(e => console.error('[BabylonUnits] ❌ échec attache d\'arme pour', unit.key, e));
+    // Invocation temporaire (ex. le Lieutenant de Baba) : même modèle que
+    // son invocateur, donc on la rend fantomatique et plus petite — sinon
+    // on croyait voir le même méchant apparaître deux fois.
+    const ghostify = () => {
+      if(!unit.temporary || inst.disposed) return;
+      pivot.scaling.setAll(0.82);
+      for(const m of pivot.getChildMeshes(false)) m.visibility = 0.45;
+    };
+    ghostify();
+    this._attachWeapons(inst, unit).then(ghostify).catch(e => console.error('[BabylonUnits] ❌ échec attache d\'arme pour', unit.key, e));
     return inst;
   }
 

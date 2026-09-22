@@ -220,8 +220,9 @@ const EXECUTORS = {
     const power = ranked(a.power, rank) || 0.5;
     const ghost = {
       id: -Math.floor(Math.random()*1e9), kind: 'champ', key: u.key, d: u.d,
-      name: u.name + ' (Lieutenant)', team: u.team,
-      x: u.x, y: u.y, r: u.r*0.85,
+      name: u.name + ' (Lieutenant)', team: u.team, isSummon: true,
+      // Apparaît à côté de son invocateur, pas pile sur lui.
+      x: u.x + (u.facing?.y || 0) * 50, y: u.y - (u.facing?.x || 1) * 50, r: u.r*0.85,
       hp: u.maxHp*power, maxHp: u.maxHp*power,
       mana: 0, maxMana: 0,
       atk: u.atk*power, arm: u.arm*0.6, as: u.as, ms: u.ms, baseMs: u.ms, range: u.range,

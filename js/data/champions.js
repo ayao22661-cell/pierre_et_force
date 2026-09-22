@@ -47,7 +47,7 @@ export const CHAMPS = {
     abil:[
       {name:"Mot qui Blesse",desc:"Frappe en cône qui réduit l'armure.",type:"cone",cd:[6,5.5,5,4.5,4],cost:35,range:190,angle:1.4,dmg:[70,110,150,190,230],ratio:1.0,debuff:{arm:-20,d:3},color:"#ff8a5c"},
       {name:"Sourire de Victoire",desc:"Ruée vers une cible puis étourdissement.",type:"dash",cd:[12,11,10,9,8],cost:50,range:380,radius:80,dmg:[60,95,130,165,200],ratio:0.8,cc:{t:"stun",d:0.75},color:"#D85A30"},
-      {name:"Lieutenant",desc:"Invoque un lieutenant fantôme qui combat 6 s.",type:"summon",cd:[18,17,16,15,14],cost:60,dur:6,power:[0.4,0.5,0.6,0.7,0.8],color:"#ff6a3d"},
+      {name:"Lieutenant",desc:"Invoque un lieutenant fantôme qui combat 6 s.",type:"summon",cd:[18,17,16,15,14],cost:60,dur:6,power:[0.25,0.3,0.35,0.4,0.45],color:"#ff6a3d"},
       {name:"Chez Moi Partout",desc:"Se téléporte sur la zone et frappe tout autour.",type:"blink",cd:[80,65,50],cost:80,range:600,radius:180,dmg:[280,420,560],ratio:1.4,buff:{as:0.4,d:4},color:"#D85A30",ult:true}
     ]},
   LUNDGREN:{name:"Lundgren",title:"Le Passeur de Pierres",role:"Mage",
