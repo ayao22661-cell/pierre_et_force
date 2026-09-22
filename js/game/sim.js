@@ -92,7 +92,8 @@ export function makeMinion(team, path, wp){
   return {
     id: UID++, kind: 'minion', team,
     x: 0, y: 0, r: 15,
-    hp: 320, maxHp: 320, atk: 22, arm: 8, as: 0.9, ms: 220, range: 46,
+    hp: 320, maxHp: 320, atk: 22, arm: 8, as: 0.9, ms: 220 * (0.95 + Math.random() * 0.1), range: 46,
+    slot: 0, // décalage latéral dans la formation (px)
     ranged: false, fx: team === 0 ? '#5aa9ff' : '#ff6a5a',
     atkCd: 0, dead: false, target: null, path, wp,
   };
@@ -283,7 +284,6 @@ export class Sim{
       if(u.dead || u === this.player) continue;
       this._think(u, dt);
     }
-    this._separate(dt);
     for(const u of this.units) if(!u.dead) this._tickAttack(u, dt);
     for(const u of this.units) if(!u.dead && u.kind === 'champ') this._tickResources(u, dt);
     // IA de sorts — alliés (hors joueur) et ennemis choisissent et lancent
@@ -297,6 +297,8 @@ export class Sim{
     else if(this.mode === 'defense') this._tickDefense(dt);
     else if(this.mode === 'boss') this._tickBoss(dt);
     else this._tickArena(dt);
+    // Après TOUS les déplacements (les sbires avancent dans le tick du mode).
+    this._separate(dt);
 
     // Nettoyage des unités temporaires (invocations expirées).
     for(const u of this.units){
@@ -444,8 +446,12 @@ export class Sim{
    */
   _separate(dt){
     const mob = this.units.filter(u => !u.dead && u.ms > 0);
-    const rad = (u) => u.kind === 'minion' ? 17 : 24;
-    const k = Math.min(1, dt * 12); // correction progressive, pas de téléportation
+    const rad = (u) => u.kind === 'minion' ? 22 : 26;
+    // Deux passes de correction complète : en mêlée, ceux qui poussent vers
+    // la même cible compriment le groupe à chaque frame ; une correction
+    // partielle ne suffisait pas à les tenir écartés.
+    const k = 0.5;
+    for(let pass = 0; pass < 2; pass++)
     for(let i = 0; i < mob.length; i++){
       const a = mob[i];
       for(let j = i + 1; j < mob.length; j++){
@@ -646,10 +652,15 @@ export class Sim{
   _spawnWave(){
     const path = this.path;
     for(let i = 0; i < 3; i++){
+      // Formation en éventail : un couloir par sbire (gauche / centre /
+      // droite) et un léger décalage en profondeur, au lieu d'une file
+      // collée qui visait exactement le même point.
       const m0 = makeMinion(0, path, 1);
-      m0.x = path[0].x; m0.y = path[0].y + (i-1)*30;
+      m0.slot = (i-1) * 48;
+      m0.x = path[0].x - (i === 1 ? 30 : 0); m0.y = path[0].y + (i-1)*48;
       const m1 = makeMinion(1, path, path.length-2);
-      m1.x = path[path.length-1].x; m1.y = path[path.length-1].y + (i-1)*30;
+      m1.slot = (i-1) * 48;
+      m1.x = path[path.length-1].x + (i === 1 ? 30 : 0); m1.y = path[path.length-1].y + (i-1)*48;
       this.units.push(m0, m1);
     }
   }
@@ -663,9 +674,17 @@ export class Sim{
     }
     const wp = u.path[u.wp];
     if(!wp) return;
-    const d = Math.hypot(wp.x-u.x, wp.y-u.y);
+    // Point visé décalé sur le côté selon le couloir du sbire
+    // (perpendiculaire au tronçon de route), pour garder la formation.
+    let tx = wp.x, ty = wp.y;
+    if(u.slot){
+      const prev = u.path[u.wp - (u.team === 0 ? 1 : -1)] || wp;
+      const sx = wp.x - prev.x, sy = wp.y - prev.y, sl = Math.hypot(sx, sy) || 1;
+      tx += (-sy / sl) * u.slot; ty += (sx / sl) * u.slot;
+    }
+    const d = Math.hypot(tx-u.x, ty-u.y);
     if(d < 30) u.wp += (u.team === 0 ? 1 : -1);
-    else this._moveToward(u, wp.x, wp.y, dt);
+    else this._moveToward(u, tx, ty, dt);
   }
 
   _tickArena(dt){
@@ -717,8 +736,9 @@ export class Sim{
     const minionCount = 2 + Math.floor(this.defenseWaveN * 1.2);
     for(let i = 0; i < minionCount; i++){
       const m = makeMinion(1, path, path.length - 2);
-      m.x = spawn.x + (i - Math.floor(minionCount/2)) * 28;
-      m.y = spawn.y;
+      m.slot = ((i % 3) - 1) * 48;
+      m.x = spawn.x + (i - Math.floor(minionCount/2)) * 48;
+      m.y = spawn.y + Math.floor(i / 3) * 40;
       m.hp *= waveMult; m.maxHp = m.hp; m.atk *= waveAtkMult;
       this.units.push(m);
     }
