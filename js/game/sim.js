@@ -457,7 +457,10 @@ export class Sim{
       for(let j = i + 1; j < mob.length; j++){
         const b = mob[j];
         let dx = b.x - a.x, dy = b.y - a.y;
-        const min = rad(a) + rad(b);
+        // Entre ennemis, on laisse le contact (sinon l'écartement les
+        // repoussait hors de portée de mêlée et ils ne se battaient plus) :
+        // l'espacement complet ne vaut qu'entre membres d'une même équipe.
+        const min = (rad(a) + rad(b)) * (a.team === b.team ? 1 : 0.6);
         const d2 = dx*dx + dy*dy;
         if(d2 >= min*min) continue;
         let d = Math.sqrt(d2);
