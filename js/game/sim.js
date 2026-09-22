@@ -283,6 +283,7 @@ export class Sim{
       if(u.dead || u === this.player) continue;
       this._think(u, dt);
     }
+    this._separate(dt);
     for(const u of this.units) if(!u.dead) this._tickAttack(u, dt);
     for(const u of this.units) if(!u.dead && u.kind === 'champ') this._tickResources(u, dt);
     // IA de sorts — alliés (hors joueur) et ennemis choisissent et lancent
@@ -430,6 +431,50 @@ export class Sim{
         if(h && Math.hypot(h.x-u.x, h.y-u.y) > 40) this._moveToward(u, h.x, h.y, dt);
       }
       u.target = null;
+    }
+  }
+
+  /**
+   * Écartement doux entre unités : sans lui, tous ceux qui visaient la
+   * même cible finissaient empilés sur un seul point (un amas de modèles
+   * 3D les uns dans les autres). Chaque paire trop proche est repoussée
+   * de part et d'autre ; le joueur bouge moins que les autres pour ne
+   * pas se faire « bousculer » hors de sa trajectoire. Les structures
+   * (Autel, tours) ne bougent pas mais repoussent ceux qui entrent dedans.
+   */
+  _separate(dt){
+    const mob = this.units.filter(u => !u.dead && u.ms > 0);
+    const rad = (u) => u.kind === 'minion' ? 17 : 24;
+    const k = Math.min(1, dt * 12); // correction progressive, pas de téléportation
+    for(let i = 0; i < mob.length; i++){
+      const a = mob[i];
+      for(let j = i + 1; j < mob.length; j++){
+        const b = mob[j];
+        let dx = b.x - a.x, dy = b.y - a.y;
+        const min = rad(a) + rad(b);
+        const d2 = dx*dx + dy*dy;
+        if(d2 >= min*min) continue;
+        let d = Math.sqrt(d2);
+        if(d < 0.01){ // exactement superposés : direction pseudo-aléatoire stable
+          const ang = ((a.id * 928371 + b.id * 1237) % 628) / 100;
+          dx = Math.cos(ang); dy = Math.sin(ang); d = 1;
+        }
+        const push = (min - d) * k;
+        const nx = dx / d, ny = dy / d;
+        const wa = a.isPlayer ? 0.2 : b.isPlayer ? 0.8 : 0.5;
+        a.x -= nx * push * wa;       a.y -= ny * push * wa;
+        b.x += nx * push * (1 - wa); b.y += ny * push * (1 - wa);
+      }
+    }
+    for(const s of this.units){
+      if(s.dead || s.ms > 0 || !s.r) continue;
+      for(const u of mob){
+        const dx = u.x - s.x, dy = u.y - s.y, min = s.r + rad(u) * 0.6;
+        const d = Math.hypot(dx, dy);
+        if(d >= min || d < 0.01) continue;
+        const push = (min - d) * k;
+        u.x += dx / d * push; u.y += dy / d * push;
+      }
     }
   }
 
