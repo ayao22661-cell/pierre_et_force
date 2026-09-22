@@ -13,7 +13,7 @@ export const CHAMPS = {
   SAM:{name:"Sam Grün",title:"Le Passeur",role:"Mage",
     body:0, hp:540,hpL:84, mana:420,manaL:55, atk:52,atkL:2.8, arm:22,armL:3.5, as:0.64,asL:0.015, ms:320, range:300, ranged:true,
     fx:"#16c8bd", proj:"#16c8bd",
-    passive:{name:"Le Seuil",desc:"Après une capacité, la prochaine attaque inflige +80% de dégâts."},
+    passive:{name:"Le Seuil",desc:"Après avoir lancé une capacité, la prochaine attaque de base inflige +40% de dégâts supplémentaires (proc une fois, délai interne 1 s)."},
     abil:[
       {name:"Seuil Ouvert",desc:"Faille explosive qui éclate au premier ennemi touché.",type:"shot",cd:[6,5.5,5,4.5,4],cost:50,range:620,width:40,speed:1000,explode:110,dmg:[80,125,170,215,260],ratio:1.0,color:"#16c8bd"},
       {name:"Ce Que Tu Es",desc:"Zone qui révèle et enracine après un court délai.",type:"circle",cd:[14,13,12,11,10],cost:70,range:600,radius:150,delay:0.8,dmg:[70,110,150,190,230],ratio:0.8,cc:{t:"root",d:1.5},color:"#5ef2e6"},
@@ -43,7 +43,7 @@ export const CHAMPS = {
   BABA:{name:"Baba Tunde",title:"Seigneur de la Cour",role:"Assassin",
     body:1, hp:590,hpL:90, mana:260,manaL:35, atk:68,atkL:4, arm:26,armL:3.6, as:0.72,asL:0.028, ms:340, range:92, ranged:false,
     fx:"#D85A30",
-    passive:{name:"Show de la Cour",desc:"Élimination ou assistance : délais −60% et +30% vitesse 2 s."},
+    passive:{name:"Show de la Cour",desc:"Élimination ou assistance : délais −25% et +15% vitesse pendant 2 s."},
     abil:[
       {name:"Mot qui Blesse",desc:"Frappe en cône qui réduit l'armure.",type:"cone",cd:[6,5.5,5,4.5,4],cost:35,range:190,angle:1.4,dmg:[70,110,150,190,230],ratio:1.0,debuff:{arm:-20,d:3},color:"#ff8a5c"},
       {name:"Sourire de Victoire",desc:"Ruée vers une cible puis étourdissement.",type:"dash",cd:[12,11,10,9,8],cost:50,range:380,radius:80,dmg:[60,95,130,165,200],ratio:0.8,cc:{t:"stun",d:0.75},color:"#D85A30"},
@@ -63,7 +63,7 @@ export const CHAMPS = {
   DARK:{name:"Dark",title:"L'Enfant de l'Abîme",role:"Assassin",
     body:0, hp:560,hpL:86, mana:300,manaL:40, atk:72,atkL:4.2, arm:24,armL:3.4, as:0.7,asL:0.03, ms:345, range:97, ranged:false,
     fx:"#C084FC",
-    passive:{name:"Faim de l'Abîme",desc:"Tous les dégâts rendent 12% de PV."},
+    passive:{name:"Faim de l'Abîme",desc:"Les attaques de base rendent 6% des dégâts infligés en PV. Les sorts rendent 3%."},
     abil:[
       {name:"Lame d'Ombre",desc:"Lame lancée qui traverse.",type:"shot",cd:[6,5.5,5,4.5,4],cost:40,range:540,width:42,speed:1150,pierce:true,dmg:[70,110,150,190,230],ratio:1.0,color:"#C084FC"},
       {name:"Voile Maudit",desc:"Disparaît dans l'ombre : vitesse et esquive des tirs 1,5 s.",type:"self",cd:[18,16.5,15,13.5,12],cost:60,buff:{ms:[90,100,110,120,130],d:1.5,veil:true},color:"#6b21a8"},

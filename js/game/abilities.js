@@ -56,6 +56,16 @@ export function tryCastAbility(sim, u, slot){
   const fn = EXECUTORS[a.type] || EXECUTORS.self;
   fn(sim, u, a, rank);
 
+  // Passif SAM — "Le Seuil" : déclenche le bonus d'attaque de base après ce sort,
+  // avec un verrou de 1 s pour éviter un enchaînement trop rapide.
+  if(u.key === 'SAM'){
+    const now = sim.time;
+    if(!u._seuilCoolUntil || now >= u._seuilCoolUntil){
+      u._seuilReady = true;
+      u._seuilCoolUntil = now + 1;
+    }
+  }
+
   // Burn (talent Feu — Brasier) : après chaque capacité, les ennemis
   // dans un rayon standard reçoivent un DoT léger pendant 3 s.
   if(u.bns?.burn > 0){
@@ -141,7 +151,7 @@ const EXECUTORS = {
       for(const t of sim.units){
         if(t.dead || t.team === u.team || t.team === undefined) continue;
         if(Math.hypot(t.x-tx, t.y-ty) <= (a.radius||150)){
-          sim._applyDamage(u, t, dmgOf(a, u, rank), { heavy: a.ult });
+          sim._applyDamage(u, t, dmgOf(a, u, rank), { heavy: a.ult, isAbility: true });
           applyCC(sim, u, t, a);
         }
       }
@@ -159,7 +169,7 @@ const EXECUTORS = {
       const ang = Math.atan2(dy,dx) - Math.atan2(u.facing.y, u.facing.x);
       const norm = Math.atan2(Math.sin(ang), Math.cos(ang));
       if(Math.abs(norm) <= half){
-        sim._applyDamage(u, t, dmgOf(a, u, rank), { heavy: a.ult });
+        sim._applyDamage(u, t, dmgOf(a, u, rank), { heavy: a.ult, isAbility: true });
         applyCC(sim, u, t, a);
       }
     }
@@ -180,7 +190,7 @@ const EXECUTORS = {
       for(const t of sim.units){
         if(t.dead || t.team === u.team || t.team === undefined) continue;
         if(Math.hypot(t.x-u.x, t.y-u.y) > radius) continue;
-        if(a.dmg) sim._applyDamage(u, t, dmgOf(a, u, rank), { heavy: a.ult });
+        if(a.dmg) sim._applyDamage(u, t, dmgOf(a, u, rank), { heavy: a.ult, isAbility: true });
         applyCC(sim, u, t, a);
       }
     }
@@ -201,7 +211,7 @@ const EXECUTORS = {
       if(dist > (a.radius||170)) continue;
       if(t.team === u.team && t.kind === 'champ' && a.heal) heal(sim, t, healOf(a, u, rank)*3);
       else if(t.team !== u.team && t.team !== undefined && a.dmg){
-        sim._applyDamage(u, t, dmgOf(a, u, rank)*3, { heavy: a.ult });
+        sim._applyDamage(u, t, dmgOf(a, u, rank)*3, { heavy: a.ult, isAbility: true });
         applyCC(sim, u, t, a);
       }
     }
@@ -266,13 +276,13 @@ function castProjectile(sim, u, a, rank){
   const travel = Math.max(60, dist / (a.speed || 900)) * 1000;
   setTimeout(() => {
     if(sim.over || foe.dead) return;
-    sim._applyDamage(u, foe, dmgOf(a, u, rank), { heavy: a.ult });
+    sim._applyDamage(u, foe, dmgOf(a, u, rank), { heavy: a.ult, isAbility: true });
     applyCC(sim, u, foe, a);
     if(a.pierce){
       for(const t of sim.units){
         if(t === foe || t.dead || t.team === u.team || t.team === undefined) continue;
         if(Math.hypot(t.x-foe.x, t.y-foe.y) < (a.width||46)*2){
-          sim._applyDamage(u, t, dmgOf(a, u, rank), { heavy: a.ult });
+          sim._applyDamage(u, t, dmgOf(a, u, rank), { heavy: a.ult, isAbility: true });
           applyCC(sim, u, t, a);
         }
       }
@@ -298,7 +308,7 @@ function castDash(sim, u, a, rank){
   for(const t of sim.units){
     if(t.dead || t.team === u.team || t.team === undefined) continue;
     if(Math.hypot(t.x-tx, t.y-ty) <= radius){
-      sim._applyDamage(u, t, dmgOf(a, u, rank), { heavy: a.ult });
+      sim._applyDamage(u, t, dmgOf(a, u, rank), { heavy: a.ult, isAbility: true });
       applyCC(sim, u, t, a);
     }
   }

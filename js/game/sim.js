@@ -542,6 +542,15 @@ export class Sim{
     const isCrit = critChance > 0 && Math.random() < critChance;
     let dmg = u.atk || 10;
     if(isCrit) dmg *= 2;
+
+    // Passif SAM — "Le Seuil" : +40% dégâts sur l'attaque de base
+    // suivant un sort (proc une fois, délai interne 1 s entre procs).
+    if(u.key === 'SAM' && u._seuilReady){
+      dmg *= 1.4;
+      u._seuilReady = false;
+      this.onEvent({ type: 'fx-self', unit: u, color: '#16c8bd' });
+    }
+
     if(u.ranged){
       this.onEvent({ type: 'projectile', from: u, to: t, color: u.proj || u.fx, manual });
       setTimeout(() => this._applyDamage(u, t, dmg, { basic: true, crit: isCrit }), 140);
@@ -604,6 +613,17 @@ export class Sim{
       if(lifesteal > 0) this.onEvent({ type: 'heal', unit: u, amount: lifesteal });
     }
 
+    // Passif DARK — "Faim de l'Abîme" : attaques de base +6% PV, sorts +3%.
+    // S'applique à DARK quel que soit son équipe (joueur ou ennemi).
+    if(u.key === 'DARK' && !t.isSummon){
+      const rate = opts.basic ? 0.06 : (opts.isAbility ? 0.03 : 0);
+      if(rate > 0){
+        const drain = dmg * rate;
+        u.hp = Math.min(u.maxHp, u.hp + drain);
+        if(drain > 0.5) this.onEvent({ type: 'heal', unit: u, amount: drain });
+      }
+    }
+
     if(t.hp <= 0 && !t.dead){
       // Revive — survie à 1 PV une fois par combat
       if(t.reviveReady && t.team === 0){
@@ -625,6 +645,15 @@ export class Sim{
       // cdKill — élimination : réduit les CDs du tueur
       if(t.kind === 'champ' && u?.bns?.cdKill > 0){
         u.cds = u.cds.map(cd => cd * (1 - u.bns.cdKill));
+      }
+      // Passif BABA — "Show de la Cour" : élimination → −25% CDs + +15% vitesse 2 s.
+      // Fonctionne que BABA soit joueur ou ennemi.
+      if(t.kind === 'champ' && u?.key === 'BABA'){
+        u.cds = u.cds.map(cd => cd * 0.75);
+        const baseMs = u.baseMs || u.ms;
+        u.ms = baseMs * 1.15;
+        setTimeout(() => { if(!u.dead) u.ms = u.baseMs || baseMs; }, 2000);
+        this.onEvent({ type: 'fx-self', unit: u, color: '#D85A30' });
       }
       // Plus AUCUN respawn, pour aucune unité, dans aucun mode — sur
       // demande explicite : un ennemi tué reste mort, point final.
