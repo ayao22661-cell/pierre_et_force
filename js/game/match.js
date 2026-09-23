@@ -94,7 +94,15 @@ export class Match{
       case 'projectile':
         this.fx.spawnProjectile({ x: e.from.x, y: e.from.y, target: e.to, color: hexNum(e.color), size: e.isAbility ? 13 : 10 });
         // Tir de base (mages, soutiens) : animation d'attaque à distance.
-        if(!e.isAbility) this.renderer.units3d?.notifyAction(e.from.id, 'attack', { interval: 1 / (e.from.as || 0.7), force: e.manual });
+        // force: true (pas seulement e.manual) — cet événement n'est émis
+        // qu'APRÈS _resolveAttack, donc l'unité est déjà à portée, jamais
+        // "en glissade". Avant : seules les attaques du joueur forçaient
+        // l'anim ; celles de l'IA (alliés, sbires, champions ennemis)
+        // dépendaient de speedPx, que le tassement de _separate() autour
+        // d'une cible groupée (autel notamment) maintient artificiellement
+        // au-dessus du seuil — l'IA semblait ne jamais frapper alors que
+        // les dégâts, eux, s'appliquaient bien.
+        if(!e.isAbility) this.renderer.units3d?.notifyAction(e.from.id, 'attack', { interval: 1 / (e.from.as || 0.7), force: true });
         break;
       case 'hit': {
         const v = this.views.get(e.unit.id);
@@ -123,7 +131,10 @@ export class Match{
         // large qu'avant (24 -> 34) et un peu plus si le coup est critique.
         const mx = e.to.x - (e.to.x - e.from.x) * 0.15, my = e.to.y - (e.to.y - e.from.y) * 0.15 + (e.to.r||20)*0.5;
         this.fx.spawnImpact(mx, my, hexNum(e.from.fx), e.crit ? 30 : 22, { crit: e.crit });
-        this.renderer.units3d?.notifyAction(e.from.id, 'attack', { interval: 1 / (e.from.as || 0.7), force: e.manual });
+        // force: true — même raison que pour 'projectile' ci-dessus : cet
+        // événement suit toujours un coup déjà résolu (unité à portée),
+        // donc jamais de « glissade » à craindre ici.
+        this.renderer.units3d?.notifyAction(e.from.id, 'attack', { interval: 1 / (e.from.as || 0.7), force: true });
         break;
       }
       case 'cast': {
