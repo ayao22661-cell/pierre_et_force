@@ -1,0 +1,27 @@
+<html><body style="margin:0;background:#000"><canvas id="c" style="width:100vw;height:100vh;display:block"></canvas>
+<script src="https://cdn.babylonjs.com/babylon.js"></script>
+<script type="module">
+import { BabylonTerrain } from '../js/engine/babylon-terrain.js';
+import { siegeLayout, arenaLayout } from '../js/engine/tilemap.js';
+const q=new URLSearchParams(location.search);
+const mission=q.get('m')||'m1';
+const zoom=parseFloat(q.get('z')||'9');
+const fx=parseFloat(q.get('x')||'0.5'), fz=parseFloat(q.get('fz')||'0.5');
+try{
+const eng=new BABYLON.Engine(document.getElementById('c'),true,{preserveDrawingBuffer:true});
+const sc=new BABYLON.Scene(eng);
+const layout=(q.get('mode')==='arena')?arenaLayout():siegeLayout();
+const W=layout.w/45,H=layout.h/45;
+const cam=new BABYLON.ArcRotateCamera('cam',-Math.PI/2,Math.PI/4,100,new BABYLON.Vector3(W*fx,0,-H*fz),sc);
+cam.mode=BABYLON.Camera.ORTHOGRAPHIC_CAMERA;cam.minZ=0.1;cam.maxZ=1000;
+const asp=innerWidth/innerHeight;cam.orthoTop=zoom;cam.orthoBottom=-zoom;cam.orthoLeft=-zoom*asp;cam.orthoRight=zoom*asp;
+const t=new BabylonTerrain(sc,{missionId:mission},layout,12345);
+// silhouettes de personnages, à l'échelle du jeu, pour juger la lisibilité
+const hero=(x,z,col)=>{const b=BABYLON.MeshBuilder.CreateCapsule('h',{height:1.75,radius:0.3},sc);
+ b.position.set(x,sc.metadata.groundHeight(x,z)+0.9,z);const m=new BABYLON.StandardMaterial('m',sc);m.diffuseColor=BABYLON.Color3.FromHexString(col);b.material=m;};
+const cz=-H/2;for(let i=0;i<6;i++)hero(W*fx-3+i*1.2,cz+(i%2?0.8:-0.8),i<3?'#d8c070':'#b03030');
+await sc.whenReadyAsync();for(let i=0;i<4;i++)sc.render();
+window.__out={t:document.querySelector('*')?1:0};
+document.title='DONE';
+}catch(e){document.title='ERR';console.log('ERREUR',e.stack);document.body.innerHTML='<pre style="color:#f88">'+e.stack+'</pre>'}
+</script></body></html>

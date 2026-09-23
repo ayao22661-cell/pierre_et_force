@@ -38,7 +38,9 @@ export class Match{
     if(!renderer.units3d){
       console.error('[Match] renderer.units3d est introuvable — le terrain et les personnages 3D ne peuvent pas être créés.');
     } else {
-      this.terrain = new BabylonTerrain(renderer.units3d.scene, theme, layout, artSeed);
+      // Le lieu de la mission (cour d'Abidjan, forêt du Banco, Pôle Nord…)
+      // décide du sol, du décor et de la lumière — voir engine/scene/scene-map.js.
+      this.terrain = new BabylonTerrain(renderer.units3d.scene, { ...theme, missionId: cfg.missionId }, layout, artSeed, cfg.place || null);
     }
 
     this.fx = new EffectsLayer(renderer.layers);
