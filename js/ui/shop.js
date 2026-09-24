@@ -40,8 +40,8 @@ function statChips(st){
   const box = el('div', 'chips');
   Object.entries(st).forEach(([k, v]) => {
     const val = typeof v === 'number' && v < 1 && v > -1 ? Math.round(v * 100) + '%' : v;
-    const c = el('span', 'chip', iconSvg(STAT_ICON[k] || 'spark') + `${v > 0 ? '+' : ''}${val}`);
-    c.title = STAT_LABEL[k] || k;
+    // Valeur ET libellé : une icône seule ne disait pas de quoi il s'agit.
+    const c = el('span', 'chip', iconSvg(STAT_ICON[k] || 'spark') + `${v > 0 ? '+' : ''}${val}<small>${STAT_LABEL[k] || k}</small>`);
     box.appendChild(c);
   });
   return box;
@@ -75,6 +75,7 @@ export function renderShop(save) {
   big.src = itemImage(pick.id); big.alt = pick.name;
   showcase.appendChild(big);
   const info = el('div', 'shop-show-info');
+  info.appendChild(el('span', 'shop-show-tier', TIER_NAME[pick.tier]));
   info.appendChild(el('div', 'shop-show-name', pick.name));
   info.appendChild(statChips(pick.st));
   if (pick.from) {
@@ -116,6 +117,7 @@ export function renderShop(save) {
     const img = el('img', '');
     img.src = itemImage(item.id); img.alt = ''; img.loading = 'lazy';
     cell.appendChild(img);
+    cell.appendChild(el('span', 'shop-cell-name', item.name));
     cell.appendChild(el('span', 'shop-cell-cost', own ? iconSvg('check') : iconSvg('shell') + item.cost));
     cell.setAttribute('aria-label', item.name);
     cell.addEventListener('click', () => { shopPick = item.id; renderShop(save); });
