@@ -625,3 +625,26 @@ export function tileAsphalt(seed, pal = {}){
     return mixRgb(c, [18, 17, 16], k * 0.8);
   });
 }
+
+/**
+ * Ciel peint pour le dôme d'horizon : dégradé du zénith vers le sol, bande
+ * de brume à l'horizon, et quelques nuages étirés. Vu uniquement en vue
+ * basse (mode Combat), où le vide noir au-dessus du décor sautait aux yeux.
+ */
+export function texSky(seed, pal = {}){
+  const W = 512, H = 256;
+  const top = hexRgb(pal.top || '#2a4a7a'), mid = hexRgb(pal.mid || '#7fa8c8'), low = hexRgb(pal.low || '#e8d2a8');
+  // `period` rend le bruit raccordable en u : sans ça, le dôme montrait
+  // une couture verticale nette là où la texture se referme.
+  const n = fbm(seed, { octaves: 4, period: 6 });
+  const c = pix(W, H, (u, v) => {
+    // v = 0 en haut du dôme, 1 au niveau du sol
+    const k = clamp(v * 1.15);
+    let col = k < 0.62 ? mixRgb(top, mid, k / 0.62) : mixRgb(mid, low, (k - 0.62) / 0.38);
+    // nuages étirés, plus présents vers l'horizon
+    const cl = smooth(0.52, 0.72, n(u * 6, v * 2.5)) * (1 - Math.abs(k - 0.42) * 2.2);
+    if(cl > 0) col = mixRgb(col, [255, 250, 244], clamp(cl) * (pal.clouds ?? 0.5));
+    return col;
+  });
+  return c;
+}

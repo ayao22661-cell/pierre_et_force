@@ -232,8 +232,9 @@ const abidjan = {
       c.row(cont, 'top', { step: 6.4, offset: 4.6, gapChance: 0.2, rot: 0 });
       c.row(cont, 'bottom', { step: 6.4, offset: 2.4, gapChance: 0.3, rot: 0 });
       c.scatter([barrelsT, S('barrelsM', () => K.barrels(c.scene, { seed: 48, metal: true }))], 14, Z.border, { s: [0.9, 1.1] });
-      for(const side of [-1, 1]) laneFollow(c, lamp, side * (c.laneHalf + 0.8), 10, { rotAlong: true, face: side });
+      for(const side of [-1, 1]) laneFollow(c, lamp, side * (c.laneHalf + 1.6), 10, { rotAlong: true, face: side });
       c.scatter(grass, 60, Z.border, { solid: false, shadow: false, s: [0.8, 1.2] });
+      c.scatterModel('AVION.glb', 1, Z.and(Z.top(6), Z.field), { height: 2.0, r: 3.4, fixed: true, shadow: 0.6 });
       return;
     }
 
@@ -247,7 +248,7 @@ const abidjan = {
       c.row(hedge, 'bottom', { step: 1.3, offset: 0.8, jitter: 0.1, gapChance: 0.05 });
       c.row(palm, 'left', { step: 4, offset: 1.5 }); c.row(palm, 'right', { step: 4, offset: 1.5 });
       c.scatter([bushT, S('flamb2', () => N.bush(c.scene, { seed: 50, key: 'flambush', leaves: PAL.flamboyant, r: 0.5 }))], 18, Z.border, { s: [0.8, 1.2] });
-      if(v.night) for(const side of [-1, 1]) laneFollow(c, lamp, side * (c.laneHalf + 1), 12, { rotAlong: true, face: side });
+      if(v.night) for(const side of [-1, 1]) laneFollow(c, lamp, side * (c.laneHalf + 1.6), 12, { rotAlong: true, face: side });
       c.scatter(grass, 90, Z.not(Z.nearLane(-9, 0.4)), { solid: false, shadow: false });
       return;
     }
@@ -258,7 +259,7 @@ const abidjan = {
       c.row(wall, 'top', { step: 4.1, offset: 0.6, jitter: 0, gapChance: 0 });
       c.row(wall, 'bottom', { step: 4.1, offset: 0.4, jitter: 0, gapChance: 0.1 });
       c.row([mango, S('dead', () => N.deadTree(c.scene, { seed: 51 }))], 'top', { step: 4.5, offset: 3 });
-      for(const side of [-1, 1]) laneFollow(c, lamp, side * (c.laneHalf + 0.8), 13, { rotAlong: true, face: side });
+      for(const side of [-1, 1]) laneFollow(c, lamp, side * (c.laneHalf + 1.6), 13, { rotAlong: true, face: side });
       c.scatter(grass, 110, Z.anywhere, { solid: false, shadow: false });
       return;
     }
@@ -281,10 +282,11 @@ const abidjan = {
     } else if(setting === 'cour'){
       const maq = S('maquis', () => K.maquis(c.scene, { seed: 61 }));
       c.scatter(maq, 3, Z.and(Z.fieldTop, Z.nearLane(1.5, 5)), { s: [1, 1] });
+      c.scatterModel('HARPE.glb', 1, Z.and(Z.fieldTop, Z.nearLane(2, 6)), { height: 1.1, r: 0.6, fixed: true });
     } else {
       const maq = [S('maquis', () => K.maquis(c.scene, { seed: 61 })), S('maquis2', () => K.maquis(c.scene, { seed: 62 }))];
       c.scatter(maq, v.night ? 4 : 2, Z.and(Z.fieldTop, Z.nearLane(1.5, 4)), { s: [1, 1] });
-      for(const side of [-1, 1]) laneFollow(c, lamp, side * (c.laneHalf + 0.7), 11, { rotAlong: true, face: side });
+      for(const side of [-1, 1]) laneFollow(c, lamp, side * (c.laneHalf + 1.5), 11, { rotAlong: true, face: side });
     }
     c.scatter(barrelsT, 8, Z.and(Z.field, Z.nearLane(1, 6)), { s: [0.9, 1.1] });
     c.scatter(grass, 260, Z.not(Z.nearLane(-9, 0.3)), { solid: false, shadow: false, s: [0.7, 1.4], noise: 0.4 });
@@ -457,6 +459,9 @@ const essence = {
     c.scatter([rockT, col[1]], 6, Z.and(Z.field, Z.nearLane(2, 99)), { s: [0.7, 1] });
     c.clusters([rockT, cr[0]], 10, 3, 2, Z.bottom(6), { s: [0.7, 1.0] });
     c.scatter(grass, 200, Z.not(Z.nearLane(-9, 0.1)), { solid: false, shadow: false, s: [0.7, 1.3] });
+    // Reliques du Royaume : la kora du griot et l'artefact de l'Équilibre.
+    c.scatterModel('HARPE.glb', 3, Z.and(Z.field, Z.nearLane(2, 99)), { height: 1.3, r: 0.7 });
+    c.scatterModel('BOUSSOLE.glb', 2, Z.and(Z.fieldTop, Z.nearLane(3, 99)), { height: 1.7, r: 0.9 });
     floatingMotes(c, S, '#a8f0ff');
   },
 };
@@ -575,6 +580,9 @@ const polar = {
     c.scatter([drift, cr, ice[0]], 30, Z.and(Z.field, Z.nearLane(1.0, 99)), { s: [0.7, 1.3] });
     c.clusters([pine[0], ice[0]], 10, 3, 3, Z.and(Z.field, Z.nearLane(3, 99)), { s: [0.8, 1.0] });
     c.scatter(pyl, 3, Z.and(Z.fieldTop, Z.nearLane(2, 6)), { fixed: true });
+    // La base de Sgrün : un vaisseau posé sur la neige et ses sentinelles.
+    c.scatterModel('AVION.glb', 2, Z.top(9), { height: 2.4, r: 3.6, fixed: true, shadow: 0.6 });
+    for(const f of ['ARMURE_2.glb', 'ARMURE3.glb']) c.scatterModel(f, 2, Z.and(Z.top(7), Z.field), { height: 2.3, r: 0.8, fixed: true });
   },
 };
 
@@ -754,6 +762,8 @@ const voidB = {
       const x = P.x0 + R() * (P.x1 - P.x0), z = P.z0 + 1 + R() * 6;
       c.put(R.pick(shard), x, z, { y: 2 + R() * 3, s: 0.4 + R() * 0.5, solid: false, shadow: false });
     }
+    c.scatterModel('BOUSSOLE.glb', 4, Z.and(Z.field, Z.nearLane(2, 99)), { height: 1.8, r: 1.0, y: null });
+    c.scatterModel('ARMURE3.glb', 3, Z.top(8), { height: 2.4, r: 0.9 });
     floatingMotes(c, S, '#c8a8ff');
   },
 };
@@ -791,6 +801,21 @@ const sgrun = {
     }
     c.scatter([cr, col[1]], 12, Z.and(Z.field, Z.nearLane(1.5, 99)), { s: [0.7, 1.0] });
     for(const side of [-1, 1]) laneFollow(c, pyl, side * (c.laneHalf + 1.2), 12, {});
+    // Sentinelles en armure : figées en faction de part et d'autre de l'allée.
+    const armures = ['ARMURE_1.glb', 'ARMURE_2.glb', 'ARMURE3.glb', 'ARMURE4.glb'];
+    if(c.path) for(const side of [-1, 1]){
+      const P = c.path;
+      for(let t = 6; t < P.length - 6; t += 9){
+        const a = P[t], b = P[Math.min(t + 1, P.length - 1)];
+        const L = Math.hypot(b.x - a.x, b.z - a.z) || 1;
+        const off = side * (c.laneHalf + 2.2);
+        const x = a.x + (-(b.z - a.z) / L) * off, z = a.z + ((b.x - a.x) / L) * off;
+        if(c.blocked(x, z, 1) || c.overlaps(x, z, 1)) continue;
+        c.putModel(c.R.pick(armures), x, z, { height: 2.3, r: 0.8, rot: side < 0 ? 0 : Math.PI, shadow: 0.55 });
+      }
+    }
+    c.scatterModel('AVION.glb', 2, Z.top(8), { height: 2.2, r: 3.4, fixed: true, shadow: 0.6 });
+    c.scatterModel('BOUSSOLE.glb', 3, Z.and(Z.field, Z.nearLane(2.5, 99)), { height: 1.6, r: 0.9 });
   },
 };
 
@@ -823,6 +848,7 @@ const tower = {
     c.row(col, 'bottom', { step: 5, offset: 0.6, jitter: 0, gapChance: 0, s: [0.3, 0.3] });
     c.clusters(deskT, 12, 4, 2.5, Z.and(Z.field, Z.nearLane(1, 99)), { s: [1, 1], pad: 0.8 });
     c.scatter(plant, 10, Z.border, { s: [0.8, 1.1] });
+    for(const f of ['ARMURE_1.glb', 'ARMURE4.glb']) c.scatterModel(f, 3, Z.and(Z.field, Z.nearLane(2, 99)), { height: 2.2, r: 0.8 });
   },
 };
 

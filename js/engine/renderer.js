@@ -91,7 +91,56 @@ export class Renderer{
     const dt = Math.min(ticker.deltaMS / 1000, 0.1);
     for(const fn of this._frameListeners) fn(dt);
     this.camera.shake.t += dt;
-    this._applyCameraTransform();
+    if(this.duelProjection) this._applyDuelProjection();
+    else this._applyCameraTransform();
+  }
+
+  /**
+   * MODE COMBAT — la caméra 3D est en perspective : la couche PixiJS ne
+   * peut plus être simplement translatée et mise à l'échelle sur le monde.
+   * On la remet donc en coordonnées ÉCRAN, et chaque élément encore utile
+   * (chiffres de dégâts, impacts, zones de sort) est projeté un par un avec
+   * la vraie matrice de la caméra.
+   *
+   * Les calques qui font doublon avec la 3D (sol, décor, corps des unités,
+   * ombres, barres au-dessus des têtes) sont éteints : en vue basse, ils se
+   * poseraient de travers sur la scène.
+   */
+  setDuelProjection(on){
+    this.duelProjection = !!on;
+    const hidden = ['ground', 'decor', 'shadows', 'units', 'glow', 'overlay'];
+    for(const k of hidden) if(this.layers[k]) this.layers[k].visible = !on;
+    if(on){
+      this.world.position.set(0, 0);
+      this.world.scale.set(1);
+    } else {
+      for(const k in this.layers){
+        for(const c of this.layers[k].children){ if(c.__w){ c.x = c.__w.x; c.y = c.__w.y; c.scale.set(c.__w.s ?? 1); delete c.__w; } }
+      }
+      this._applyCameraTransform();
+    }
+  }
+
+  _applyDuelProjection(){
+    const u3 = this.units3d;
+    if(!u3 || !u3.projectToScreen) return;
+    const res = this.app.renderer?.resolution || 1;
+    for(const k of ['ground2', 'projectiles', 'fx', 'floatText']){
+      const layer = this.layers[k];
+      if(!layer) continue;
+      for(const c of layer.children){
+        // Première rencontre : on mémorise la position MONDE de l'élément,
+        // puisqu'on va écraser x/y avec des coordonnées écran.
+        if(!c.__w) c.__w = { x: c.x, y: c.y, s: c.scale?.x ?? 1 };
+        const p = u3.projectToScreen(c.__w.x, c.__w.y, k === 'floatText' ? 1.1 : 0.05);
+        if(!p || p.depth <= 0 || p.depth >= 1){ c.visible = false; continue; }
+        c.visible = true;
+        c.x = p.x / res; c.y = p.y / res;
+        // Perspective : ce qui est loin est plus petit.
+        const k2 = Math.max(0.35, Math.min(1.8, 1.25 * (1 - p.depth) * 12));
+        c.scale?.set((c.__w.s || 1) * k2);
+      }
+    }
   }
 
   /**

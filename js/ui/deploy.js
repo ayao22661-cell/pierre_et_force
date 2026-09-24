@@ -8,7 +8,7 @@ import { portraitFor, castEntry } from '../engine/portraits.js';
 import { icon, iconSvg, iconForRole } from './icons.js';
 import { el } from './screens.js';
 
-const MODE_MAP = { 'SIÈGE': 'siege', 'ARÈNE': 'arena', 'DÉFENSE': 'defense', 'BOSS': 'boss' };
+const MODE_MAP = { 'SIÈGE': 'siege', 'ARÈNE': 'arena', 'DÉFENSE': 'defense', 'BOSS': 'boss', 'COMBAT': 'duel' };
 
 export function renderDeploy(mission, modeLabel, save, onLaunch){
   document.getElementById('deploy-mission-name').textContent = `${mission.num}. ${mission.name}`;
@@ -135,6 +135,10 @@ export function renderDeploy(mission, modeLabel, save, onLaunch){
     const foeCount = Math.min(3, 1 + Math.floor((mission.ennemis_extra || 0) / 3));
     onLaunch({
       mode: MODE_MAP[modeLabel] || 'siege',
+      // Identifiant de la mission : il choisit le décor (engine/scene/scene-map.js)
+      // et la graine du terrain. Sans lui, toutes les missions se déroulaient
+      // dans le même lieu par défaut.
+      missionId: mission.id,
       champ: state.champ,
       allies: state.allies.slice(),
       foes: mission.ennemis || ['BABA'],
@@ -161,9 +165,14 @@ export function renderDeploy(mission, modeLabel, save, onLaunch){
       // parfait, plutôt qu'un mur ou un one-shot. Voir sim.js pour le
       // découplage PV/dégâts qui protège le joueur de la hausse de PV
       // ennemis côté dégâts subis.
+      // Progression de la difficulté réétalée sur 100 missions (elle
+      // atteignait son plafond dès la 50e depuis l'ajout de la seconde
+      // moitié de campagne).
       foeMult: mission.foeMult != null
         ? mission.foeMult
-        : Math.min(4.0, 1.05 + (((Number(mission.num) || 1) - 1) * 0.0602)),
+        : Math.min(4.0, 1.05 + (((Number(mission.num) || 1) - 1) * 0.0298)),
+      roundsToWin: mission.roundsToWin,
+      roundTime: mission.roundTime,
       save,                  // transmis à Sim pour les bonus objets/talents
     });
   };

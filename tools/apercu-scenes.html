@@ -1,8 +1,10 @@
-<html><body style="margin:0;background:#000"><canvas id="c" style="width:100vw;height:100vh;display:block"></canvas>
+<html><head><!-- les chemins d'assets sont relatifs à la racine du jeu -->
+<base href="../"></head><body style="margin:0;background:#000"><canvas id="c" style="width:100vw;height:100vh;display:block"></canvas>
 <script src="https://cdn.babylonjs.com/babylon.js"></script>
+<script src="https://cdn.babylonjs.com/loaders/babylonjs.loaders.min.js"></script>
 <script type="module">
-import { BabylonTerrain } from '../js/engine/babylon-terrain.js';
-import { siegeLayout, arenaLayout } from '../js/engine/tilemap.js';
+import { BabylonTerrain } from './js/engine/babylon-terrain.js';
+import { siegeLayout, arenaLayout } from './js/engine/tilemap.js';
 const q=new URLSearchParams(location.search);
 const mission=q.get('m')||'m1';
 const zoom=parseFloat(q.get('z')||'9');
@@ -21,6 +23,8 @@ const hero=(x,z,col)=>{const b=BABYLON.MeshBuilder.CreateCapsule('h',{height:1.7
  b.position.set(x,sc.metadata.groundHeight(x,z)+0.9,z);const m=new BABYLON.StandardMaterial('m',sc);m.diffuseColor=BABYLON.Color3.FromHexString(col);b.material=m;};
 const cz=-H/2;for(let i=0;i<6;i++)hero(W*fx-3+i*1.2,cz+(i%2?0.8:-0.8),i<3?'#d8c070':'#b03030');
 await sc.whenReadyAsync();for(let i=0;i<4;i++)sc.render();
+// les modèles GLB du décor arrivent après coup : on leur laisse le temps
+await new Promise(r=>setTimeout(r,4000));await sc.whenReadyAsync();for(let i=0;i<4;i++)sc.render();
 window.__out={t:document.querySelector('*')?1:0};
 document.title='DONE';
 }catch(e){document.title='ERR';console.log('ERREUR',e.stack);document.body.innerHTML='<pre style="color:#f88">'+e.stack+'</pre>'}

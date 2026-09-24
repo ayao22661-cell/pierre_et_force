@@ -7,6 +7,7 @@ import { CAST } from '../data/cast.js';
 import { portraitFor, champKeyFor } from '../engine/portraits.js';
 import { icon, iconSvg, iconForAbility, iconForMode } from './icons.js';
 import { DEFIS, defisAvailable } from '../data/defis.js';
+import { DUELS, duelsAvailable } from '../data/combat.js';
 import { isDefiDone } from '../game/state.js';
 import { isMissionDone, isMissionAvailable, writeSave, spellRank, maxSpellRank, spellPointsLeft, spendSpellPoint } from '../game/state.js';
 import { renderShop, renderEveil, ensureShopSave } from './shop.js';
@@ -68,20 +69,27 @@ export function buildHub(save, onSelectMission){
   const switcher = el('div', 'seg');
   const btnCamp = el('button', 'seg-btn active', 'Campagne');
   const btnDefis = el('button', 'seg-btn', 'Défis');
-  switcher.appendChild(btnCamp); switcher.appendChild(btnDefis);
+  const btnDuel = el('button', 'seg-btn', 'Combat');
+  switcher.appendChild(btnCamp); switcher.appendChild(btnDefis); switcher.appendChild(btnDuel);
   root.appendChild(switcher);
   const listCamp = el('div', 'mission-list');
   const listDefis = el('div', 'mission-list hidden');
-  root.appendChild(listCamp); root.appendChild(listDefis);
-  const show = (defis) => {
-    listDefis.classList.toggle('hidden', !defis);
-    listCamp.classList.toggle('hidden', defis);
-    btnDefis.classList.toggle('active', defis);
-    btnCamp.classList.toggle('active', !defis);
+  const listDuel = el('div', 'mission-list hidden');
+  root.appendChild(listCamp); root.appendChild(listDefis); root.appendChild(listDuel);
+  // 'camp' | 'defis' | 'duel'
+  const show = (which) => {
+    listCamp.classList.toggle('hidden', which !== 'camp');
+    listDefis.classList.toggle('hidden', which !== 'defis');
+    listDuel.classList.toggle('hidden', which !== 'duel');
+    btnCamp.classList.toggle('active', which === 'camp');
+    btnDefis.classList.toggle('active', which === 'defis');
+    btnDuel.classList.toggle('active', which === 'duel');
   };
-  btnCamp.addEventListener('click', () => show(false));
-  btnDefis.addEventListener('click', () => show(true));
+  btnCamp.addEventListener('click', () => show('camp'));
+  btnDefis.addEventListener('click', () => show('defis'));
+  btnDuel.addEventListener('click', () => show('duel'));
   buildDefis(save, onSelectMission, listDefis);
+  buildDuels(save, onSelectMission, listDuel);
   const ids = allMissionIds();
   let globalIdx = 0;
   let nextCard = null;
@@ -158,6 +166,30 @@ function buildDefis(save, onSelectMission, host){
       // isDefi : la fin de match saura ne pas l'ajouter à la campagne.
       card.addEventListener('click', () => onSelectMission({ ...d, isDefi: true }, d.mode));
     }
+    grid.appendChild(card);
+  });
+  host.appendChild(grid);
+}
+
+/**
+ * Mode Combat : un duel par adversaire, en rounds gagnants. Rejouables
+ * comme les défis, débloqués au fil de la campagne — le dernier (Sgrün)
+ * n'ouvre qu'à cinq missions de la fin.
+ */
+function buildDuels(save, onSelectMission, host){
+  const done = save.missions_done.length;
+  const open = duelsAvailable(done);
+  const head = el('div', 'acte-head');
+  head.appendChild(el('span', 'acte-roman', iconSvg('fist')));
+  head.appendChild(el('span', 'acte-name', 'duels en rounds gagnants, un contre un'));
+  host.appendChild(head);
+  const grid = el('div', 'mcard-grid');
+  DUELS.forEach((d, i) => {
+    const avail = open.includes(d);
+    const state = avail ? (isDefiDone(save, d.id) ? 'done' : 'next') : 'lock';
+    const card = missionCard({ num: d.num, name: d.name, mode: 'COMBAT', state, art: artForActe(i), slice: 1, total: 3, reward: `+${d.cauris}` });
+    if(!avail) card.appendChild(el('span', 'mcard-req', `${d.req} missions`));
+    else card.addEventListener('click', () => onSelectMission({ ...d, isDefi: true }, 'COMBAT'));
     grid.appendChild(card);
   });
   host.appendChild(grid);

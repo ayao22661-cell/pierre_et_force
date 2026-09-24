@@ -118,7 +118,11 @@ export function iconSvg(name, cls = ''){
 
 const MODE_ICON = { 'SIÈGE': 'mode_siege', 'ARÈNE': 'mode_arena', 'DÉFENSE': 'mode_defense', 'BOSS': 'mode_boss' };
 /** Icône représentative du mode d'une mission (affichage des cartes de mission). */
-export function iconForMode(mode){ return MODE_ICON[mode] || 'mode_arena'; }
+// Le mode Combat (duel) réutilise le poing du bouton d'attaque.
+export function iconForMode(mode){
+  if(mode === 'COMBAT') return 'fist';
+  return MODE_ICON[mode] || 'mode_arena';
+}
 
 /**
  * Icône la plus parlante pour un objet, d'après sa statistique principale.

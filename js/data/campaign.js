@@ -1,4 +1,8 @@
-// Données narratives de la campagne — 50 missions, extraites intégralement du moteur v3.
+// Données narratives de la campagne. Ce fichier contient les 50 missions
+// d'origine ; campaign-extra.js en ajoute 50 autres, intercalées dans les
+// mêmes actes (fusion en bas de fichier).
+import { EXTRA } from './campaign-extra.js';
+
 export const CAMPAIGN = [
   {
     id:"acte1",label:"ACTE I",titre:"LE CADEAU DE PAPA",
@@ -1587,3 +1591,51 @@ export const CAMPAIGN = [
     ]
   }
 ];
+
+// ─────────────────────────────────────────────────────────────
+// FUSION DES MISSIONS AJOUTÉES
+// Chaque mission de campaign-extra.js indique son acte et la position
+// qu'elle doit occuper dans l'acte une fois tout inséré. On insère donc
+// du début vers la fin : chaque insertion décale ce qui suit, ce qui est
+// exactement ce qu'attendent les positions suivantes.
+// ─────────────────────────────────────────────────────────────
+for(const acte of CAMPAIGN){
+  const ajouts = EXTRA.filter(m => m.acte === acte.id).sort((a, b) => a.at - b.at);
+  for(const m of ajouts){
+    const { acte: _a, at, ...mission } = m;
+    acte.missions.splice(Math.min(at, acte.missions.length), 0, mission);
+  }
+}
+
+// Les ennemis nommés dans le récit affrontent enfin le bon champion :
+// avant l'ajout de leurs fiches, toutes ces missions retombaient sur
+// Baba et Dark, quel que soit le texte à l'écran.
+const CASTING = {
+  m11: ['SYLLA', 'SUB'],        // La Villa de Sylla
+  m12: ['SUB'],                 // L'Émissaire de Treichville
+  m14: ['SUB', 'GROB'],         // Sub & Grob
+  m16: ['SUB'], m17: ['GROB', 'SUB'], m18: ['GROB'],   // base du Pôle Nord
+  m22: ['SCHISSIN'],            // Le Fichier Rouge
+  m23: ['OUSMANE', 'SCHISSIN'], // Le Traître de la Garde
+  m24: ['SCHISSIN', 'SYLLA'],   // La Tombe Vide
+  m25: ['OUSMANE', 'SCHISSIN'], // Le Pont HKB
+  m26: ['GROB'], m27: ['SYLLA', 'SCHISSIN'],
+  m28: ['SCHISSIN', 'SUB'], m29: ['SYLLA'], m30: ['SYLLA'],
+  m31: ['SUB'], m32: ['GROB'], m33: ['KRAG'], m34: ['KRAG'], m35: ['KRAG', 'GROB'],
+  m36: ['MURK'], m37: ['MURK', 'SUB'], m38: ['MURK'], m39: ['MURK', 'KRAG'], m40: ['MURK'],
+  m41: ['VAEL'], m42: ['VAEL'], m43: ['VAEL', 'SUB'], m44: ['VAEL', 'MURK'], m45: ['VAEL', 'KRAG'],
+  m46: ['SGRUN'], m47: ['KRAG', 'GROB'], m48: ['VAEL', 'SUB', 'GROB'], m49: ['SGRUN'], m50: ['SGRUN'],
+};
+for(const acte of CAMPAIGN){
+  for(const m of acte.missions){
+    if(CASTING[m.id]) m.ennemis = CASTING[m.id];
+  }
+}
+
+// Renumérotation continue : la mission 1 est la première de l'acte I,
+// la 100 la dernière de l'acte XIV.
+let _n = 0;
+for(const acte of CAMPAIGN) for(const m of acte.missions) m.num = ++_n;
+
+/** Nombre total de missions de campagne (100). */
+export const MISSION_COUNT = _n;

@@ -27,6 +27,17 @@ export class CombatHud{
         { path: sim.path || null }  // fond schématique lane en mode Siège/Défense
       );
     }
+    // Le premier round est annoncé par la simulation AVANT que ce HUD
+    // n'existe : on monte donc le bandeau de duel à la construction.
+    if(this.match.sim?.mode === 'duel'){
+      this.showDuelBar(this.match.sim);
+      // Le bandeau de duel dit déjà le round et les manches : le panneau
+      // d'objectif ferait doublon et passerait sous le chronomètre.
+      this.root.querySelector('.hud-objective')?.classList.add('hidden');
+      // Pas de minicarte dans un duel : deux points sur un plan n'apprennent
+      // rien, et la place est mieux employée par le bandeau des manches.
+      this.root.querySelector('.hud-minimap')?.classList.add('hidden');
+    }
     this._tickFn = (dt) => this._update(dt);
     renderer.addFrameListener(this._tickFn);
   }
@@ -129,6 +140,34 @@ export class CombatHud{
     const actions = el('div', 'hud-actions');
     const basicRow = el('div', 'hud-basic-row');
     basicRow.appendChild(basic);
+
+    // ── Mode Combat : la rangée de frappe d'un jeu de combat ──
+    // Coup léger (enchaînable), coup lourd (projette), garde (maintenue)
+    // et esquive. Le coup de base reste à sa place : il déclenche le léger.
+    if(this.match.sim?.mode === 'duel'){
+      basic.title = 'Coup léger (Espace)';
+      const mk = (cls, label, key, down, up) => {
+        const b = el('div', 'spell-slot duel-slot ' + cls);
+        b.appendChild(el('div', 'spell-ico', iconSvg(cls === 'duel-guard' ? 'shield' : 'fist', 'pf-ico-lg')));
+        b.appendChild(el('span', 'duel-label', label));
+        b.appendChild(el('span', 'key', key));
+        const onDown = (ev) => { ev.preventDefault(); if(!this.match.paused) down(); };
+        b.addEventListener('mousedown', onDown);
+        b.addEventListener('touchstart', onDown, { passive: false });
+        if(up){
+          const onUp = () => { if(!this.match.paused) up(); };
+          b.addEventListener('mouseup', onUp);
+          b.addEventListener('mouseleave', onUp);
+          b.addEventListener('touchend', onUp);
+          b.addEventListener('touchcancel', onUp);
+        }
+        return b;
+      };
+      basicRow.appendChild(mk('duel-heavy', 'LOURD', 'K', () => this.match.sim.duelStrike('heavy')));
+      basicRow.appendChild(mk('duel-guard', 'GARDE', 'L',
+        () => this.match.sim.duelBlock(true), () => this.match.sim.duelBlock(false)));
+      basicRow.appendChild(mk('duel-dodge', 'ESQUIVE', 'M', () => this.match.sim.duelDodge()));
+    }
     actions.appendChild(basicRow);
     actions.appendChild(spells);
     bottom.appendChild(actions);
@@ -256,6 +295,65 @@ export class CombatHud{
     this._bannerT = setTimeout(() => this.banner.classList.remove('show'), 1800);
   }
 
+  /**
+   * Bandeau du mode Combat : les deux jauges de PV face à face, les
+   * manches gagnées de chaque côté, le chronomètre du round au centre,
+   * et le compteur d'enchaînements sous la jauge du joueur.
+   */
+  showDuelBar(sim){
+    this._duelSim = sim;
+    if(this._duelEl){ this._refreshDuelPips(); return; }
+    const bar = el('div', 'hud-duel');
+    const mk = (side, name) => {
+      const box = el('div', 'hud-duel-side hud-duel-' + side);
+      const top = el('div', 'hud-duel-name', name.toUpperCase());
+      const track = el('div', 'pf-bar hud-duel-bar');
+      const fill = el('div', 'pf-bar-fill');
+      fill.id = 'hud-duel-fill-' + side;
+      track.appendChild(fill);
+      const pips = el('div', 'hud-duel-pips');
+      pips.id = 'hud-duel-pips-' + side;
+      box.appendChild(top); box.appendChild(track); box.appendChild(pips);
+      return box;
+    };
+    bar.appendChild(mk('p', sim.player.name || 'Joueur'));
+    const timer = el('div', 'hud-duel-timer');
+    timer.id = 'hud-duel-timer';
+    bar.appendChild(timer);
+    bar.appendChild(mk('f', sim.duelFoe?.name || 'Adversaire'));
+    this.root.insertBefore(bar, this.root.firstChild);
+    this._duelEl = bar;
+    const combo = el('div', 'hud-combo hidden');
+    combo.id = 'hud-combo';
+    this.root.appendChild(combo);
+    this._comboEl = combo;
+    this._refreshDuelPips();
+  }
+
+  _refreshDuelPips(){
+    const sim = this._duelSim;
+    if(!sim) return;
+    for(const [side, idx] of [['p', 0], ['f', 1]]){
+      const host = document.getElementById('hud-duel-pips-' + side);
+      if(!host) continue;
+      host.innerHTML = '';
+      for(let i = 0; i < (sim.roundsToWin || 2); i++){
+        const pip = el('div', 'hud-duel-pip' + (i < sim.roundWins[idx] ? ' on' : ''));
+        host.appendChild(pip);
+      }
+    }
+  }
+
+  showCombo(n){
+    if(!this._comboEl) return;
+    this._comboEl.textContent = n + ' COUPS';
+    this._comboEl.classList.remove('hidden');
+    this._comboEl.classList.remove('pop');
+    void this._comboEl.offsetWidth;   // relance l'animation
+    this._comboEl.classList.add('pop');
+  }
+  hideCombo(){ this._comboEl?.classList.add('hidden'); }
+
   /** Affiche la barre de PV du boss en haut au centre (mode Boss). */
   showBossBar(boss){
     if(this._bossBarEl) return; // déjà créé
@@ -295,6 +393,22 @@ export class CombatHud{
     const mpTxt = document.getElementById('hud-mp-txt');
     if(hpTxt) hpTxt.textContent = `${Math.round(p.hp)} / ${Math.round(p.maxHp)}`;
     if(mpTxt) mpTxt.textContent = `${Math.round(p.mana)} / ${Math.round(p.maxMana)}`;
+
+    // Mode Combat : jauges des deux combattants et chronomètre du round.
+    const sim = this.match.sim;
+    if(this._duelEl && sim.mode === 'duel'){
+      const f = sim.duelFoe;
+      const fp = document.getElementById('hud-duel-fill-p');
+      const ff = document.getElementById('hud-duel-fill-f');
+      if(fp) fp.style.transform = `scaleX(${hpPct})`;
+      if(ff && f) ff.style.transform = `scaleX(${Math.max(0, f.hp / f.maxHp)})`;
+      const t = document.getElementById('hud-duel-timer');
+      if(t) t.textContent = Math.ceil(sim.roundLeft || 0);
+      if(this._pipsShown !== (sim.roundWins || []).join(':')){
+        this._pipsShown = (sim.roundWins || []).join(':');
+        this._refreshDuelPips();
+      }
+    }
 
     if (this.minimap) this.minimap.update(this.match.sim.units, p);
     (this.spellEls || []).forEach((s, i) => {

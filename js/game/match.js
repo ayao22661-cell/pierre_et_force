@@ -40,7 +40,7 @@ export class Match{
     } else {
       // Le lieu de la mission (cour d'Abidjan, forêt du Banco, Pôle Nord…)
       // décide du sol, du décor et de la lumière — voir engine/scene/scene-map.js.
-      this.terrain = new BabylonTerrain(renderer.units3d.scene, { ...theme, missionId: cfg.missionId }, layout, artSeed, cfg.place || null);
+      this.terrain = new BabylonTerrain(renderer.units3d.scene, { ...theme, missionId: cfg.missionId, mode: cfg.mode }, layout, artSeed, cfg.place || null);
     }
 
     this.fx = new EffectsLayer(renderer.layers);
@@ -62,11 +62,33 @@ export class Match{
       if(slot !== undefined) this.sim.requestCast(this.sim.player, slot);
       // Espace (ou W) : coup de base à la main.
       if(k === ' ' || k === 'spacebar' || k === 'w'){ e.preventDefault(); this.basicAttack(); }
+      // Mode Combat : coup lourd, garde (maintenue) et esquive.
+      if(this.sim.mode === 'duel'){
+        if(k === 'k'){ e.preventDefault(); this.sim.duelStrike('heavy'); }
+        if(k === 'l'){ e.preventDefault(); this.sim.duelBlock(true); }
+        if(k === 'm'){ e.preventDefault(); this.sim.duelDodge(); }
+      }
     };
-    this._onKeyUp = (e) => { this.keys[e.key.toLowerCase()] = false; };
+    this._onKeyUp = (e) => {
+      const k = e.key.toLowerCase();
+      this.keys[k] = false;
+      // La garde se relâche avec la touche (comme au pad).
+      if(this.sim.mode === 'duel' && k === 'l') this.sim.duelBlock(false);
+    };
     window.addEventListener('keydown', this._onKeyDown);
     window.addEventListener('keyup', this._onKeyUp);
 
+    // Mode Combat : la caméra se rapproche nettement. Au cadrage MOBA, deux
+    // combattants font quarante pixels de haut et on ne lit plus rien des coups.
+    if(this.sim.mode === 'duel'){
+      // Caméra de jeu de combat : perspective basse, perpendiculaire à
+      // l'axe des deux combattants, et couche 2D projetée à l'écran.
+      renderer.setDuelProjection(true);
+      renderer.units3d?.setDuelCamera({
+        ax: this.sim.player.x, ay: this.sim.player.y,
+        bx: this.sim.duelFoe.x, by: this.sim.duelFoe.y,
+      });
+    }
     renderer.setFocusImmediate(this.sim.player.x, this.sim.player.y);
     this._tickFn = (dt) => this._tick(dt);
     renderer.addFrameListener(this._tickFn);
@@ -182,6 +204,53 @@ export class Match{
         // Utilisé par le revive, le burn, les vagues, etc.
         if(this._hud) this._hud.announce(e.text);
         break;
+      // ── Mode Combat : chaque état du combattant a son animation ──
+      case 'fight': {
+        const u3 = this.renderer.units3d;
+        if(!u3) break;
+        const id = e.unit.id;
+        switch(e.kind){
+          case 'strike': {
+            // Coup n° e.step de l'enchaînement : un clip différent à chaque
+            // étape, joué dans la durée exacte du coup (élan + phase active).
+            const heavy = e.move === 'heavy';
+            u3.playFight(id, 'attack', heavy ? 1 + e.step : e.step, { dur: heavy ? 0.33 : 0.26 });
+            break;
+          }
+          case 'hurt':      u3.playFight(id, 'hit', Math.floor(Math.random() * 3), { dur: 0.42 }); break;
+          case 'knockdown': u3.playFight(id, 'death', Math.floor(Math.random() * 2), { dur: 0.9, hold: true }); break;
+          case 'getup':     u3.releaseFight(id); break;
+          case 'block-on':  u3.playFight(id, 'block', 0, { dur: 0.5, hold: true }); break;
+          case 'block-off': u3.releaseFight(id); break;
+          case 'blocked':   this.fx.spawnFloatText(e.unit.x, e.unit.y - 40, 'GARDE', '#9ec5ff'); break;
+          case 'dodge':     u3.playFight(id, 'dodge', Math.floor(Math.random() * 3), { dur: 0.42 }); break;
+          case 'dodge-perfect': this.fx.spawnFloatText(e.unit.x, e.unit.y - 40, 'ESQUIVE !', '#ffd166', true); break;
+        }
+        break;
+      }
+      case 'fight-impact':
+        // Secousse + rapprochement bref de la caméra sur le coup qui porte.
+        this.renderer.units3d?.duelImpact(e.heavy);
+        // Impact : gerbe d'étincelles, plus large sur un coup lourd.
+        this.fx.spawnImpact(e.to.x, e.to.y - 20, e.heavy ? 0xffc04a : 0xffffff, e.heavy ? 150 : 90);
+        break;
+
+      // ── Mode Combat ──
+      case 'duel-round':
+        if(this._hud){ this._hud.showDuelBar(this.sim); this._hud.announce(`ROUND ${e.round}`); }
+        break;
+      case 'duel-fight':
+        if(this._hud) this._hud.announce('COMBAT !');
+        break;
+      case 'duel-round-end':
+        if(this._hud) this._hud.announce(e.winner === 0 ? 'ROUND REMPORTÉ' : 'ROUND PERDU');
+        break;
+      case 'duel-combo':
+        if(this._hud) this._hud.showCombo(e.combo);
+        break;
+      case 'duel-combo-end':
+        if(this._hud) this._hud.hideCombo();
+        break;
       case 'boss-spawn':
         if(this._hud) this._hud.showBossBar(e.boss);
         break;
@@ -213,6 +282,15 @@ export class Match{
     if(this.keys['arrowleft'])  dx -= 1;
     if(this.keys['arrowright']) dx += 1;
     if(this.touchVec.x || this.touchVec.y){ dx = this.touchVec.x; dy = this.touchVec.y; }
+    if(this.sim.mode === 'duel' && this.renderer.units3d){
+      // La caméra tourne avec les combattants : « en avant » doit rester
+      // le haut de l'écran, pas le nord de la carte.
+      const yaw = this.renderer.units3d.duelCameraYaw();
+      const s0 = Math.sin(yaw), c0 = Math.cos(yaw);
+      const wx = dy * s0 + dx * c0;
+      const wy = -dy * c0 + dx * s0;
+      dx = wx; dy = wy;
+    }
     this.sim.setPlayerInput(dx, dy);
 
     this.sim.update(dt);
@@ -227,7 +305,15 @@ export class Match{
     // que HUD/barres de vie/effets pour les unités concernées.
     this.renderer.units3d?.update(this.sim.units, this.views);
 
-    this.renderer.focusOn(this.sim.player.x, this.sim.player.y);
+    if(this.sim.mode === 'duel' && this.sim.duelFoe){
+      // La caméra suit le couple : elle reste entre les deux, à hauteur
+      // d'homme, et pivote pour rester perpendiculaire à leur axe.
+      const p = this.sim.player, f = this.sim.duelFoe;
+      this.renderer.units3d?.setDuelCamera({ ax: p.x, ay: p.y, bx: f.x, by: f.y });
+      this.renderer.focusOn((p.x + f.x) / 2, (p.y + f.y) / 2);  // minimap
+    } else {
+      this.renderer.focusOn(this.sim.player.x, this.sim.player.y);
+    }
 
     this.onHud({
       time: this.sim.time,
@@ -252,10 +338,18 @@ export class Match{
       }
       return 'BOSS';
     }
+    if(m === 'duel'){
+      const s2 = this.sim;
+      return `Round ${s2.roundNo} — manches ${s2.roundWins[0]} / ${s2.roundWins[1]} (${s2.roundsToWin} gagnantes)`;
+    }
     return `Score ${this.sim.teamKills[0]} – ${this.sim.teamKills[1]} / ${this.sim.killGoal}`;
   }
 
   destroy(){
+    if(this.sim?.mode === 'duel'){
+      this.renderer.setDuelProjection(false);
+      this.renderer.units3d?.setDuelCamera(null);
+    }
     window.removeEventListener('keydown', this._onKeyDown);
     window.removeEventListener('keyup', this._onKeyUp);
     this.renderer.removeFrameListener(this._tickFn);

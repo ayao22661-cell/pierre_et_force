@@ -27,6 +27,7 @@ export class Composer{
     this.placed = [];       // obstacles posés {x,z,r}
     this.shadows = [];      // pour ground-bake
     this.jobs = [];         // [template, x, y, z, rot, s, sy]
+    this.models = [];       // modèles GLB à charger (armures, vaisseau, boussole…)
     this.cell = 2;
     this.grid = new Map();
     this.density = o.small ? 0.65 : 1.25; // le joueur vit au milieu du terrain : il ne doit jamais être vide
@@ -156,6 +157,37 @@ export class Composer{
         if(o.solid !== false && this.overlaps(x, z, tpl.radius * s * (o.pad ?? 0.7))) continue;
         this.put(tpl, x, z, { s, pad: o.pad ?? 0.7, solid: o.solid !== false, shadow: o.shadow !== false });
       }
+    }
+  }
+
+  /**
+   * Pose un modèle 3D réel (assets/props/*.glb). Contrairement aux formes
+   * procédurales, il est chargé de façon asynchrone : le terrain s'affiche
+   * tout de suite, ces pièces viennent l'enrichir dès qu'elles sont prêtes.
+   * @param {string} file  nom du fichier dans assets/props/
+   * @param {object} o     { height (m), r (empreinte), rot, y, tilt, shadow }
+   */
+  putModel(file, x, z, o = {}){
+    const r = o.r ?? 1;
+    const y = o.y ?? (this.groundHeight ? this.groundHeight(x, z) : 0);
+    this.models.push({ file, x, y, z, rot: o.rot ?? this.R() * Math.PI * 2, height: o.height ?? 2, tilt: o.tilt || 0 });
+    if(o.solid !== false) this._register(x, z, r);
+    if((o.shadow ?? 0.5) > 0) this.shadows.push({ x, z, r: r * 1.15, k: o.shadow ?? 0.5 });
+  }
+
+  /** Essaie de poser un modèle à un emplacement libre répondant à `where`. */
+  scatterModel(file, count, where, o = {}){
+    const R = this.R, O = this.outer;
+    let n = Math.round(count * (o.fixed ? 1 : this.density)), tries = 0;
+    const r = o.r ?? 1;
+    while(n > 0 && tries < count * 40){
+      tries++;
+      const x = O.x0 + R() * (O.x1 - O.x0), z = O.z1 + R() * (O.z0 - O.z1);
+      if(!where(x, z, this)) continue;
+      if(this.blocked(x, z, r, o)) continue;
+      if(this.overlaps(x, z, r)) continue;
+      this.putModel(file, x, z, o);
+      n--;
     }
   }
 

@@ -155,7 +155,9 @@ export function bakeGround(o){
   ctx.globalCompositeOperation = 'source-over';
 
   // ── Étalonnage final : lisière assombrie + teinte du biome ───
-  const vign = maskCanvas((x, z) => smooth(0.5, -3.5, edgeDist(x, z)) * (recipe.edgeDark ?? 0.45));
+  // L'assombrissement de lisière encadre le terrain de jeu ; il doit rester
+  // progressif, sinon le décor du fond se retrouve noyé dans le noir.
+  const vign = maskCanvas((x, z) => smooth(1.5, -9, edgeDist(x, z)) * (recipe.edgeDark ?? 0.45));
   const vtmp = canvas(W, H); const vctx = vtmp.getContext('2d');
   vctx.fillStyle = recipe.edgeColor || '#000'; vctx.fillRect(0, 0, W, H);
   vctx.globalCompositeOperation = 'destination-in'; vctx.drawImage(vign, 0, 0, W, H);

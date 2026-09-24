@@ -11,6 +11,7 @@
 // données nécessaires). Ici : attaque de base + déplacement + mort.
 // ============================================================
 import { CHAMPS } from '../data/champions.js';
+import { Fighter, MOVES } from './duel.js';
 import { tryCastAbility } from './abilities.js';
 import { computeBonuses } from './bonuses.js';
 
@@ -80,7 +81,14 @@ export function makeChampionUnit(key, team, opts = {}){
     cc: null, facing: { x: 1, y: 0 }, temporary: false, expiresAt: 0,
     home: { x: opts.x ?? 0, y: opts.y ?? 0 },
     // Stats dérivées des bonus — gardées sur l'unité pour y accéder en combat
-    bns: bns || {},
+    // Passif inné du champion (CHAMPS[key].innate) : vol de vie, épines,
+    // brûlure, résistance aux contrôles… Il se cumule avec les objets et
+    // les talents du joueur, qui utilisent exactement les mêmes champs.
+    bns: (() => {
+      const b = Object.assign({}, bns || {});
+      for(const [k, v] of Object.entries(d.innate || {})) b[k] = (b[k] || 0) + v;
+      return b;
+    })(),
     // Revive : reset à true en début de match, consommé une seule fois
     reviveReady: bns?.revive || false,
     // Niveaux de sorts (0-4) lus depuis save.spellLevels[champKey] pour le joueur/alliés
@@ -132,6 +140,8 @@ export class Sim{
       this._buildDefense(path);
     } else if(this.mode === 'boss'){
       this._buildBoss();
+    } else if(this.mode === 'duel'){
+      this._buildDuel();
     } else {
       this._buildArena();
     }
@@ -235,6 +245,141 @@ export class Sim{
     this.onEvent({ type: 'boss-spawn', boss: this.boss });
   }
 
+  /**
+   * DUEL — le mode Combat. Deux champions seuls face à face, en rounds
+   * gagnants. Ni sbires, ni autels, ni alliés : il n'y a que la distance
+   * entre les deux et ce qu'on en fait.
+   *
+   * Un round se gagne en mettant l'autre à terre, ou en ayant le plus de
+   * PV restants à la fin du chronomètre. Le premier à `roundsToWin` rounds
+   * gagne le combat. Entre deux rounds, tout est remis à zéro (PV, essence,
+   * délais, contrôles) : chaque round repart à armes égales.
+   */
+  _buildDuel(){
+    const cx = (this.cfg.w || 2200) / 2, cy = (this.cfg.h || 1500) / 2;
+    this.duelStart = [{ x: cx - 260, y: cy }, { x: cx + 260, y: cy }];
+    this.player = makeChampionUnit(this.cfg.champ, 0, { isPlayer: true, x: this.duelStart[0].x, y: this.duelStart[0].y, save: this.cfg.save });
+    this.units.push(this.player);
+    const fm = this.cfg.foeMult || 1;
+    this.duelFoe = makeChampionUnit((this.cfg.foes || ['BABA'])[0], 1, {
+      x: this.duelStart[1].x, y: this.duelStart[1].y, mult: fm, atkMult: dampenedAtkMult(fm),
+    });
+    this.units.push(this.duelFoe);
+    this.roundsToWin = this.cfg.roundsToWin || 2;
+    this.roundWins = [0, 0];      // [joueur, adversaire]
+    this.roundNo = 1;
+    this.roundTime = this.cfg.roundTime || 60;
+    this.roundLeft = this.roundTime;
+    this.roundPause = 2.2;        // temps d'annonce avant le premier round
+    this._pendingReset = 0;       // délai avant remise en place entre deux rounds
+    this.combo = 0;               // coups enchaînés par le joueur
+    this.comboBest = 0;
+    this._comboUntil = 0;
+    this.teamKills = [0, 0];
+    // Couche de combat rapproché (js/game/duel.js) : c'est elle qui gère
+    // les coups, la garde, l'esquive et les chutes pour ces deux-là.
+    const skill = Math.min(0.95, 0.35 + (this.cfg.foeMult || 1) * 0.32);
+    this.fighters = [
+      new Fighter(this, this.player, this.duelFoe, { isPlayer: true }),
+      new Fighter(this, this.duelFoe, this.player, { skill }),
+    ];
+    this.hitstop = 0;
+    this.onEvent({ type: 'duel-round', round: 1, wins: this.roundWins.slice() });
+  }
+
+  /** Remet les deux combattants à neuf pour le round suivant. */
+  _resetDuelRound(){
+    for(const [i, u] of [[0, this.player], [1, this.duelFoe]]){
+      u.dead = false;
+      u.hp = u.maxHp;
+      u.mana = u.maxMana || 0;
+      u.shield = 0;
+      u.cc = null;
+      u.cds = u.cds.map(() => 0);
+      u.x = this.duelStart[i].x; u.y = this.duelStart[i].y;
+      u.vx = 0; u.vy = 0;
+      u.target = null;
+      this.onEvent({ type: 'respawn', unit: u });
+    }
+    for(const f of (this.fighters || [])) f.reset();
+    this.hitstop = 0;
+    this.roundLeft = this.roundTime;
+    this.combo = 0;
+    this.roundPause = 2.2;
+    this.onEvent({ type: 'duel-round', round: this.roundNo, wins: this.roundWins.slice() });
+  }
+
+  /** Fin d'un round : `winner` vaut 0 (joueur) ou 1 (adversaire). */
+  _endDuelRound(winner){
+    this.roundWins[winner]++;
+    this.onEvent({ type: 'duel-round-end', winner, wins: this.roundWins.slice(), round: this.roundNo });
+    if(this.roundWins[winner] >= this.roundsToWin){
+      this._endMatch(winner === 0);
+      return;
+    }
+    this.roundNo++;
+    this._pendingReset = 1.6;   // laisse voir la chute avant de replacer
+  }
+
+  /** Le combattant attaché à une unité (null hors duel). */
+  fighterOf(unit){ return (this.fighters || []).find(f => f.u === unit) || null; }
+
+  /** Relaie un état de combat au rendu (animations, effets). */
+  _fightEvent(fighter, kind, info = {}){
+    this.onEvent({ type: 'fight', unit: fighter.u, kind, ...info });
+  }
+
+  /**
+   * Un coup touche : la cible décide de ce qu'elle encaisse (garde,
+   * invincibilité d'esquive, chute), puis les dégâts passent par le
+   * circuit habituel — armure, vol de vie, épines, compteur d'enchaînements.
+   */
+  _fightHit(from, targetUnit, move, kind, step){
+    const tf = this.fighterOf(targetUnit);
+    const dmg = tf ? tf.takeHit(move, kind, from, step) : (from.u.atk || 40) * move.dmg;
+    if(dmg > 0){
+      this._applyDamage(from.u, targetUnit, dmg, { basic: true, fight: true });
+      this.hitstop = Math.max(this.hitstop, move.hitstop);   // arrêt sur image
+      this.onEvent({ type: 'fight-impact', from: from.u, to: targetUnit, kind, step, heavy: kind === 'heavy' });
+    }
+  }
+
+  // ── Entrées du joueur en duel ─────────────────────────────
+  duelStrike(kind = 'light'){ this.fighters?.[0]?.strike(kind); }
+  duelBlock(on){ this.fighters?.[0]?.setBlock(!!on); }
+  duelDodge(dx, dy){ this.fighters?.[0]?.dodge(dx, dy); }
+  /** Le joueur peut-il se déplacer ? (garde et coups le clouent sur place) */
+  duelCanMove(){ const f = this.fighters?.[0]; return !f || f.canMove; }
+
+  _tickDuel(dt){
+    // Remise en place différée entre deux rounds
+    if(this._pendingReset > 0){
+      this._pendingReset -= dt;
+      if(this._pendingReset <= 0){ this._pendingReset = 0; this._resetDuelRound(); }
+      return;
+    }
+    // Compte à rebours d'annonce ("Round 2 — Combat !")
+    if(this.roundPause > 0){
+      this.roundPause -= dt;
+      if(this.roundPause <= 0) this.onEvent({ type: 'duel-fight' });
+      return;
+    }
+    // L'enchaînement retombe si le joueur laisse passer trop de temps.
+    if(this.combo > 0 && this.time > this._comboUntil){
+      this.onEvent({ type: 'duel-combo-end', combo: this.combo });
+      this.combo = 0;
+    }
+    for(const f of this.fighters){ f.think(dt); f.update(dt); }
+    this.roundLeft = Math.max(0, this.roundLeft - dt);
+    if(this.duelFoe.dead){ this._endDuelRound(0); return; }
+    if(this.player.dead){ this._endDuelRound(1); return; }
+    if(this.roundLeft <= 0){
+      const a = this.player.hp / (this.player.maxHp || 1);
+      const b = this.duelFoe.hp / (this.duelFoe.maxHp || 1);
+      this._endDuelRound(a >= b ? 0 : 1);
+    }
+  }
+
   _buildArena(){
     // Arena — cercle simple, pas de lane.
     const cx = this.cfg.w/2 || 1100, cy = this.cfg.h/2 || 750;
@@ -268,6 +413,7 @@ export class Sim{
   _tickPlayerBasic(){
     if(!this._basicQueued) return;
     this._basicQueued = false;
+    if(this.mode === 'duel'){ this.duelStrike('light'); return; }
     const p = this.player;
     if(!p || p.dead) return;
     if(p.cc && p.cc.type === 'stun' && this.time < p.cc.until) return;
@@ -291,13 +437,33 @@ export class Sim{
     if(this.over) return;
     this.time += dt;
 
+    // Mode Combat : pendant l'annonce du round et la remise en place, tout
+    // est figé — personne ne frappe avant « Combat ! ».
+    if(this.mode === 'duel' && (this._pendingReset > 0 || this.roundPause > 0)){
+      this._tickDuel(dt);
+      return;
+    }
+    // Arrêt sur image : quelques centièmes de gel au moment de l'impact.
+    // C'est ce qui donne du poids aux coups dans un jeu de combat.
+    if(this.mode === 'duel' && this.hitstop > 0){
+      this.hitstop -= dt;
+      return;
+    }
+
     this._movePlayer(dt);
     this._tickPlayerBasic();
     for(const u of this.units){
       if(u.dead || u === this.player) continue;
+      // En duel, les deux combattants sont pilotés par la couche de combat
+      // rapproché : ni approche de MOBA, ni attaque automatique.
+      if(this.mode === 'duel' && this.fighterOf(u)) continue;
       this._think(u, dt);
     }
-    for(const u of this.units) if(!u.dead) this._tickAttack(u, dt);
+    for(const u of this.units){
+      if(u.dead) continue;
+      if(this.mode === 'duel' && this.fighterOf(u)) continue;
+      this._tickAttack(u, dt);
+    }
     for(const u of this.units) if(!u.dead && u.kind === 'champ') this._tickResources(u, dt);
     // IA de sorts — alliés (hors joueur) et ennemis choisissent et lancent
     // leurs propres capacités (soin, bouclier, contrôle, dégâts). Avant
@@ -309,6 +475,7 @@ export class Sim{
     if(this.mode === 'siege') this._tickSiege(dt);
     else if(this.mode === 'defense') this._tickDefense(dt);
     else if(this.mode === 'boss') this._tickBoss(dt);
+    else if(this.mode === 'duel') this._tickDuel(dt);
     else this._tickArena(dt);
     // Après TOUS les déplacements (les sbires avancent dans le tick du mode).
     this._separate(dt);
@@ -399,6 +566,8 @@ export class Sim{
   }
 
   _movePlayer(dt){
+    // En duel, garde, coup et esquive clouent le joueur sur place.
+    if(this.mode === 'duel' && !this.duelCanMove()) return;
     const p = this.player;
     if(p.dead) return;
     if(p.cc && p.cc.type !== 'slow' && this.time < p.cc.until) return; // étourdi/enraciné : ne bouge pas
@@ -582,6 +751,20 @@ export class Sim{
 
   _applyDamage(u, t, rawDmg, opts = {}){
     if(t.dead) return;
+
+    // Mode Combat : chaîne de coups du joueur. Elle se casse dès qu'il
+    // encaisse, et retombe toute seule après un temps sans toucher.
+    if(this.mode === 'duel' && !this.over){
+      if(u === this.player && t === this.duelFoe){
+        this.combo++;
+        this._comboUntil = this.time + 1.4;
+        if(this.combo > this.comboBest) this.comboBest = this.combo;
+        if(this.combo >= 2) this.onEvent({ type: 'duel-combo', combo: this.combo });
+      } else if(t === this.player && this.combo > 0){
+        this.onEvent({ type: 'duel-combo-end', combo: this.combo });
+        this.combo = 0;
+      }
+    }
 
     // Exec : bonus dégâts sur cibles sous 40% PV
     let dmg = rawDmg;

@@ -3,7 +3,7 @@
 // canvas PixiJS, avec un système d'animations complet : idle variés,
 // marche/course calées sur la vitesse réelle, attaques, sorts,
 // réactions aux coups et morts tirés au hasard dans la bibliothèque
-// de 118 clips Mixamo (assets/animations/).
+// de 580 clips Mixamo (assets/animations/).
 //
 // Trois règles qui corrigent les défauts d'origine :
 //
@@ -42,6 +42,16 @@ const MODEL_BY_KEY = {
   FULGENCE: 'FULGENCE.glb',
   BABA:     'BABA_TUNDE.glb',
   DARK:     'DARK.glb',
+  // Ennemis : police d'Abidjan et Émissaires de Sgrün.
+  SYLLA:    'SYLLA.glb',
+  SCHISSIN: 'SCHISSIN.glb',
+  OUSMANE:  'OUSMANE.glb',
+  SUB:      'SUB.glb',
+  GROB:     'GROB.glb',
+  KRAG:     'KRAG.glb',
+  MURK:     'MURK.glb',
+  VAEL:     'SAMIA.glb',   // Vael n'a pas de modèle propre : silhouette de Samia
+  SGRUN:    'SGRUN.glb',
 };
 const MODEL_MINION_ALLY  = 'SBIRE.glb';
 const MODEL_MINION_ENEMY = 'ORC.glb';
@@ -72,12 +82,72 @@ const WEAPON_BY_KEY = {
   FULGENCE: [
     { file: 'EPEE1.glb',    hand: 'RightHand', scale: 1.0,  pos: [0.02, 0.05, 0.0],  rot: [Math.PI/2 + 0.25, 0, 0.15] },
   ],
+  // Baba Tunde se bat aux poings : son pistolet reste accroché à la
+  // hanche gauche, jamais dans la main, pour ne pas gêner la boxe.
+  BABA:     [
+    { file: 'PISTOLET2.glb', hand: 'LeftUpLeg', height: 0.36, grip: 0.4, pos: [0.06, 0.12, 0.05], rot: [1.3, 0, 1.2] },
+  ],
+  // Lundgren, le Cartographe : son bâton, et la kora du griot au bras gauche.
   LUNDGREN: [
     { file: 'BATON_MAGIQUE.glb', hand: 'RightHand', scale: 0.85, pos: [0.0, 0.05, 0.0], rot: [Math.PI + 0.2, 0, 0] },
+    { file: 'HARPE.glb',         hand: 'LeftHand',  height: 0.75, grip: 0.45, pos: [0, 0.07, 0], rot: [1.8, 0, 0.79] },
   ],
   DARK:     [
     { file: 'EPEE3.glb',    hand: 'RightHand', scale: 0.55, pos: [0.02, 0.04, 0.0],  rot: [Math.PI/2 + 0.2, 0, 0.1] },
+    { file: 'PISTOLET3.glb', hand: 'LeftHand', height: 0.45, grip: 0.35, pos: [0, 0.04, 0], rot: [1.8, 0, 0.79] },
   ],
+  // Calage automatique (height + grip) : l'arme est mise à l'échelle sur sa
+  // hauteur réelle en mètres, recentrée sur sa poignée, puis orientée.
+  KAREN:    [
+    { file: 'LANCE.glb',    hand: 'RightHand', height: 1.9, grip: 0.42, pos: [0, 0.05, 0], rot: [1.8, 0, 0.79] },
+  ],
+  // Sam, le Passeur : pistolet à essence dans la main droite, compas
+  // dimensionnel dans la gauche — les deux objets de son rôle.
+  SAM:      [
+    { file: 'PISTOLET1.glb', hand: 'RightHand', height: 0.42, grip: 0.35, pos: [0, 0.04, 0], rot: [1.8, 0, 0.79] },
+    { file: 'BOUSSOLE.glb',  hand: 'LeftHand',  height: 0.26, grip: 0.5,  pos: [0, 0.06, 0], rot: [1.57, 0, 0] },
+  ],
+
+  // ── Ennemis ────────────────────────────────────────────────
+  SYLLA:    [
+    { file: 'PISTOLET2.glb', hand: 'RightHand', height: 0.40, grip: 0.35, pos: [0, 0.04, 0], rot: [1.8, 0, 0.79] },
+  ],
+  OUSMANE:  [
+    { file: 'PISTOLET1.glb', hand: 'RightHand', height: 0.44, grip: 0.35, pos: [0, 0.04, 0], rot: [1.8, 0, 0.79] },
+  ],
+  SCHISSIN: [
+    { file: 'PISTOLET3.glb', hand: 'RightHand', height: 0.46, grip: 0.35, pos: [0, 0.04, 0], rot: [1.8, 0, 0.79] },
+  ],
+  SUB:      [
+    { file: 'EPEE3.glb',     hand: 'RightHand', scale: 0.55, pos: [0.02, 0.04, 0], rot: [Math.PI/2 + 0.2, 0, 0.1] },
+  ],
+  GROB:     [
+    { file: 'EPEE1.glb',     hand: 'RightHand', scale: 1.0,  pos: [0.02, 0.05, 0], rot: [Math.PI/2 + 0.25, 0, 0.15] },
+  ],
+  KRAG:     [
+    { file: 'LANCE.glb',     hand: 'RightHand', height: 2.1, grip: 0.4, pos: [0, 0.05, 0], rot: [1.8, 0, 0.79] },
+  ],
+  VAEL:     [
+    { file: 'EPEE.glb',      hand: 'RightHand', scale: 0.62, pos: [0.02, 0.05, 0], rot: [Math.PI/2 + 0.25, 0, 0.15] },
+  ],
+  SGRUN:    [
+    { file: 'BOUSSOLE.glb',  hand: 'LeftHand',  height: 0.34, grip: 0.5, pos: [0, 0.06, 0], rot: [1.57, 0, 0] },
+    { file: 'BATON_MAGIQUE.glb', hand: 'RightHand', scale: 0.95, pos: [0, 0.05, 0], rot: [Math.PI + 0.2, 0, 0] },
+  ],
+
+};
+
+// Réglages prêts à l'emploi pour équiper un futur champion (les Émissaires
+// de Sgrün, Sylla, Krag…) : recopier la ligne voulue dans WEAPON_BY_KEY.
+export const WEAPON_LIBRARY = {
+  lance:     { file: 'LANCE.glb',     hand: 'RightHand', height: 1.9,  grip: 0.42, pos: [0, 0.05, 0], rot: [1.8, 0, 0.79] },
+  pistolet1: { file: 'PISTOLET1.glb', hand: 'RightHand', height: 0.42, grip: 0.35, pos: [0, 0.04, 0], rot: [1.8, 0, 0.79] },
+  pistolet2: { file: 'PISTOLET2.glb', hand: 'RightHand', height: 0.40, grip: 0.35, pos: [0, 0.04, 0], rot: [1.8, 0, 0.79] },
+  pistolet3: { file: 'PISTOLET3.glb', hand: 'RightHand', height: 0.45, grip: 0.35, pos: [0, 0.04, 0], rot: [1.8, 0, 0.79] },
+  kora:      { file: 'HARPE.glb',     hand: 'LeftHand',  height: 0.75, grip: 0.45, pos: [0, 0.07, 0], rot: [1.8, 0, 0.79] },
+  boussole:  { file: 'BOUSSOLE.glb',  hand: 'LeftHand',  height: 0.26, grip: 0.5,  pos: [0, 0.06, 0], rot: [1.57, 0, 0] },
+  // Porté à la hanche plutôt qu'en main : parenter à 'LeftUpLeg'.
+  holster:   { file: 'PISTOLET2.glb', hand: 'LeftUpLeg', height: 0.36, grip: 0.4,  pos: [0.06, 0.12, 0.05], rot: [1.3, 0, 1.2] },
 };
 
 function modelForUnit(u){
@@ -94,99 +164,277 @@ function modelForUnit(u){
 // Vérifié : sword-and-shield-walk est une marche ARRIÈRE (le bassin
 // recule de 1,4 m) — les marches avant utilisées ici avancent bien.
 // ---------------------------------------------------------------
+// PROFILS D'ANIMATION — un jeu de clips par personnage, puisé dans la
+// bibliothèque de 580 clips Mixamo (assets/animations/).
+// Le premier idle est le plus fréquent (posture « maison »), les autres
+// viennent ponctuer. Attaque / sort / coup / mort : tirage aléatoire sans
+// jamais répéter deux fois de suite le même clip — c'est ce qui évite
+// l'effet « ils font tous le même geste ».
+// Les états dodge / block / taunt / jump ne sont pas encore joués par le
+// mode Siège : ils sont là pour le mode Combat (duel façon Tekken).
+// Vérifié : sword-and-shield-walk est une marche ARRIÈRE (le bassin
+// recule de 1,4 m) — les marches avant listées ici avancent bien.
+// ---------------------------------------------------------------
 const PROFILES = {
-  // Tarine — bouclier et pierre : frappes nettes, sorts à une main.
+  // Tarine — bouclier et pierre : frappes nettes, garde haute, sorts à une main.
   tarine: {
-    idle:   ['sword-and-shield-idle-1.glb', 'sword-and-shield-idle.glb', 'sword-and-shield-idle-2.glb'],
-    walk:   ['great-sword-walk.glb'],
-    run:    ['standing-sprint-forward.glb'],
-    attack: ['sword-and-shield-slash.glb', 'sword-and-shield-slash-1.glb', 'sword-and-shield-attack-1.glb', 'sword-and-shield-kick.glb', 'sword-and-shield-attack.glb'],
-    cast:   ['standing-1h-cast-spell-01.glb', 'sword-and-shield-casting.glb', 'standing-2h-magic-attack-02.glb'],
-    hit:    ['sword-and-shield-impact.glb', 'sword-and-shield-impact-1.glb', 'sword-and-shield-block.glb'],
-    death:  ['sword-and-shield-death.glb', 'falling-back-death.glb'],
+    idle  : ['sword-and-shield-idle-1.glb', 'sword-and-shield-idle.glb', 'pro-sword-and-shield-pack-sword-and-shield-idle.glb', 'pro-sword-and-shield-pack-sword-and-shield-idle-2.glb', 'lite-sword-and-shield-pack-sword-and-shield-idle.glb', 'sword-and-shield-idle-2.glb'],
+    walk  : ['pro-sword-and-shield-pack-sword-and-shield-walk.glb', 'pro-sword-and-shield-pack-sword-and-shield-walk-2.glb', 'great-sword-walk.glb', 'sword-and-shield-pack-sword-and-shield-walk-2.glb'],
+    run   : ['pro-sword-and-shield-pack-sword-and-shield-run.glb', 'lite-sword-and-shield-pack-sword-and-shield-run.glb', 'standing-sprint-forward.glb', 'running.glb'],
+    attack: ['sword-and-shield-slash.glb', 'sword-and-shield-slash-1.glb', 'pro-sword-and-shield-pack-sword-and-shield-attack.glb', 'pro-sword-and-shield-pack-sword-and-shield-attack-2.glb', 'pro-sword-and-shield-pack-sword-and-shield-attack-3.glb', 'pro-sword-and-shield-pack-sword-and-shield-attack-4.glb', 'lite-sword-and-shield-pack-sword-and-shield-attack.glb', 'lite-sword-and-shield-pack-sword-and-shield-attack-2.glb', 'lite-sword-and-shield-pack-sword-and-shield-attack-3.glb', 'sword-and-shield-kick.glb', 'sword-and-shield-attack-1.glb'],
+    cast  : ['standing-1h-cast-spell-01.glb', 'sword-and-shield-casting.glb', 'standing-2h-magic-attack-02.glb', 'pro-sword-and-shield-pack-sword-and-shield-power-up.glb'],
+    hit   : ['sword-and-shield-impact.glb', 'pro-sword-and-shield-pack-sword-and-shield-impact.glb', 'pro-sword-and-shield-pack-sword-and-shield-impact-2.glb', 'sword-and-shield-block.glb', 'lite-sword-and-shield-pack-sword-and-shield-block.glb', 'standing-block-react-large.glb'],
+    death : ['sword-and-shield-death.glb', 'lite-sword-and-shield-pack-sword-and-shield-death.glb', 'falling-back-death.glb', 'pro-sword-and-shield-pack-sword-and-shield-death.glb'],
+    dodge : ['standing-dodge-left.glb', 'standing-dodge-right.glb', 'standing-dodge-forward.glb', 'capoeira-pack-esquiva-1.glb'],
+    block : ['pro-sword-and-shield-pack-sword-and-shield-block-idle.glb', 'lite-sword-and-shield-pack-sword-and-shield-block-idle.glb', 'center-block.glb', 'body-block.glb'],
+    taunt : ['standing-taunt-battlecry.glb', 'pro-melee-axe-pack-standing-taunt-chest-thump.glb'],
+    jump  : ['pro-melee-axe-pack-standing-jump.glb', 'big-jump.glb'],
   },
-  // Baba Tunde — la star de la cour : bagarreur acrobatique.
+  // Baba Tunde — la star de la cour : boxe, capoeira, esquives acrobatiques.
   baba: {
-    idle:   ['standing-idle-03.glb', 'ginga-variation-3.glb', 'sword-and-shield-idle-2.glb'],
-    walk:   ['great-sword-walk.glb'],
-    run:    ['standing-sprint-forward.glb'],
-    attack: ['fist-fight-a.glb', 'headbutt.glb', 'punching.glb', 'flying-knee-punch-combo.glb', 'dual-weapon-combo.glb'],
-    cast:   ['drop-kick.glb', 'butterfly-twirl.glb', 'esquiva-5.glb'],
-    hit:    ['receive-uppercut-to-the-face.glb', 'standing-react-small-from-front.glb', 'reaction.glb'],
-    death:  ['falling-forward-death.glb', 'standing-react-death-right.glb'],
+    idle  : ['bouncing-fight-idle.glb', 'fight-idle.glb', 'fighting-idle.glb', 'bouncing-fight-idle-1.glb', 'ginga-variation-3.glb', 'standing-idle-03.glb'],
+    walk  : ['start-walking.glb', 'great-sword-walk.glb', 'walk-forward-arc.glb', 'basic-shooter-pack-walking.glb'],
+    run   : ['running.glb', 'run.glb', 'standing-sprint-forward.glb'],
+    attack: ['boxing.glb', 'fist-fight-a.glb', 'fist-fight-b.glb', 'punching.glb', 'headbutt.glb', 'flying-knee-punch-combo.glb', 'mutant-punch.glb', 'inside-crescent-kick.glb', 'chapa-2.glb', 'dual-weapon-combo.glb'],
+    cast  : ['drop-kick.glb', 'butterfly-twirl.glb', 'capoeira-pack-armada.glb', 'capoeira-pack-chapa-giratoria.glb', 'running-forward-flip.glb'],
+    hit   : ['receive-uppercut-to-the-face.glb', 'standing-react-small-from-front.glb', 'reaction.glb', 'standing-block-react-large.glb'],
+    death : ['falling-forward-death.glb', 'standing-react-death-right.glb', 'falling-back-death.glb'],
+    dodge : ['dodging.glb', 'standing-dodge-left.glb', 'standing-dodge-right.glb', 'capoeira-pack-esquiva-2.glb', 'capoeira-pack-esquiva-3.glb'],
+    block : ['center-block.glb', 'inward-block.glb', 'right-block.glb', 'body-block.glb'],
+    taunt : ['standing-taunt-battlecry.glb', 'hip-hop-dancing.glb', 'silly-dancing.glb'],
+    jump  : ['jumping.glb', 'big-jump.glb', 'jumping-over-into-combat.glb'],
   },
   // Sam — mage : projectiles à une main, grands sorts à deux mains.
   sam: {
-    idle:   ['standing-idle.glb', 'standing-idle-03.glb', 'body-block.glb'],
-    walk:   ['great-sword-walk.glb'],
-    run:    ['standing-sprint-forward.glb'],
-    attack: ['standing-1h-magic-attack-01.glb', 'standing-1h-magic-attack-02.glb', 'standing-1h-magic-attack-03.glb'],
-    cast:   ['standing-2h-magic-attack-02.glb', 'standing-2h-magic-attack-04.glb', 'standing-2h-cast-spell-01.glb', 'standing-2h-magic-attack-03.glb'],
-    hit:    ['standing-react-small-from-front.glb', 'standing-react-small-from-left.glb'],
-    death:  ['standing-react-death-backward.glb', 'standing-react-death-backward-1.glb'],
+    idle  : ['standing-idle.glb', 'standing-idle-03.glb', 'looking.glb', 'body-block.glb'],
+    walk  : ['great-sword-walk.glb', 'sword-and-shield-pack-sword-and-shield-walk-2.glb', 'basic-shooter-pack-walking.glb'],
+    run   : ['standing-sprint-forward.glb', 'running.glb'],
+    attack: ['standing-1h-magic-attack-01.glb', 'standing-1h-magic-attack-02.glb', 'standing-1h-magic-attack-03.glb', 'fireball.glb'],
+    cast  : ['standing-2h-magic-attack-02.glb', 'standing-2h-magic-attack-04.glb', 'standing-2h-cast-spell-01.glb', 'standing-2h-magic-attack-03.glb', 'standing-1h-cast-spell-01.glb'],
+    hit   : ['standing-react-small-from-front.glb', 'standing-react-small-from-left.glb', 'reaction.glb'],
+    death : ['standing-react-death-backward.glb', 'standing-react-death-backward-1.glb', 'falling-back-death.glb'],
+    dodge : ['standing-dodge-forward.glb', 'standing-dodge-left.glb', 'dodging.glb'],
+    block : ['body-block.glb', 'center-block.glb'],
+    taunt : ['standing-taunt-battlecry.glb', 'kneeling-pointing.glb'],
+    jump  : ['jumping.glb', 'big-jump.glb'],
   },
-  // Lundgren — l'érudit : gestuelle plus posée.
+  // Lundgren — l'érudit : gestuelle posée, magie lente.
   lundgren: {
-    idle:   ['standing-idle-03.glb', 'standing-idle.glb', 'dwarf-idle.glb'],
-    walk:   ['great-sword-walk.glb'],
-    run:    ['standing-sprint-forward.glb'],
-    attack: ['standing-1h-magic-attack-02.glb', 'spell-cast.glb', 'standing-1h-magic-attack-01.glb'],
-    cast:   ['standing-2h-cast-spell-01.glb', 'standing-1h-cast-spell-01.glb', 'standing-2h-magic-attack-04.glb'],
-    hit:    ['standing-react-small-from-left.glb', 'standing-react-small-from-front.glb'],
-    death:  ['standing-react-death-left.glb', 'standing-react-death-backward.glb'],
+    idle  : ['standing-idle-03.glb', 'standing-idle.glb', 'dwarf-idle.glb', 'looking.glb', 'pro-melee-axe-pack-standing-idle-looking-ver-1.glb'],
+    walk  : ['great-sword-walk.glb', 'start-walking.glb', 'basic-shooter-pack-walking.glb'],
+    run   : ['standing-sprint-forward.glb', 'run.glb'],
+    attack: ['standing-1h-magic-attack-02.glb', 'spell-cast.glb', 'standing-1h-magic-attack-01.glb', 'fireball.glb'],
+    cast  : ['standing-2h-cast-spell-01.glb', 'standing-1h-cast-spell-01.glb', 'standing-2h-magic-attack-04.glb', 'standing-2h-magic-attack-03.glb'],
+    hit   : ['standing-react-small-from-left.glb', 'standing-react-small-from-front.glb', 'reaction.glb'],
+    death : ['standing-react-death-left.glb', 'standing-react-death-backward.glb', 'falling-back-death.glb'],
+    dodge : ['standing-dodge-right.glb', 'standing-dodge-left.glb'],
+    block : ['body-block.glb', 'center-block.glb'],
+    taunt : ['kneeling-pointing.glb', 'looking.glb'],
+    jump  : ['jumping.glb'],
   },
-  // Karen — la sentinelle : garde haute, soins.
+  // Karen — la sentinelle : garde en bouclier, soins.
   karen: {
-    idle:   ['sword-and-shield-block-idle.glb', 'standing-idle.glb', 'dwarf-idle-1.glb'],
-    walk:   ['great-sword-walk.glb'],
-    run:    ['standing-sprint-forward.glb'],
-    attack: ['standing-1h-magic-attack-01.glb', 'standing-1h-magic-attack-03.glb', 'spell-cast.glb'],
-    cast:   ['standing-2h-cast-spell-01.glb', 'standing-1h-cast-spell-01.glb', 'standing-2h-magic-attack-02.glb'],
-    hit:    ['standing-react-small-from-front.glb', 'sword-and-shield-block.glb'],
-    death:  ['standing-react-death-left.glb', 'standing-react-death-right.glb'],
+    idle  : ['sword-and-shield-block-idle.glb', 'pro-sword-and-shield-pack-sword-and-shield-block-idle.glb', 'standing-idle.glb', 'dwarf-idle-1.glb', 'lite-sword-and-shield-pack-sword-and-shield-idle.glb'],
+    walk  : ['great-sword-walk.glb', 'sword-and-shield-pack-sword-and-shield-walk-2.glb'],
+    run   : ['standing-sprint-forward.glb', 'lite-sword-and-shield-pack-sword-and-shield-run.glb'],
+    attack: ['standing-1h-magic-attack-01.glb', 'standing-1h-magic-attack-03.glb', 'spell-cast.glb', 'lite-sword-and-shield-pack-sword-and-shield-attack-4.glb'],
+    cast  : ['standing-2h-cast-spell-01.glb', 'standing-1h-cast-spell-01.glb', 'standing-2h-magic-attack-02.glb', 'pro-sword-and-shield-pack-sword-and-shield-power-up.glb'],
+    hit   : ['standing-react-small-from-front.glb', 'sword-and-shield-block.glb', 'lite-sword-and-shield-pack-sword-and-shield-block.glb', 'standing-block-react-large.glb'],
+    death : ['standing-react-death-left.glb', 'standing-react-death-right.glb', 'lite-sword-and-shield-pack-sword-and-shield-death.glb'],
+    dodge : ['standing-dodge-left.glb', 'standing-dodge-forward.glb'],
+    block : ['pro-sword-and-shield-pack-sword-and-shield-block-idle.glb', 'center-block.glb', 'body-block.glb'],
+    taunt : ['standing-taunt-battlecry.glb'],
+    jump  : ['jumping.glb'],
   },
-  // Fulgence — le roc : grande épée, coups lourds.
+  // Fulgence — le roc : grande épée, coups lourds, blocages.
   fulgence: {
-    idle:   ['dwarf-idle.glb', 'dwarf-idle-1.glb', 'great-sword-crouching-2.glb'],
-    walk:   ['great-sword-walk-1.glb'],
-    run:    ['great-sword-run.glb'],
-    attack: ['great-sword-slash.glb', 'great-sword-slash-1.glb', 'great-sword-kick.glb', 'great-sword-kick-1.glb', 'two-hand-sword-combo.glb'],
-    cast:   ['great-sword-jump-attack.glb', 'great-sword-slide-attack.glb', 'two-hand-club-combo.glb'],
-    hit:    ['great-sword-impact.glb', 'great-sword-blocking-2.glb', 'standing-block-react-large.glb'],
-    death:  ['two-handed-sword-death.glb', 'falling-back-death.glb'],
+    idle  : ['dwarf-idle.glb', 'dwarf-idle-1.glb', 'great-sword-pack-great-sword-idle.glb', 'great-sword-pack-great-sword-idle-2.glb', 'great-sword-pack-great-sword-idle-3.glb', 'great-sword-crouching-2.glb'],
+    walk  : ['great-sword-walk-1.glb', 'great-sword-pack-great-sword-walk.glb', 'great-sword-pack-great-sword-walk-2.glb'],
+    run   : ['great-sword-run.glb', 'great-sword-pack-great-sword-run.glb'],
+    attack: ['great-sword-slash.glb', 'great-sword-slash-1.glb', 'great-sword-pack-great-sword-slash.glb', 'great-sword-pack-great-sword-slash-2.glb', 'great-sword-pack-great-sword-slash-3.glb', 'great-sword-pack-great-sword-slash-4.glb', 'great-sword-pack-great-sword-attack.glb', 'great-sword-pack-great-sword-high-spin-attack.glb', 'great-sword-kick.glb', 'great-sword-pack-great-sword-kick-2.glb', 'two-hand-sword-combo.glb'],
+    cast  : ['great-sword-jump-attack.glb', 'great-sword-pack-great-sword-slide-attack.glb', 'two-hand-club-combo.glb', 'great-sword-pack-great-sword-jump-attack.glb'],
+    hit   : ['great-sword-impact.glb', 'great-sword-pack-great-sword-impact.glb', 'great-sword-blocking-2.glb', 'standing-block-react-large.glb', 'great-sword-pack-great-sword-blocking.glb'],
+    death : ['two-handed-sword-death.glb', 'great-sword-pack-two-handed-sword-death.glb', 'great-sword-pack-two-handed-sword-death-2.glb', 'falling-back-death.glb'],
+    dodge : ['standing-dodge-backward.glb', 'standing-dodge-left.glb', 'standing-dodge-right.glb', 'standing-dodge-forward.glb'],
+    block : ['great-sword-pack-great-sword-blocking.glb', 'great-sword-blocking-1.glb', 'center-block.glb'],
+    taunt : ['pro-melee-axe-pack-standing-taunt-battlecry.glb', 'pro-melee-axe-pack-standing-taunt-chest-thump.glb'],
+    jump  : ['great-sword-pack-great-sword-jump.glb', 'big-jump.glb'],
   },
-  // Dark — l'ombre : souple, imprévisible.
+  // Dark — l'ombre : furtif, capoeira, combos à deux armes.
   dark: {
-    idle:   ['ginga-variation-3.glb', 'crouch-idle.glb', 'sword-and-shield-crouch-idle.glb'],
-    walk:   ['crouch-walk-forward.glb'],
-    run:    ['standing-sprint-forward.glb'],
-    attack: ['dual-weapon-combo-1.glb', 'one-hand-club-combo.glb', 'mutant-punch.glb', 'flying-knee-punch-combo.glb'],
-    cast:   ['butterfly-twirl.glb', 'run-to-rolling.glb', 'esquiva-5.glb'],
-    hit:    ['standing-react-small-from-left.glb', 'reaction.glb'],
-    death:  ['standing-react-death-right.glb', 'falling-forward-death.glb'],
+    idle  : ['ninja-idle.glb', 'ginga-variation-3.glb', 'crouch-idle.glb', 'fight-idle-1.glb', 'sword-and-shield-crouch-idle.glb'],
+    walk  : ['crouch-walk-forward.glb', 'walk-forward-arc.glb', 'left-cover-sneak.glb'],
+    run   : ['running.glb', 'standing-sprint-forward.glb', 'run.glb'],
+    attack: ['dual-weapon-combo-1.glb', 'one-hand-club-combo.glb', 'mutant-punch.glb', 'flying-knee-punch-combo.glb', 'capoeira-pack-chapa-giratoria-2.glb', 'capoeira-pack-bencao.glb', 'capoeira-pack-chapaeu-de-couro.glb', 'standing-melee-attack-downward.glb'],
+    cast  : ['butterfly-twirl.glb', 'run-to-rolling.glb', 'capoeira-pack-au.glb', 'capoeira-pack-au-to-role.glb', 'running-forward-flip.glb'],
+    hit   : ['standing-react-small-from-left.glb', 'reaction.glb', 'standing-react-small-from-front.glb'],
+    death : ['standing-react-death-right.glb', 'falling-forward-death.glb', 'standing-react-death-backward.glb'],
+    dodge : ['capoeira-pack-esquiva-4.glb', 'capoeira-pack-esquiva-5.glb', 'dodging.glb', 'standing-dodge-right.glb'],
+    block : ['inward-block.glb', 'center-block.glb'],
+    taunt : ['capoeira-pack-capoeira.glb', 'silly-dancing.glb'],
+    jump  : ['running-forward-flip.glb', 'big-jump.glb', 'jumping.glb'],
   },
   // Sbires alliés.
   sbire: {
-    idle:   ['standing-idle.glb', 'sword-and-shield-idle-2.glb', 'dwarf-idle.glb'],
-    walk:   ['great-sword-walk.glb'],
-    run:    ['great-sword-run.glb'],
-    attack: ['punching.glb', 'sword-and-shield-kick.glb', 'mutant-punch.glb', 'sword-and-shield-attack-1.glb'],
-    cast:   [],
-    hit:    ['standing-react-small-from-front.glb', 'reaction.glb'],
-    death:  ['falling-back-death.glb', 'standing-react-death-left.glb', 'standing-react-death-right.glb'],
+    idle  : ['standing-idle.glb', 'sword-and-shield-idle-2.glb', 'dwarf-idle.glb', 'lite-sword-and-shield-pack-sword-and-shield-idle.glb', 'fight-idle.glb'],
+    walk  : ['great-sword-walk.glb', 'start-walking.glb', 'basic-shooter-pack-walking.glb'],
+    run   : ['great-sword-run.glb', 'running.glb', 'run.glb'],
+    attack: ['punching.glb', 'sword-and-shield-kick.glb', 'mutant-punch.glb', 'sword-and-shield-attack-1.glb', 'lite-sword-and-shield-pack-sword-and-shield-attack.glb', 'fist-fight-b.glb', 'boxing.glb'],
+    cast  : [],
+    hit   : ['standing-react-small-from-front.glb', 'reaction.glb', 'standing-block-react-large.glb'],
+    death : ['falling-back-death.glb', 'standing-react-death-left.glb', 'standing-react-death-right.glb', 'falling-forward-death.glb'],
+    dodge : ['standing-dodge-left.glb', 'dodging.glb'],
+    block : ['center-block.glb', 'body-block.glb'],
+    taunt : ['standing-taunt-battlecry.glb'],
+    jump  : ['jumping.glb'],
   },
-  // Sbires ennemis (orcs).
+  // Sylla — le commissaire : gestes secs, arme de poing, autorité.
+  sylla: {
+    idle  : ['standing-idle.glb', 'standing-idle-03.glb', 'pro-rifle-pack-idle.glb', 'dwarf-idle-1.glb'],
+    walk  : ['pro-rifle-pack-walk-forward.glb', 'great-sword-walk.glb', 'basic-shooter-pack-walking.glb'],
+    run   : ['pro-rifle-pack-run-forward.glb', 'standing-sprint-forward.glb', 'running.glb'],
+    attack: ['standing-melee-attack-downward.glb', 'pro-melee-axe-pack-standing-melee-attack-horizontal.glb', 'punching.glb', 'basic-shooter-pack-firing-rifle.glb', 'standing-1h-magic-attack-01.glb', 'headbutt.glb'],
+    cast  : ['standing-2h-magic-attack-02.glb', 'spell-cast.glb', 'standing-1h-cast-spell-01.glb'],
+    hit   : ['standing-react-small-from-front.glb', 'standing-block-react-large.glb', 'reaction.glb'],
+    death : ['falling-back-death.glb', 'standing-react-death-backward.glb', 'standing-react-death-right.glb'],
+    dodge : ['standing-dodge-left.glb', 'standing-dodge-right.glb', 'dodging.glb'],
+    block : ['center-block.glb', 'body-block.glb'],
+    taunt : ['standing-taunt-battlecry.glb'],
+    jump  : ['jumping.glb'],
+  },
+  // Schissin-Rouge — le tank de la police : garde basse, coups lourds.
+  schissin: {
+    idle  : ['dwarf-idle.glb', 'dwarf-idle-2.glb', 'pro-melee-axe-pack-standing-idle.glb', 'pro-sword-and-shield-pack-sword-and-shield-idle.glb'],
+    walk  : ['pro-melee-axe-pack-standing-walk-forward.glb', 'great-sword-walk.glb'],
+    run   : ['great-sword-run.glb', 'pro-melee-axe-pack-standing-run-forward.glb'],
+    attack: ['pro-melee-axe-pack-standing-melee-attack-downward.glb', 'pro-melee-axe-pack-standing-melee-attack-horizontal.glb', 'pro-melee-axe-pack-standing-melee-attack-backhand.glb', 'headbutt.glb', 'pro-melee-axe-pack-standing-melee-attack-360-high.glb', 'punching.glb'],
+    cast  : ['pro-melee-axe-pack-standing-taunt-battlecry.glb', 'standing-2h-magic-attack-03.glb'],
+    hit   : ['pro-melee-axe-pack-standing-block-react-large.glb', 'standing-block-react-large.glb', 'reaction.glb'],
+    death : ['two-handed-sword-death.glb', 'falling-forward-death.glb', 'standing-react-death-left.glb'],
+    dodge : ['standing-dodge-backward.glb', 'standing-dodge-left.glb'],
+    block : ['pro-melee-axe-pack-standing-block-idle.glb', 'center-block.glb', 'body-block.glb'],
+    taunt : ['pro-melee-axe-pack-standing-taunt-chest-thump.glb', 'standing-taunt-battlecry.glb'],
+    jump  : ['pro-melee-axe-pack-standing-jump.glb'],
+  },
+  // Ousmane — sécurité du port : postures de tir, rechargements, grenades.
+  ousmane: {
+    idle  : ['pro-rifle-pack-idle.glb', 'basic-shooter-pack-rifle-aiming-idle.glb', 'rifle-idle.glb', 'pro-rifle-pack-idle-aiming.glb'],
+    walk  : ['pro-rifle-pack-walk-forward.glb', 'basic-shooter-pack-walking.glb', 'basic-shooter-pack-walking.glb'],
+    run   : ['pro-rifle-pack-run-forward.glb', 'pro-rifle-pack-sprint-forward.glb', 'running.glb'],
+    attack: ['basic-shooter-pack-firing-rifle.glb', 'basic-shooter-pack-1-firing-rifle.glb', 'basic-shooter-pack-1-toss-grenade.glb', 'basic-shooter-pack-rifle-aiming-idle.glb'],
+    cast  : ['basic-shooter-pack-reloading.glb', 'basic-shooter-pack-1-reloading.glb', 'basic-shooter-pack-toss-grenade.glb'],
+    hit   : ['basic-shooter-pack-hit-reaction.glb', 'standing-react-small-from-front.glb', 'reaction.glb'],
+    death : ['pro-rifle-pack-death-from-the-front.glb', 'falling-back-death.glb', 'standing-react-death-backward.glb'],
+    dodge : ['pro-rifle-pack-walk-left.glb', 'pro-rifle-pack-walk-right.glb', 'standing-dodge-forward.glb'],
+    block : ['body-block.glb', 'center-block.glb'],
+    taunt : ['standing-taunt-battlecry.glb'],
+    jump  : ['jumping.glb'],
+  },
+  // Sub — l'opérateur : furtif, lame, économie de mouvement.
+  sub: {
+    idle  : ['ninja-idle.glb', 'fight-idle.glb', 'crouch-idle.glb', 'fight-idle-1.glb'],
+    walk  : ['crouch-walk-forward.glb', 'walk-forward-arc.glb', 'left-cover-sneak.glb'],
+    run   : ['running.glb', 'standing-sprint-forward.glb'],
+    attack: ['dual-weapon-combo.glb', 'dual-weapon-combo-1.glb', 'standing-melee-attack-downward.glb', 'one-hand-club-combo.glb', 'mutant-punch.glb'],
+    cast  : ['run-to-rolling.glb', 'butterfly-twirl.glb', 'dodging.glb'],
+    hit   : ['standing-react-small-from-left.glb', 'reaction.glb'],
+    death : ['standing-react-death-right.glb', 'falling-forward-death.glb'],
+    dodge : ['standing-dodge-right.glb', 'standing-dodge-left.glb', 'dodging.glb'],
+    block : ['inward-block.glb', 'center-block.glb'],
+    taunt : ['standing-taunt-battlecry.glb'],
+    jump  : ['jumping.glb', 'big-jump.glb'],
+  },
+  // Grob — la masse : lent, brutal, grande lame.
+  grob: {
+    idle  : ['dwarf-idle-2.glb', 'orc-idle.glb', 'pro-melee-axe-pack-standing-idle-looking-ver-1.glb', 'great-sword-pack-great-sword-idle.glb'],
+    walk  : ['orc-walk.glb', 'great-sword-pack-great-sword-walk.glb'],
+    run   : ['great-sword-run.glb', 'pro-melee-axe-pack-standing-run-forward.glb'],
+    attack: ['great-sword-pack-great-sword-slash.glb', 'great-sword-pack-great-sword-slash-2.glb', 'great-sword-slash.glb', 'headbutt.glb', 'pro-melee-axe-pack-standing-melee-attack-360-high.glb', 'mutant-punch.glb'],
+    cast  : ['great-sword-pack-great-sword-jump-attack.glb', 'pro-melee-axe-pack-standing-taunt-chest-thump.glb'],
+    hit   : ['great-sword-pack-great-sword-impact.glb', 'standing-block-react-large.glb', 'pro-melee-axe-pack-standing-block-react-large.glb'],
+    death : ['great-sword-pack-two-handed-sword-death.glb', 'falling-forward-death.glb', 'two-handed-sword-death.glb'],
+    dodge : ['standing-dodge-backward.glb', 'standing-dodge-right.glb'],
+    block : ['great-sword-pack-great-sword-blocking.glb', 'pro-melee-axe-pack-standing-block-idle.glb'],
+    taunt : ['pro-melee-axe-pack-standing-taunt-battlecry.glb'],
+    jump  : ['big-jump.glb'],
+  },
+  // Krag — l'obsidienne : implacable, ne recule jamais.
+  krag: {
+    idle  : ['dwarf-idle-1.glb', 'orc-idle.glb', 'pro-melee-axe-pack-standing-idle-looking-ver-2.glb', 'standing-idle-03.glb'],
+    walk  : ['orc-walk.glb', 'pro-melee-axe-pack-standing-walk-forward.glb'],
+    run   : ['great-sword-run.glb', 'standing-sprint-forward.glb'],
+    attack: ['pro-melee-axe-pack-standing-melee-attack-downward.glb', 'pro-melee-axe-pack-standing-melee-attack-horizontal.glb', 'headbutt.glb', 'pro-melee-axe-pack-standing-melee-attack-kick-ver-1.glb', 'punching.glb'],
+    cast  : ['pro-melee-axe-pack-standing-taunt-chest-thump.glb', 'standing-2h-magic-attack-03.glb'],
+    hit   : ['pro-melee-axe-pack-standing-block-react-large.glb', 'standing-block-react-large.glb'],
+    death : ['falling-back-death.glb', 'two-handed-sword-death.glb'],
+    dodge : ['standing-dodge-backward.glb'],
+    block : ['pro-melee-axe-pack-standing-block-idle.glb', 'body-block.glb'],
+    taunt : ['pro-melee-axe-pack-standing-taunt-battlecry.glb'],
+    jump  : ['pro-melee-axe-pack-standing-jump.glb'],
+  },
+  // Murk — l'émissaire liquide : ondulant, magie de glace.
+  murk: {
+    idle  : ['standing-idle.glb', 'looking.glb', 'standing-idle-03.glb', 'dwarf-idle.glb'],
+    walk  : ['great-sword-walk.glb', 'basic-shooter-pack-walking.glb'],
+    run   : ['standing-sprint-forward.glb', 'running.glb'],
+    attack: ['standing-1h-magic-attack-02.glb', 'standing-1h-magic-attack-03.glb', 'fireball.glb', 'spell-cast.glb'],
+    cast  : ['standing-2h-magic-attack-04.glb', 'standing-2h-cast-spell-01.glb', 'standing-2h-magic-attack-02.glb', 'standing-1h-cast-spell-01.glb'],
+    hit   : ['standing-react-small-from-left.glb', 'reaction.glb'],
+    death : ['standing-react-death-backward.glb', 'falling-back-death.glb'],
+    dodge : ['standing-dodge-forward.glb', 'dodging.glb'],
+    block : ['body-block.glb'],
+    taunt : ['standing-taunt-battlecry.glb'],
+    jump  : ['jumping.glb'],
+  },
+  // Vael — la lame invisible : capoeira, vitesse pure.
+  vael: {
+    idle  : ['ginga-variation-3.glb', 'bouncing-fight-idle.glb', 'fight-idle-1.glb', 'ninja-idle.glb'],
+    walk  : ['walk-forward-arc.glb', 'start-walking.glb'],
+    run   : ['running.glb', 'standing-sprint-forward.glb', 'run.glb'],
+    attack: ['capoeira-pack-armada.glb', 'capoeira-pack-chapa-giratoria.glb', 'inside-crescent-kick.glb', 'dual-weapon-combo.glb', 'flying-knee-punch-combo.glb', 'butterfly-twirl.glb'],
+    cast  : ['running-forward-flip.glb', 'capoeira-pack-au-to-role.glb', 'drop-kick.glb'],
+    hit   : ['standing-react-small-from-front.glb', 'reaction.glb'],
+    death : ['standing-react-death-right.glb', 'falling-forward-death.glb'],
+    dodge : ['capoeira-pack-esquiva-1.glb', 'capoeira-pack-esquiva-4.glb', 'dodging.glb', 'standing-dodge-left.glb'],
+    block : ['inward-block.glb', 'center-block.glb'],
+    taunt : ['capoeira-pack-capoeira.glb'],
+    jump  : ['running-forward-flip.glb', 'big-jump.glb'],
+  },
+  // Sgrün — l'entité : lenteur souveraine, grands sorts.
+  sgrun: {
+    idle  : ['standing-idle-03.glb', 'looking.glb', 'standing-idle.glb'],
+    walk  : ['great-sword-walk.glb'],
+    run   : ['standing-sprint-forward.glb'],
+    attack: ['standing-2h-magic-attack-02.glb', 'standing-2h-magic-attack-03.glb', 'standing-1h-magic-attack-01.glb', 'fireball.glb'],
+    cast  : ['standing-2h-cast-spell-01.glb', 'standing-2h-magic-attack-04.glb', 'spell-cast.glb', 'standing-1h-cast-spell-01.glb'],
+    hit   : ['standing-react-small-from-front.glb', 'standing-block-react-large.glb'],
+    death : ['standing-react-death-backward.glb', 'falling-back-death.glb'],
+    dodge : ['standing-dodge-forward.glb'],
+    block : ['body-block.glb'],
+    taunt : ['standing-taunt-battlecry.glb', 'kneeling-pointing.glb'],
+    jump  : ['jumping.glb'],
+  },
+  // Sbires ennemis (orcs) : hache et corps-à-corps brutal.
   orc: {
-    idle:   ['orc-idle.glb', 'dwarf-idle-2.glb'],
-    walk:   ['orc-walk.glb'],
-    run:    ['great-sword-run.glb'],
-    attack: ['mutant-punch.glb', 'headbutt.glb', 'punching.glb', 'great-sword-kick-1.glb'],
-    cast:   [],
-    hit:    ['receive-uppercut-to-the-face.glb', 'reaction.glb'],
-    death:  ['falling-forward-death.glb', 'falling-back-death.glb', 'standing-react-death-backward.glb'],
+    idle  : ['orc-idle.glb', 'dwarf-idle-2.glb', 'pro-melee-axe-pack-standing-idle.glb', 'pro-melee-axe-pack-standing-idle-looking-ver-2.glb'],
+    walk  : ['orc-walk.glb', 'pro-melee-axe-pack-standing-walk-forward.glb'],
+    run   : ['great-sword-run.glb', 'pro-melee-axe-pack-standing-run-forward.glb'],
+    attack: ['mutant-punch.glb', 'headbutt.glb', 'punching.glb', 'pro-melee-axe-pack-standing-melee-attack-downward.glb', 'pro-melee-axe-pack-standing-melee-attack-horizontal.glb', 'pro-melee-axe-pack-standing-melee-attack-backhand.glb', 'pro-melee-axe-pack-standing-melee-attack-360-high.glb', 'pro-melee-axe-pack-standing-melee-attack-kick-ver-1.glb', 'great-sword-kick-1.glb'],
+    cast  : [],
+    hit   : ['receive-uppercut-to-the-face.glb', 'reaction.glb', 'pro-melee-axe-pack-standing-block-react-large.glb'],
+    death : ['falling-forward-death.glb', 'falling-back-death.glb', 'standing-react-death-backward.glb', 'two-handed-sword-death.glb'],
+    dodge : ['standing-dodge-right.glb', 'dodging.glb'],
+    block : ['pro-melee-axe-pack-standing-block-idle.glb', 'center-block.glb'],
+    taunt : ['pro-melee-axe-pack-standing-taunt-battlecry.glb'],
+    jump  : ['pro-melee-axe-pack-standing-jump.glb'],
   },
 };
-const PROFILE_BY_KEY = { TARINE:'tarine', BABA:'baba', SAM:'sam', LUNDGREN:'lundgren', KAREN:'karen', FULGENCE:'fulgence', DARK:'dark' };
+
+const PROFILE_BY_KEY = {
+  TARINE:'tarine', BABA:'baba', SAM:'sam', LUNDGREN:'lundgren', KAREN:'karen', FULGENCE:'fulgence', DARK:'dark',
+  SYLLA:'sylla', SCHISSIN:'schissin', OUSMANE:'ousmane', SUB:'sub', GROB:'grob',
+  KRAG:'krag', MURK:'murk', VAEL:'vael', SGRUN:'sgrun',
+};
 function profileForUnit(u){
   if(u.kind === 'minion') return PROFILES[u.team === 0 ? 'sbire' : 'orc'];
   return PROFILES[PROFILE_BY_KEY[u.key]] || PROFILES.tarine;
@@ -320,7 +568,110 @@ export class BabylonUnits{
     return v;
   }
 
+  /**
+   * MODE COMBAT — caméra de jeu de combat (façon Tekken) : en perspective,
+   * basse, qui reste PERPENDICULAIRE à l'axe des deux combattants et tourne
+   * avec eux. Elle remplace la caméra orthographique couplée au rendu 2D ;
+   * tant qu'elle est active, la couche PixiJS est projetée à l'écran par
+   * `projectToScreen()` au lieu d'être posée à plat sur le monde.
+   *
+   * @param {object|null} o  { ax, ay, bx, by } positions Pixi des deux
+   *   combattants, ou null pour revenir à la caméra normale.
+   */
+  setDuelCamera(o){
+    if(!o){
+      if(this._duelCam){ this._duelCam.dispose(); this._duelCam = null; this.scene.activeCamera = this.camera; }
+      return;
+    }
+    const BB = window.BABYLON;
+    if(!this._duelCam){
+      const c = new BB.UniversalCamera('duelCam', new BB.Vector3(0, 2, -6), this.scene);
+      c.fov = 0.82;            // ~47°, cadrage serré mais sans déformation
+      c.minZ = 0.15; c.maxZ = 400;
+      c.inputs.clear();
+      this._duelCam = c;
+      this._duelYaw = null;
+      this._duelPunch = 0;
+    }
+    const cam = this._duelCam;
+    this.scene.activeCamera = cam;
+
+    const A = this._pixiToBabylon(o.ax, o.ay);
+    const B = this._pixiToBabylon(o.bx, o.by);
+    const mid = A.add(B).scale(0.5);
+    const sep = BB.Vector3.Distance(A, B);
+
+    // Axe des combattants, puis la perpendiculaire : la caméra se place
+    // toujours sur le côté, pour qu'aucun des deux ne cache l'autre.
+    let ax = B.x - A.x, az = B.z - A.z;
+    const L = Math.hypot(ax, az) || 1; ax /= L; az /= L;
+    let yaw = Math.atan2(-ax, az);      // perpendiculaire à l'axe
+    // On garde le côté courant : sans ça, la caméra bascule d'un bord à
+    // l'autre dès que les combattants échangent leurs places.
+    if(this._duelYaw != null){
+      const d = ((yaw - this._duelYaw + Math.PI) % (Math.PI * 2) + Math.PI * 2) % (Math.PI * 2) - Math.PI;
+      if(Math.abs(d) > Math.PI / 2) yaw += Math.PI;
+      this._duelYaw = angleLerp(this._duelYaw, yaw, 0.06);
+    } else this._duelYaw = yaw;
+    yaw = this._duelYaw;
+
+    // Recul selon l'écartement : serré au corps-à-corps, large quand ils
+    // prennent leurs distances. Le « punch » rapproche d'un coup à l'impact.
+    this._duelPunch = Math.max(0, (this._duelPunch || 0) - 0.06);
+    const dist = clamp(4.4 + sep * 0.75, 4.4, 10.5) - this._duelPunch;
+    const height = 1.75 + sep * 0.05;
+    const look = mid.add(new BB.Vector3(0, 1.15, 0));
+    const want = new BB.Vector3(
+      look.x + Math.sin(yaw) * dist,
+      height + this._shakeY(),
+      look.z + Math.cos(yaw) * dist,
+    );
+    // Lissage : la caméra ne saute jamais, elle glisse.
+    cam.position = BB.Vector3.Lerp(cam.position, want, 0.14);
+    this._duelLook = BB.Vector3.Lerp(this._duelLook || look, look, 0.2);
+    cam.setTarget(this._duelLook);
+    this._duelCamYaw = yaw;
+  }
+
+  _shakeY(){
+    if(!this._shakeT || this._shakeT <= 0) return 0;
+    this._shakeT -= 0.016;
+    return (Math.random() - 0.5) * this._shakeMag * Math.max(0, this._shakeT);
+  }
+
+  /** Secousse + rapprochement bref : à déclencher sur un coup qui porte. */
+  duelImpact(heavy){
+    this._duelPunch = Math.min(1.1, (this._duelPunch || 0) + (heavy ? 0.75 : 0.3));
+    this._shakeT = heavy ? 0.22 : 0.12;
+    this._shakeMag = heavy ? 0.5 : 0.22;
+  }
+
+  /** Orientation de la caméra de duel (rad) — sert à orienter les commandes. */
+  duelCameraYaw(){ return this._duelCamYaw || 0; }
+
+  /**
+   * Projette un point du monde Pixi vers les coordonnées écran, avec la
+   * vraie matrice de la caméra active. C'est ce qui permet de garder les
+   * chiffres de dégâts et les impacts 2D calés sur la scène en perspective.
+   */
+  projectToScreen(px, py, hUnits = 0){
+    const BB = window.BABYLON;
+    const cam = this.scene.activeCamera;
+    if(!cam) return null;
+    const p = this._pixiToBabylon(px, py);
+    p.y += hUnits;
+    const e = this.engine;
+    const v = BB.Vector3.Project(
+      p,
+      BB.Matrix.Identity(),
+      this.scene.getTransformMatrix(),
+      cam.viewport.toGlobal(e.getRenderWidth(), e.getRenderHeight()),
+    );
+    return { x: v.x, y: v.y, depth: v.z };
+  }
+
   _syncCameraFromPixi(){
+    if(this._duelCam && this.scene.activeCamera === this._duelCam) return;
     const pc = this.pixiRenderer.camera;
     if(!pc) return;
     this.camera.target.copyFrom(this._pixiToBabylon(pc.x, pc.y));
@@ -381,11 +732,35 @@ export class BabylonUnits{
       catch(e){ console.error('[BabylonUnits] ❌ arme introuvable :', w.file, e); continue; }
       if(inst.disposed) return;
       const entry = container.instantiateModelsToScene(name => name + '_w' + list.indexOf(w) + '_' + unit.id, false);
-      const root = entry.rootNodes[0];
+      const model = entry.rootNodes[0];
+      let root = model;
+      if(w.height){
+        // Les modèles achetés n'ont ni pivot ni échelle communs : on mesure
+        // la pièce, on la ramène à la hauteur voulue et on amène sa poignée
+        // (grip, de 0 = talon à 1 = pointe) sur l'os de la main.
+        let mn = new BABYLON.Vector3(1e9, 1e9, 1e9), mx = new BABYLON.Vector3(-1e9, -1e9, -1e9);
+        for(const m of model.getChildMeshes().concat([model])){
+          if(!m.getTotalVertices || !m.getTotalVertices()) continue;
+          m.computeWorldMatrix(true);
+          const bb = m.getBoundingInfo().boundingBox;
+          mn = BABYLON.Vector3.Minimize(mn, bb.minimumWorld); mx = BABYLON.Vector3.Maximize(mx, bb.maximumWorld);
+        }
+        const size = mx.subtract(mn);
+        const k = w.height / Math.max(size.x, size.y, size.z, 0.01);
+        const pivot = new BABYLON.TransformNode('wpivot_' + unit.id, this.scene);
+        model.parent = pivot;
+        model.scaling.setAll(k);
+        const c = mn.add(mx).scale(0.5 * k);
+        model.position.set(-c.x, -c.y + (0.5 - (w.grip ?? 0.5)) * w.height, -c.z);
+        if(size.x > size.y && size.x > size.z) model.rotation.z = Math.PI / 2;
+        else if(size.z > size.y && size.z > size.x) model.rotation.x = Math.PI / 2;
+        root = pivot;
+      } else {
+        root.scaling.setAll(w.scale);
+      }
       root.parent = handNode;
       root.position.set(w.pos[0], w.pos[1], w.pos[2]);
       root.rotation.set(w.rot[0], w.rot[1], w.rot[2]);
-      root.scaling.setAll(w.scale);
       inst.weapons = inst.weapons || [];
       inst.weapons.push(root);
     }
@@ -523,10 +898,15 @@ export class BabylonUnits{
 
     // Précharge tous les clips du profil en tâche de fond : le premier
     // coup, sort ou réaction est ainsi prêt quand il arrive.
-    const all = new Set(Object.values(profile).flat());
-    const idleFirst = profile.idle[0];
-    await this._clipFor(inst, idleFirst);
-    for(const f of all) this._clipFor(inst, f);
+    // Préchargement en deux temps : d'abord ce qui sert dans la première
+    // seconde (posture, marche, course, deux attaques), puis le reste en
+    // tâche de fond. Avec des profils de 30 à 40 clips, tout charger d'un
+    // coup retardait l'apparition des unités au début de la mission.
+    const urgent = [profile.idle[0], profile.walk?.[0], profile.run?.[0], ...(profile.attack || []).slice(0, 2)].filter(Boolean);
+    await this._clipFor(inst, urgent[0]);
+    for(const f of urgent.slice(1)) this._clipFor(inst, f);
+    const rest = [...new Set(Object.values(profile).flat())].filter(f => !urgent.includes(f));
+    setTimeout(() => { for(const f of rest){ if(!inst.disposed) this._clipFor(inst, f); } }, 1200);
 
     const f = unit.facing || { x: 0, y: 1 };
     inst.yaw = Math.atan2(f.x, -f.y);
@@ -718,6 +1098,53 @@ export class BabylonUnits{
    *  - 'hit'    : l'unité encaisse un coup
    * @param {object} [info] - pour 'attack' : { interval } (s entre deux coups)
    */
+  /**
+   * Mode Combat : joue un clip précis d'un état, en priorité absolue.
+   * C'est ce qui permet qu'un enchaînement montre quatre coups
+   * DIFFÉRENTS (attack[0], [1], [2], puis le lourd) au lieu d'un tirage
+   * au hasard, et qu'une garde tienne tant que le bouton est pressé.
+   *
+   * @param {number} unitId
+   * @param {string} state   'attack' | 'hit' | 'block' | 'dodge' | 'death' | 'taunt'
+   * @param {number} index   position dans la liste du profil (bouclée)
+   * @param {object} o       { dur } durée voulue en secondes (le clip est
+   *                         accéléré ou ralenti pour tenir dedans), { hold }
+   *                         pour rester sur la dernière image (garde, chute)
+   */
+  playFight(unitId, state, index = 0, o = {}){
+    const inst = this.instances.get(unitId);
+    if(!inst || !inst.ready || inst.disposed) return;
+    const list = inst.profile[state] && inst.profile[state].length ? inst.profile[state] : inst.profile.attack;
+    if(!list || !list.length) return;
+    const file = list[index % list.length];
+    const clip = this._readyClip(inst, file);
+    if(!clip) return;
+    inst.state = state;
+    const ratio = o.dur ? clamp(clip.duration / o.dur, 0.5, 3.2) : 1;
+    const ag = this._play(inst, clip, { loop: !!o.loop, speedRatio: ratio });
+    inst.oneShotUntil = performance.now() + (clip.duration / (ratio * inst.tempo)) * 1000;
+    if(o.hold){
+      // Reste figé sur la dernière image : garde tenue, corps au sol.
+      ag.onAnimationGroupEndObservable.addOnce(() => { try{ ag.pause(); }catch(e){} });
+      return;
+    }
+    if(!o.loop) ag.onAnimationGroupEndObservable.addOnce(() => {
+      if(inst.state === state && inst.current === clip && !inst.disposed){
+        inst.state = null;
+        this._enterIdle(inst);
+      }
+    });
+  }
+
+  /** Rend la main à la posture d'attente (fin de garde, relevé). */
+  releaseFight(unitId){
+    const inst = this.instances.get(unitId);
+    if(!inst || !inst.ready || inst.disposed) return;
+    inst.state = null;
+    inst.oneShotUntil = 0;
+    this._enterIdle(inst);
+  }
+
   notifyAction(unitId, key, info = {}){
     const inst = this.instances.get(unitId);
     if(!inst || !inst.ready || inst.state === 'death') return;

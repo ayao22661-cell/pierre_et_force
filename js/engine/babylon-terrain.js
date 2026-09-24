@@ -28,6 +28,23 @@ import { valueNoise, smooth, clamp } from './scene/noise.js';
 const WORLD_SCALE = 45; // identique à babylon-units.js
 const MARGIN = 11;      // lisière construite hors de la zone jouable
 
+// Ciels par biome : zénith, milieu, horizon. Le rendu n'y touche qu'en
+// vue basse (mode Combat) — d'où des teintes pensées pour un fond, pas
+// pour éclairer la scène.
+const SKY = {
+  abidjan: { day: { top: '#2f6fae', mid: '#8fc0dc', low: '#f0dcb0', clouds: 0.55 }, night: { top: '#070c1c', mid: '#14203c', low: '#3a3a52', clouds: 0.2 } },
+  banco:   { day: { top: '#2a5a3a', mid: '#7fae86', low: '#d8e0a8', clouds: 0.4 }, night: { top: '#040a08', mid: '#0e1a14', low: '#1e2a20', clouds: 0.15 } },
+  essence: { day: { top: '#1a2a5a', mid: '#5f86c8', low: '#bfe8ec', clouds: 0.35 }, night: { top: '#0a0620', mid: '#241a4a', low: '#4a3a78', clouds: 0.3 } },
+  born:    { day: { top: '#4a4a52', mid: '#8a8a92', low: '#c0bcb4', clouds: 0.7 }, night: { top: '#12121a', mid: '#24242e', low: '#3a3a44', clouds: 0.4 } },
+  polar:   { day: { top: '#3a6a9a', mid: '#9fc8e4', low: '#eaf2fa', clouds: 0.6 }, night: { top: '#050e1c', mid: '#0e2036', low: '#22405e', clouds: 0.3 } },
+  sahel:   { day: { top: '#3a76ae', mid: '#b8c8c0', low: '#f0cc90', clouds: 0.3 }, night: { top: '#0a0e1e', mid: '#1c2136', low: '#4a3c34', clouds: 0.2 } },
+  canyon:  { day: { top: '#2f6aa8', mid: '#9ab4c4', low: '#e2a468', clouds: 0.35 }, night: { top: '#0a0c18', mid: '#1a1c2c', low: '#3a2a22', clouds: 0.2 } },
+  abyss:   { day: { top: '#03161c', mid: '#0a3040', low: '#1c5a62', clouds: 0.15 }, night: { top: '#01080c', mid: '#052028', low: '#0e3a44', clouds: 0.1 } },
+  void:    { day: { top: '#08041a', mid: '#2a1a4a', low: '#5a3a86', clouds: 0.25 }, night: { top: '#06020f', mid: '#1e1038', low: '#42266a', clouds: 0.25 } },
+  sgrun:   { day: { top: '#050a12', mid: '#12202e', low: '#24485e', clouds: 0.2 }, night: { top: '#03060c', mid: '#0c1620', low: '#1a3244', clouds: 0.15 } },
+  tower:   { day: { top: '#2a4a70', mid: '#7f9ab4', low: '#d8ccb8', clouds: 0.4 }, night: { top: '#0a0e18', mid: '#1c2432', low: '#3e3a42', clouds: 0.2 } },
+};
+
 function hexColor(hex){
   const n = parseInt((hex || '#808080').replace('#', ''), 16);
   return new BABYLON.Color3(((n >> 16) & 255) / 255, ((n >> 8) & 255) / 255, (n & 255) / 255);
@@ -53,6 +70,15 @@ export class BabylonTerrain{
 
     const bx = layout.w / WORLD_SCALE, bz = layout.h / WORLD_SCALE;
     this.play = { x0: 0, x1: bx, z0: 0, z1: -bz };
+    // MODE COMBAT : on rétrécit la zone jouable autour du centre. Les règles
+    // de composition placent leur décor sur les bords : sur une arène de 49
+    // par 33 mètres, ce décor se retrouvait à trente mètres et le duel se
+    // déroulait au milieu d'un terrain vague. Resserrée, la même composition
+    // dessine un anneau fermé juste derrière les combattants.
+    if(this.theme.mode === 'duel'){
+      const cx = bx / 2, cz = -bz / 2, hw = 11, hh = 8;
+      this.play = { x0: cx - hw, x1: cx + hw, z0: cz + hh, z1: cz - hh };
+    }
     this.bounds = { x0: -MARGIN, x1: bx + MARGIN, z0: MARGIN, z1: -bz - MARGIN };
     this.laneHalf = (layout.laneWidth || 220) / WORLD_SCALE / 2;
     this.path = (layout.path || []).map(p => ({ x: p.x / WORLD_SCALE, z: -p.y / WORLD_SCALE }));
@@ -64,6 +90,10 @@ export class BabylonTerrain{
     this._buildGround(baked);
     composer.commit(this.root);
     this._light();
+    this._sky();
+    // Modèles 3D réels (sentinelles de Sgrün, vaisseau, artefacts) : chargés
+    // après coup pour ne pas retarder l'affichage du terrain.
+    this._loadModels(composer.models).catch(e => console.error('[BabylonTerrain] ❌ modèle de décor', e));
 
     let calls = 0, inst = 0;
     for(const m of this.root.getChildMeshes()){ calls++; inst += m.thinInstanceCount || 1; }
@@ -137,7 +167,10 @@ export class BabylonTerrain{
 
   // ── 3. cuisson du sol ────────────────────────────────────────
   _bake(shadows){
-    const ppu = this.small ? 14 : 21;
+    // En mode Combat la caméra est deux fois plus près : le sol est peint
+    // à une résolution plus fine, sinon la texture cuite apparaît floue.
+    const duel = this.theme.mode === 'duel';
+    const ppu = (this.small ? 14 : 21) * (duel ? 1.7 : 1);
     const v = { setting: this.place.setting, variant: this.place.variant, night: !!this.place.night };
     // La recette ne fait que décrire les couches : elles reçoivent les vrais
     // outils de peinture au moment de la cuisson.
@@ -194,6 +227,80 @@ export class BabylonTerrain{
     meta.groundHeight = (x, z) => this.height(x, z) + 0.02;
   }
 
+  /**
+   * Charge les modèles GLB posés par le compositeur et les instancie.
+   * Un seul chargement par fichier, puis une instance GPU par copie ;
+   * chaque modèle est mis à l'échelle sur sa hauteur voulue en mètres.
+   */
+  async _loadModels(jobs){
+    if(!jobs || !jobs.length) return;
+    const byFile = new Map();
+    for(const j of jobs){ if(!byFile.has(j.file)) byFile.set(j.file, []); byFile.get(j.file).push(j); }
+    for(const [file, list] of byFile){
+      let container;
+      try{ container = await BABYLON.SceneLoader.LoadAssetContainerAsync('assets/props/', file, this.scene); }
+      catch(e){ console.error('[BabylonTerrain] ❌ modèle introuvable :', file, e); continue; }
+      if(this._destroyed){ container.dispose(); return; }
+      // hauteur d'origine, pour convertir « je veux 2,4 m » en facteur d'échelle
+      let minY = 1e9, maxY = -1e9;
+      for(const m of container.meshes){
+        if(!m.getTotalVertices()) continue;
+        m.computeWorldMatrix(true);
+        const bb = m.getBoundingInfo().boundingBox;
+        minY = Math.min(minY, bb.minimumWorld.y); maxY = Math.max(maxY, bb.maximumWorld.y);
+      }
+      const raw = Math.max(maxY - minY, 0.01);
+      for(const j of list){
+        const entry = container.instantiateModelsToScene(n => n + '_' + Math.round(j.x * 10) + '_' + Math.round(j.z * 10), false);
+        const root = entry.rootNodes[0];
+        if(!root) continue;
+        const k = j.height / raw;
+        root.parent = this.root;
+        root.scaling.setAll(k);
+        root.position.set(j.x, j.y - minY * k, j.z);
+        root.rotation.set(j.tilt || 0, j.rot, 0);
+        for(const m of root.getChildMeshes()){ m.isPickable = false; m.alwaysSelectAsActiveMesh = true; }
+      }
+      // On NE détruit PAS le conteneur : les copies posées sont des
+      // instances GPU qui pointent vers ses maillages source. Le détruire
+      // faisait disparaître tout le décor chargé.
+      this._containers = this._containers || [];
+      this._containers.push(container);
+    }
+  }
+
+  /**
+   * Dôme d'horizon. Invisible en vue plongeante (mode Siège), il devient
+   * indispensable en mode Combat : sans lui, tout ce qui dépasse la ligne
+   * des toits est du noir.
+   */
+  _sky(){
+    const L = this.biome.light({ setting: this.place.setting, variant: this.place.variant, night: !!this.place.night });
+    const pal = SKY[this.place.biome] || SKY.abidjan;
+    const night = !!this.place.night;
+        // Demi-sphère aplatie plutôt qu'une sphère complète : on ne voit jamais
+    // le zénith en vue basse, et l'aplatissement évite la distorsion au pôle.
+    const dome = BABYLON.MeshBuilder.CreateSphere('sky', { diameter: 300, segments: 28, slice: 0.55, sideOrientation: BABYLON.Mesh.BACKSIDE }, this.scene);
+    dome.scaling.y = 0.55;
+    dome.parent = this.root;
+    dome.position.set((this.play.x0 + this.play.x1) / 2, -6, (this.play.z0 + this.play.z1) / 2);
+    dome.isPickable = false;
+    dome.infiniteDistance = false;
+    const mat = new BABYLON.StandardMaterial('skyMat', this.scene);
+    const tex = new BABYLON.DynamicTexture('skyTex', T.texSky(this.seed + 21, night ? pal.night : pal.day), this.scene, true);
+    tex.update(true);
+    tex.wrapU = BABYLON.Texture.WRAP_ADDRESSMODE;
+    tex.wrapV = BABYLON.Texture.CLAMP_ADDRESSMODE;
+    mat.emissiveTexture = tex;          // le ciel s'éclaire tout seul
+    mat.diffuseColor = new BABYLON.Color3(0, 0, 0);
+    mat.specularColor = new BABYLON.Color3(0, 0, 0);
+    mat.disableLighting = true;
+    mat.backFaceCulling = false;
+    dome.material = mat;
+    dome.freezeWorldMatrix();
+    this.sky = dome;
+  }
+
   // ── 5. lumière et étalonnage ─────────────────────────────────
   _light(){
     const L = this.biome.light({ setting: this.place.setting, variant: this.place.variant, night: !!this.place.night });
@@ -219,6 +326,7 @@ export class BabylonTerrain{
   }
 
   destroy(){
+    this._destroyed = true;
     if(this.scene?.metadata) delete this.scene.metadata.groundHeight;
     const hemi = this.scene.getLightByName('hemi'), sun = this.scene.getLightByName('sun');
     if(this._lightBackup){
@@ -231,6 +339,7 @@ export class BabylonTerrain{
       ip.vignetteEnabled = this._ipBackup.v; ip.vignetteWeight = this._ipBackup.vw;
     }
     if(this._prevClear) this.scene.clearColor = this._prevClear;
+    for(const c of (this._containers || [])) c.dispose();
     const cache = matCache(this.scene);
     for(const m of cache.values()){ m.diffuseTexture?.dispose(); m.dispose(); }
     cache.clear();
