@@ -26,6 +26,19 @@ export function renderDeploy(mission, modeLabel, save, onLaunch){
   const foePool = free ? opponentsFaced(save) : [];
   if(free) state.foe = foePool.includes(save.lastFoe) ? save.lastFoe : foePool[0];
   document.getElementById('deploy-allies-title').textContent = free ? 'TON ADVERSAIRE' : 'ALLIÉ (1 max)';
+  // Combat libre : cartes animées façon sélection de champion (voir
+  // components.css, « .deploy-free »). `picked` marque la carte qu'on
+  // vient de verrouiller, `entered` évite de rejouer l'apparition en
+  // cascade à chaque clic.
+  document.getElementById('screen-deploy').classList.toggle('deploy-free', free);
+  let picked = null;
+  const entered = new Set();
+  const animate = (tile, grid, k, i) => {
+    if(!free) return;
+    tile.style.setProperty('--i', i);
+    if(!entered.has(grid)) tile.classList.add('enter');
+    if(grid + ':' + k === picked) tile.classList.add('lock');
+  };
 
   // Champions jouables par le joueur lui-même : tous les débloqués.
   const playerPool = PLAYABLE.filter(k => save.allies_unlocked.includes(k) || k === 'TARINE');
@@ -99,10 +112,11 @@ export function renderDeploy(mission, modeLabel, save, onLaunch){
   // ── Sélecteur du personnage joueur : rangée de tuiles ──
   function renderPlayerGrid(){
     playerGrid.innerHTML = '';
-    playerPool.forEach(k => {
+    playerPool.forEach((k, i) => {
       const tile = championTile(k, k === state.champ, () => {
         if(k === state.champ) return;
         state.champ = k;
+        picked = 'player:' + k;
         // Le champion choisi comme joueur ne peut plus être un allié en double.
         const idx = state.allies.indexOf(k);
         if(idx >= 0) state.allies.splice(idx, 1);
@@ -111,23 +125,29 @@ export function renderDeploy(mission, modeLabel, save, onLaunch){
         renderAllyGrid();
         updatePreview();
       });
+      animate(tile, 'player', k, i);
       playerGrid.appendChild(tile);
     });
+    entered.add('player');
   }
 
   // ── Sélecteur des alliés (jusqu'à 2) : rangée de tuiles ──
   function renderAllyGrid(){
     allyGrid.innerHTML = '';
     if(free){
-      foePool.forEach(k => {
+      foePool.forEach((k, i) => {
         const tile = championTile(k, k === state.foe, () => {
+          if(k === state.foe) return;
           state.foe = k;
+          picked = 'foe:' + k;
           renderAllyGrid();
           updatePreview();
         });
         tile.classList.add('foe');
+        animate(tile, 'foe', k, i);
         allyGrid.appendChild(tile);
       });
+      entered.add('foe');
       return;
     }
     allyPool.filter(k => k !== state.champ).forEach(k => {
