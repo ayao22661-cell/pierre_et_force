@@ -95,9 +95,28 @@ export class BabylonTerrain{
     // publie en coordonnées Pixi pour que la simulation empêche de les
     // traverser. Les herbes et les décalcomanies n'en font pas partie
     // (elles sont posées avec `solid: false`).
+    // Maisons, murs et conteneurs gardent leur emprise RECTANGULAIRE
+    // (orientée) : réduits à un cercle, on passait à travers les bouts
+    // des murs et entre deux maisons d'une même rangée.
     this.obstacles = composer.placed
-      .filter(o => o.r >= 0.45)
-      .map(o => ({ x: o.x * WORLD_SCALE, y: -o.z * WORLD_SCALE, r: o.r * WORLD_SCALE * 0.82 }));
+      .filter(o => o.hw != null || o.r >= 0.45)
+      .map(o => {
+        const ob = { x: o.x * WORLD_SCALE, y: -o.z * WORLD_SCALE, r: o.r * WORLD_SCALE * 0.82, h: o.h ?? 2 };
+        if(o.hw != null){
+          // Axe X local du modèle, tourné de `rot` autour de Y (repère
+          // Babylon), puis ramené en Pixi (y = -z).
+          ob.hw = o.hw * WORLD_SCALE; ob.hd = o.hd * WORLD_SCALE;
+          ob.ux = Math.cos(o.rot); ob.uy = Math.sin(o.rot);
+          ob.r = Math.hypot(ob.hw, ob.hd);   // rayon englobant (tri rapide)
+        }
+        return ob;
+      });
+    // MODE COMBAT : l'arène est un anneau de décor. On publie ses bords
+    // (en Pixi) pour que ni les combattants ni la caméra n'en sortent.
+    if(this.theme.mode === 'duel'){
+      const P = this.play;
+      this.arena = { x0: P.x0 * WORLD_SCALE, x1: P.x1 * WORLD_SCALE, y0: -P.z0 * WORLD_SCALE, y1: -P.z1 * WORLD_SCALE };
+    }
 
     this._light();
     if(this.theme.mode === 'duel') this._sky();   // invisible en vue plongeante, et il masquait la carte

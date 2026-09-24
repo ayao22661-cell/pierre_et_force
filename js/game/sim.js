@@ -327,8 +327,14 @@ export class Sim{
   /**
    * Décor solide. Le terrain fournit la liste (arbres, maisons, rochers) ;
    * tant qu'elle n'était pas transmise, tout le monde traversait le décor.
+   * Un obstacle est un cercle { x, y, r } ou un rectangle orienté
+   * { x, y, hw, hd, ux, uy } (maisons, murs, conteneurs).
+   * `arena` (mode Combat) : { x0, x1, y0, y1 }, les bords de l'arène.
    */
-  setObstacles(list){ this.obstacles = list || []; }
+  setObstacles(list, arena = null){
+    this.obstacles = list || [];
+    this.arena = arena;
+  }
 
   /**
    * Repousse les unités hors des obstacles. Appliqué après tous les
@@ -337,24 +343,57 @@ export class Sim{
    */
   _resolveObstacles(){
     const obs = this.obstacles;
-    if(!obs || !obs.length) return;
+    const A = this.mode === 'duel' ? this.arena : null;
+    if((!obs || !obs.length) && !A) return;
     for(const u of this.units){
       if(u.dead || u.kind === 'structure' || u.flying) continue;
       const ur = u.r || 20;
-      for(const o of obs){
+      if(obs) for(const o of obs){
         const dx = u.x - o.x, dy = u.y - o.y;
-        const min = o.r + ur;
-        const d2 = dx * dx + dy * dy;
-        if(d2 >= min * min) continue;
+        const reach = o.r + ur;
+        if(dx * dx + dy * dy >= reach * reach) continue;
+        if(o.hw != null){ this._pushOutOfBox(u, o, ur); continue; }
         // Pile au centre (téléportation, ruée) : on choisit une direction
         // plutôt que de laisser l'unité coincée à l'intérieur.
-        const d = Math.sqrt(d2);
+        const d = Math.hypot(dx, dy);
         const nx = d > 1e-4 ? dx / d : 1, ny = d > 1e-4 ? dy / d : 0;
-        const push = min - d;
+        const push = reach - d;
         u.x += nx * push;
         u.y += ny * push;
       }
+      // Mode Combat : on reste dans l'arène. Au-delà commence l'anneau de
+      // décor (maisons, murs) — c'est là qu'on se retrouvait dans une ruelle.
+      if(A){
+        const m = ur + 50;
+        u.x = Math.max(A.x0 + m, Math.min(A.x1 - m, u.x));
+        u.y = Math.max(A.y0 + m, Math.min(A.y1 - m, u.y));
+      }
     }
+  }
+
+  /** Cercle contre rectangle orienté : sortie par le côté le plus proche. */
+  _pushOutOfBox(u, o, ur){
+    const dx = u.x - o.x, dy = u.y - o.y;
+    const vx = -o.uy, vy = o.ux;              // axe de profondeur
+    const lx = dx * o.ux + dy * o.uy;         // coordonnées locales
+    const ly = dx * vx + dy * vy;
+    const cx = Math.max(-o.hw, Math.min(o.hw, lx));
+    const cy = Math.max(-o.hd, Math.min(o.hd, ly));
+    let ox = lx - cx, oy = ly - cy;
+    const d = Math.hypot(ox, oy);
+    let nlx, nly;
+    if(d > 1e-4){
+      // Centre dehors : on repousse à `ur` du bord le plus proche.
+      if(d >= ur) return;
+      nlx = lx + (ox / d) * (ur - d); nly = ly + (oy / d) * (ur - d);
+    } else {
+      // Centre dedans : on ressort par la face la plus proche.
+      const px = o.hw - Math.abs(lx), py = o.hd - Math.abs(ly);
+      if(px < py){ nlx = Math.sign(lx || 1) * (o.hw + ur); nly = ly; }
+      else { nlx = lx; nly = Math.sign(ly || 1) * (o.hd + ur); }
+    }
+    u.x = o.x + nlx * o.ux + nly * vx;
+    u.y = o.y + nlx * o.uy + nly * vy;
   }
 
   /** Le combattant attaché à une unité (null hors duel). */
@@ -537,6 +576,10 @@ export class Sim{
     // une pure usure sans la moindre récupération entre deux affrontements,
     // ce qui rendait les missions à enchaînements — 8 éliminations d'affilée,
     // 5 vagues de suite — bien plus punitives qu'un duel unique.
+    // MODE COMBAT : aucune régénération de PV. Un duel se joue sur une
+    // seule barre de vie par round ; la voir remonter en reculant annulait
+    // les coups portés.
+    if(this.mode === 'duel') return;
     const baseRegen = (u.maxHp || 0) * 0.015;
     const totalRegen = baseRegen + (u.bns?.regen || 0) + (u.bns?.regenF || 0);
     if(totalRegen > 0) u.hp = Math.min(u.maxHp, u.hp + totalRegen * dt);
@@ -847,7 +890,8 @@ export class Sim{
     this.onEvent({ type: 'hit', unit: t, dmg, color: u.fx, crit: !!opts.crit, heavy: !!opts.heavy, from: u });
 
     // Vol de vie (ls) — seulement pour les attaques de base
-    if(u.bns?.ls && opts.basic && u.team === 0){
+    // (jamais en mode Combat : pas de récupération de PV en duel).
+    if(u.bns?.ls && opts.basic && u.team === 0 && this.mode !== 'duel'){
       const lifesteal = dmg * u.bns.ls;
       u.hp = Math.min(u.maxHp, u.hp + lifesteal);
       if(lifesteal > 0) this.onEvent({ type: 'heal', unit: u, amount: lifesteal });

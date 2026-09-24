@@ -153,7 +153,7 @@ export function house(scene, o = {}){
     wins.build('houseWin', scene, texMat(scene, 'naco', () => texWindow(), { spec: 0.4, specPower: 48 })),
     door.build('houseDoor', scene, texMat(scene, 'door_' + (o.door || 'w'), () => texDoor(o.door || '#6d3b22'))),
     misc.build('houseMisc', scene, colorMat(scene, 'polytank', '#ffffff', { spec: 0.2 })),
-  ], { radius: Math.max(w, d) * 0.62, height: h + 1.2, shadow: 0.6 });
+  ], { radius: Math.max(w, d) * 0.62, height: h + 1.2, shadow: 0.6, box: [w + 0.1, d + 0.1] });
 }
 
 /** Mur d'enceinte (clôture de cour) : enduit, chaperon, tessons au sommet. */
@@ -167,7 +167,7 @@ export function compoundWall(scene, o = {}){
   return new Template([
     g.build('wall', scene, texMat(scene, 'plaster_' + color, () => T.texPlaster(211, color))),
     cap.build('wallCap', scene, texMat(scene, 'concrete', () => T.tileConcrete(7))),
-  ], { radius: len * 0.5, height: h, shadow: 0.45 });
+  ], { radius: len * 0.5, height: h, shadow: 0.45, box: [len + 0.34, t + 0.14] });
 }
 
 /** Portail métallique entre deux piliers. */
@@ -181,7 +181,7 @@ export function gate(scene, o = {}){
   return new Template([
     g.build('gate', scene, texMat(scene, 'gate_' + color, () => texGate(color), { alpha: 'test', spec: 0.3 })),
     p.build('gatePillars', scene, texMat(scene, 'plaster_#e8e2d4', () => T.texPlaster(211, '#e8e2d4'))),
-  ], { radius: 1.9, height: 2, shadow: 0.35 });
+  ], { radius: 1.9, height: 2, shadow: 0.35, box: [3.9, 0.45] });
 }
 
 /** Table de maquis sous parasol rayé, casiers de bouteilles. */
@@ -288,7 +288,7 @@ export function container(scene, o = {}){
   const g = new Geo();
   g.add(box(6.0, 2.6, 2.44), aoColor(2.6, 0.7, 1.0, 0.05), [2, 1]);
   return new Template([g.build('container', scene, texMat(scene, 'container_' + col, () => T.texContainer(3, col), { spec: 0.2 }))],
-    { radius: 3.2, height: 2.6, shadow: 0.65 });
+    { radius: 3.2, height: 2.6, shadow: 0.65, box: [6.0, 2.44] });
 }
 
 // ── Mali ───────────────────────────────────────────────────────
@@ -318,7 +318,7 @@ export function djenne(scene, o = {}){
     mud.build('djenne', scene, texMat(scene, 'banco', () => T.texBanco(21))),
     wood.build('toron', scene, texMat(scene, 'bark_toron', () => T.texBark(7, { ramp: [[0, '#4a3322'], [1, '#8a6a48']] }))),
     dark.build('djenneDark', scene, colorMat(scene, 'openings', '#ffffff')),
-  ], { radius: Math.max(w, d) * 0.62, height: h + 1.1, shadow: 0.62 });
+  ], { radius: Math.max(w, d) * 0.62, height: h + 1.1, shadow: 0.62, box: [w + 0.4, d + 0.5] });
 }
 
 /** Pan de mur en ruine (sommet brisé, blocs tombés). */
@@ -337,7 +337,7 @@ export function ruinWall(scene, o = {}){
   const key = o.stone ? 'rockwall' : 'banco';
   const mat = o.stone ? texMat(scene, 'rock_wall', () => T.tileCobble(18, { stones: ['#8a7a64', '#a08c70', '#76664f', '#b49c7c'], grout: '#4a3c2c', cells: 30 }))
     : texMat(scene, 'banco', () => T.texBanco(21));
-  return new Template([g.build('ruin_' + key, scene, mat)], { radius: len * 0.5, height: o.h ?? 2.2, shadow: 0.5 });
+  return new Template([g.build('ruin_' + key, scene, mat)], { radius: len * 0.5, height: o.h ?? 2.2, shadow: 0.5, box: [len, 0.45] });
 }
 
 /** Grenier dogon : cylindre de banco, toit conique de chaume. */
