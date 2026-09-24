@@ -495,3 +495,56 @@
   .shop-grid{ grid-template-columns: repeat(auto-fill, minmax(120px,1fr)); }
   .pf-wordmark{ font-size:clamp(30px,9vw,52px); letter-spacing:5px; }
 }
+
+/* ══════════════════════════════════════════════════════════════
+   COMBAT LIBRE — cartes animées, façon sélection de champion
+   (apparition en cascade, survol, reflet sur la carte choisie,
+   verrouillage, portrait qui glisse en place).
+   ══════════════════════════════════════════════════════════════ */
+.deploy-free .champ-tile{ transition:transform .18s ease; }
+.deploy-free .champ-tile.enter{ animation:pf-tile-in .42s cubic-bezier(.2,.8,.2,1) both; animation-delay:calc(var(--i, 0) * 55ms); }
+.deploy-free .champ-tile:hover{ transform:translateY(-3px); }
+.deploy-free .champ-tile:hover .champ-tile-img{ filter:saturate(1.1) brightness(1.1); }
+
+/* Carte choisie : halo qui respire et reflet qui la balaie. */
+.deploy-free .champ-tile.selected .champ-tile-img{ animation:pf-tile-breathe 2.4s ease-in-out infinite; }
+.deploy-free .champ-tile.foe.selected .champ-tile-img{ animation-name:pf-tile-breathe-foe; }
+.deploy-free .champ-tile.selected .champ-tile-overlay{
+  background:
+    linear-gradient(115deg, transparent 35%, rgba(255,240,200,.28) 50%, transparent 65%) no-repeat,
+    linear-gradient(180deg, transparent 55%, rgba(0,0,0,.7) 100%);
+  background-size:250% 100%, 100% 100%;
+  animation:pf-tile-sheen 2.8s ease-in-out infinite;
+}
+/* Verrouillage : la carte claque, un anneau s'échappe. */
+.deploy-free .champ-tile.lock{ animation:pf-tile-lock .34s cubic-bezier(.3,1.6,.5,1); }
+.deploy-free .champ-tile.lock::after{
+  content:''; position:absolute; top:0; left:0; width:72px; height:90px; pointer-events:none;
+  clip-path:polygon(6px 0%, calc(100% - 6px) 0%, 100% 6px, 100% calc(100% - 6px), calc(100% - 6px) 100%, 6px 100%, 0% calc(100% - 6px), 0% 6px);
+  box-shadow:inset 0 0 0 2px var(--accent, var(--pf-gold));
+  animation:pf-tile-ring .5s ease-out forwards;
+}
+.deploy-free .champ-tile.foe.lock::after{ box-shadow:inset 0 0 0 2px var(--pf-danger); }
+/* Le grand portrait glisse en place à chaque changement de personnage. */
+.deploy-free .hero-banner-img{ animation:pf-splash-in .45s cubic-bezier(.2,.8,.2,1); }
+.deploy-free .hero-banner-info{ animation:pf-splash-txt .45s .08s cubic-bezier(.2,.8,.2,1) both; }
+
+@keyframes pf-tile-in{ from{ opacity:0; transform:translateY(14px) scale(.94); } to{ opacity:1; transform:none; } }
+@keyframes pf-tile-breathe{
+  0%,100%{ box-shadow:0 0 10px var(--accent, var(--pf-brand-glow)); }
+  50%{ box-shadow:0 0 22px var(--accent, var(--pf-brand-glow)); }
+}
+@keyframes pf-tile-breathe-foe{
+  0%,100%{ box-shadow:0 0 10px rgba(214,69,63,.45); }
+  50%{ box-shadow:0 0 22px rgba(214,69,63,.8); }
+}
+@keyframes pf-tile-sheen{ 0%{ background-position:150% 0, 0 0; } 55%,100%{ background-position:-50% 0, 0 0; } }
+@keyframes pf-tile-lock{ 0%{ transform:scale(.92); } 60%{ transform:scale(1.07); } 100%{ transform:scale(1); } }
+@keyframes pf-tile-ring{ from{ opacity:1; transform:scale(1); } to{ opacity:0; transform:scale(1.25); } }
+@keyframes pf-splash-in{ from{ opacity:0; transform:translateX(24px) scale(1.04); } to{ opacity:1; transform:none; } }
+@keyframes pf-splash-txt{ from{ opacity:0; transform:translateX(-10px); } to{ opacity:1; transform:none; } }
+
+@media (prefers-reduced-motion: reduce){
+  .deploy-free .champ-tile, .deploy-free .champ-tile *, .deploy-free .champ-tile::after,
+  .deploy-free .hero-banner-img, .deploy-free .hero-banner-info{ animation:none !important; transition:none !important; }
+}
