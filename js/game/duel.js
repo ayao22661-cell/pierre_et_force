@@ -21,7 +21,10 @@
 // le combat « ne sent pas bon ».
 // ============================================================
 
-/** Données de frappe. Les durées sont en secondes. */
+import { WEAPON_BY_KEY } from '../data/weapons.js';
+
+/** Données de frappe. Les durées sont en secondes. `reach` est la portée
+ *  à mains nues ; celle d'un combattant armé vient de son arme (reachFor). */
 export const MOVES = {
   light: {
     startup: 0.10, active: 0.07, recover: 0.20,
@@ -44,6 +47,28 @@ const DODGE_TOTAL = 0.42, DODGE_IFRAMES = [0.04, 0.26], DODGE_CD = 0.85, DODGE_D
 const BLOCK_REDUCTION = 0.78;  // dégâts absorbés par la garde
 const KNOCKDOWN_TIME = 0.95;
 
+// ── Portée ───────────────────────────────────────────────────
+// Avant, tout le monde touchait à 108 px (≈ 2,4 m, plus le rayon de la
+// cible) : un coup de poing frappait dans le vide à près de trois mètres,
+// et une lance n'allait pas plus loin qu'un poing. La portée suit
+// désormais l'arme réellement tenue (celle du personnage, ou l'arme
+// achetée par le joueur) : bras + longueur de l'arme au-delà du poing.
+const PX_PER_M = 45;          // échelle du monde (identique au rendu 3D)
+const ARM_M = 0.95;           // de l'axe du corps au poing tendu
+const HEAVY_EXTRA_M = 0.3;    // le coup lourd s'engage d'un pas de plus
+export function reachFor(unit){
+  const list = unit.gear?.main?.wear ? [unit.gear.main.wear] : (WEAPON_BY_KEY[unit.key] || []);
+  const w = list.find(x => x.hand === 'RightHand');
+  let ext = 0;
+  if(w){
+    ext = w.height * (1 - (w.grip ?? 0.5));
+    // Arme de poing : on frappe avec, pas au bout du canon.
+    if(w.height < 0.5) ext = 0.12;
+  }
+  const light = (ARM_M + ext) * PX_PER_M;
+  return { light, heavy: light + HEAVY_EXTRA_M * PX_PER_M };
+}
+
 export class Fighter{
   /**
    * @param {Sim} sim
@@ -55,6 +80,7 @@ export class Fighter{
     this.sim = sim; this.u = unit; this.foe = foe;
     this.isPlayer = !!o.isPlayer;
     this.skill = o.skill ?? 0.5;
+    this.reach = reachFor(unit);
     this.reset();
   }
 
@@ -130,7 +156,7 @@ export class Fighter{
     if(f.dead) return false;
     const dx = f.x - this.u.x, dy = f.y - this.u.y;
     const d = Math.hypot(dx, dy);
-    if(d > this.move.reach + (f.r || 20)) return false;
+    if(d > this.reach[this.moveKind] + (f.r || 20)) return false;
     const fac = this.u.facing || { x: 1, y: 0 };
     const cos = (dx * fac.x + dy * fac.y) / (d || 1);
     return cos > Math.cos(this.move.arc);
@@ -253,7 +279,7 @@ export class Fighter{
 
     // Déplacement : l'IA cherche sa distance de frappe, avec un peu de
     // pas chassé pour ne pas foncer en ligne droite comme un sbire.
-    const want = MOVES.light.reach * 0.8;
+    const want = this.reach.light * 0.8;
     const spd = (u.ms || 320) * dt;
     if(dist > want){
       const k = Math.min(1, (dist - want) / 60);
@@ -274,7 +300,7 @@ export class Fighter{
     if(this._aiNext > 0) return;
     this._aiNext = 0.22 + Math.random() * (0.75 - this.skill * 0.3);
 
-    if(dist <= MOVES.light.reach * 0.92){
+    if(dist <= this.reach.light + (f.r || 20) * 0.6){
       // À portée : enchaîner, avec une préférence pour finir au lourd.
       this.strike(Math.random() < 0.28 + this.skill * 0.2 ? 'heavy' : 'light');
     } else if(dist < 260 && Math.random() < 0.25 + this.skill * 0.25){
