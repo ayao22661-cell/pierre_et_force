@@ -37,8 +37,9 @@ function modeForMission(m, idx, acte, acteIdx){
 // Chaque acte est illustré par une seule fresque, découpée entre ses
 // missions : mises côte à côte, les cartes d'un acte recomposent le
 // tableau. C'est l'image qui raconte l'avancée, pas une liste de titres.
-const ACT_ART = ['art_battle1', 'art_warrior', 'art_battle2', 'art_divine', 'art_battle3'];
-function artForActe(acteIdx){ return `assets/${ACT_ART[acteIdx % ACT_ART.length]}.webp`; }
+// Illustrations de Pierre et Force (assets/illus) : une par acte, en boucle.
+const ACT_ART = ['pf-01', 'pf-03', 'pf-04', 'pf-05', 'pf-07', 'pf-08', 'pf-09', 'pf-11', 'pf-13', 'pf-06'];
+function artForActe(acteIdx){ return `assets/illus/${ACT_ART[acteIdx % ACT_ART.length]}.webp`; }
 
 function missionCard({ num, name, mode, state, art, slice, total, reward }){
   // state : 'done' | 'next' | 'avail' | 'lock'
