@@ -80,6 +80,10 @@ const AUTEL_HEIGHT_M = 2.6;
 //   height  longueur réelle voulue, en mètres
 //   grip    où la main tient l'arme, de 0 (talon/pommeau) à 1 (pointe)
 //   roll    rotation autour de l'axe de l'arme, pour orienter le tranchant
+//   axis    'fist' par défaut : le manche traverse le poing fermé,
+//           perpendiculairement aux doigts — c'est ainsi qu'on tient une
+//           épée, un bâton ou une arme de poing. 'fingers' n'est utile que
+//           pour un objet tenu à plat dans la paume.
 //   flip    retourne l'arme bout pour bout si le modèle est à l'envers
 //   offset  ajustement fin dans le repère de la main (rarement utile)
 //
@@ -87,26 +91,26 @@ const AUTEL_HEIGHT_M = 2.6;
 // (voir _measureGrip) : l'arme est tenue dans le poing, pas posée à côté.
 export const WEAPON_BY_KEY = {
   TARINE: [
-    { file: 'EPEE.glb',      hand: 'RightHand',   height: 1.05, grip: 0.14, axis: 'fingers', roll: 0 },
+    { file: 'EPEE.glb',      hand: 'RightHand',   height: 1.05, grip: 0.14, roll: Math.PI / 2 },
     { file: 'BOUCLIER.glb',  hand: 'LeftForeArm', height: 0.62, grip: 0.5,  roll: Math.PI / 2, strap: true },
   ],
   FULGENCE: [
-    { file: 'EPEE1.glb',     hand: 'RightHand',   height: 1.55, grip: 0.12, axis: 'fingers', roll: 0 },
+    { file: 'EPEE1.glb',     hand: 'RightHand',   height: 1.55, grip: 0.12, roll: Math.PI / 2 },
   ],
   // Baba Tunde se bat aux poings, et rien d'autre. L'étui à la ceinture a
   // été retiré : accroché à l'os de la cuisse, il flottait à côté de lui
   // (le repère d'un os de jambe n'a pas la même échelle qu'une main).
   BABA: [],
   LUNDGREN: [
-    { file: 'BATON_MAGIQUE.glb', hand: 'RightHand', height: 1.70, grip: 0.42, axis: 'fingers', roll: 0 },
-    { file: 'HARPE.glb',     hand: 'LeftHand',    height: 0.70, grip: 0.5, axis: 'fingers',  roll: 0 },
+    { file: 'BATON_MAGIQUE.glb', hand: 'RightHand', height: 1.70, grip: 0.42, roll: 0 },
+    { file: 'HARPE.glb',     hand: 'LeftHand',    height: 0.70, grip: 0.5,  roll: 0 },
   ],
   DARK: [
-    { file: 'EPEE3.glb',     hand: 'RightHand',   height: 0.95, grip: 0.14, axis: 'fingers', roll: 0 },
+    { file: 'EPEE3.glb',     hand: 'RightHand',   height: 0.95, grip: 0.14, roll: Math.PI / 2 },
     { file: 'PISTOLET3.glb', hand: 'LeftHand',    height: 0.38, grip: 0.42, roll: 0 },
   ],
   KAREN: [
-    { file: 'LANCE.glb',     hand: 'RightHand',   height: 1.95, grip: 0.38, axis: 'fingers', roll: 0 },
+    { file: 'LANCE.glb',     hand: 'RightHand',   height: 1.95, grip: 0.38, roll: Math.PI / 2 },
   ],
   SAM: [
     { file: 'PISTOLET1.glb', hand: 'RightHand',   height: 0.36, grip: 0.42, roll: 0 },
@@ -117,12 +121,12 @@ export const WEAPON_BY_KEY = {
   SYLLA:    [{ file: 'PISTOLET2.glb', hand: 'RightHand', height: 0.34, grip: 0.42, roll: 0 }],
   OUSMANE:  [{ file: 'PISTOLET1.glb', hand: 'RightHand', height: 0.38, grip: 0.42, roll: 0 }],
   SCHISSIN: [{ file: 'PISTOLET3.glb', hand: 'RightHand', height: 0.40, grip: 0.42, roll: 0 }],
-  SUB:      [{ file: 'EPEE3.glb',     hand: 'RightHand', height: 0.95, grip: 0.14, axis: 'fingers', roll: 0 }],
-  GROB:     [{ file: 'EPEE1.glb',     hand: 'RightHand', height: 1.60, grip: 0.12, axis: 'fingers', roll: 0 }],
-  KRAG:     [{ file: 'LANCE.glb',     hand: 'RightHand', height: 2.10, grip: 0.38, axis: 'fingers', roll: 0 }],
-  VAEL:     [{ file: 'EPEE.glb',      hand: 'RightHand', height: 1.00, grip: 0.14, axis: 'fingers', roll: 0 }],
+  SUB:      [{ file: 'EPEE3.glb',     hand: 'RightHand', height: 0.95, grip: 0.14, roll: Math.PI / 2 }],
+  GROB:     [{ file: 'EPEE1.glb',     hand: 'RightHand', height: 1.60, grip: 0.12, roll: Math.PI / 2 }],
+  KRAG:     [{ file: 'LANCE.glb',     hand: 'RightHand', height: 2.10, grip: 0.38, roll: Math.PI / 2 }],
+  VAEL:     [{ file: 'EPEE.glb',      hand: 'RightHand', height: 1.00, grip: 0.14, roll: Math.PI / 2 }],
   SGRUN: [
-    { file: 'BATON_MAGIQUE.glb', hand: 'RightHand', height: 1.85, grip: 0.42, axis: 'fingers', roll: 0 },
+    { file: 'BATON_MAGIQUE.glb', hand: 'RightHand', height: 1.85, grip: 0.42, roll: 0 },
     { file: 'BOUSSOLE.glb',      hand: 'LeftHand',  height: 0.28, grip: 0.5,  roll: 0 },
   ],
 };
@@ -133,7 +137,7 @@ export const WEAPON_LIBRARY = {
   pistolet1: { file: 'PISTOLET1.glb', hand: 'RightHand', height: 0.42, grip: 0.35, pos: [0, 0.04, 0], rot: [1.8, 0, 0.79] },
   pistolet2: { file: 'PISTOLET2.glb', hand: 'RightHand', height: 0.40, grip: 0.35, pos: [0, 0.04, 0], rot: [1.8, 0, 0.79] },
   pistolet3: { file: 'PISTOLET3.glb', hand: 'RightHand', height: 0.45, grip: 0.35, pos: [0, 0.04, 0], rot: [1.8, 0, 0.79] },
-  kora:      { file: 'HARPE.glb',     hand: 'LeftHand',  height: 0.75, grip: 0.45, axis: 'fingers', pos: [0, 0.07, 0], rot: [1.8, 0, 0.79] },
+  kora:      { file: 'HARPE.glb',     hand: 'LeftHand',  height: 0.75, grip: 0.45, pos: [0, 0.07, 0], rot: [1.8, 0, 0.79] },
   boussole:  { file: 'BOUSSOLE.glb',  hand: 'LeftHand',  height: 0.26, grip: 0.5,  pos: [0, 0.06, 0], rot: [1.57, 0, 0] },
   // Porté à la hanche plutôt qu'en main : parenter à 'LeftUpLeg'.
   holster:   { file: 'PISTOLET2.glb', hand: 'LeftUpLeg', height: 0.36, grip: 0.4,  pos: [0.06, 0.12, 0.05], rot: [1.3, 0, 1.2] },

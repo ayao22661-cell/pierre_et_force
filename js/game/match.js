@@ -180,13 +180,27 @@ export class Match{
       case 'fx-beam':
         this.fx.spawnImpact(e.to.x, e.to.y, hexNum(e.color), 40);
         break;
-      case 'fx-cone':
-        this.fx.spawnImpact(
-          e.unit.x + e.unit.facing.x * e.range * 0.5,
-          e.unit.y + e.unit.facing.y * e.range * 0.5,
-          hexNum(e.color), e.range * 0.6
-        );
+      case 'fx-cone': {
+        // Une onde qui balaie devant le lanceur, pas une boule qui part au
+        // loin : dessinée comme un projectile, la capacité de Baba donnait
+        // l'impression qu'il tirait une arme à feu qu'il n'a pas.
+        const f = e.unit.facing || { x: 1, y: 0 };
+        const base = Math.atan2(f.y, f.x);
+        const half = (e.angle || 1.2) / 2;
+        const col = hexNum(e.color);
+        for(let i = 0; i <= 6; i++){
+          const a = base - half + (half * 2) * (i / 6);
+          for(const t of [0.45, 0.85]){
+            this.fx.spawnImpact(
+              e.unit.x + Math.cos(a) * e.range * t,
+              e.unit.y + Math.sin(a) * e.range * t,
+              col, e.range * 0.16,
+            );
+          }
+        }
+        this.fx.spawnGroundPulse(e.unit.x, e.unit.y, col, e.range * 0.5);
         break;
+      }
       case 'ground-tell':
         this.fx.spawnGroundPulse(e.x, e.y, hexNum(e.color), e.radius);
         break;
