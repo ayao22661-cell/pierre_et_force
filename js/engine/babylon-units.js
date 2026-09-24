@@ -423,6 +423,33 @@ const PROFILES = {
   },
 };
 
+// ---------------------------------------------------------------
+// MODE COMBAT — clips de boxe (pack « boxe-* », Mixamo). Ils sont
+// courts et lisibles, choisis pour la durée réelle des coups du duel
+// (léger ≈ 0,37 s, lourd ≈ 0,7 s) :
+//   • punchLight : les trois coups légers d'un enchaînement (jab,
+//     direct, crochet), un clip différent à chaque étape ;
+//   • punchHeavy : le coup lourd qui conclut ;
+//   • hitLight / hitHeavy : réactions à un coup reçu, à la tête ou au
+//     corps, plus fortes sur un coup lourd.
+// Les réactions servent à tout le monde. Les coups de poing, seulement
+// à ceux qui se battent à mains nues (ou dont l'arme ne sert pas au
+// corps-à-corps) : un épéiste garde ses coups d'épée.
+// ---------------------------------------------------------------
+const FIGHT_HITS = {
+  hitLight: ['boxe-light-hit-to-head.glb', 'boxe-medium-hit-to-head.glb', 'boxe-hit-to-body.glb', 'boxe-light-hit-to-head-1.glb', 'boxe-head-hit-8.glb', 'boxe-medium-hit-to-head-1.glb', 'boxe-light-hit-to-head-2.glb', 'boxe-receive-punch-to-the-face.glb', 'boxe-medium-hit-to-head-2.glb'],
+  hitHeavy: ['boxe-big-hit-to-head-2.glb', 'boxe-receive-uppercut-to-the-face.glb', 'boxe-big-hit-to-head-4.glb', 'boxe-head-hit.glb'],
+};
+const FIGHT_PUNCHES = {
+  punchLight: ['boxe-punching-2.glb', 'boxe-punching-1.glb', 'boxe-right-hook.glb', 'boxe-hook.glb', 'boxe-punching-3.glb'],
+  punchHeavy: ['boxe-uppercut.glb', 'boxe-mutant-punch.glb', 'boxe-elbow-punching.glb'],
+};
+// Profils qui se battent avec une arme de mêlée : pas de coups de poing.
+const ARMED_MELEE = new Set(['tarine', 'fulgence', 'dark', 'karen', 'sub', 'grob', 'krag', 'vael']);
+for(const [name, prof] of Object.entries(PROFILES)){
+  prof.fight = { ...FIGHT_HITS, ...(ARMED_MELEE.has(name) ? {} : FIGHT_PUNCHES) };
+}
+
 const PROFILE_BY_KEY = {
   TARINE:'tarine', BABA:'baba', SAM:'sam', LUNDGREN:'lundgren', KAREN:'karen', FULGENCE:'fulgence', DARK:'dark',
   SYLLA:'sylla', SCHISSIN:'schissin', OUSMANE:'ousmane', SUB:'sub', GROB:'grob',
@@ -1248,7 +1275,7 @@ export class BabylonUnits{
     const urgent = [profile.idle[0], profile.walk?.[0], profile.run?.[0], ...(profile.attack || []).slice(0, 2)].filter(Boolean);
     await this._clipFor(inst, urgent[0]);
     for(const f of urgent.slice(1)) this._clipFor(inst, f);
-    const rest = [...new Set(Object.values(profile).flat())].filter(f => !urgent.includes(f));
+    const rest = [...new Set([...Object.values(profile.fight || {}).flat(), ...Object.values(profile).filter(Array.isArray).flat()])].filter(f => !urgent.includes(f));
     setTimeout(() => { for(const f of rest){ if(!inst.disposed) this._clipFor(inst, f); } }, 1200);
 
     const f = unit.facing || { x: 0, y: 1 };
@@ -1330,6 +1357,7 @@ export class BabylonUnits{
   }
 
   _enterDeath(inst){
+    inst.fightUntil = 0;
     if(inst.state === 'death') return;
     inst.deadAt = performance.now();
     const file = pick(inst.profile.death);
@@ -1395,9 +1423,10 @@ export class BabylonUnits{
         continue;
       }
       if(inst.state === 'death'){
-        // Réapparition (respawn) : on repart proprement.
+        // Réapparition (respawn, nouveau round) : on repart proprement.
         inst.pivot.setEnabled(true);
         inst.state = null;
+        inst.fightUntil = 0;
         inst.lastX = u.x; inst.lastY = u.y; inst.speedPx = 0;
         this._enterIdle(inst);
       }
@@ -1411,6 +1440,10 @@ export class BabylonUnits{
       const moving = inst.speedPx > MOVE_SPEED_MIN;
 
       this._applyTransform(inst, u, Math.min(1, dt * TURN_SPEED), X, Y);
+
+      // Mode Combat : un coup, une réaction, une garde ou une chute en cours
+      // ne se laisse couper ni par la marche ni par la posture d'attente.
+      if(now < (inst.fightUntil || 0)) continue;
 
       const inOneShot = (inst.state === 'attack' || inst.state === 'cast' || inst.state === 'hit') && now < inst.oneShotUntil;
       if(moving){
@@ -1457,23 +1490,38 @@ export class BabylonUnits{
   playFight(unitId, state, index = 0, o = {}){
     const inst = this.instances.get(unitId);
     if(!inst || !inst.ready || inst.disposed) return;
-    const list = inst.profile[state] && inst.profile[state].length ? inst.profile[state] : inst.profile.attack;
+    // `o.set` : liste dédiée au duel (profile.fight), si le profil l'a.
+    const fightList = o.set && inst.profile.fight?.[o.set];
+    const list = fightList && fightList.length ? fightList
+      : (inst.profile[state] && inst.profile[state].length ? inst.profile[state] : inst.profile.attack);
     if(!list || !list.length) return;
     const file = list[index % list.length];
-    const clip = this._readyClip(inst, file);
+    let clip = this._readyClip(inst, file);
+    // Clip pas encore chargé : on prend le premier de la liste qui l'est,
+    // plutôt que de ne rien montrer du tout.
+    if(!clip) for(const f of list){ clip = inst.clips.get(f); if(clip) break; }
     if(!clip) return;
-    inst.state = state;
-    const ratio = o.dur ? clamp(clip.duration / o.dur, 0.5, 3.2) : 1;
+    // « down » et non « death » : update() prend l'état « death » pour une
+    // mort en cours et relevait le combattant dès l'image suivante.
+    const tag = state === 'death' ? 'down' : state;
+    inst.state = tag;
+    const ratio = o.dur ? clamp(clip.duration / o.dur, 0.5, 3.6) : 1;
     const ag = this._play(inst, clip, { loop: !!o.loop, speedRatio: ratio });
-    inst.oneShotUntil = performance.now() + (clip.duration / (ratio * inst.tempo)) * 1000;
+    const len = (clip.duration / (ratio * inst.tempo)) * 1000;
+    inst.oneShotUntil = performance.now() + len;
+    // Verrou de combat : tant qu'il court, ni la marche (le recul d'un coup
+    // fait « bouger » le combattant) ni la posture d'attente ne coupent le
+    // clip. C'est ce qui effaçait coups de poing et réactions.
+    inst.fightUntil = o.hold ? Infinity : performance.now() + len;
     if(o.hold){
       // Reste figé sur la dernière image : garde tenue, corps au sol.
       ag.onAnimationGroupEndObservable.addOnce(() => { try{ ag.pause(); }catch(e){} });
       return;
     }
     if(!o.loop) ag.onAnimationGroupEndObservable.addOnce(() => {
-      if(inst.state === state && inst.current === clip && !inst.disposed){
+      if(inst.state === tag && inst.current === clip && !inst.disposed){
         inst.state = null;
+        inst.fightUntil = 0;
         this._enterIdle(inst);
       }
     });
@@ -1485,6 +1533,7 @@ export class BabylonUnits{
     if(!inst || !inst.ready || inst.disposed) return;
     inst.state = null;
     inst.oneShotUntil = 0;
+    inst.fightUntil = 0;
     this._enterIdle(inst);
   }
 
