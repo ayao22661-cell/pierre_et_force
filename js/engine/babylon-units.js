@@ -776,6 +776,68 @@ export class BabylonUnits{
    * à chaque frame.
    */
   /**
+   * Bouclier sanglé : le bras passe DERRIÈRE lui, pas au travers. Centré
+   * sur l'os, il était traversé de part en part par l'avant-bras. On le
+   * construit directement dans le repère de l'avant-bras :
+   *   • axe long le long du bras (pointe côté coude, haut côté poignet) ;
+   *   • face bombée tournée à l'opposé du corps ;
+   *   • dos posé contre l'avant-bras, à mi-chemin du coude et du poignet.
+   */
+  _strapOnForearm(inst, arm, pivot, shape, k, boneName){
+    const side = /Left/.test(boneName) ? 'Left' : 'Right';
+    const hand = inst.nodeByBaseName.get('mixamorig:' + side + 'Hand');
+    const body = inst.nodeByBaseName.get('mixamorig:Spine1') || inst.nodeByBaseName.get('mixamorig:Spine') || inst.nodeByBaseName.get('mixamorig:Hips');
+    if(!hand) return;
+    arm.computeWorldMatrix(true); hand.computeWorldMatrix(true);
+    const armW = arm.getWorldMatrix();
+    const inv = BABYLON.Matrix.Invert(armW);
+    const elbow = arm.getAbsolutePosition().clone();
+    const wrist = hand.getAbsolutePosition().clone();
+    const mid = BABYLON.Vector3.Lerp(elbow, wrist, 0.5);
+
+    // Vers l'extérieur : du tronc vers l'avant-bras, à l'horizontale.
+    let out = new BABYLON.Vector3(0, 0, 1);
+    if(body){
+      body.computeWorldMatrix(true);
+      out = mid.subtract(body.getAbsolutePosition()); out.y = 0;
+      if(out.length() < 1e-4) out = new BABYLON.Vector3(0, 0, 1);
+    }
+    // Tout en repère local de l'avant-bras.
+    const Y = BABYLON.Vector3.TransformCoordinates(wrist, inv).normalize();
+    let Z = BABYLON.Vector3.TransformNormal(out, inv);
+    // Mieux que l'estimation par le tronc (qui dépend de la pose au moment
+    // du chargement : en T-pose, elle ne veut rien dire) : le DOS de la main,
+    // perpendiculaire au bras et à l'écart index-pouce. Mesuré en garde, il
+    // coïncide avec l'extérieur (signe inversé pour la main droite, en miroir).
+    const idx = inst.nodeByBaseName.get('mixamorig:' + side + 'HandIndex1');
+    const thb = inst.nodeByBaseName.get('mixamorig:' + side + 'HandThumb1');
+    if(idx && thb){
+      idx.computeWorldMatrix(true); thb.computeWorldMatrix(true);
+      const across = BABYLON.Vector3.TransformCoordinates(thb.getAbsolutePosition(), inv)
+        .subtract(BABYLON.Vector3.TransformCoordinates(idx.getAbsolutePosition(), inv));
+      const dorsal = BABYLON.Vector3.Cross(across, Y).scale(side === 'Left' ? 1 : -1);
+      if(dorsal.length() > 1e-4) Z = dorsal;
+    }
+    Z = Z.subtract(Y.scale(BABYLON.Vector3.Dot(Z, Y)));
+    if(Z.length() < 1e-4) Z = Math.abs(Y.x) < 0.9 ? new BABYLON.Vector3(1, 0, 0) : new BABYLON.Vector3(0, 0, 1);
+    Z.normalize();
+    const nLocal = Z.clone();
+    if(shape.bulge < 0) Z.scaleInPlace(-1);     // le côté bombé du modèle suit nLocal
+    const X = BABYLON.Vector3.Cross(Y, Z).normalize();   // X × Y = Z : repère direct
+    pivot.rotationQuaternion = BABYLON.Quaternion.FromRotationMatrix(BABYLON.Matrix.FromValues(
+      X.x, X.y, X.z, 0,
+      Y.x, Y.y, Y.z, 0,
+      Z.x, Z.y, Z.z, 0,
+      0, 0, 0, 1,
+    ));
+    // Recul : le dos du bouclier à ~6 cm de l'axe du bras (son rayon).
+    const nWorld = BABYLON.Vector3.TransformNormal(nLocal, armW).normalize();
+    const offset = 0.06 + (shape.thickness * k) / 2 - shape.zMid * k * shape.bulge;
+    const target = mid.add(nWorld.scale(Math.max(0.04, offset)));
+    pivot.position.copyFrom(BABYLON.Vector3.TransformCoordinates(target, inv));
+  }
+
+  /**
    * Forme d'une arme, mesurée sur ses sommets (dans le repère du modèle
    * posé à l'origine) :
    *   • axe principal (analyse en composantes principales) = axe de la lame ;
@@ -864,7 +926,23 @@ export class BabylonUnits{
       0, 0, 0, 1,
     );
     const toLocal = BABYLON.Quaternion.FromRotationMatrix(toWorld.transpose());
-    return { length: span, centre, toLocal };
+    // Épaisseur (le long de Z) et côté bombé : utile pour un bouclier, qui
+    // se porte face bombée vers l'extérieur, le bras contre son dos.
+    let zMin = 1e9, zMax = -1e9, zCen = 0, nCen = 0, zRim = 0, nRim = 0;
+    const R2 = (span / 2) * (span / 2);
+    for(let i = 0; i < N; i++){
+      const x = pts[i * 3] - centre.x, y = pts[i * 3 + 1] - centre.y, z = pts[i * 3 + 2] - centre.z;
+      const pz = x * Z.x + y * Z.y + z * Z.z;
+      if(pz < zMin) zMin = pz; if(pz > zMax) zMax = pz;
+      const px = x * X.x + y * X.y + z * X.z, py = x * Y.x + y * Y.y + z * Y.z;
+      const rr = (px * px + py * py) / R2;
+      if(rr < 0.04){ zCen += pz; nCen++; } else if(rr > 0.36){ zRim += pz; nRim++; }
+    }
+    const thickness = Math.max(0, zMax - zMin);
+    // +1 : le centre dépasse du côté +Z (bombé vers +Z) ; -1 sinon.
+    const bulge = (nCen && nRim && (zCen / nCen) < (zRim / nRim)) ? -1 : 1;
+    const zMid = (zMin + zMax) / 2;
+    return { length: span, centre, toLocal, thickness, bulge, zMid };
   }
 
   /**
@@ -1023,6 +1101,8 @@ export class BabylonUnits{
       handNode.getWorldMatrix().decompose(sc3);
       const sMean = (Math.abs(sc3.x) + Math.abs(sc3.y) + Math.abs(sc3.z)) / 3 || 1;
       if(Math.abs(sMean - 1) > 0.02) pivot.scaling.setAll(1 / sMean);
+
+      if(w.strap) this._strapOnForearm(inst, handNode, pivot, shape, k, w.hand);
 
       inst.weapons = inst.weapons || [];
       inst.weapons.push(pivot);

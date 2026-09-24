@@ -27,7 +27,7 @@ sc.render();
 const nodeByBaseName=new Map();
 for(const [n,t] of nodes) nodeByBaseName.set(n,t);
 const fake={ scene: sc, _loadProp: (f)=>BABYLON.SceneLoader.LoadAssetContainerAsync('assets/props/',f,sc),
-  _measureGrip: BabylonUnits.prototype._measureGrip, _weaponShape: BabylonUnits.prototype._weaponShape };
+  _measureGrip: BabylonUnits.prototype._measureGrip, _weaponShape: BabylonUnits.prototype._weaponShape, _strapOnForearm: BabylonUnits.prototype._strapOnForearm };
 const inst={ nodeByBaseName, disposed:false };
 const mode=q.get('axis');
 if(mode) for(const w of (await import('./js/engine/babylon-units.js')).WEAPON_BY_KEY[key]) w.axis=mode;
