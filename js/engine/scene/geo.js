@@ -167,6 +167,10 @@ export class Template{
     this.meshes = meshes.filter(Boolean);
     for(const m of this.meshes){ m.isVisible = true; m.alwaysSelectAsActiveMesh = true; m.doNotSyncBoundingInfo = true; }
     this.radius = info.radius || 1;   // empreinte au sol (ombres, espacement)
+    // Emprise rectangulaire [largeur, profondeur] pour les éléments longs
+    // (maisons, murs, conteneurs) : un cercle laissait passer à travers
+    // les bouts d'un mur et mordait dans la rue devant une façade.
+    this.box = info.box || null;
     this.height = info.height || 1;
     this.shadow = info.shadow ?? 0.55;
     this.mats = [];

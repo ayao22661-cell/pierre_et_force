@@ -71,8 +71,9 @@ export class Composer{
     if(x < O.x0 || x > O.x1 || z > O.z0 || z < O.z1) return true;
     return false;
   }
-  _register(x, z, r){
+  _register(x, z, r, box = null){
     const p = { x, z, r };
+    if(box) Object.assign(p, box);
     this.placed.push(p);
     const k = this._key(Math.floor(x / this.cell), Math.floor(z / this.cell));
     if(!this.grid.has(k)) this.grid.set(k, []);
@@ -85,7 +86,8 @@ export class Composer{
     const gy = y ?? (this.groundHeight ? this.groundHeight(x, z) : 0);
     const rr = rot ?? R() * Math.PI * 2;
     this.jobs.push([tpl, x, gy, z, rr, s, sy ?? s]);
-    if(solid) this._register(x, z, tpl.radius * s * pad);
+    if(solid) this._register(x, z, tpl.radius * s * pad,
+      Object.assign({ h: tpl.height * (sy ?? s) }, tpl.box ? { hw: tpl.box[0] * s / 2, hd: tpl.box[1] * s / 2, rot: rr } : null));
     if(shadow && tpl.shadow > 0) this.shadows.push({ x, z, r: tpl.radius * s * 1.15, k: tpl.shadow });
   }
 

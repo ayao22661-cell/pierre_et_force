@@ -611,9 +611,22 @@ export class BabylonUnits{
     // Recul selon l'écartement : serré au corps-à-corps, large quand ils
     // prennent leurs distances. Le « punch » rapproche d'un coup à l'impact.
     this._duelPunch = Math.max(0, (this._duelPunch || 0) - 0.06);
-    const dist = clamp(4.4 + sep * 0.75, 4.4, 10.5) - this._duelPunch;
+    let dist = clamp(4.4 + sep * 0.75, 4.4, 10.5) - this._duelPunch;
     const height = 1.75 + sep * 0.05;
     const look = mid.add(new BB.Vector3(0, 1.15, 0));
+
+    // Le décor arrête la caméra : elle ne recule jamais dans une maison ni
+    // derrière un mur (on voyait le duel depuis l'intérieur des murs). Si
+    // son côté est bouché et que l'autre est dégagé, elle passe de l'autre
+    // côté des combattants ; sinon elle se rapproche.
+    const mpx = (o.ax + o.bx) / 2, mpy = (o.ay + o.by) / 2;
+    const room = this._cameraRoom(mpx, mpy, yaw, height);
+    if(room < Math.min(dist, 4.2)){
+      const other = this._cameraRoom(mpx, mpy, yaw + Math.PI, height);
+      if(other > room + 1){ this._duelYaw = yaw = yaw + Math.PI; dist = Math.min(dist, other); }
+      else dist = Math.min(dist, room);
+    }
+    dist = Math.max(1.6, dist);
     const want = new BB.Vector3(
       look.x + Math.sin(yaw) * dist,
       height + this._shakeY(),
@@ -624,6 +637,57 @@ export class BabylonUnits{
     this._duelLook = BB.Vector3.Lerp(this._duelLook || look, look, 0.2);
     cam.setTarget(this._duelLook);
     this._duelCamYaw = yaw;
+  }
+
+  /** Obstacles du décor et bords de l'arène (Pixi), pour la caméra de combat. */
+  setCameraObstacles(list, arena){
+    this._camObstacles = list || [];
+    this._camArena = arena || null;
+  }
+
+  /**
+   * Recul libre (en mètres) de la caméra depuis le point visé (Pixi), dans
+   * la direction `yaw`, avant de toucher un obstacle plus haut qu'elle ou
+   * de sortir de l'arène. 0,4 m de marge pour que l'objectif ne rase pas
+   * le mur.
+   */
+  _cameraRoom(px, py, yaw, camH){
+    const dx = Math.sin(yaw), dy = -Math.cos(yaw);   // direction en Pixi
+    let best = 12 * WORLD_SCALE;
+    const A = this._camArena;
+    if(A){
+      if(dx > 1e-6) best = Math.min(best, (A.x1 - px) / dx); else if(dx < -1e-6) best = Math.min(best, (A.x0 - px) / dx);
+      if(dy > 1e-6) best = Math.min(best, (A.y1 - py) / dy); else if(dy < -1e-6) best = Math.min(best, (A.y0 - py) / dy);
+    }
+    for(const o of this._camObstacles || []){
+      if((o.h ?? 2) < camH - 0.25) continue;   // muret, buisson : la caméra passe au-dessus
+      const ox = px - o.x, oy = py - o.y;
+      let t;
+      if(o.hw != null){
+        // Rayon contre rectangle orienté (méthode des dalles).
+        const vx = -o.uy, vy = o.ux;
+        const lx = ox * o.ux + oy * o.uy, ly = ox * vx + oy * vy;
+        const ldx = dx * o.ux + dy * o.uy, ldy = dx * vx + dy * vy;
+        let t0 = 0, t1 = best;
+        for(const [p, d, e] of [[lx, ldx, o.hw], [ly, ldy, o.hd]]){
+          if(Math.abs(d) < 1e-9){ if(Math.abs(p) > e){ t0 = Infinity; break; } continue; }
+          let a = (-e - p) / d, b = (e - p) / d;
+          if(a > b){ const c = a; a = b; b = c; }
+          t0 = Math.max(t0, a); t1 = Math.min(t1, b);
+          if(t0 > t1){ t0 = Infinity; break; }
+        }
+        t = t0;
+      } else {
+        const bq = ox * dx + oy * dy, c = ox * ox + oy * oy - o.r * o.r;
+        if(c <= 0) continue;                    // déjà dedans (tronc au milieu) : on ignore
+        const disc = bq * bq - c;
+        if(disc < 0) continue;
+        t = -bq - Math.sqrt(disc);
+        if(t < 0) continue;
+      }
+      if(t < best) best = t;
+    }
+    return Math.max(0, best / WORLD_SCALE - 0.4);
   }
 
   _shakeY(){
@@ -712,36 +776,95 @@ export class BabylonUnits{
    * à chaque frame.
    */
   /**
-   * Repère le côté « manche » d'une arme : celui dont la section est la
-   * plus fine. Renvoie true si le manche se trouve du côté du minimum de
-   * l'axe long, false sinon.
+   * Forme d'une arme, mesurée sur ses sommets (dans le repère du modèle
+   * posé à l'origine) :
+   *   • axe principal (analyse en composantes principales) = axe de la lame ;
+   *   • côté manche = le bout le plus fin autour de cet axe ;
+   *   • axe secondaire = largeur de la lame (le plat), sert au `roll`.
+   * Renvoie la longueur, le centre (milieu de l'arme sur son axe) et la
+   * rotation qui ramène l'arme debout : manche en -Y, pointe en +Y, plat
+   * de la lame dans le plan XY.
    */
-  _handleSide(model, axis, mn, mx){
-    const i0 = axis === 'x' ? 0 : axis === 'y' ? 1 : 2;
-    const a1 = (i0 + 1) % 3, a2 = (i0 + 2) % 3;
-    const lo = [mn.x, mn.y, mn.z][i0], hi = [mx.x, mx.y, mx.z][i0];
-    const span = Math.max(hi - lo, 1e-6);
-    const cen = [(mn.x + mx.x) / 2, (mn.y + mx.y) / 2, (mn.z + mx.z) / 2];
-    let sumLo = 0, nLo = 0, sumHi = 0, nHi = 0;
+  _weaponShape(model){
+    const pts = [];
+    const v = new BABYLON.Vector3();
     for(const m of model.getChildMeshes().concat([model])){
       if(!m.getTotalVertices || !m.getTotalVertices()) continue;
       const pos = m.getVerticesData('position');
       if(!pos) continue;
       m.computeWorldMatrix(true);
       const wm = m.getWorldMatrix();
-      const v = new BABYLON.Vector3();
-      const step = Math.max(1, Math.floor(pos.length / 3 / 600));   // échantillon
-      for(let i = 0; i < pos.length / 3; i += step){
+      const n = pos.length / 3, step = Math.max(1, Math.floor(n / 4000));
+      for(let i = 0; i < n; i += step){
         BABYLON.Vector3.TransformCoordinatesFromFloatsToRef(pos[i * 3], pos[i * 3 + 1], pos[i * 3 + 2], wm, v);
-        const c = [v.x, v.y, v.z];
-        const t = (c[i0] - lo) / span;
-        const r = Math.hypot(c[a1] - cen[a1], c[a2] - cen[a2]);
-        if(t < 0.22){ sumLo += r; nLo++; }
-        else if(t > 0.78){ sumHi += r; nHi++; }
+        pts.push(v.x, v.y, v.z);
       }
     }
-    if(!nLo || !nHi) return true;
-    return (sumLo / nLo) <= (sumHi / nHi);
+    const N = pts.length / 3;
+    if(!N) return { length: 1, centre: BABYLON.Vector3.Zero(), toLocal: BABYLON.Quaternion.Identity() };
+    let cx = 0, cy = 0, cz = 0;
+    for(let i = 0; i < N; i++){ cx += pts[i * 3]; cy += pts[i * 3 + 1]; cz += pts[i * 3 + 2]; }
+    cx /= N; cy /= N; cz /= N;
+    // Covariance
+    let xx = 0, xy = 0, xz = 0, yy = 0, yz = 0, zz = 0;
+    for(let i = 0; i < N; i++){
+      const x = pts[i * 3] - cx, y = pts[i * 3 + 1] - cy, z = pts[i * 3 + 2] - cz;
+      xx += x * x; xy += x * y; xz += x * z; yy += y * y; yz += y * z; zz += z * z;
+    }
+    const C = [[xx, xy, xz], [xy, yy, yz], [xz, yz, zz]];
+    const mul = (a) => [
+      C[0][0] * a[0] + C[0][1] * a[1] + C[0][2] * a[2],
+      C[1][0] * a[0] + C[1][1] * a[1] + C[1][2] * a[2],
+      C[2][0] * a[0] + C[2][1] * a[1] + C[2][2] * a[2],
+    ];
+    const norm = (a) => { const l = Math.hypot(a[0], a[1], a[2]) || 1; return [a[0] / l, a[1] / l, a[2] / l]; };
+    const dot = (a, b) => a[0] * b[0] + a[1] * b[1] + a[2] * b[2];
+    // Itération de la puissance : vecteur propre dominant, puis le suivant
+    // (orthogonalisé contre le premier).
+    const power = (seed, against) => {
+      let a = norm(seed);
+      for(let it = 0; it < 60; it++){
+        a = mul(a);
+        if(against){ const d = dot(a, against); a = [a[0] - against[0] * d, a[1] - against[1] * d, a[2] - against[2] * d]; }
+        a = norm(a);
+      }
+      return a;
+    };
+    let e1 = power([0.577, 0.577, 0.577]);
+    if(!isFinite(e1[0])) e1 = [0, 1, 0];
+    let e2 = power(Math.abs(e1[0]) < 0.9 ? [1, 0, 0] : [0, 1, 0], e1);
+    // Étendue le long de l'axe, et épaisseur à chaque bout.
+    let tMin = 1e9, tMax = -1e9;
+    for(let i = 0; i < N; i++){
+      const t = (pts[i * 3] - cx) * e1[0] + (pts[i * 3 + 1] - cy) * e1[1] + (pts[i * 3 + 2] - cz) * e1[2];
+      if(t < tMin) tMin = t; if(t > tMax) tMax = t;
+    }
+    const span = Math.max(tMax - tMin, 1e-6);
+    let sLo = 0, nLo = 0, sHi = 0, nHi = 0;
+    for(let i = 0; i < N; i++){
+      const x = pts[i * 3] - cx, y = pts[i * 3 + 1] - cy, z = pts[i * 3 + 2] - cz;
+      const t = x * e1[0] + y * e1[1] + z * e1[2];
+      const r = Math.hypot(x - e1[0] * t, y - e1[1] * t, z - e1[2] * t);
+      const u = (t - tMin) / span;
+      if(u < 0.2){ sLo += r; nLo++; } else if(u > 0.8){ sHi += r; nHi++; }
+    }
+    // Le manche est le bout le plus fin : on veut qu'il soit en -Y.
+    if(nLo && nHi && (sHi / nHi) < (sLo / nLo)){ e1 = [-e1[0], -e1[1], -e1[2]]; const a = tMin; tMin = -tMax; tMax = -a; }
+    const mid = (tMin + tMax) / 2;
+    const centre = new BABYLON.Vector3(cx + e1[0] * mid, cy + e1[1] * mid, cz + e1[2] * mid);
+    const Y = new BABYLON.Vector3(e1[0], e1[1], e1[2]);
+    const X = new BABYLON.Vector3(e2[0], e2[1], e2[2]);
+    const Z = BABYLON.Vector3.Cross(X, Y).normalize();   // repère direct : X × Y = Z
+    // Lignes = images des axes locaux : cette matrice envoie X→e2, Y→e1.
+    // On veut l'inverse (monde du modèle → arme debout) : sa transposée.
+    const toWorld = BABYLON.Matrix.FromValues(
+      X.x, X.y, X.z, 0,
+      Y.x, Y.y, Y.z, 0,
+      Z.x, Z.y, Z.z, 0,
+      0, 0, 0, 1,
+    );
+    const toLocal = BABYLON.Quaternion.FromRotationMatrix(toWorld.transpose());
+    return { length: span, centre, toLocal };
   }
 
   /**
@@ -836,44 +959,29 @@ export class BabylonUnits{
       const entry = container.instantiateModelsToScene(name => name + '_w' + list.indexOf(w) + '_' + unit.id, false);
       const model = entry.rootNodes[0];
 
-      // 1. Mesure de l'arme et mise à l'échelle sur sa longueur réelle.
-      let mn = new BABYLON.Vector3(1e9, 1e9, 1e9), mx = new BABYLON.Vector3(-1e9, -1e9, -1e9);
-      for(const m of model.getChildMeshes().concat([model])){
-        if(!m.getTotalVertices || !m.getTotalVertices()) continue;
-        m.computeWorldMatrix(true);
-        const bb = m.getBoundingInfo().boundingBox;
-        mn = BABYLON.Vector3.Minimize(mn, bb.minimumWorld); mx = BABYLON.Vector3.Maximize(mx, bb.maximumWorld);
-      }
-      const size = mx.subtract(mn);
-      const longAxis = (size.x >= size.y && size.x >= size.z) ? 'x' : (size.y >= size.z ? 'y' : 'z');
-      const length = Math.max(size.x, size.y, size.z, 0.01);
-      const k = (w.height || 0.6) / length;
-
-      // 1 bis. QUEL BOUT EST LE MANCHE ? On ne le devine pas : on mesure.
-      // Le modèle est découpé en tranches le long de son axe ; pour chaque
-      // tranche on calcule l'épaisseur moyenne autour de l'axe. Le manche
-      // est le bout le plus fin, la lame (ou le canon) le plus large.
-      // Sans ça, la moitié des armes se retrouvaient tenues par la pointe.
-      const handleAtMin = this._handleSide(model, longAxis, mn, mx);
+      // 1. Mesure de l'arme : son VRAI axe long, par analyse des sommets.
+      //    Plusieurs modèles sont posés en diagonale dans leur fichier (EPEE
+      //    et LANCE font ~0,8 × 0,8 m en boîte englobante) : prendre l'axe le
+      //    plus long de la boîte tenait l'arme de travers, voire par la lame,
+      //    et la décalait loin du poing. L'axe principal des sommets, lui,
+      //    suit la lame quelle que soit la pose du modèle.
+      const shape = this._weaponShape(model);
+      const k = (w.height || 0.6) / shape.length;
 
       // 2. Redressement. Le modèle garde SA propre transformation (certains
       //    .glb portent une conversion d'axes dans leur nœud racine : la
       //    remplacer envoyait l'arme à un mètre de la main). On l'enveloppe
-      //    donc dans deux nœuds : l'un recentre sur la boîte mesurée, l'autre
-      //    met à l'échelle autour de ce centre.
+      //    donc dans deux nœuds : l'un recentre sur le milieu de l'arme,
+      //    l'autre la tourne (manche vers -Y, lame vers +Y) et la met à
+      //    l'échelle.
       const inner = new BABYLON.TransformNode('wscale_' + unit.id, this.scene);
       const straight = new BABYLON.TransformNode('wfix_' + unit.id, this.scene);
       inner.parent = straight;
+      model.position.subtractInPlace(shape.centre);   // l'arme est centrée sur l'origine
       model.parent = inner;
-      const centre = mn.add(mx).scale(0.5);
-      model.position.subtractInPlace(centre);   // l'arme est centrée sur l'origine
       inner.scaling.setAll(k);
-      if(longAxis === 'x') inner.rotation.z = -Math.PI / 2;
-      else if(longAxis === 'z') inner.rotation.x = Math.PI / 2;
-      // Après redressement, l'axe long est sur +Y. On retourne l'arme si son
-      // manche se retrouve en haut : la main doit tenir le manche, pas la lame.
-      const upIsHandle = (longAxis === 'x') ? !handleAtMin : handleAtMin;
-      if(upIsHandle !== !!w.flip) inner.rotation.z += Math.PI;
+      inner.rotationQuaternion = shape.toLocal;
+      if(w.flip) straight.rotation.z = Math.PI;
       const h = w.height || 0.6;
       straight.position.y = (0.5 - (w.grip ?? 0.5)) * h;
 
@@ -882,13 +990,11 @@ export class BabylonUnits{
       const pivot = new BABYLON.TransformNode('wgrip_' + unit.id, this.scene);
       straight.parent = pivot;
       const g = this._measureGrip(inst, boneName, w.axis);
-      let xAxis = BABYLON.Vector3.Cross(g.up, g.axis).normalize();
-      let zAxis = BABYLON.Vector3.Cross(g.axis, xAxis).normalize();
-      // Certains rigs sont en miroir (une échelle négative sur un axe) :
-      // le repère mesuré devient gaucher et la rotation construite dessus
-      // envoyait l'arme à un mètre de la main. On le redresse.
-      const det = BABYLON.Vector3.Dot(BABYLON.Vector3.Cross(xAxis, g.axis), zAxis);
-      if(det < 0){ xAxis = xAxis.scale(-1); zAxis = BABYLON.Vector3.Cross(g.axis, xAxis).normalize(); }
+      // Repère direct (déterminant +1) : Z = X × Y. L'ancienne version
+      // prenait Y × X, un repère « gaucher » : la conversion en quaternion
+      // n'a alors aucun sens et l'arme partait de travers, loin du poing.
+      const xAxis = BABYLON.Vector3.Cross(g.up, g.axis).normalize();
+      const zAxis = BABYLON.Vector3.Cross(xAxis, g.axis).normalize();
       const rot = BABYLON.Matrix.FromValues(
         xAxis.x, xAxis.y, xAxis.z, 0,
         g.axis.x, g.axis.y, g.axis.z, 0,
