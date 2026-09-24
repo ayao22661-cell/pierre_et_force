@@ -92,7 +92,7 @@ const AUTEL_HEIGHT_M = 2.6;
 export const WEAPON_BY_KEY = {
   TARINE: [
     { file: 'EPEE.glb',      hand: 'RightHand',   height: 1.05, grip: 0.14, roll: Math.PI / 2 },
-    { file: 'BOUCLIER.glb',  hand: 'LeftForeArm', height: 0.62, grip: 0.5,  roll: Math.PI / 2, strap: true },
+    { file: 'BOUCLIER.glb',  hand: 'LeftForeArm', height: 0.62, grip: 0.5,  roll: 0, strap: true },
   ],
   FULGENCE: [
     { file: 'EPEE1.glb',     hand: 'RightHand',   height: 1.55, grip: 0.12, roll: Math.PI / 2 },
