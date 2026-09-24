@@ -1,0 +1,12 @@
+<html><head><base href="../"></head><body><script src="https://cdn.babylonjs.com/babylon.js"></script><script src="https://cdn.babylonjs.com/loaders/babylonjs.loaders.min.js"></script>
+<script>(async()=>{try{
+const eng=new BABYLON.NullEngine();const sc=new BABYLON.Scene(eng);
+const out={};
+for(const f of ['TARINE.glb','BABA_TUNDE.glb','SGRUN.glb','SAMIA.glb','ORC.glb']){
+  const m=await BABYLON.SceneLoader.ImportMeshAsync('','assets/models/',f,sc);
+  const names=m.skeletons[0].bones.map(b=>b.name);
+  out[f]={total:names.length, main:names.filter(n=>/RightHand/.test(n))};
+  for(const mm of m.meshes) mm.dispose();
+}
+window.__out=out;document.title='DONE';
+}catch(e){document.title='ERR';window.__out=String(e.message)}})();</script></body></html>

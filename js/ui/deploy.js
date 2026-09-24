@@ -170,7 +170,7 @@ export function renderDeploy(mission, modeLabel, save, onLaunch){
       // moitié de campagne).
       foeMult: mission.foeMult != null
         ? mission.foeMult
-        : Math.min(4.0, 1.05 + (((Number(mission.num) || 1) - 1) * 0.0298)),
+        : Math.min(2.9, 1.0 + (((Number(mission.num) || 1) - 1) * 0.0192)),
       roundsToWin: mission.roundsToWin,
       roundTime: mission.roundTime,
       save,                  // transmis à Sim pour les bonus objets/talents

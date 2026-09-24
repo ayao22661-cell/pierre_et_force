@@ -6,16 +6,16 @@ export const ITEMS = [
   {id:"ceinture",name:"Ceinture Kente",cost:400,tier:1,st:{hp:180},ico:"🎗"},
   {id:"gants",name:"Gants du Port",cost:300,tier:1,st:{as:0.12},ico:"🧤"},
   {id:"sandales",name:"Sandales d'Adjamé",cost:300,tier:1,st:{ms:25},ico:"👡"},
-  {id:"faucille",name:"Faucille Ancienne",cost:1100,tier:2,from:["lame","lame"],st:{atk:30,ls:0.08},ico:"⚔"},
+  {id:"faucille",name:"Faucille Ancienne",cost:1100,tier:2,from:["lame","lame"],st:{atk:30,crit:0.12},ico:"⚔"},
   {id:"bouclier",name:"Bouclier Baoulé",cost:1000,tier:2,from:["gilet","ceinture"],st:{arm:30,hp:250},ico:"🛡"},
   {id:"baton",name:"Bâton du Griot",cost:1100,tier:2,from:["perle","lame"],st:{atk:22,mana:250,ah:10},ico:"🪄"},
   {id:"bottes",name:"Bottes du Messager",cost:900,tier:2,from:["sandales"],st:{ms:45,ah:10},ico:"🥾"},
   {id:"arc",name:"Corde de Balafon",cost:1000,tier:2,from:["gants","gants"],st:{as:0.3,crit:0.1},ico:"🏹"},
   {id:"masque",name:"Masque Dan",cost:1000,tier:2,from:["ceinture","perle"],st:{hp:300,mana:200,regen:4},ico:"🎭"},
-  {id:"coupe",name:"Coupe-Coupe de l'Éveillé",cost:2900,tier:3,from:["faucille","arc"],st:{atk:60,as:0.35,crit:0.25,ls:0.1},ico:"🔱"},
+  {id:"coupe",name:"Coupe-Coupe de l'Éveillé",cost:2900,tier:3,from:["faucille","arc"],st:{atk:60,as:0.35,crit:0.25,pen:0.12},ico:"🔱"},
   {id:"rempart",name:"Rempart de Kong",cost:2800,tier:3,from:["bouclier","masque"],st:{arm:70,hp:650,regen:10},ico:"🏯"},
   {id:"sceptre",name:"Sceptre de Kankou Moussa",cost:3000,tier:3,from:["baton","masque"],st:{atk:70,mana:500,ah:25,hp:200},ico:"👑"},
-  {id:"lamevide",name:"Lame du Vide",cost:3000,tier:3,from:["faucille","baton"],st:{atk:80,ah:15,ls:0.15,pen:0.3},ico:"🌑"},
+  {id:"lamevide",name:"Lame du Vide",cost:3000,tier:3,from:["faucille","baton"],st:{atk:80,ah:15,crit:0.2,pen:0.3},ico:"🌑"},
   {id:"ailes",name:"Ailes du Harmattan",cost:2600,tier:3,from:["bottes","arc"],st:{ms:70,as:0.4,ah:15},ico:"🪽"},
   {id:"coeur",name:"Cœur de Pierre",cost:3200,tier:3,from:["rempart","gilet"],st:{arm:100,hp:900,regen:15,thorns:0.25},ico:"💎"}
 ];
@@ -41,7 +41,7 @@ export const TALENT_TREES = [
     {id:"w3",name:"Source",max:3,per:{healP:0.1},desc:"+10% soins donnés par rang",req:3},
     {id:"w4",name:"Reflux",max:1,per:{cdKill:0.3},desc:"Élimination : −30% délais restants",req:8}]},
   {id:"air",name:"Pierre de l'Air",color:"#c084fc",nodes:[
-    {id:"a1",name:"Lame de Vent",max:5,per:{ls:0.02},desc:"+2% vol de vie par rang"},
+    {id:"a1",name:"Lame de Vent",max:5,per:{as:0.03},desc:"+3% vitesse d'attaque par rang"},
     {id:"a2",name:"Courant Ascendant",max:5,per:{msF:5},desc:"+5 vitesse par rang"},
     {id:"a3",name:"Tempête d'Éclats",max:3,per:{exec:0.05},desc:"+5% dégâts par rang aux cibles sous 40% PV",req:3},
     {id:"a4",name:"Convergence",max:1,per:{goldP:0.2},desc:"+20% or gagné en combat",req:8}]}
@@ -55,7 +55,7 @@ export const RELIC_BASES = [
   {id:"br2",slot:"bracelet",name:"Jonc du Chasseur",st:{as:0.03}},
   {id:"br3",slot:"bracelet",name:"Manchette Sénoufo",st:{crit:0.02}},
   {id:"br4",slot:"bracelet",name:"Fil de Kente",st:{regen:1}},
-  {id:"ta1",slot:"talisman",name:"Talisman du Banco",st:{ls:0.015}},
+  {id:"ta1",slot:"talisman",name:"Talisman du Banco",st:{regen:2}},
   {id:"ta2",slot:"talisman",name:"Gri-gri du Port",st:{ms:4}},
   {id:"ta3",slot:"talisman",name:"Statuette Baoulé",st:{hp:40,arm:2}},
   {id:"ta4",slot:"talisman",name:"Éclat de Faille",st:{atk:3,ah:2}}

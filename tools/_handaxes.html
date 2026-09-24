@@ -1,0 +1,18 @@
+<html><head><base href="../"></head><body><script src="https://cdn.babylonjs.com/babylon.js"></script><script src="https://cdn.babylonjs.com/loaders/babylonjs.loaders.min.js"></script>
+<script>(async()=>{try{
+const eng=new BABYLON.NullEngine();const sc=new BABYLON.Scene(eng);
+const out={};
+for(const f of ['TARINE.glb','BABA_TUNDE.glb','SGRUN.glb']){
+  const m=await BABYLON.SceneLoader.ImportMeshAsync('','assets/models/',f,sc);
+  const nodes=new Map();
+  for(const b of m.skeletons[0].bones){const t=b.getTransformNode&&b.getTransformNode(); if(t) nodes.set(b.name,t);}
+  const hand=nodes.get('mixamorig:RightHand'); hand.computeWorldMatrix(true);
+  const inv=BABYLON.Matrix.Invert(hand.getWorldMatrix());
+  const loc=n=>{const t=nodes.get('mixamorig:'+n); if(!t) return null; t.computeWorldMatrix(true);
+    const v=BABYLON.Vector3.TransformCoordinates(t.getAbsolutePosition(),inv); return [+v.x.toFixed(3),+v.y.toFixed(3),+v.z.toFixed(3)];};
+  out[f]={Index1:loc('RightHandIndex1'),Middle1:loc('RightHandMiddle1'),Pinky1:loc('RightHandPinky1'),Thumb1:loc('RightHandThumb1'),
+    ForeArm:loc('RightForeArm')};
+  for(const mm of m.meshes) mm.dispose();
+}
+window.__out=out;document.title='DONE';
+}catch(e){document.title='ERR';window.__out=String(e.message)}})();</script></body></html>

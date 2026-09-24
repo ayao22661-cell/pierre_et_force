@@ -74,77 +74,66 @@ const STRUCTURE_MODEL = { autel: 'AUTEL.glb' };
 // la carte) — le modèle brut mesure environ 1,1 m après compression.
 const AUTEL_HEIGHT_M = 2.6;
 
-const WEAPON_BY_KEY = {
-  TARINE:   [
-    { file: 'EPEE.glb',     hand: 'RightHand', scale: 0.62, pos: [0.02, 0.05, 0.0],  rot: [Math.PI/2 + 0.25, 0, 0.15] },
-    { file: 'BOUCLIER.glb', hand: 'LeftForeArm', scale: 0.42, pos: [0.0, 0.30, 0.0], rot: [Math.PI/2, 0, 0] },
+// ARMES PORTÉES — format unique et mesuré :
+//   file    fichier de assets/props/
+//   hand    os d'accroche ('RightHand', 'LeftHand', 'LeftForeArm', 'LeftUpLeg')
+//   height  longueur réelle voulue, en mètres
+//   grip    où la main tient l'arme, de 0 (talon/pommeau) à 1 (pointe)
+//   roll    rotation autour de l'axe de l'arme, pour orienter le tranchant
+//   flip    retourne l'arme bout pour bout si le modèle est à l'envers
+//   offset  ajustement fin dans le repère de la main (rarement utile)
+//
+// La position et l'orientation sont CALCULÉES à partir des os des doigts
+// (voir _measureGrip) : l'arme est tenue dans le poing, pas posée à côté.
+export const WEAPON_BY_KEY = {
+  TARINE: [
+    { file: 'EPEE.glb',      hand: 'RightHand',   height: 1.05, grip: 0.14, axis: 'fingers', roll: 0 },
+    { file: 'BOUCLIER.glb',  hand: 'LeftForeArm', height: 0.62, grip: 0.5,  roll: Math.PI / 2, strap: true },
   ],
   FULGENCE: [
-    { file: 'EPEE1.glb',    hand: 'RightHand', scale: 1.0,  pos: [0.02, 0.05, 0.0],  rot: [Math.PI/2 + 0.25, 0, 0.15] },
+    { file: 'EPEE1.glb',     hand: 'RightHand',   height: 1.55, grip: 0.12, axis: 'fingers', flip: true, roll: 0 },
   ],
-  // Baba Tunde se bat aux poings : son pistolet reste accroché à la
-  // hanche gauche, jamais dans la main, pour ne pas gêner la boxe.
-  BABA:     [
-    { file: 'PISTOLET2.glb', hand: 'LeftUpLeg', height: 0.36, grip: 0.4, pos: [0.06, 0.12, 0.05], rot: [1.3, 0, 1.2] },
+  // Baba Tunde se bat aux poings : son pistolet reste à la ceinture.
+  BABA: [
+    { file: 'PISTOLET2.glb', hand: 'LeftUpLeg',   height: 0.30, grip: 0.5,  roll: 0, offset: [0.08, 0.14, 0.06] },
   ],
-  // Lundgren, le Cartographe : son bâton, et la kora du griot au bras gauche.
   LUNDGREN: [
-    { file: 'BATON_MAGIQUE.glb', hand: 'RightHand', scale: 0.85, pos: [0.0, 0.05, 0.0], rot: [Math.PI + 0.2, 0, 0] },
-    { file: 'HARPE.glb',         hand: 'LeftHand',  height: 0.75, grip: 0.45, pos: [0, 0.07, 0], rot: [1.8, 0, 0.79] },
+    { file: 'BATON_MAGIQUE.glb', hand: 'RightHand', height: 1.70, grip: 0.42, axis: 'fingers', roll: 0 },
+    { file: 'HARPE.glb',     hand: 'LeftHand',    height: 0.70, grip: 0.5, axis: 'fingers',  roll: 0 },
   ],
-  DARK:     [
-    { file: 'EPEE3.glb',    hand: 'RightHand', scale: 0.55, pos: [0.02, 0.04, 0.0],  rot: [Math.PI/2 + 0.2, 0, 0.1] },
-    { file: 'PISTOLET3.glb', hand: 'LeftHand', height: 0.45, grip: 0.35, pos: [0, 0.04, 0], rot: [1.8, 0, 0.79] },
+  DARK: [
+    { file: 'EPEE3.glb',     hand: 'RightHand',   height: 0.95, grip: 0.14, axis: 'fingers', roll: 0 },
+    { file: 'PISTOLET3.glb', hand: 'LeftHand',    height: 0.38, grip: 0.42, roll: 0 },
   ],
-  // Calage automatique (height + grip) : l'arme est mise à l'échelle sur sa
-  // hauteur réelle en mètres, recentrée sur sa poignée, puis orientée.
-  KAREN:    [
-    { file: 'LANCE.glb',    hand: 'RightHand', height: 1.9, grip: 0.42, pos: [0, 0.05, 0], rot: [1.8, 0, 0.79] },
+  KAREN: [
+    { file: 'LANCE.glb',     hand: 'RightHand',   height: 1.95, grip: 0.38, axis: 'fingers', roll: 0 },
   ],
-  // Sam, le Passeur : pistolet à essence dans la main droite, compas
-  // dimensionnel dans la gauche — les deux objets de son rôle.
-  SAM:      [
-    { file: 'PISTOLET1.glb', hand: 'RightHand', height: 0.42, grip: 0.35, pos: [0, 0.04, 0], rot: [1.8, 0, 0.79] },
-    { file: 'BOUSSOLE.glb',  hand: 'LeftHand',  height: 0.26, grip: 0.5,  pos: [0, 0.06, 0], rot: [1.57, 0, 0] },
+  SAM: [
+    { file: 'PISTOLET1.glb', hand: 'RightHand',   height: 0.36, grip: 0.42, roll: 0 },
+    { file: 'BOUSSOLE.glb',  hand: 'LeftHand',    height: 0.22, grip: 0.5,  roll: 0 },
   ],
 
   // ── Ennemis ────────────────────────────────────────────────
-  SYLLA:    [
-    { file: 'PISTOLET2.glb', hand: 'RightHand', height: 0.40, grip: 0.35, pos: [0, 0.04, 0], rot: [1.8, 0, 0.79] },
+  SYLLA:    [{ file: 'PISTOLET2.glb', hand: 'RightHand', height: 0.34, grip: 0.42, roll: 0 }],
+  OUSMANE:  [{ file: 'PISTOLET1.glb', hand: 'RightHand', height: 0.38, grip: 0.42, roll: 0 }],
+  SCHISSIN: [{ file: 'PISTOLET3.glb', hand: 'RightHand', height: 0.40, grip: 0.42, roll: 0 }],
+  SUB:      [{ file: 'EPEE3.glb',     hand: 'RightHand', height: 0.95, grip: 0.14, axis: 'fingers', roll: 0 }],
+  GROB:     [{ file: 'EPEE1.glb',     hand: 'RightHand', height: 1.60, grip: 0.12, axis: 'fingers', flip: true, roll: 0 }],
+  KRAG:     [{ file: 'LANCE.glb',     hand: 'RightHand', height: 2.10, grip: 0.38, axis: 'fingers', roll: 0 }],
+  VAEL:     [{ file: 'EPEE.glb',      hand: 'RightHand', height: 1.00, grip: 0.14, axis: 'fingers', roll: 0 }],
+  SGRUN: [
+    { file: 'BATON_MAGIQUE.glb', hand: 'RightHand', height: 1.85, grip: 0.42, axis: 'fingers', roll: 0 },
+    { file: 'BOUSSOLE.glb',      hand: 'LeftHand',  height: 0.28, grip: 0.5,  roll: 0 },
   ],
-  OUSMANE:  [
-    { file: 'PISTOLET1.glb', hand: 'RightHand', height: 0.44, grip: 0.35, pos: [0, 0.04, 0], rot: [1.8, 0, 0.79] },
-  ],
-  SCHISSIN: [
-    { file: 'PISTOLET3.glb', hand: 'RightHand', height: 0.46, grip: 0.35, pos: [0, 0.04, 0], rot: [1.8, 0, 0.79] },
-  ],
-  SUB:      [
-    { file: 'EPEE3.glb',     hand: 'RightHand', scale: 0.55, pos: [0.02, 0.04, 0], rot: [Math.PI/2 + 0.2, 0, 0.1] },
-  ],
-  GROB:     [
-    { file: 'EPEE1.glb',     hand: 'RightHand', scale: 1.0,  pos: [0.02, 0.05, 0], rot: [Math.PI/2 + 0.25, 0, 0.15] },
-  ],
-  KRAG:     [
-    { file: 'LANCE.glb',     hand: 'RightHand', height: 2.1, grip: 0.4, pos: [0, 0.05, 0], rot: [1.8, 0, 0.79] },
-  ],
-  VAEL:     [
-    { file: 'EPEE.glb',      hand: 'RightHand', scale: 0.62, pos: [0.02, 0.05, 0], rot: [Math.PI/2 + 0.25, 0, 0.15] },
-  ],
-  SGRUN:    [
-    { file: 'BOUSSOLE.glb',  hand: 'LeftHand',  height: 0.34, grip: 0.5, pos: [0, 0.06, 0], rot: [1.57, 0, 0] },
-    { file: 'BATON_MAGIQUE.glb', hand: 'RightHand', scale: 0.95, pos: [0, 0.05, 0], rot: [Math.PI + 0.2, 0, 0] },
-  ],
-
 };
 
-// Réglages prêts à l'emploi pour équiper un futur champion (les Émissaires
-// de Sgrün, Sylla, Krag…) : recopier la ligne voulue dans WEAPON_BY_KEY.
+export const WEAPON_TABLE = WEAPON_BY_KEY;
 export const WEAPON_LIBRARY = {
   lance:     { file: 'LANCE.glb',     hand: 'RightHand', height: 1.9,  grip: 0.42, pos: [0, 0.05, 0], rot: [1.8, 0, 0.79] },
   pistolet1: { file: 'PISTOLET1.glb', hand: 'RightHand', height: 0.42, grip: 0.35, pos: [0, 0.04, 0], rot: [1.8, 0, 0.79] },
   pistolet2: { file: 'PISTOLET2.glb', hand: 'RightHand', height: 0.40, grip: 0.35, pos: [0, 0.04, 0], rot: [1.8, 0, 0.79] },
   pistolet3: { file: 'PISTOLET3.glb', hand: 'RightHand', height: 0.45, grip: 0.35, pos: [0, 0.04, 0], rot: [1.8, 0, 0.79] },
-  kora:      { file: 'HARPE.glb',     hand: 'LeftHand',  height: 0.75, grip: 0.45, pos: [0, 0.07, 0], rot: [1.8, 0, 0.79] },
+  kora:      { file: 'HARPE.glb',     hand: 'LeftHand',  height: 0.75, grip: 0.45, axis: 'fingers', pos: [0, 0.07, 0], rot: [1.8, 0, 0.79] },
   boussole:  { file: 'BOUSSOLE.glb',  hand: 'LeftHand',  height: 0.26, grip: 0.5,  pos: [0, 0.06, 0], rot: [1.57, 0, 0] },
   // Porté à la hanche plutôt qu'en main : parenter à 'LeftUpLeg'.
   holster:   { file: 'PISTOLET2.glb', hand: 'LeftUpLeg', height: 0.36, grip: 0.4,  pos: [0.06, 0.12, 0.05], rot: [1.3, 0, 1.2] },
@@ -718,11 +707,87 @@ export class BabylonUnits{
    * à l'arme, Babylon recalcule sa matrice monde avec le reste du corps
    * à chaque frame.
    */
+  /**
+   * Mesure la PRISE d'une main sur le squelette : le centre du poing et
+   * l'axe du manche. Avant, chaque arme était calée à l'œil avec trois
+   * rotations et un décalage ; elles finissaient collées à côté du poing
+   * plutôt que tenues dedans, et le réglage d'un personnage ne valait pas
+   * pour un autre (les squelettes n'ont pas tous les mêmes doigts).
+   *
+   * On lit les os des doigts quand ils existent :
+   *   • centre du poing  = base des doigts (majeur, ou index à défaut) ;
+   *   • axe du manche    = perpendiculaire au plan doigts/pouce, c'est la
+   *                        direction dans laquelle passe une poignée ;
+   *   • haut de la lame  = côté du pouce.
+   * Tout est ramené dans le repère LOCAL de la main, donc valable quelle
+   * que soit la pose.
+   *
+   * @returns {{ grip: BABYLON.Vector3, axis: BABYLON.Vector3, up: BABYLON.Vector3 }}
+   */
+  _measureGrip(inst, handBaseName, axisMode){
+    const hand = inst.nodeByBaseName.get(handBaseName);
+    const side = /Left/.test(handBaseName) ? 'Left' : 'Right';
+    const get = (n) => inst.nodeByBaseName.get('mixamorig:' + side + 'Hand' + n);
+    hand.computeWorldMatrix(true);
+    const inv = BABYLON.Matrix.Invert(hand.getWorldMatrix());
+    const local = (node) => {
+      if(!node) return null;
+      node.computeWorldMatrix(true);
+      return BABYLON.Vector3.TransformCoordinates(node.getAbsolutePosition(), inv);
+    };
+    const middle = local(get('Middle1')) || local(get('Ring1'));
+    const index  = local(get('Index1'));
+    const pinky  = local(get('Pinky1')) || local(get('Ring1'));
+    const thumb  = local(get('Thumb1')) || local(get('Thumb2'));
+
+    // Centre du poing : la base des doigts, un peu refermée vers la paume.
+    let grip = middle || index;
+    if(!grip){
+      // Squelette sans doigts : repli sur un décalage le long de la main.
+      grip = new BABYLON.Vector3(0, 0.08, 0);
+    } else {
+      grip = grip.scale(0.78);
+    }
+
+    // Axe du manche : il traverse le poing, d'un bord à l'autre.
+    let axis = null;
+    if(index && pinky && !index.equalsWithEpsilon(pinky, 1e-4)) axis = pinky.subtract(index);
+    if(!axis || axis.length() < 1e-3){
+      const fingerDir = (middle || index || new BABYLON.Vector3(0, 1, 0)).clone().normalize();
+      const thumbDir = (thumb || new BABYLON.Vector3(1, 0, 0)).clone().normalize();
+      axis = BABYLON.Vector3.Cross(fingerDir, thumbDir);
+    }
+    if(axis.length() < 1e-3) axis = new BABYLON.Vector3(0, 0, 1);
+    axis.normalize();
+    // Axe de l'arme : par défaut celui du poing (le manche traverse les
+    // doigts refermés). Certaines poses tiennent l'arme dans le prolongement
+    // des doigts : `axisMode` permet de le dire arme par arme.
+    const fingersDir = (middle || index || new BABYLON.Vector3(0, 1, 0)).clone().normalize();
+    if(axisMode === 'fingers') axis = fingersDir;
+    else if(axisMode === 'palm') axis = BABYLON.Vector3.Cross(axis, fingersDir).normalize();
+    // Orientation : la lame sort du poing du côté du pouce.
+    const thumbDir = (thumb || new BABYLON.Vector3(1, 0, 0)).clone().normalize();
+    if(BABYLON.Vector3.Dot(axis, thumbDir) < 0) axis.scaleInPlace(-1);
+    // « Haut » de référence : le long des doigts, rendu perpendiculaire à l'axe.
+    let up = (middle || index || new BABYLON.Vector3(0, 1, 0)).clone().normalize();
+    up = up.subtract(axis.scale(BABYLON.Vector3.Dot(up, axis)));
+    if(up.length() < 1e-3) up = new BABYLON.Vector3(0, 1, 0);
+    up.normalize();
+    return { grip, axis, up };
+  }
+
+  /**
+   * Accroche les armes d'un champion. Toutes les entrées utilisent le même
+   * format mesuré : hauteur réelle en mètres, position de la poignée le long
+   * de l'arme, et une rotation autour de son axe (`roll`) pour orienter le
+   * tranchant. Plus aucune constante devinée à l'œil.
+   */
   async _attachWeapons(inst, unit){
     const list = WEAPON_BY_KEY[unit.key];
     if(!list || !list.length) return;
     for(const w of list){
-      const handNode = inst.nodeByBaseName.get('mixamorig:' + w.hand);
+      const boneName = 'mixamorig:' + w.hand;
+      const handNode = inst.nodeByBaseName.get(boneName);
       if(!handNode){
         console.error('[BabylonUnits] ❌ os introuvable pour l\'arme', w.file, '(', w.hand, ') sur', unit.key);
         continue;
@@ -733,36 +798,81 @@ export class BabylonUnits{
       if(inst.disposed) return;
       const entry = container.instantiateModelsToScene(name => name + '_w' + list.indexOf(w) + '_' + unit.id, false);
       const model = entry.rootNodes[0];
-      let root = model;
-      if(w.height){
-        // Les modèles achetés n'ont ni pivot ni échelle communs : on mesure
-        // la pièce, on la ramène à la hauteur voulue et on amène sa poignée
-        // (grip, de 0 = talon à 1 = pointe) sur l'os de la main.
-        let mn = new BABYLON.Vector3(1e9, 1e9, 1e9), mx = new BABYLON.Vector3(-1e9, -1e9, -1e9);
-        for(const m of model.getChildMeshes().concat([model])){
-          if(!m.getTotalVertices || !m.getTotalVertices()) continue;
-          m.computeWorldMatrix(true);
-          const bb = m.getBoundingInfo().boundingBox;
-          mn = BABYLON.Vector3.Minimize(mn, bb.minimumWorld); mx = BABYLON.Vector3.Maximize(mx, bb.maximumWorld);
-        }
-        const size = mx.subtract(mn);
-        const k = w.height / Math.max(size.x, size.y, size.z, 0.01);
-        const pivot = new BABYLON.TransformNode('wpivot_' + unit.id, this.scene);
-        model.parent = pivot;
-        model.scaling.setAll(k);
-        const c = mn.add(mx).scale(0.5 * k);
-        model.position.set(-c.x, -c.y + (0.5 - (w.grip ?? 0.5)) * w.height, -c.z);
-        if(size.x > size.y && size.x > size.z) model.rotation.z = Math.PI / 2;
-        else if(size.z > size.y && size.z > size.x) model.rotation.x = Math.PI / 2;
-        root = pivot;
-      } else {
-        root.scaling.setAll(w.scale);
+
+      // 1. Mesure de l'arme et mise à l'échelle sur sa longueur réelle.
+      let mn = new BABYLON.Vector3(1e9, 1e9, 1e9), mx = new BABYLON.Vector3(-1e9, -1e9, -1e9);
+      for(const m of model.getChildMeshes().concat([model])){
+        if(!m.getTotalVertices || !m.getTotalVertices()) continue;
+        m.computeWorldMatrix(true);
+        const bb = m.getBoundingInfo().boundingBox;
+        mn = BABYLON.Vector3.Minimize(mn, bb.minimumWorld); mx = BABYLON.Vector3.Maximize(mx, bb.maximumWorld);
       }
-      root.parent = handNode;
-      root.position.set(w.pos[0], w.pos[1], w.pos[2]);
-      root.rotation.set(w.rot[0], w.rot[1], w.rot[2]);
+      const size = mx.subtract(mn);
+      const longAxis = (size.x >= size.y && size.x >= size.z) ? 'x' : (size.y >= size.z ? 'y' : 'z');
+      const length = Math.max(size.x, size.y, size.z, 0.01);
+      const k = (w.height || 0.6) / length;
+
+      // 2. Redressement. Le modèle garde SA propre transformation (certains
+      //    .glb portent une conversion d'axes dans leur nœud racine : la
+      //    remplacer envoyait l'arme à un mètre de la main). On l'enveloppe
+      //    donc dans deux nœuds : l'un recentre sur la boîte mesurée, l'autre
+      //    met à l'échelle autour de ce centre.
+      const inner = new BABYLON.TransformNode('wscale_' + unit.id, this.scene);
+      const straight = new BABYLON.TransformNode('wfix_' + unit.id, this.scene);
+      inner.parent = straight;
+      model.parent = inner;
+      const centre = mn.add(mx).scale(0.5);
+      model.position.subtractInPlace(centre);   // l'arme est centrée sur l'origine
+      inner.scaling.setAll(k);
+      if(longAxis === 'x') inner.rotation.z = -Math.PI / 2;
+      else if(longAxis === 'z') inner.rotation.x = Math.PI / 2;
+      if(w.flip) inner.rotation.z += Math.PI;   // pommeau et pointe inversés
+      const h = w.height || 0.6;
+      straight.position.y = (0.5 - (w.grip ?? 0.5)) * h;
+
+      // 3. Mise en main : on oriente +Y sur l'axe du manche mesuré, et on
+      //    pose la poignée au centre du poing.
+      const pivot = new BABYLON.TransformNode('wgrip_' + unit.id, this.scene);
+      straight.parent = pivot;
+      const g = this._measureGrip(inst, boneName, w.axis);
+      let xAxis = BABYLON.Vector3.Cross(g.up, g.axis).normalize();
+      let zAxis = BABYLON.Vector3.Cross(g.axis, xAxis).normalize();
+      // Certains rigs sont en miroir (une échelle négative sur un axe) :
+      // le repère mesuré devient gaucher et la rotation construite dessus
+      // envoyait l'arme à un mètre de la main. On le redresse.
+      const det = BABYLON.Vector3.Dot(BABYLON.Vector3.Cross(xAxis, g.axis), zAxis);
+      if(det < 0){ xAxis = xAxis.scale(-1); zAxis = BABYLON.Vector3.Cross(g.axis, xAxis).normalize(); }
+      const rot = BABYLON.Matrix.FromValues(
+        xAxis.x, xAxis.y, xAxis.z, 0,
+        g.axis.x, g.axis.y, g.axis.z, 0,
+        zAxis.x, zAxis.y, zAxis.z, 0,
+        0, 0, 0, 1,
+      );
+      pivot.rotationQuaternion = BABYLON.Quaternion.FromRotationMatrix(rot);
+      if(w.roll){
+        pivot.rotationQuaternion = pivot.rotationQuaternion.multiply(
+          BABYLON.Quaternion.RotationAxis(BABYLON.Axis.Y, w.roll));
+      }
+      pivot.position.copyFrom(g.grip);
+      if(w.offset) pivot.position.addInPlace(new BABYLON.Vector3(w.offset[0], w.offset[1], w.offset[2]));
+      pivot.parent = handNode;
+      // Les modèles de personnages n'ont pas tous la même échelle interne
+      // (certains rigs sont en centimètres). En héritant de l'os, l'arme
+      // héritait aussi de ce facteur : elle partait à un mètre de la main,
+      // ou sortait dix fois trop grande. On annule l'échelle de l'os pour
+      // que la hauteur demandée reste en mètres réels.
+      // Les rigs n'ont ni la même échelle ni la même orientation d'axes :
+      // certains sont en centimètres, d'autres en miroir (échelle négative).
+      // On annule exactement l'échelle de l'os, signe compris, pour que
+      // l'arme garde sa taille réelle et ne parte pas de travers.
+      handNode.computeWorldMatrix(true);
+      const sc3 = new BABYLON.Vector3();
+      handNode.getWorldMatrix().decompose(sc3);
+      const sMean = (Math.abs(sc3.x) + Math.abs(sc3.y) + Math.abs(sc3.z)) / 3 || 1;
+      if(Math.abs(sMean - 1) > 0.02) pivot.scaling.setAll(1 / sMean);
+
       inst.weapons = inst.weapons || [];
-      inst.weapons.push(root);
+      inst.weapons.push(pivot);
     }
   }
 

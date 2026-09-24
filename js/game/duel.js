@@ -199,7 +199,7 @@ export class Fighter{
   takeHit(move, kind, fromFighter, step = 0){
     if(this.invulnerable){ this.sim._fightEvent(this, 'dodge-perfect'); return 0; }
     const attacker = fromFighter.u;
-    const raw = (attacker.atk || 40) * move.dmg;
+    const raw = (attacker.atk || 40) * move.dmg * (fromFighter.isPlayer ? 1 : 0.75);
     // Garde : on encaisse peu, on ne chancelle pas, mais on est repoussé.
     if(this.phase === 'block' || this.blocking){
       this.t = Math.max(this.t, move.blockstun);
@@ -243,7 +243,7 @@ export class Fighter{
     // Réaction : garder quand le coup adverse part, avec un temps de
     // réaction d'autant plus court que le niveau est élevé.
     if(enemyStriking && dist < 150){
-      if(Math.random() < 0.06 + this.skill * 0.35){ this.setBlock(true); return; }
+      if(Math.random() < 0.03 + this.skill * 0.22){ this.setBlock(true); return; }
       if(Math.random() < this.skill * 0.12){ this.dodge(); return; }
     } else if(this.blocking && Math.random() < 0.25){
       this.setBlock(false);
@@ -272,7 +272,7 @@ export class Fighter{
 
     this._aiNext -= dt;
     if(this._aiNext > 0) return;
-    this._aiNext = 0.12 + Math.random() * (0.5 - this.skill * 0.3);
+    this._aiNext = 0.22 + Math.random() * (0.75 - this.skill * 0.3);
 
     if(dist <= MOVES.light.reach * 0.92){
       // À portée : enchaîner, avec une préférence pour finir au lourd.

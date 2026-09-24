@@ -90,7 +90,7 @@ export class BabylonTerrain{
     this._buildGround(baked);
     composer.commit(this.root);
     this._light();
-    this._sky();
+    if(this.theme.mode === 'duel') this._sky();   // invisible en vue plongeante, et il masquait la carte
     // Modèles 3D réels (sentinelles de Sgrün, vaisseau, artefacts) : chargés
     // après coup pour ne pas retarder l'affichage du terrain.
     this._loadModels(composer.models).catch(e => console.error('[BabylonTerrain] ❌ modèle de décor', e));
@@ -275,6 +275,10 @@ export class BabylonTerrain{
    * des toits est du noir.
    */
   _sky(){
+    // ATTENTION : réservé au mode Combat. En vue plongeante, la caméra est
+    // À L'INTÉRIEUR du dôme et sa paroi avant recouvrait toute la carte —
+    // l'écran devenait un aplat gris-vert. D'où le rendu en arrière-plan
+    // strict ci-dessous (groupe 0, sans écriture de profondeur).
     const L = this.biome.light({ setting: this.place.setting, variant: this.place.variant, night: !!this.place.night });
     const pal = SKY[this.place.biome] || SKY.abidjan;
     const night = !!this.place.night;
@@ -295,8 +299,11 @@ export class BabylonTerrain{
     mat.diffuseColor = new BABYLON.Color3(0, 0, 0);
     mat.specularColor = new BABYLON.Color3(0, 0, 0);
     mat.disableLighting = true;
-    mat.backFaceCulling = false;
+    mat.backFaceCulling = true;      // seule la paroi intérieure est dessinée
+    mat.disableDepthWrite = true;    // il ne masque jamais ce qui est devant
     dome.material = mat;
+    dome.renderingGroupId = 0;       // dessiné avant tout le reste
+    dome.applyFog = false;
     dome.freezeWorldMatrix();
     this.sky = dome;
   }

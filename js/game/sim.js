@@ -278,7 +278,10 @@ export class Sim{
     this.teamKills = [0, 0];
     // Couche de combat rapproché (js/game/duel.js) : c'est elle qui gère
     // les coups, la garde, l'esquive et les chutes pour ces deux-là.
-    const skill = Math.min(0.95, 0.35 + (this.cfg.foeMult || 1) * 0.32);
+    // Niveau de l'adversaire en duel. Il était trop élevé : l'IA gardait
+    // presque à chaque coup et relançait sans temps mort. On laisse
+    // respirer, la marge de progression reste au bout.
+    const skill = Math.min(0.68, 0.18 + (this.cfg.foeMult || 1) * 0.22);
     this.fighters = [
       new Fighter(this, this.player, this.duelFoe, { isPlayer: true }),
       new Fighter(this, this.duelFoe, this.player, { skill }),
@@ -818,14 +821,15 @@ export class Sim{
 
     // Passif DARK — "Faim de l'Abîme" : attaques de base +6% PV, sorts +3%.
     // S'applique à DARK quel que soit son équipe (joueur ou ennemi).
-    if(u.key === 'DARK' && !t.isSummon){
-      const rate = opts.basic ? 0.06 : (opts.isAbility ? 0.03 : 0);
-      if(rate > 0){
-        const drain = dmg * rate;
-        u.hp = Math.min(u.maxHp, u.hp + drain);
-        if(drain > 0.5) this.onEvent({ type: 'heal', unit: u, amount: drain });
-      }
+    // Passif de Dark — « Faim de l'Abîme ». Il ne siphonne plus la vie de
+    // sa cible (pas de vol) : ses attaques de base entament l'armure, et
+    // l'effet se cumule trois fois avant de retomber.
+    if(u.key === 'DARK' && opts.basic && !t.dead){
+      t._abimeUntil = this.time + 4;
+      t._abimeStacks = Math.min(3, (t._abimeStacks || 0) + 1);
+      t.armBreak = 6 * t._abimeStacks;
     }
+    if(t._abimeUntil && this.time > t._abimeUntil){ t._abimeUntil = 0; t._abimeStacks = 0; t.armBreak = 0; }
 
     if(t.hp <= 0 && !t.dead){
       // Revive — survie à 1 PV une fois par combat

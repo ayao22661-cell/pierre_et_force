@@ -47,7 +47,7 @@ export const CHAMPS = {
     abil:[
       {name:"Mot qui Blesse",desc:"Frappe en cône qui réduit l'armure.",type:"cone",cd:[6,5.5,5,4.5,4],cost:35,range:190,angle:1.4,dmg:[70,110,150,190,230],ratio:1.0,debuff:{arm:-20,d:3},color:"#ff8a5c"},
       {name:"Sourire de Victoire",desc:"Ruée vers une cible puis étourdissement.",type:"dash",cd:[12,11,10,9,8],cost:50,range:380,radius:80,dmg:[60,95,130,165,200],ratio:0.8,cc:{t:"stun",d:0.75},color:"#D85A30"},
-      {name:"Lieutenant",desc:"Invoque un lieutenant fantôme qui combat 6 s.",type:"summon",cd:[18,17,16,15,14],cost:60,dur:6,power:[0.25,0.3,0.35,0.4,0.45],color:"#ff6a3d"},
+      {name:"Deuxième Souffle",desc:"Il remonte sa garde : vitesse d'attaque, déplacement et encaisse pendant 5 s.",type:"self",cd:[18,17,16,15,14],cost:60,shield:[80,120,160,200,240],shieldR:0.06,buff:{as:[0.25,0.32,0.39,0.46,0.53],ms:[50,60,70,80,90],d:5},color:"#ff6a3d"},
       {name:"Chez Moi Partout",desc:"Se téléporte sur la zone et frappe tout autour.",type:"blink",cd:[80,65,50],cost:80,range:600,radius:180,dmg:[280,420,560],ratio:1.4,buff:{as:0.4,d:4},color:"#D85A30",ult:true}
     ]},
   LUNDGREN:{name:"Lundgren",title:"Le Passeur de Pierres",role:"Mage",
@@ -63,11 +63,11 @@ export const CHAMPS = {
   DARK:{name:"Dark",title:"L'Enfant de l'Abîme",role:"Assassin",
     body:0, hp:560,hpL:86, mana:300,manaL:40, atk:72,atkL:4.2, arm:24,armL:3.4, as:0.7,asL:0.03, ms:345, range:97, ranged:false,
     fx:"#C084FC",
-    passive:{name:"Faim de l'Abîme",desc:"Les attaques de base rendent 6% des dégâts infligés en PV. Les sorts rendent 3%."},
+    passive:{name:"Faim de l'Abîme",desc:"Ses attaques de base brisent l'armure de 6 pendant 4 s, cumulable trois fois."},
     abil:[
       {name:"Lame d'Ombre",desc:"Lame lancée qui traverse.",type:"shot",cd:[6,5.5,5,4.5,4],cost:40,range:540,width:42,speed:1150,pierce:true,dmg:[70,110,150,190,230],ratio:1.0,color:"#C084FC"},
       {name:"Voile Maudit",desc:"Disparaît dans l'ombre : vitesse et esquive des tirs 1,5 s.",type:"self",cd:[18,16.5,15,13.5,12],cost:60,buff:{ms:[90,100,110,120,130],d:1.5,veil:true},color:"#6b21a8"},
-      {name:"Drain d'Âme",desc:"Vole la vie des ennemis devant lui.",type:"cone",cd:[10,9.5,9,8.5,8],cost:50,range:220,angle:1.3,dmg:[80,120,160,200,240],ratio:0.9,drain:0.6,color:"#a855f7"},
+      {name:"Fauche de l'Abîme",desc:"Fauche devant lui : les touchés saignent et ralentissent.",type:"cone",cd:[10,9.5,9,8.5,8],cost:50,range:220,angle:1.3,dmg:[80,120,160,200,240],ratio:0.9,cc:{t:"slow",d:1.6,p:0.35},debuff:{arm:-18,d:3},color:"#a855f7"},
       {name:"Néant Absolu",desc:"L'obscurité engloutit la zone autour de lui.",type:"nova",cd:[90,75,60],cost:100,radius:340,team:"enemy",delay:0.5,dmg:[340,500,660],ratio:1.5,cc:{t:"silence",d:1.5},color:"#C084FC"},
     ]},
   // ═══════════════════════════════════════════════════════════
@@ -112,8 +112,8 @@ export const CHAMPS = {
   SUB:{name:"Sub",title:"L'Opérateur",role:"Assassin",
     body:0, hp:570,hpL:88, mana:290,manaL:38, atk:70,atkL:4.1, arm:24,armL:3.4, as:0.72,asL:0.028, ms:342, range:94, ranged:false,
     fx:"#7FE0C0",
-    passive:{name:"Six Mois à Abidjan",desc:"Vole 9% des dégâts infligés : il tient sur la durée, sans jamais rentrer."},
-    innate:{ls:0.09},
+    passive:{name:"Six Mois à Abidjan",desc:"Il a tout repéré : 15% de coups critiques et 10% de pénétration d'armure."},
+    innate:{crit:0.15,pen:0.10},
     abil:[
       {name:"Coupure Nette",desc:"Lame lancée qui traverse les rangs.",type:"shot",cd:[6,5.5,5,4.5,4],cost:40,range:520,width:40,speed:1150,pierce:true,dmg:[75,115,155,195,235],ratio:1.0,color:"#7FE0C0"},
       {name:"Effacement",desc:"Se retire du champ de vision : vitesse et esquive des tirs 1,5 s.",type:"self",cd:[17,16,15,14,13],cost:55,buff:{ms:[85,95,105,115,125],d:1.5,veil:true},color:"#3aa88a"},
@@ -172,7 +172,7 @@ export const CHAMPS = {
     abil:[
       {name:"Ce Qui Peut Arriver",desc:"Faille qui s'ouvre sur la zone visée.",type:"circle",cd:[8,7.5,7,6.5,6],cost:55,range:640,radius:190,delay:0.6,dmg:[95,145,195,245,295],ratio:1.0,color:"#5FD4FF"},
       {name:"Ce Qui Ne Peut Pas",desc:"Coupe la parole aux pierres : réduit au silence tout autour.",type:"nova",cd:[16,15,14,13,12],cost:75,radius:300,team:"enemy",dmg:[70,110,150,190,230],ratio:0.8,cc:{t:"silence",d:1.6},color:"#bfeaff"},
-      {name:"Émissaire",desc:"Fait apparaître un émissaire qui combat 8 s à ses côtés.",type:"summon",cd:[20,19,18,17,16],cost:70,dur:8,power:[0.35,0.4,0.45,0.5,0.55],color:"#5FD4FF"},
+      {name:"Champ des Possibles",desc:"Fige une zone où tout ralentit : dégâts continus pendant 4 s.",type:"zone",cd:[20,19,18,17,16],cost:70,range:600,radius:200,dur:4,tick:0.5,dmg:[24,32,40,48,56],cc:{t:"slow",d:0.8,p:0.35},color:"#5FD4FF"},
       {name:"Transaction Finale",desc:"Déchire l'espace de part en part : rien ne reste debout sur la ligne.",type:"line",cd:[110,95,80],cost:140,range:960,width:130,delay:0.8,dmg:[360,540,720],ratio:1.7,cc:{t:"stun",d:1.4},color:"#5FD4FF",ult:true}
     ]}
 };
