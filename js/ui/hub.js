@@ -407,13 +407,23 @@ function renderProfile(save){
 
   const side = el('div', 'profile-side');
   const ids = allMissionIds();
+  // Le parcours du joueur, pas les statistiques du champion (elles sont
+  // déjà dans Héros) : missions, victoires, éliminations, alliés.
+  const st = save.stats || {};
   const stats = el('div', 'stat-grid');
-  stats.appendChild(statTile('heart', Math.round(t.hp), 'PV'));
-  stats.appendChild(statTile('sword', Math.round(t.atk), 'Attaque'));
   stats.appendChild(statTile('flag', `${save.missions_done.length}<small>/${ids.length}</small>`, 'Missions'));
+  stats.appendChild(statTile('fist', `${st.wins || 0}<small>/${st.games || 0}</small>`, 'Victoires'));
+  stats.appendChild(statTile('sword', st.kills || 0, 'Éliminations'));
   stats.appendChild(statTile('user', save.allies_unlocked.length, 'Alliés'));
   side.appendChild(stats);
 
+  // La campagne, acte par acte : une pierre qui se remplit.
+  const actsDone = CAMPAIGN.filter(a => a.missions.every(m => isMissionDone(save, m.id))).length;
+  const stonesHead = el('div', 'acte-head');
+  stonesHead.appendChild(el('span', 'acte-roman', iconSvg('gem')));
+  stonesHead.appendChild(el('span', 'acte-name', 'la campagne'));
+  stonesHead.appendChild(el('span', 'profile-count', `${actsDone}<small>/${CAMPAIGN.length} actes</small>`));
+  side.appendChild(stonesHead);
   const stones = el('div', 'act-stones');
   CAMPAIGN.forEach(acte => {
     const total = acte.missions.length;
@@ -447,20 +457,30 @@ function renderJournal(save){
   const root = document.getElementById('journal-entries');
   if(!root) return;
   root.innerHTML = '';
-  const entries = [];
-  CAMPAIGN.forEach(acte => acte.missions.forEach(m => {
-    if(isMissionDone(save, m.id) && m.journal_victoire){
-      entries.push(m);
-    }
-  }));
-  if(!entries.length){
-    root.appendChild(el('div', 'empty-state', iconSvg('scroll') + '<p>Chaque victoire ajoute une page au journal de Tarine.</p>'));
-    return;
-  }
-  entries.forEach(m => {
-    const card = el('div', 'pf-panel journal-entry');
-    card.appendChild(el('div', 'journal-entry-num', `<b>${m.num}</b> ${m.name}`));
-    card.appendChild(el('div', 'journal-entry-text', '« ' + m.journal_victoire + ' »'));
-    root.appendChild(card);
+  // Regroupé par acte, avec le même en-tête que la liste des missions :
+  // on lit le journal comme on a vécu la campagne.
+  let any = false;
+  CAMPAIGN.forEach(acte => {
+    const pages = acte.missions.filter(m => isMissionDone(save, m.id) && m.journal_victoire);
+    if(!pages.length) return;
+    any = true;
+    const block = el('section', 'journal-acte');
+    const head = el('div', 'acte-head');
+    head.appendChild(el('span', 'acte-roman', acte.label.replace('ACTE ', '')));
+    head.appendChild(el('span', 'acte-name', acte.titre.toLowerCase()));
+    const pips = el('span', 'acte-pips');
+    acte.missions.forEach(m => pips.appendChild(el('i', isMissionDone(save, m.id) ? 'on' : '')));
+    head.appendChild(pips);
+    block.appendChild(head);
+    pages.forEach(m => {
+      const card = el('article', 'journal-entry');
+      card.appendChild(el('div', 'journal-entry-num', `<b>${m.num}</b>${m.name}`));
+      card.appendChild(el('p', 'journal-entry-text', m.journal_victoire));
+      block.appendChild(card);
+    });
+    root.appendChild(block);
   });
+  if(!any){
+    root.appendChild(el('div', 'empty-state', iconSvg('scroll') + '<p>Chaque victoire ajoute une page au journal de Tarine.</p>'));
+  }
 }
