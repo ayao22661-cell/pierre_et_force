@@ -28,10 +28,13 @@ const nodeByBaseName=new Map();
 for(const [n,t] of nodes) nodeByBaseName.set(n,t);
 const fake={ scene: sc, _loadProp: (f)=>BABYLON.SceneLoader.LoadAssetContainerAsync('assets/props/',f,sc),
   _measureGrip: BabylonUnits.prototype._measureGrip, _weaponShape: BabylonUnits.prototype._weaponShape, _strapOnForearm: BabylonUnits.prototype._strapOnForearm };
+for(const n of Object.getOwnPropertyNames(BabylonUnits.prototype)) if(n.startsWith('_')&&!fake[n]) fake[n]=BabylonUnits.prototype[n];
 const inst={ nodeByBaseName, disposed:false };
 const mode=q.get('axis');
 if(mode) for(const w of (await import('./js/engine/babylon-units.js')).WEAPON_BY_KEY[key]) w.axis=mode;
 await BabylonUnits.prototype._attachWeapons.call(fake, inst, { key, id: 1 });
+if(q.get('dbg')){ const g=fake._measureGrip.call(fake, inst, 'mixamorig:RightHand'); console.log('BONES', [...nodes.keys()].filter(n=>/RightHand/.test(n)).join(','), 'axis', g.axis.toString(), 'up', g.up.toString(), 'grip', g.grip.toString());
+ const h=nodes.get('mixamorig:RightHand'); const sp=nodes.get('mixamorig:Spine1'); h.computeWorldMatrix(true); const ax=BABYLON.Vector3.TransformNormal(g.axis,h.getWorldMatrix()).normalize(); console.log('world axis', ax.toString(), 'hand', h.getAbsolutePosition().toString(), 'spine', sp.getAbsolutePosition().toString()); }
 
 // cadrage serré sur la main droite (ou le personnage entier)
 const hand=nodes.get('mixamorig:RightHand');
