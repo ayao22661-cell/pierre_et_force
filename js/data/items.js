@@ -1,23 +1,42 @@
 // Objets, reliques et talents.
+// `slot` : où l'objet se porte sur le héros du joueur (voir game/gear.js).
+//   main  — tenu en main droite, remplace l'arme du personnage ;
+//   off   — main gauche / avant-bras (bouclier, kora, boussole) ;
+//   armor — armure : ses stats, et une aura de sa couleur autour du héros
+//           (les modèles ARMURE sont des figurines d'un seul bloc, sans
+//           squelette : elles ne peuvent pas se plier avec le corps).
+// `wear` : comment le modèle 3D se tient (mêmes champs que WEAPON_BY_KEY).
+const SWORD = (file, height, grip = 0.14) => ({ file, hand: 'RightHand', height, grip, roll: Math.PI / 2 });
+const GUN = (file, height) => ({ file, hand: 'RightHand', height, grip: 0.42, roll: 0 });
 export const ITEMS = [
-  {id:"lame",name:"Lame de Treichville",cost:350,tier:1,st:{atk:12},ico:"🗡"},
+  {id:"lame",name:"Lame de Treichville",cost:350,tier:1,st:{atk:12},ico:"🗡",slot:"main",wear:SWORD('EPEE1.glb', 1.2, 0.12)},
   {id:"gilet",name:"Gilet de Docker",cost:300,tier:1,st:{arm:15},ico:"🦺"},
   {id:"perle",name:"Perle de Cauri",cost:350,tier:1,st:{mana:150,ah:5},ico:"🐚"},
   {id:"ceinture",name:"Ceinture Kente",cost:400,tier:1,st:{hp:180},ico:"🎗"},
   {id:"gants",name:"Gants du Port",cost:300,tier:1,st:{as:0.12},ico:"🧤"},
   {id:"sandales",name:"Sandales d'Adjamé",cost:300,tier:1,st:{ms:25},ico:"👡"},
-  {id:"faucille",name:"Faucille Ancienne",cost:1100,tier:2,from:["lame","lame"],st:{atk:30,crit:0.12},ico:"⚔"},
-  {id:"bouclier",name:"Bouclier Baoulé",cost:1000,tier:2,from:["gilet","ceinture"],st:{arm:30,hp:250},ico:"🛡"},
-  {id:"baton",name:"Bâton du Griot",cost:1100,tier:2,from:["perle","lame"],st:{atk:22,mana:250,ah:10},ico:"🪄"},
+  {id:"pistolet",name:"Pistolet du Plateau",cost:400,tier:1,st:{atk:10,as:0.08},ico:"🔫",slot:"main",wear:GUN('PISTOLET1.glb', 0.36)},
+  {id:"boussole",name:"Boussole de Sam",cost:350,tier:1,st:{ms:15,ah:8},ico:"🧭",slot:"off",wear:{file:'BOUSSOLE.glb',hand:'LeftHand',height:0.24,grip:0.5,roll:0}},
+  {id:"faucille",name:"Faucille Ancienne",cost:1100,tier:2,from:["lame","lame"],st:{atk:30,crit:0.12},ico:"⚔",slot:"main",wear:SWORD('EPEE3.glb', 0.95)},
+  {id:"bouclier",name:"Bouclier Baoulé",cost:1000,tier:2,from:["gilet","ceinture"],st:{arm:30,hp:250},ico:"🛡",slot:"off",wear:{file:'BOUCLIER.glb',hand:'LeftForeArm',height:0.62,grip:0.5,roll:0,strap:true}},
+  {id:"baton",name:"Bâton du Griot",cost:1100,tier:2,from:["perle","lame"],st:{atk:22,mana:250,ah:10},ico:"🪄",slot:"main",wear:{file:'BATON_MAGIQUE.glb',hand:'RightHand',height:1.7,grip:0.42,roll:0}},
   {id:"bottes",name:"Bottes du Messager",cost:900,tier:2,from:["sandales"],st:{ms:45,ah:10},ico:"🥾"},
   {id:"arc",name:"Corde de Balafon",cost:1000,tier:2,from:["gants","gants"],st:{as:0.3,crit:0.1},ico:"🏹"},
   {id:"masque",name:"Masque Dan",cost:1000,tier:2,from:["ceinture","perle"],st:{hp:300,mana:200,regen:4},ico:"🎭"},
-  {id:"coupe",name:"Coupe-Coupe de l'Éveillé",cost:2900,tier:3,from:["faucille","arc"],st:{atk:60,as:0.35,crit:0.25,pen:0.12},ico:"🔱"},
-  {id:"rempart",name:"Rempart de Kong",cost:2800,tier:3,from:["bouclier","masque"],st:{arm:70,hp:650,regen:10},ico:"🏯"},
-  {id:"sceptre",name:"Sceptre de Kankou Moussa",cost:3000,tier:3,from:["baton","masque"],st:{atk:70,mana:500,ah:25,hp:200},ico:"👑"},
-  {id:"lamevide",name:"Lame du Vide",cost:3000,tier:3,from:["faucille","baton"],st:{atk:80,ah:15,crit:0.2,pen:0.3},ico:"🌑"},
+  {id:"lance",name:"Lance Sénoufo",cost:1050,tier:2,from:["lame","gants"],st:{atk:28,arm:10,pen:0.08},ico:"🔱",slot:"main",wear:{file:'LANCE.glb',hand:'RightHand',height:1.95,grip:0.38,roll:Math.PI/2}},
+  {id:"revolver",name:"Revolver de Bassam",cost:1050,tier:2,from:["pistolet","gants"],st:{atk:24,as:0.2,crit:0.08},ico:"🔫",slot:"main",wear:GUN('PISTOLET2.glb', 0.36)},
+  {id:"kora",name:"Kora du Griot",cost:950,tier:2,from:["perle","ceinture"],st:{hp:150,mana:250,regen:5},ico:"🪕",slot:"off",wear:{file:'HARPE.glb',hand:'LeftHand',height:0.7,grip:0.5,roll:0}},
+  {id:"armure_ombre",name:"Armure de l'Ombre",cost:1100,tier:2,from:["gilet","ceinture"],st:{arm:35,hp:200},ico:"🥷",slot:"armor",aura:"#8a5cff",prop:"ARMURE_1"},
+  {id:"armure_garde",name:"Armure du Gardien",cost:1150,tier:2,from:["gilet","gilet"],st:{arm:30,hp:320},ico:"🛡",slot:"armor",aura:"#5ab0ff",prop:"ARMURE_2"},
+  {id:"coupe",name:"Coupe-Coupe de l'Éveillé",cost:2900,tier:3,from:["faucille","arc"],st:{atk:60,as:0.35,crit:0.25,pen:0.12},ico:"🔱",slot:"main",wear:SWORD('EPEE.glb', 1.05)},
+  {id:"rempart",name:"Rempart de Kong",cost:2800,tier:3,from:["bouclier","masque"],st:{arm:70,hp:650,regen:10},ico:"🏯",slot:"off",wear:{file:'BOUCLIER.glb',hand:'LeftForeArm',height:0.7,grip:0.5,roll:0,strap:true}},
+  {id:"sceptre",name:"Sceptre de Kankou Moussa",cost:3000,tier:3,from:["baton","masque"],st:{atk:70,mana:500,ah:25,hp:200},ico:"👑",slot:"main",wear:{file:'BATON_MAGIQUE.glb',hand:'RightHand',height:1.85,grip:0.42,roll:0}},
+  {id:"lamevide",name:"Lame du Vide",cost:3000,tier:3,from:["faucille","baton"],st:{atk:80,ah:15,crit:0.2,pen:0.3},ico:"🌑",slot:"main",wear:SWORD('EPEE.glb', 1.1)},
   {id:"ailes",name:"Ailes du Harmattan",cost:2600,tier:3,from:["bottes","arc"],st:{ms:70,as:0.4,ah:15},ico:"🪽"},
-  {id:"coeur",name:"Cœur de Pierre",cost:3200,tier:3,from:["rempart","gilet"],st:{arm:100,hp:900,regen:15,thorns:0.25},ico:"💎"}
+  {id:"coeur",name:"Cœur de Pierre",cost:3200,tier:3,from:["rempart","gilet"],st:{arm:100,hp:900,regen:15,thorns:0.25},ico:"💎"},
+  {id:"canon",name:"Canon de Sgrün",cost:2800,tier:3,from:["revolver","arc"],st:{atk:55,as:0.35,crit:0.2},ico:"🔫",slot:"main",wear:GUN('PISTOLET3.glb', 0.42)},
+  {id:"exo",name:"Exo-armure de Sgrün",cost:2900,tier:3,from:["armure_garde","bottes"],st:{arm:80,hp:500,as:0.1,ms:15},ico:"🤖",slot:"armor",aura:"#ff8a3d",prop:"ARMURE3"},
+  {id:"armure_or",name:"Armure de Kankou",cost:3000,tier:3,from:["armure_ombre","masque"],st:{arm:60,hp:700,regen:8},ico:"👑",slot:"armor",aura:"#f0c35a",prop:"ARMURE4"}
 ];
 export const TALENT_TREES = [
   {id:"eveil",name:"Pierre de l'Éveil",color:"#39FF7A",nodes:[

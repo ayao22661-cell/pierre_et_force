@@ -13,6 +13,9 @@
 //                qui a le plus de PV en proportion remporte la manche.
 // ============================================================
 
+import { CAMPAIGN } from './campaign.js';
+import { CHAMPS } from './champions.js';
+
 export const DUELS = [
   {
     id: 'c_baba', num: 'C1', name: 'Baba Tunde', mode: 'COMBAT', req: 0,
@@ -139,4 +142,33 @@ export const DUELS = [
 /** Duels accessibles selon l'avancement en campagne. */
 export function duelsAvailable(missionsDoneCount){
   return DUELS.filter(d => missionsDoneCount >= d.req);
+}
+
+// ── Combat libre ─────────────────────────────────────────────
+// On choisit son personnage (parmi les héros débloqués) et l'adversaire
+// de l'IA (parmi ceux déjà affrontés, en campagne ou en duel). Pas de
+// progression à débloquer : c'est un terrain d'entraînement, les
+// récompenses restent donc modestes.
+
+export const FREE_DUEL = {
+  id: 'c_libre', num: 'C★', name: 'Combat libre', mode: 'COMBAT', req: 0, free: true,
+  opponent: 'BABA', foeMult: 1.0, roundsToWin: 2, roundTime: 60,
+  desc: "Ton personnage, ton adversaire.",
+  brief: "Choisis avec qui tu te bats et contre qui. Deux rounds gagnants, rien d'autre en jeu que le combat.",
+  ennemis: ['BABA'], ennemis_extra: 0, allies_dispo: [],
+  xp: 20, cauris: 25,
+};
+
+/** Adversaires déjà rencontrés : ennemis des missions et duels gagnés. */
+export function opponentsFaced(save){
+  const seen = new Set();
+  const done = new Set(save.missions_done || []);
+  for(const acte of CAMPAIGN) for(const m of acte.missions){
+    if(done.has(m.id)) for(const k of (m.ennemis || [])) seen.add(k);
+  }
+  const defis = new Set(save.defis_done || []);
+  for(const d of DUELS) if(defis.has(d.id)) seen.add(d.opponent);
+  // Baba est le premier adversaire du jeu : toujours proposé.
+  seen.add('BABA');
+  return [...seen].filter(k => CHAMPS[k]);
 }

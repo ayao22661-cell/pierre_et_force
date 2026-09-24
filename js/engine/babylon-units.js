@@ -803,6 +803,43 @@ export class BabylonUnits{
    * à chaque frame.
    */
   /**
+   * Armes du personnage, remplacées par l'équipement acheté du joueur :
+   * une arme achetée prend la main droite, un bouclier / une kora / une
+   * boussole la main gauche (ou l'avant-bras).
+   */
+  _weaponList(unit){
+    let list = (WEAPON_BY_KEY[unit.key] || []).slice();
+    const g = unit.gear;
+    if(g?.main?.wear){
+      list = list.filter(w => w.hand !== 'RightHand');
+      list.push(g.main.wear);
+    }
+    if(g?.off?.wear){
+      list = list.filter(w => w.hand !== 'LeftHand' && w.hand !== 'LeftForeArm');
+      list.push(g.off.wear);
+    }
+    return list;
+  }
+
+  /**
+   * Armure achetée : une aura de sa couleur autour du héros. Les modèles
+   * d'armure sont des figurines d'un seul bloc, sans squelette ; posées
+   * sur le corps, elles resteraient figées pendant que le héros bouge.
+   */
+  _armorAura(inst, color){
+    if(!color || inst.disposed) return;
+    if(!this._auraLayer){
+      this._auraLayer = new BABYLON.HighlightLayer('armorAura', this.scene, { blurHorizontalSize: 0.9, blurVerticalSize: 0.9 });
+      this._auraLayer.innerGlow = false;
+    }
+    const c = BABYLON.Color3.FromHexString(color);
+    for(const m of inst.pivot.getChildMeshes(false)){
+      if(m.getTotalVertices && m.getTotalVertices() > 0) this._auraLayer.addMesh(m, c);
+    }
+    inst.aura = true;
+  }
+
+  /**
    * Bouclier sanglé : le bras passe DERRIÈRE lui, pas au travers. Centré
    * sur l'os, il était traversé de part en part par l'avant-bras. On le
    * construit directement dans le repère de l'avant-bras :
@@ -1048,7 +1085,8 @@ export class BabylonUnits{
    * tranchant. Plus aucune constante devinée à l'œil.
    */
   async _attachWeapons(inst, unit){
-    const list = WEAPON_BY_KEY[unit.key];
+    const list = this._weaponList(unit);
+    if(unit.gear?.armor) this._armorAura(inst, unit.gear.armor.aura);
     if(!list || !list.length) return;
     for(const w of list){
       const boneName = 'mixamorig:' + w.hand;

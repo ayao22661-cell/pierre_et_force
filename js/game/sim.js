@@ -14,6 +14,7 @@ import { CHAMPS } from '../data/champions.js';
 import { Fighter, MOVES } from './duel.js';
 import { tryCastAbility } from './abilities.js';
 import { computeBonuses } from './bonuses.js';
+import { gearFor } from './gear.js';
 
 let UID = 1;
 
@@ -75,6 +76,8 @@ export function makeChampionUnit(key, team, opts = {}){
     ranged: !!d.ranged, fx: d.fx, proj: d.proj || d.fx,
     role: d.role,
     isPlayer: !!opts.isPlayer, isAlly: !!opts.isAlly,
+    // Ce que le héros du joueur porte de visible (armes, bouclier, armure).
+    gear: (opts.isPlayer && opts.save) ? gearFor(opts.save) : null,
     atkCd: 0, dead: false, target: null, goal: opts.goal || null,
     path: opts.path || null, wp: opts.wp ?? 0,
     cds: [0,0,0,0], shield: 0, tempArm: 0, tempArmUntil: 0,

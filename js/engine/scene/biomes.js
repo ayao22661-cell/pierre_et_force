@@ -204,6 +204,7 @@ const abidjan = {
     return { base, layers, edgeDark: 0.4, tint: v.night ? { color: '#2a3a6a', alpha: 0.25 } : null };
   },
   compose(c, S, v){
+    placeDecor(c, [['DECOR2.glb', 3, 1.0]]);
     const setting = v.setting;
     const houses = [0, 1, 2, 3].map(i => S(`house${i}`, () => K.house(c.scene, { seed: 300 + i })));
     const wall = S('cwall', () => K.compoundWall(c.scene, { len: 4 }));
@@ -388,6 +389,7 @@ const banco = {
     };
   },
   compose(c, S){
+    placeDecor(c, [['DECOR1.glb', 3, 1.3], ['DECOR2.glb', 4, 1.1]]);
     const trees = [0, 1, 2].map(i => S('jungle' + i, () => N.broadleafTree(c.scene, { seed: 70 + i, key: 'jungle', leaves: PAL.jungle, h: 2.8 + i * 0.4, crown: 1.9 + i * 0.2, clumps: 6, r0: 0.28 })));
     const small = S('jungleS', () => N.broadleafTree(c.scene, { seed: 74, key: 'jungle', leaves: PAL.jungle, h: 1.8, crown: 1.2, clumps: 4 }));
     const palm = S('oilpalm', () => N.palmTree(c.scene, { seed: 75, h: 3.0, lean: 0.3, fronds: 12 }));
@@ -447,6 +449,7 @@ const essence = {
   },
   compose(c, S, v){
     if(v.variant === 'feu') return volcanoCompose(c, S);
+    placeDecor(c, [['DECOR4.glb', 2, 1.1], ['DECOR1.glb', 2, 1.2]]);
     const tree = [0, 1].map(i => S('spirit' + i, () => N.broadleafTree(c.scene, { seed: 90 + i, key: 'spirit', leaves: PAL.mystic, bark: { ramp: [[0, '#8a9aa8'], [0.5, '#c8d4dc'], [1, '#eef4f8']] }, h: 2.6, crown: 1.6, flat: 0.7 })));
     const cr = [S('crysA', () => N.crystals(c.scene, { seed: 92, color: '#7fe0ff', glow: '#1a5a7a', key: 'a', h: 1.6 })), S('crysB', () => N.crystals(c.scene, { seed: 93, color: '#c8a0ff', glow: '#3a1a6a', key: 'b', h: 1.2 }))];
     const col = [S('colM', () => K.pillar(c.scene, { tile: 'marble', h: 3.2 })), S('colMb', () => K.pillar(c.scene, { tile: 'marble', h: 3.2, broken: true, seed: 94 }))];
@@ -536,6 +539,7 @@ const born = {
     };
   },
   compose(c, S){
+    placeDecor(c, [['DECOR1.glb', 3, 1.3]]);
     const mono = [S('mono', () => K.pillar(c.scene, { tile: 'basalt', h: 4.2 })), S('monoB', () => K.pillar(c.scene, { tile: 'basalt', broken: true, seed: 110 }))];
     const dead = [0, 1].map(i => S('bdead' + i, () => N.deadTree(c.scene, { seed: 111 + i, key: 'b' })));
     const rockT = [0, 1].map(i => S('brock' + i, () => N.rock(c.scene, { seed: 113 + i, key: 'brock', r: 0.8 + i * 0.5, tile: { ramp: [[0, '#3a3834'], [0.5, '#5a5650'], [1, '#7a766e']] }, top: '#8a8a70', topK: 0.4 })));
@@ -582,7 +586,8 @@ const polar = {
     c.scatter(pyl, 3, Z.and(Z.fieldTop, Z.nearLane(2, 6)), { fixed: true });
     // La base de Sgrün : un vaisseau posé sur la neige et ses sentinelles.
     c.scatterModel('AVION.glb', 2, Z.top(9), { height: 2.4, r: 3.6, fixed: true, shadow: 0.6 });
-    for(const f of ['ARMURE_2.glb', 'ARMURE3.glb']) c.scatterModel(f, 2, Z.and(Z.top(7), Z.field), { height: 2.3, r: 0.8, fixed: true });
+    // Près de la voie, dans le champ de la caméra (au-delà du bord haut, on ne les voyait pas).
+    for(const f of ['ARMURE_2.glb', 'ARMURE3.glb']) c.scatterModel(f, 2, Z.and(Z.field, Z.nearLane(1.5, 7)), { height: 2.3, r: 0.8, fixed: true });
   },
 };
 
@@ -604,6 +609,7 @@ const sahel = {
     };
   },
   compose(c, S, v){
+    placeDecor(c, [['DECOR3.glb', 2, 0.75], ['DECOR4.glb', 1, 1.1]]);
     const dj = [0, 1].map(i => S('djenne' + i, () => K.djenne(c.scene, { seed: 130 + i, w: 4 + i * 1.2 })));
     const ruin = [S('ruin', () => K.ruinWall(c.scene, { seed: 132 })), S('ruin2', () => K.ruinWall(c.scene, { seed: 133, len: 3 }))];
     const stoneWall = S('kongWall', () => K.ruinWall(c.scene, { seed: 134, stone: true, len: 4.5, h: 2.8 }));
@@ -661,6 +667,7 @@ const canyon = {
     };
   },
   compose(c, S, v){
+    placeDecor(c, [['DECOR1.glb', 3, 1.4], ['DECOR3.glb', 1, 0.75]]);
     const cliffs = [0, 1, 2].map(i => S('cliff' + i + v.variant, () => N.cliff(c.scene, { seed: 140 + i, key: v.variant === 'cave' ? 'cave' : 'band', h: 3 + i * 0.8, r: 1.6 + i * 0.4,
       pal: v.variant === 'cave' ? { bands: ['#2a2018', '#3a2c22', '#4a3a2c', '#201810'] } : null, top: v.variant === 'cave' ? '#3a2c22' : '#c08850' })));
     const boulder = [0, 1].map(i => S('boulder' + i + v.variant, () => N.rock(c.scene, { seed: 143 + i, key: 'b' + v.variant, r: 0.7 + i * 0.5,
@@ -763,7 +770,7 @@ const voidB = {
       c.put(R.pick(shard), x, z, { y: 2 + R() * 3, s: 0.4 + R() * 0.5, solid: false, shadow: false });
     }
     c.scatterModel('BOUSSOLE.glb', 4, Z.and(Z.field, Z.nearLane(2, 99)), { height: 1.8, r: 1.0, y: null });
-    c.scatterModel('ARMURE3.glb', 3, Z.top(8), { height: 2.4, r: 0.9 });
+    c.scatterModel('ARMURE3.glb', 3, Z.and(Z.field, Z.nearLane(1.5, 7)), { height: 2.4, r: 0.9, fixed: true });
     floatingMotes(c, S, '#c8a8ff');
   },
 };
@@ -841,6 +848,7 @@ const tower = {
     };
   },
   compose(c, S){
+    placeDecor(c, [['DECOR3.glb', 2, 0.75]]);
     const deskT = S('desk', () => K.desk(c.scene, {}));
     const col = S('cCol', () => K.pillar(c.scene, { h: 3.4 }));
     const plant = S('officePlant', () => N.bush(c.scene, { seed: 180, key: 'plant', leaves: PAL.mango, r: 0.45 }));
@@ -851,5 +859,19 @@ const tower = {
     for(const f of ['ARMURE_1.glb', 'ARMURE4.glb']) c.scatterModel(f, 3, Z.and(Z.field, Z.nearLane(2, 99)), { height: 2.2, r: 0.8 });
   },
 };
+
+/**
+ * Modèles de décor (assets/props/DECOR*.glb) : rocher moussu, buisson,
+ * coffre, chaudron à flamme bleue. Posés PRÈS DE LA VOIE, là où la caméra
+ * regarde : en lisière ils finissaient hors champ ou derrière les maisons.
+ * @param {Array} list  [[fichier, nombre, hauteur en m]]
+ */
+function placeDecor(c, list){
+  // Mode Combat : pas de voie, l'arène entière est le champ de la caméra.
+  const where = c.path ? Z.and(Z.field, Z.nearLane(1.2, 6)) : Z.field;
+  for(const [file, n, h] of list){
+    c.scatterModel(file, n, where, { height: h, r: h * 0.55, fixed: true, shadow: 0.5 });
+  }
+}
 
 export const BIOMES = { abidjan, banco, essence, born, polar, sahel, canyon, abyss, void: voidB, sgrun, tower };

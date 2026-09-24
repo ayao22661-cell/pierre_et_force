@@ -78,6 +78,10 @@
   line-height:1;
 }
 .champ-tile.selected .champ-tile-name{ color:var(--pf-text); }
+/* Combat libre : l'adversaire choisi est cerclé de rouge, quelle que
+   soit sa couleur propre. */
+.champ-tile.foe.selected .champ-tile-img{ border-color:var(--pf-danger); box-shadow:0 0 14px rgba(214,69,63,.55); }
+.champ-tile.foe.selected .champ-tile-name{ color:var(--pf-danger); }
 
 /* ══════════════════════════════════════════════════════════════
    HERO BANNER — grand portrait dans l'écran de déploiement
