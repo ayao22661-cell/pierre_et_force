@@ -91,12 +91,12 @@ export const WEAPON_BY_KEY = {
     { file: 'BOUCLIER.glb',  hand: 'LeftForeArm', height: 0.62, grip: 0.5,  roll: Math.PI / 2, strap: true },
   ],
   FULGENCE: [
-    { file: 'EPEE1.glb',     hand: 'RightHand',   height: 1.55, grip: 0.12, axis: 'fingers', flip: true, roll: 0 },
+    { file: 'EPEE1.glb',     hand: 'RightHand',   height: 1.55, grip: 0.12, axis: 'fingers', roll: 0 },
   ],
-  // Baba Tunde se bat aux poings : son pistolet reste à la ceinture.
-  BABA: [
-    { file: 'PISTOLET2.glb', hand: 'LeftUpLeg',   height: 0.30, grip: 0.5,  roll: 0, offset: [0.08, 0.14, 0.06] },
-  ],
+  // Baba Tunde se bat aux poings, et rien d'autre. L'étui à la ceinture a
+  // été retiré : accroché à l'os de la cuisse, il flottait à côté de lui
+  // (le repère d'un os de jambe n'a pas la même échelle qu'une main).
+  BABA: [],
   LUNDGREN: [
     { file: 'BATON_MAGIQUE.glb', hand: 'RightHand', height: 1.70, grip: 0.42, axis: 'fingers', roll: 0 },
     { file: 'HARPE.glb',     hand: 'LeftHand',    height: 0.70, grip: 0.5, axis: 'fingers',  roll: 0 },
@@ -118,7 +118,7 @@ export const WEAPON_BY_KEY = {
   OUSMANE:  [{ file: 'PISTOLET1.glb', hand: 'RightHand', height: 0.38, grip: 0.42, roll: 0 }],
   SCHISSIN: [{ file: 'PISTOLET3.glb', hand: 'RightHand', height: 0.40, grip: 0.42, roll: 0 }],
   SUB:      [{ file: 'EPEE3.glb',     hand: 'RightHand', height: 0.95, grip: 0.14, axis: 'fingers', roll: 0 }],
-  GROB:     [{ file: 'EPEE1.glb',     hand: 'RightHand', height: 1.60, grip: 0.12, axis: 'fingers', flip: true, roll: 0 }],
+  GROB:     [{ file: 'EPEE1.glb',     hand: 'RightHand', height: 1.60, grip: 0.12, axis: 'fingers', roll: 0 }],
   KRAG:     [{ file: 'LANCE.glb',     hand: 'RightHand', height: 2.10, grip: 0.38, axis: 'fingers', roll: 0 }],
   VAEL:     [{ file: 'EPEE.glb',      hand: 'RightHand', height: 1.00, grip: 0.14, axis: 'fingers', roll: 0 }],
   SGRUN: [
@@ -708,6 +708,39 @@ export class BabylonUnits{
    * à chaque frame.
    */
   /**
+   * Repère le côté « manche » d'une arme : celui dont la section est la
+   * plus fine. Renvoie true si le manche se trouve du côté du minimum de
+   * l'axe long, false sinon.
+   */
+  _handleSide(model, axis, mn, mx){
+    const i0 = axis === 'x' ? 0 : axis === 'y' ? 1 : 2;
+    const a1 = (i0 + 1) % 3, a2 = (i0 + 2) % 3;
+    const lo = [mn.x, mn.y, mn.z][i0], hi = [mx.x, mx.y, mx.z][i0];
+    const span = Math.max(hi - lo, 1e-6);
+    const cen = [(mn.x + mx.x) / 2, (mn.y + mx.y) / 2, (mn.z + mx.z) / 2];
+    let sumLo = 0, nLo = 0, sumHi = 0, nHi = 0;
+    for(const m of model.getChildMeshes().concat([model])){
+      if(!m.getTotalVertices || !m.getTotalVertices()) continue;
+      const pos = m.getVerticesData('position');
+      if(!pos) continue;
+      m.computeWorldMatrix(true);
+      const wm = m.getWorldMatrix();
+      const v = new BABYLON.Vector3();
+      const step = Math.max(1, Math.floor(pos.length / 3 / 600));   // échantillon
+      for(let i = 0; i < pos.length / 3; i += step){
+        BABYLON.Vector3.TransformCoordinatesFromFloatsToRef(pos[i * 3], pos[i * 3 + 1], pos[i * 3 + 2], wm, v);
+        const c = [v.x, v.y, v.z];
+        const t = (c[i0] - lo) / span;
+        const r = Math.hypot(c[a1] - cen[a1], c[a2] - cen[a2]);
+        if(t < 0.22){ sumLo += r; nLo++; }
+        else if(t > 0.78){ sumHi += r; nHi++; }
+      }
+    }
+    if(!nLo || !nHi) return true;
+    return (sumLo / nLo) <= (sumHi / nHi);
+  }
+
+  /**
    * Mesure la PRISE d'une main sur le squelette : le centre du poing et
    * l'axe du manche. Avant, chaque arme était calée à l'œil avec trois
    * rotations et un décalage ; elles finissaient collées à côté du poing
@@ -812,6 +845,13 @@ export class BabylonUnits{
       const length = Math.max(size.x, size.y, size.z, 0.01);
       const k = (w.height || 0.6) / length;
 
+      // 1 bis. QUEL BOUT EST LE MANCHE ? On ne le devine pas : on mesure.
+      // Le modèle est découpé en tranches le long de son axe ; pour chaque
+      // tranche on calcule l'épaisseur moyenne autour de l'axe. Le manche
+      // est le bout le plus fin, la lame (ou le canon) le plus large.
+      // Sans ça, la moitié des armes se retrouvaient tenues par la pointe.
+      const handleAtMin = this._handleSide(model, longAxis, mn, mx);
+
       // 2. Redressement. Le modèle garde SA propre transformation (certains
       //    .glb portent une conversion d'axes dans leur nœud racine : la
       //    remplacer envoyait l'arme à un mètre de la main). On l'enveloppe
@@ -826,7 +866,10 @@ export class BabylonUnits{
       inner.scaling.setAll(k);
       if(longAxis === 'x') inner.rotation.z = -Math.PI / 2;
       else if(longAxis === 'z') inner.rotation.x = Math.PI / 2;
-      if(w.flip) inner.rotation.z += Math.PI;   // pommeau et pointe inversés
+      // Après redressement, l'axe long est sur +Y. On retourne l'arme si son
+      // manche se retrouve en haut : la main doit tenir le manche, pas la lame.
+      const upIsHandle = (longAxis === 'x') ? !handleAtMin : handleAtMin;
+      if(upIsHandle !== !!w.flip) inner.rotation.z += Math.PI;
       const h = w.height || 0.6;
       straight.position.y = (0.5 - (w.grip ?? 0.5)) * h;
 

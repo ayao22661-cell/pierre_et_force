@@ -45,6 +45,7 @@ export class Match{
 
     this.fx = new EffectsLayer(renderer.layers);
 
+    this._pendingObstacles = this.terrain?.obstacles || null;
     this.sim = new Sim({
       ...cfg, path: layout.path, w: layout.w, h: layout.h,
       onEvent: (e) => this._onSimEvent(e),
@@ -90,6 +91,9 @@ export class Match{
       });
     }
     renderer.setFocusImmediate(this.sim.player.x, this.sim.player.y);
+    // Le décor devient solide : sans cette ligne, tout le monde traversait
+    // arbres, murs et maisons.
+    if(this._pendingObstacles) this.sim.setObstacles(this._pendingObstacles);
     this._tickFn = (dt) => this._tick(dt);
     renderer.addFrameListener(this._tickFn);
     this._running = true;

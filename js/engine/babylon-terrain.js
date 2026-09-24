@@ -89,6 +89,16 @@ export class BabylonTerrain{
     const baked = this._bake(composer.shadows);
     this._buildGround(baked);
     composer.commit(this.root);
+
+    // Obstacles solides : arbres, maisons, rochers, murs… Le compositeur
+    // sait déjà où il les a posés et avec quelle emprise au sol ; on les
+    // publie en coordonnées Pixi pour que la simulation empêche de les
+    // traverser. Les herbes et les décalcomanies n'en font pas partie
+    // (elles sont posées avec `solid: false`).
+    this.obstacles = composer.placed
+      .filter(o => o.r >= 0.45)
+      .map(o => ({ x: o.x * WORLD_SCALE, y: -o.z * WORLD_SCALE, r: o.r * WORLD_SCALE * 0.82 }));
+
     this._light();
     if(this.theme.mode === 'duel') this._sky();   // invisible en vue plongeante, et il masquait la carte
     // Modèles 3D réels (sentinelles de Sgrün, vaisseau, artefacts) : chargés

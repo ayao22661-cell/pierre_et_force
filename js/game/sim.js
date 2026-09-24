@@ -324,6 +324,39 @@ export class Sim{
     this._pendingReset = 1.6;   // laisse voir la chute avant de replacer
   }
 
+  /**
+   * Décor solide. Le terrain fournit la liste (arbres, maisons, rochers) ;
+   * tant qu'elle n'était pas transmise, tout le monde traversait le décor.
+   */
+  setObstacles(list){ this.obstacles = list || []; }
+
+  /**
+   * Repousse les unités hors des obstacles. Appliqué après tous les
+   * déplacements de la frame, pour que ni l'IA ni le joueur ne puissent
+   * finir à l'intérieur d'un tronc ou d'un mur.
+   */
+  _resolveObstacles(){
+    const obs = this.obstacles;
+    if(!obs || !obs.length) return;
+    for(const u of this.units){
+      if(u.dead || u.kind === 'structure' || u.flying) continue;
+      const ur = u.r || 20;
+      for(const o of obs){
+        const dx = u.x - o.x, dy = u.y - o.y;
+        const min = o.r + ur;
+        const d2 = dx * dx + dy * dy;
+        if(d2 >= min * min) continue;
+        // Pile au centre (téléportation, ruée) : on choisit une direction
+        // plutôt que de laisser l'unité coincée à l'intérieur.
+        const d = Math.sqrt(d2);
+        const nx = d > 1e-4 ? dx / d : 1, ny = d > 1e-4 ? dy / d : 0;
+        const push = min - d;
+        u.x += nx * push;
+        u.y += ny * push;
+      }
+    }
+  }
+
   /** Le combattant attaché à une unité (null hors duel). */
   fighterOf(unit){ return (this.fighters || []).find(f => f.u === unit) || null; }
 
@@ -482,6 +515,7 @@ export class Sim{
     else this._tickArena(dt);
     // Après TOUS les déplacements (les sbires avancent dans le tick du mode).
     this._separate(dt);
+    this._resolveObstacles();
 
     // Nettoyage des unités temporaires (invocations expirées).
     for(const u of this.units){
