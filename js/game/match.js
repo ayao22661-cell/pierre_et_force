@@ -7,6 +7,7 @@ import { BabylonTerrain } from '../engine/babylon-terrain.js';
 import { UnitView } from '../engine/unit-view.js';
 import { EffectsLayer } from '../engine/effects.js';
 import { CHAMPS } from '../data/champions.js';
+import { MOVES } from './duel.js';
 
 const THEME_DEFAULT = { g1:'#3a2c1e', g2:'#463524', lane:'#6a5138', acc:'#c9a24a', wall:'#1c140c' };
 
@@ -115,6 +116,16 @@ export class Match{
   castSlot(slot){ this.sim.requestCast(this.sim.player, slot); }
   /** Coup de base du joueur (bouton du HUD, touche Espace). */
   basicAttack(){ this.sim.requestBasicAttack(); }
+
+  /** Tirage sans répéter deux fois de suite le même clip (par unité). */
+  _fightPick(id, key, n){
+    const m = this._lastPick || (this._lastPick = new Map());
+    const k = id + key;
+    let i = Math.floor(Math.random() * n);
+    if(n > 1 && i === m.get(k)) i = (i + 1) % n;
+    m.set(k, i);
+    return i;
+  }
 
   _onSimEvent(e){
     switch(e.type){
@@ -234,11 +245,22 @@ export class Match{
           case 'strike': {
             // Coup n° e.step de l'enchaînement : un clip différent à chaque
             // étape, joué dans la durée exacte du coup (élan + phase active).
+            // Le clip couvre tout le coup (élan + phase active + retour) :
+            // compressé dans la seule phase active, il passait trop vite
+            // pour qu'on voie partir le poing.
             const heavy = e.move === 'heavy';
-            u3.playFight(id, 'attack', heavy ? 1 + e.step : e.step, { dur: heavy ? 0.33 : 0.26 });
+            const mv = MOVES[heavy ? 'heavy' : 'light'];
+            u3.playFight(id, 'attack', heavy ? this._fightPick(id, 'h', 3) : e.step,
+              { dur: mv.startup + mv.active + mv.recover + 0.08, set: heavy ? 'punchHeavy' : 'punchLight' });
             break;
           }
-          case 'hurt':      u3.playFight(id, 'hit', Math.floor(Math.random() * 3), { dur: 0.42 }); break;
+          case 'hurt': {
+            // Réaction à la tête ou au corps, plus forte sur un coup lourd.
+            const heavy = e.move === 'heavy';
+            u3.playFight(id, 'hit', this._fightPick(id, heavy ? 'H' : 'L', heavy ? 4 : 9),
+              { dur: heavy ? 0.62 : 0.46, set: heavy ? 'hitHeavy' : 'hitLight' });
+            break;
+          }
           case 'knockdown': u3.playFight(id, 'death', Math.floor(Math.random() * 2), { dur: 0.9, hold: true }); break;
           case 'getup':     u3.releaseFight(id); break;
           case 'block-on':  u3.playFight(id, 'block', 0, { dur: 0.5, hold: true }); break;
