@@ -7,6 +7,7 @@ import { CHAMPS, PLAYABLE } from '../data/champions.js';
 import { portraitFor, castEntry } from '../engine/portraits.js';
 import { icon, iconSvg, iconForRole } from './icons.js';
 import { el } from './screens.js';
+import { opponentsFaced, DUELS } from '../data/combat.js';
 
 const MODE_MAP = { 'SIÈGE': 'siege', 'ARÈNE': 'arena', 'DÉFENSE': 'defense', 'BOSS': 'boss', 'COMBAT': 'duel' };
 
@@ -20,6 +21,11 @@ export function renderDeploy(mission, modeLabel, save, onLaunch){
   brief.onclick = () => brief.classList.toggle('open');
 
   const state = { champ: save.lastChamp && CHAMPS[save.lastChamp] ? save.lastChamp : 'TARINE', allies: [] };
+  // Combat libre : la rangée des alliés devient celle de l'adversaire.
+  const free = !!mission.free;
+  const foePool = free ? opponentsFaced(save) : [];
+  if(free) state.foe = foePool.includes(save.lastFoe) ? save.lastFoe : foePool[0];
+  document.getElementById('deploy-allies-title').textContent = free ? 'TON ADVERSAIRE' : 'ALLIÉ (1 max)';
 
   // Champions jouables par le joueur lui-même : tous les débloqués.
   const playerPool = PLAYABLE.filter(k => save.allies_unlocked.includes(k) || k === 'TARINE');
@@ -37,6 +43,7 @@ export function renderDeploy(mission, modeLabel, save, onLaunch){
   const preview = document.getElementById('deploy-team-preview');
 
   function updatePreview(){
+    if(free){ preview.textContent = `${CHAMPS[state.champ].name} contre ${CHAMPS[state.foe].name}`; return; }
     const names = [state.champ, ...state.allies].map(k => CHAMPS[k].name);
     preview.textContent = 'Équipe : ' + names.join(', ');
   }
@@ -111,6 +118,18 @@ export function renderDeploy(mission, modeLabel, save, onLaunch){
   // ── Sélecteur des alliés (jusqu'à 2) : rangée de tuiles ──
   function renderAllyGrid(){
     allyGrid.innerHTML = '';
+    if(free){
+      foePool.forEach(k => {
+        const tile = championTile(k, k === state.foe, () => {
+          state.foe = k;
+          renderAllyGrid();
+          updatePreview();
+        });
+        tile.classList.add('foe');
+        allyGrid.appendChild(tile);
+      });
+      return;
+    }
     allyPool.filter(k => k !== state.champ).forEach(k => {
       const tile = championTile(k, state.allies.includes(k), () => {
         const idx = state.allies.indexOf(k);
@@ -133,15 +152,21 @@ export function renderDeploy(mission, modeLabel, save, onLaunch){
     // 3 dès la mission 1) avec 85 % des stats de base. Désormais 1 à 3 champions,
     // et des stats qui montent doucement avec la mission (≈ 40 % au début, 80 % à la fin).
     const foeCount = Math.min(3, 1 + Math.floor((mission.ennemis_extra || 0) / 3));
+    // Combat libre : le décor est celui du duel de l'adversaire choisi.
+    let missionId = mission.id;
+    if(free){
+      save.lastFoe = state.foe;
+      missionId = DUELS.find(d => d.opponent === state.foe)?.id || 'c_baba';
+    }
     onLaunch({
       mode: MODE_MAP[modeLabel] || 'siege',
       // Identifiant de la mission : il choisit le décor (engine/scene/scene-map.js)
       // et la graine du terrain. Sans lui, toutes les missions se déroulaient
       // dans le même lieu par défaut.
-      missionId: mission.id,
+      missionId,
       champ: state.champ,
-      allies: state.allies.slice(),
-      foes: mission.ennemis || ['BABA'],
+      allies: free ? [] : state.allies.slice(),
+      foes: free ? [state.foe] : (mission.ennemis || ['BABA']),
       foeCount,
       // Arène, sans respawn : l'objectif de victoire (killGoal) ne peut plus
       // dépasser le nombre de champions posés au départ (foeCount), sinon la

@@ -7,7 +7,7 @@ import { CAST } from '../data/cast.js';
 import { portraitFor, champKeyFor } from '../engine/portraits.js';
 import { icon, iconSvg, iconForAbility, iconForMode } from './icons.js';
 import { DEFIS, defisAvailable } from '../data/defis.js';
-import { DUELS, duelsAvailable } from '../data/combat.js';
+import { DUELS, duelsAvailable, FREE_DUEL } from '../data/combat.js';
 import { isDefiDone } from '../game/state.js';
 import { isMissionDone, isMissionAvailable, writeSave, spellRank, maxSpellRank, spellPointsLeft, spendSpellPoint } from '../game/state.js';
 import { renderShop, renderEveil, ensureShopSave } from './shop.js';
@@ -184,6 +184,20 @@ function buildDuels(save, onSelectMission, host){
   head.appendChild(el('span', 'acte-roman', iconSvg('fist')));
   head.appendChild(el('span', 'acte-name', 'duels en rounds gagnants, un contre un'));
   host.appendChild(head);
+
+  // Combat libre : son personnage, son adversaire.
+  const freeHead = el('div', 'acte-head');
+  freeHead.appendChild(el('span', 'acte-roman', iconSvg('user')));
+  freeHead.appendChild(el('span', 'acte-name', 'combat libre, ton personnage contre l\'adversaire de ton choix'));
+  const freeCard = missionCard({ num: '★', name: FREE_DUEL.name, mode: 'COMBAT', state: 'next', art: artForActe(4), slice: 1, total: 3 });
+  freeCard.classList.add('mcard-free');
+  freeCard.addEventListener('click', () => onSelectMission({ ...FREE_DUEL, isDefi: true }, 'COMBAT'));
+  const freeGrid = el('div', 'mcard-grid');
+  freeGrid.appendChild(freeCard);
+  // En tête de l'onglet : c'est l'entrée qu'on rejoue le plus.
+  host.insertBefore(freeGrid, head);
+  host.insertBefore(freeHead, freeGrid);
+
   const grid = el('div', 'mcard-grid');
   DUELS.forEach((d, i) => {
     const avail = open.includes(d);
