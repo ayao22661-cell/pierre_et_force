@@ -11,7 +11,7 @@ export const STORY_CODE = { narration_debut: 'nd', narration_fin: 'nf', narr_ava
 /** Nom affiché des personnages sans fiche dans le Codex. */
 export const VOICE_NAMES = { PNJ_H: 'Le prêteur', PNJ_F: 'La doyenne', PNJ_VIEUX: "L'Ancien", KEITA: 'Général Keïta', DARK: "L'Ombre", KANKOU: 'Kankou Moussa' };
 
-/** Réplique -> personnage qui la dit (46 répliques). */
+/** Réplique -> personnage qui la dit (71 répliques). */
 export const RECIT_VOICES = {
   "m1_av_2":"BABA_TUNDE",
   "m1_vi_2":"BABA_TUNDE",
@@ -58,7 +58,32 @@ export const RECIT_VOICES = {
   "m6_de_4":"LUNDGREN",
   "m108_av_1":"PNJ_VIEUX",
   "m108_vi_1":"SAM",
-  "m108_de_1":"SAM"
+  "m108_de_1":"SAM",
+  "m7_vi_2":"YOURI",
+  "m7_vi_3":"TARINE",
+  "m109_vi_1":"SAM",
+  "m110_av_1":"SAM",
+  "m110_vi_1":"SAM",
+  "m8_av_1":"YOURI",
+  "m8_av_2":"TARINE",
+  "m8_av_3":"YOURI",
+  "m8_av_5":"YOURI",
+  "m8_vi_3":"TARINE",
+  "m8_vi_4":"LUNDGREN",
+  "m8_de_1":"YOURI",
+  "m8_de_2":"TARINE",
+  "m8_de_3":"YOURI",
+  "m8_de_4":"TARINE",
+  "m111_av_1":"KAREN",
+  "m9_vi_4":"LUNDGREN",
+  "m9_vi_5":"LUNDGREN",
+  "m9_de_2":"LUNDGREN",
+  "m9_de_3":"TARINE",
+  "m9_de_4":"LUNDGREN",
+  "m9_de_5":"TARINE",
+  "m112_av_1":"SAM",
+  "m112_de_1":"SAM",
+  "acte4_nd_3":"SAM"
 };
 
 /** Cris de combat disponibles par champion : debut, ultime, victoire, defaite. */
