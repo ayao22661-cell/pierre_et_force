@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="fr"><head><meta charset="utf-8"><base href="../"><title>Générateur — cartes animées</title>
+<script src="https://cdn.babylonjs.com/babylon.js"></script>
+<script src="https://cdn.babylonjs.com/loaders/babylonjs.loaders.min.js"></script>
+<style>body{background:#07080f;color:#e8e4d8;font-family:system-ui;margin:20px}</style></head>
+<body>
+<h1>Cartes animées du Codex</h1>
+<p>Rend la boucle d'animation de chaque personnage (?k=CLÉ1,CLÉ2) avec le moteur
+des portraits. Les images (window.__frames) sont assemblées en WebP animé dans
+assets/portraits/anim/NOM_DU_MODELE.webp (ffmpeg, libwebp_anim).</p>
+<pre id="log"></pre>
+<script type="module">
+import { renderCardFramesOffline } from '../js/engine/character-portrait-3d.js';
+import { homeIdleFor } from '../js/engine/babylon-units.js';
+const keys = (new URLSearchParams(location.search).get('k') || 'TARINE').split(',');
+window.__frames = {};
+for(const k of keys){
+  const anim = homeIdleFor(k);
+  try{
+    window.__frames[k] = await renderCardFramesOffline(k, anim, 10);
+    document.getElementById('log').textContent += k + ' ← ' + anim + ' : ' + window.__frames[k].frames.length + ' images\n';
+  }catch(e){ window.__frames[k] = { error: String(e) }; }
+}
+document.title = 'DONE';
+</script></body></html>
