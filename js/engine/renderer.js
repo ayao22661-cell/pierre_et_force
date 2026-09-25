@@ -87,8 +87,35 @@ export class Renderer{
     this.camera.baseZoom = Math.min(vw, vh) / targetView;
   }
 
+  /**
+   * Plan de cinéma : zoom avant et ralenti pendant `dur` secondes réelles
+   * (ultime du joueur, coup final). Le jeu, les animations 3D et les
+   * effets ralentissent ensemble, puis tout revient en douceur.
+   */
+  cinematic({ zoom = 1.3, slow = 0.35, dur = 0.8 } = {}){
+    this._cine = { t: 0, dur, zoom, slow };
+  }
+
   _onTick(ticker){
-    const dt = Math.min(ticker.deltaMS / 1000, 0.1);
+    const real = Math.min(ticker.deltaMS / 1000, 0.1);
+    let scale = 1;
+    if(this._cine){
+      const c = this._cine;
+      c.t += real;
+      const k = c.t / c.dur;
+      if(k >= 1.4){ this._cine = null; this.camera.targetZoom = 1; }
+      else{
+        // Entrée franche, sortie progressive (40 % de la durée).
+        const w = k < 1 ? 1 : 1 - (k - 1) / 0.4;
+        scale = 1 - (1 - c.slow) * w;
+        this.camera.targetZoom = 1 + (c.zoom - 1) * w;
+      }
+    }
+    this.timeScale = scale;
+    if(this.units3d?.scene) this.units3d.scene.animationTimeScale = scale;
+    const tz = this.camera.targetZoom ?? 1;
+    this.camera.zoom += (tz - this.camera.zoom) * Math.min(1, real * 7);
+    const dt = real * scale;
     for(const fn of this._frameListeners) fn(dt);
     this.camera.shake.t += dt;
     if(this.duelProjection) this._applyDuelProjection();

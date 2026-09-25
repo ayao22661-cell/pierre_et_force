@@ -102,6 +102,25 @@ export function bakeGround(o){
     tctx.fillRect(0, 0, W, H);
     tctx.globalAlpha = 1;
   };
+  // Masque de l'eau (basse résolution) : là où une tuile d'eau est peinte
+  // et pas recouverte ensuite. Sert à poser une surface d'eau animée.
+  let water = null;
+  const WR = 12; // pixels par unité, largement assez pour un masque lissé
+  const waterCtx = () => {
+    if(!water){ water = canvas(Math.round((B.x1 - B.x0) * WR), Math.round((B.z0 - B.z1) * WR)); }
+    return water.getContext('2d');
+  };
+  const markWater = (tile, mask, alpha = 1) => {
+    if(!tile.__water && !water) return;
+    const w = waterCtx();
+    w.globalAlpha = alpha;
+    w.globalCompositeOperation = tile.__water ? 'source-over' : 'destination-out';
+    w.imageSmoothingEnabled = true;
+    if(mask) w.drawImage(mask, 0, 0, water.width, water.height);
+    else { w.fillStyle = '#fff'; w.fillRect(0, 0, water.width, water.height); }
+    w.globalAlpha = 1; w.globalCompositeOperation = 'source-over';
+  };
+
   // Couche = tuile masquée par une fonction (x, z, distVoie) -> [0..1]
   const layer = (tile, tileWorld, maskFn, opts = {}) => {
     const tmp = canvas(W, H);
@@ -109,7 +128,9 @@ export function bakeGround(o){
     const t2 = tmp.getContext('2d');
     t2.globalCompositeOperation = 'destination-in';
     t2.imageSmoothingEnabled = true; t2.imageSmoothingQuality = 'high';
-    t2.drawImage(maskCanvas(maskFn), 0, 0, W, H);
+    const mask = maskCanvas(maskFn);
+    t2.drawImage(mask, 0, 0, W, H);
+    if(!opts.blend || opts.blend === 'source-over') markWater(tile, mask, opts.alpha ?? 1);
     ctx.globalAlpha = opts.alpha ?? 1;
     ctx.globalCompositeOperation = opts.blend || 'source-over';
     ctx.drawImage(tmp, 0, 0);
@@ -126,6 +147,7 @@ export function bakeGround(o){
   // autre échelle, masquée par un bruit large — sans cela, l'œil repère
   // la trame répétée sur une carte de 100 unités de long.
   fillPattern(main, recipe.base.tile, recipe.base.world || 6);
+  if(recipe.base.tile.__water) markWater(recipe.base.tile, null);
   if(recipe.base.breakup !== false){
     const tmp = canvas(W, H);
     fillPattern(tmp, recipe.base.tile, (recipe.base.world || 6) * 1.43, 1, 33);
@@ -177,5 +199,5 @@ export function bakeGround(o){
     ectx.fillStyle = '#000'; ectx.fillRect(0, 0, W, H);
     recipe.emissive({ ...helpers, ctx: ectx });
   }
-  return { color: main, emissive, W, H, distAt, edgeDist };
+  return { color: main, emissive, water, W, H, distAt, edgeDist };
 }

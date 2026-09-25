@@ -8,7 +8,7 @@ import { iconSvg, iconForAbility } from './icons.js';
 import { portraitFor } from '../engine/portraits.js';
 import { el } from './screens.js';
 import { Minimap } from '../engine/minimap.js';
-import { soundPanel } from './sound-controls.js';
+import { graphicsPanel, soundPanel } from './sound-controls.js';
 
 const KEYS = ['A', 'Z', 'E', 'R'];
 
@@ -191,6 +191,7 @@ export class CombatHud{
     const quit = el('button', 'pf-btn pf-btn-ghost', 'Quitter la mission');
     quit.addEventListener('click', () => { this.togglePause(false); this.onQuit?.(); });
     menu.appendChild(soundPanel());
+    menu.appendChild(graphicsPanel());
     menu.appendChild(resume); menu.appendChild(quit);
     this.root.appendChild(menu);
     this.pauseMenu = menu;

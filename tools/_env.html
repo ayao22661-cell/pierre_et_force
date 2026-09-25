@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html lang="fr"><head><meta charset="utf-8"><base href="../"><title>Générateur — environnements</title>
+<script src="lib/babylon.js"></script>
+</head><body>
+<p>Convertit un ciel HDR (?hdr=chemin.hdr) en environnement préfiltré Babylon (.env), renvoyé dans window.__env (base64).</p>
+<canvas id="c" width="64" height="64"></canvas>
+<script>
+(async () => {
+  const src = new URLSearchParams(location.search).get('hdr');
+  const engine = new BABYLON.Engine(document.getElementById('c'), false);
+  const scene = new BABYLON.Scene(engine);
+  const tex = new BABYLON.HDRCubeTexture(src, scene, 256, false, true, false, true);
+  await new Promise(r => tex.onLoadObservable.addOnce(r));
+  const buf = await BABYLON.EnvironmentTextureTools.CreateEnvTextureAsync(tex, { imageType: 'image/webp', imageQuality: 0.85 });
+  let s = ''; const b = new Uint8Array(buf); for(let i = 0; i < b.length; i += 0x8000) s += String.fromCharCode.apply(null, b.subarray(i, i + 0x8000));
+  window.__env = btoa(s); document.title = 'DONE';
+})().catch(e => { window.__err = String(e); document.title = 'ERR'; });
+</script></body></html>

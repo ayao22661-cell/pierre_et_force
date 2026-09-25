@@ -7,6 +7,7 @@
 import { audio } from '../engine/audio.js';
 import { iconSvg } from './icons.js';
 import { el } from './screens.js';
+import { gfxPref, setGfxPref, qualityLabel, QUALITY_LABEL } from '../engine/graphics.js';
 
 // Tous les contrôles affichés, pour qu'ils restent d'accord entre eux.
 // Un contrôle retiré de la page (fin de combat) est oublié.
@@ -65,5 +66,36 @@ export function soundPanel(){
     row.appendChild(input); row.appendChild(val);
     box.appendChild(row);
   }
+  return box;
+}
+
+/**
+ * Panneau « Graphismes » : Auto / Basse / Moyenne / Haute. En Auto, le jeu
+ * choisit selon l'appareil et baisse d'un cran tout seul s'il rame.
+ * Le changement s'applique tout de suite (l'herbe et l'eau au combat suivant).
+ */
+export function graphicsPanel(){
+  const box = el('div', 'sound-panel gfx-panel');
+  const head = el('div', 'sound-head');
+  head.appendChild(el('span', 'sound-title', 'Graphismes'));
+  const now = el('span', 'gfx-now');
+  head.appendChild(now);
+  box.appendChild(head);
+  const seg = el('div', 'gfx-seg');
+  const btns = {};
+  const paint = () => {
+    const p = gfxPref();
+    for(const k in btns) btns[k].classList.toggle('on', k === p);
+    now.textContent = qualityLabel();
+  };
+  for(const k of ['auto', 'basse', 'moyenne', 'haute']){
+    const b = el('button', 'gfx-opt', QUALITY_LABEL[k]);
+    b.type = 'button';
+    b.addEventListener('click', () => { setGfxPref(k); audio.sfx('ui_clic'); paint(); });
+    btns[k] = b; seg.appendChild(b);
+  }
+  box.appendChild(seg);
+  box.appendChild(el('p', 'gfx-hint', 'Haute : ombres fines, occlusion et halo complet. Basse : pour les téléphones modestes.'));
+  paint();
   return box;
 }

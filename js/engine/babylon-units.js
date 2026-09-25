@@ -28,6 +28,7 @@
 //    ne bougent pas tous à l'unisson.
 // ============================================================
 import { WEAPON_BY_KEY } from '../data/weapons.js';
+import { Graphics } from './graphics.js';
 
 const GLB_BASE = 'assets/models/';
 const ANIM_BASE = 'assets/animations/';
@@ -515,10 +516,14 @@ export class BabylonUnits{
 
     this._buildCamera();
     this._buildLights();
+    // Graphismes (qualité, halo, ombres, environnement, particules, météo).
+    this.gfx = new Graphics(this);
+    (this.scene.metadata = this.scene.metadata || {}).gfx = this.gfx;
 
     let _frameCount = 0;
     this.engine.runRenderLoop(() => {
       this._syncCameraFromPixi();
+      this.gfx.update();
       this.scene.render();
       _frameCount++;
       if(_frameCount === 1){
@@ -587,7 +592,7 @@ export class BabylonUnits{
    */
   setDuelCamera(o){
     if(!o){
-      if(this._duelCam){ this._duelCam.dispose(); this._duelCam = null; this.scene.activeCamera = this.camera; }
+      if(this._duelCam){ this.gfx?.detachCamera(this._duelCam); this._duelCam.dispose(); this._duelCam = null; this.scene.activeCamera = this.camera; }
       return;
     }
     const BB = window.BABYLON;
@@ -597,6 +602,7 @@ export class BabylonUnits{
       c.minZ = 0.15; c.maxZ = 400;
       c.inputs.clear();
       this._duelCam = c;
+      this.gfx?.attachCamera(c);
       this._duelYaw = null;
       this._duelPunch = 0;
     }
@@ -1307,7 +1313,8 @@ export class BabylonUnits{
       for(const m of pivot.getChildMeshes(false)) m.visibility = 0.45;
     };
     ghostify();
-    this._attachWeapons(inst, unit).then(ghostify).catch(e => console.error('[BabylonUnits] ❌ échec attache d\'arme pour', unit.key, e));
+    this.gfx?.addCaster(pivot);
+    this._attachWeapons(inst, unit).then(ghostify).then(() => this.gfx?.addCaster(pivot)).catch(e => console.error('[BabylonUnits] ❌ échec attache d\'arme pour', unit.key, e));
     return inst;
   }
 
@@ -1636,6 +1643,7 @@ export class BabylonUnits{
   destroy(){
     this._resizeObserver?.disconnect();
     this.clearUnits();
+    this.gfx?.dispose();
     this.engine.stopRenderLoop();
     this.engine.dispose();
     this.canvas.remove();

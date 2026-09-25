@@ -329,6 +329,7 @@ function water(seed, night){
     ctx.fillStyle = night ? 'rgba(180,205,255,0.12)' : 'rgba(235,255,255,0.16)';
     ctx.beginPath(); ctx.ellipse(x, y, 2 + R() * 7, 1 + R() * 2, R() * 3, 0, 7); ctx.fill();
   }
+  c.__water = true;   // repéré à la cuisson : une surface d'eau animée s'y pose
   return c;
 }
 
