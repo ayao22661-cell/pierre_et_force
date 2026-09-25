@@ -12,8 +12,7 @@
 //     avec plusieurs prises par son et une légère variation de hauteur
 //     pour qu'un même coup ne sonne jamais deux fois pareil.
 //
-// Une entrée sans fichier (`files: []`) est simplement muette : on peut
-// brancher le jeu avant d'avoir tous les enregistrements.
+// Une entrée sans fichier (`files: []`) est simplement muette.
 // ============================================================
 
 const BASE = 'assets/audio/';
@@ -26,40 +25,42 @@ const BASE = 'assets/audio/';
  */
 export const SFX = {
   // Interface
-  ui_clic:      { files: [], vol: 0.5, pitch: 0.03, gap: 40 },
-  ui_achat:     { files: [], vol: 0.7 },
-  ui_refus:     { files: [], vol: 0.6 },
-  recrue:       { files: [], vol: 0.8 },
-  niveau:       { files: [], vol: 0.8 },
+  ui_clic:      { files: ['sfx/ui_clic_1.mp3', 'sfx/ui_clic_2.mp3', 'sfx/ui_clic_3.mp3'], vol: 0.5, pitch: 0.03, gap: 40 },
+  ui_achat:     { files: ['sfx/ui_achat_1.mp3', 'sfx/ui_achat_2.mp3', 'sfx/ui_achat_3.mp3', 'sfx/ui_achat_4.mp3'], vol: 0.7 },
+  recrue:       { files: ['sfx/recrue_1.mp3'], vol: 0.8 },
+  niveau:       { files: ['sfx/niveau_1.mp3'], vol: 0.8 },
   // Corps à corps
-  elan:         { files: [], vol: 0.55, pitch: 0.08, gap: 60, voices: 4 },
-  coup_leger:   { files: [], vol: 0.75, pitch: 0.07, gap: 50, voices: 4 },
-  coup_lourd:   { files: [], vol: 0.9,  pitch: 0.05, gap: 80, voices: 3 },
-  lame:         { files: [], vol: 0.7,  pitch: 0.06, gap: 60, voices: 4 },
-  garde:        { files: [], vol: 0.75, pitch: 0.05, gap: 80 },
-  esquive:      { files: [], vol: 0.6,  pitch: 0.06, gap: 120 },
-  chute:        { files: [], vol: 0.85, pitch: 0.04, gap: 200 },
+  elan:         { files: ['sfx/elan_1.mp3', 'sfx/elan_2.mp3', 'sfx/elan_3.mp3', 'sfx/elan_4.mp3', 'sfx/elan_5.mp3', 'sfx/elan_6.mp3', 'sfx/elan_7.mp3', 'sfx/elan_8.mp3'], vol: 0.55, pitch: 0.08, gap: 60, voices: 4 },
+  coup_leger:   { files: ['sfx/coup_leger_1.mp3', 'sfx/coup_leger_2.mp3', 'sfx/coup_leger_3.mp3', 'sfx/coup_leger_4.mp3', 'sfx/coup_leger_5.mp3'], vol: 0.75, pitch: 0.07, gap: 50, voices: 4 },
+  coup_lourd:   { files: ['sfx/coup_lourd_1.mp3', 'sfx/coup_lourd_2.mp3', 'sfx/coup_lourd_3.mp3', 'sfx/coup_lourd_4.mp3', 'sfx/coup_lourd_5.mp3'], vol: 0.9,  pitch: 0.05, gap: 80, voices: 3 },
+  lame:         { files: ['sfx/lame_1.mp3', 'sfx/lame_2.mp3', 'sfx/lame_3.mp3', 'sfx/lame_4.mp3', 'sfx/lame_5.mp3', 'sfx/lame_6.mp3'], vol: 0.7,  pitch: 0.06, gap: 60, voices: 4 },
+  garde:        { files: ['sfx/garde_1.mp3', 'sfx/garde_2.mp3', 'sfx/garde_3.mp3', 'sfx/garde_4.mp3', 'sfx/garde_5.mp3'], vol: 0.75, pitch: 0.05, gap: 80 },
+  esquive:      { files: ['sfx/esquive_1.mp3', 'sfx/esquive_2.mp3', 'sfx/esquive_3.mp3', 'sfx/esquive_4.mp3'], vol: 0.6,  pitch: 0.06, gap: 120 },
+  chute:        { files: ['sfx/chute_1.mp3', 'sfx/chute_2.mp3', 'sfx/chute_3.mp3', 'sfx/chute_4.mp3'], vol: 0.85, pitch: 0.04, gap: 200 },
   // Sorts et impacts
-  sort:         { files: [], vol: 0.6,  pitch: 0.06, gap: 90, voices: 3 },
-  ultime:       { files: [], vol: 0.95, gap: 400 },
-  tir:          { files: [], vol: 0.45, pitch: 0.08, gap: 70, voices: 4 },
-  impact_sol:   { files: [], vol: 0.8,  pitch: 0.05, gap: 120 },
-  soin:         { files: [], vol: 0.45, pitch: 0.05, gap: 250 },
-  elimination:  { files: [], vol: 0.8,  gap: 250 },
+  sort:         { files: ['sfx/sort_1.mp3', 'sfx/sort_2.mp3', 'sfx/sort_3.mp3', 'sfx/sort_4.mp3'], vol: 0.6,  pitch: 0.06, gap: 90, voices: 3 },
+  ultime:       { files: ['sfx/ultime_1.mp3'], vol: 0.95, gap: 400 },
+  tir:          { files: ['sfx/tir_1.mp3', 'sfx/tir_2.mp3', 'sfx/tir_3.mp3', 'sfx/tir_4.mp3', 'sfx/tir_5.mp3'], vol: 0.45, pitch: 0.08, gap: 70, voices: 4 },
+  impact_sol:   { files: ['sfx/impact_sol_1.mp3', 'sfx/impact_sol_2.mp3', 'sfx/impact_sol_3.mp3'], vol: 0.8,  pitch: 0.05, gap: 120 },
+  soin:         { files: ['sfx/soin_1.mp3', 'sfx/soin_2.mp3'], vol: 0.45, pitch: 0.05, gap: 250 },
+  elimination:  { files: ['sfx/elimination_1.mp3', 'sfx/elimination_2.mp3', 'sfx/elimination_3.mp3'], vol: 0.8,  gap: 250 },
   // Mode Combat
-  gong:         { files: [], vol: 0.9 },
-  round_gagne:  { files: [], vol: 0.8 },
-  round_perdu:  { files: [], vol: 0.8 },
+  gong:         { files: ['sfx/gong_1.mp3', 'sfx/gong_2.mp3', 'sfx/gong_3.mp3'], vol: 0.9 },
+  round_gagne:  { files: ['sfx/round_gagne_1.mp3'], vol: 0.8 },
+  round_perdu:  { files: ['sfx/round_perdu_1.mp3'], vol: 0.8 },
 };
 
-/** Musique. loop : en boucle ; vol : volume propre au morceau. */
+/** Musique. files : un morceau, ou plusieurs enchaînés ; loop : on reprend
+ *  au début de la liste à la fin ; vol : volume propre au morceau. */
 export const MUSIC = {
-  menu:     { file: null, vol: 0.55, loop: true },
-  combat:   { file: null, vol: 0.5,  loop: true },
-  duel:     { file: null, vol: 0.5,  loop: true },
-  boss:     { file: null, vol: 0.55, loop: true },
-  victoire: { file: null, vol: 0.6,  loop: false },
-  defaite:  { file: null, vol: 0.6,  loop: false },
+  menu:     { files: ['music/menu.mp3'], vol: 0.55, loop: true },
+  // Combat de campagne : trois morceaux enchaînés, pour ne pas entendre
+  // la même boucle pendant toute une mission.
+  combat:   { files: ['music/combat_manganda.mp3', 'music/combat_battle_a.mp3', 'music/combat_battlegrounds.mp3'], vol: 0.5, loop: true },
+  duel:     { files: ['music/duel.mp3'], vol: 0.5,  loop: true },
+  boss:     { files: ['music/boss.mp3'], vol: 0.55, loop: true },
+  victoire: { files: ['music/victoire.mp3'], vol: 0.6, loop: false },
+  defaite:  { files: ['music/defaite.mp3'], vol: 0.6, loop: false },
 };
 
 const PREFS_KEY = 'pf_audio';
@@ -144,10 +145,19 @@ class AudioEngine{
     const m = key ? MUSIC[key] : null;
     const old = this.track;
     this.track = null;
-    if(old) this._fade(old.el, old.el.volume, 0, () => { old.el.pause(); old.el.src = ''; });
-    if(!m || !m.file) return;
-    const el = new Audio(BASE + m.file);
-    el.loop = !!m.loop;
+    if(old) this._fade(old.el, old.el.volume, 0, () => { old.el.pause(); old.el.removeAttribute('src'); old.el.load(); });
+    if(!m || !m.files?.length) return;
+    // Playlist : on part d'un morceau au hasard, puis on enchaîne.
+    let i = Math.floor(Math.random() * m.files.length);
+    const el = new Audio(BASE + m.files[i]);
+    el.loop = m.loop && m.files.length === 1;
+    if(m.files.length > 1) el.addEventListener('ended', () => {
+      if(this.track?.el !== el) return;
+      i = (i + 1) % m.files.length;
+      if(i === 0 && !m.loop) return;
+      el.src = BASE + m.files[i];
+      el.play().catch(() => {});
+    });
     el.volume = 0;
     el.play().catch(() => {});
     this.track = { key, el };
