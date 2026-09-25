@@ -37,8 +37,6 @@ const CAST_MODEL = {
   GROB:       'GROB.glb',
   KEITA:      'KEITA.glb',
   KANKOU:     'KANKOU.glb',
-  // Portrait seul (assets/portraits/YASUKE.webp) : le modèle de 24 Mo n'est
-  // pas embarqué dans le jeu, il ne sert qu'à régénérer l'image.
   YASUKE:     'YASUKE.glb',
   DARK:       'DARK.glb',
   SGRUN:      'SGRUN.glb',
@@ -198,7 +196,7 @@ function placeholderDataUrl(){
 // d'où les temps de chargement et les ralentissements sur téléphone.
 // Les 8 images pèsent 91 Ko au total.
 // Pour les REGÉNÉRER après un changement de modèle : ouvrir
-// _gen_portraits.html à la racine du jeu, qui appelle renderPortraitsOffline().
+// tools/_portraits.html?k=CLÉ1,CLÉ2, qui appelle renderPortraitsOffline().
 // ------------------------------------------------------------------
 const PORTRAIT_IMG_BASE = 'assets/portraits/';
 

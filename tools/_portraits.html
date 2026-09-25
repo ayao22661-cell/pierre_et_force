@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="fr"><head><meta charset="utf-8"><base href="../"><title>Générateur — portraits</title>
+<script src="https://cdn.babylonjs.com/babylon.js"></script>
+<script src="https://cdn.babylonjs.com/loaders/babylonjs.loaders.min.js"></script>
+<style>body{background:#07080f;color:#e8e4d8;font-family:system-ui;margin:20px}img{width:160px;margin:4px;border:1px solid #2e2f46}</style></head>
+<body>
+<h1>Portraits 3D du Codex</h1>
+<p>Rend les portraits (?k=YASUKE,KANKOU…) avec le vrai moteur de portraits
+(js/engine/character-portrait-3d.js), puis clic droit → enregistrer, et
+convertir en WebP dans assets/portraits/NOM_DU_MODELE.webp.</p>
+<div id="out"></div>
+<script type="module">
+import { renderPortraitsOffline, portraitDataUrl } from '../js/engine/character-portrait-3d.js';
+const keys = (new URLSearchParams(location.search).get('k') || 'YASUKE').split(',');
+await renderPortraitsOffline(keys);
+window.__png = {};
+for(const k of keys){
+  const url = portraitDataUrl(k); window.__png[k] = url;
+  const img = document.createElement('img'); img.src = url; img.title = k; document.getElementById('out').appendChild(img);
+}
+document.title = 'DONE';
+</script></body></html>
