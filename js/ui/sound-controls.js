@@ -1,5 +1,5 @@
 // ============================================================
-// RÉGLAGES DU SON — coupure et volumes (musique, bruitages).
+// RÉGLAGES DU SON — coupure et volumes (musique, voix, bruitages).
 // Le même panneau sert au menu pause et à l'onglet Profil ; le bouton
 // rapide de l'en-tête du hub ne fait que couper / rétablir. Tout est
 // mémorisé (voir engine/audio.js, prefs).
@@ -35,21 +35,21 @@ export function muteButton(cls = 'icon-btn'){
   return b;
 }
 
-/** Panneau complet : coupure + deux curseurs de volume. */
+/** Panneau complet : coupure + curseurs de volume (musique, voix, bruitages). */
 export function soundPanel(){
   const box = el('div', 'sound-panel');
   const head = el('div', 'sound-head');
   head.appendChild(el('span', 'sound-title', 'Son'));
   head.appendChild(muteButton('icon-btn sound-mute-sm'));
   box.appendChild(head);
-  for(const [key, label] of [['music', 'Musique'], ['sfx', 'Bruitages']]){
+  for(const [key, label] of [['music', 'Musique'], ['voice', 'Voix'], ['sfx', 'Bruitages']]){
     const row = el('label', 'sound-row');
     row.appendChild(el('span', 'sound-lbl', label));
     const input = el('input', 'sound-range');
     input.type = 'range'; input.min = '0'; input.max = '100'; input.step = '5';
     const val = el('span', 'sound-val');
     const paint = () => {
-      const v = Math.round((audio.prefs[key] ?? 0) * 100);
+      const v = Math.round((audio.prefs[key] ?? 1) * 100);
       input.value = String(v);
       input.style.setProperty('--fill', v + '%');
       val.textContent = audio.prefs.muted ? '—' : v + ' %';

@@ -10,6 +10,8 @@ import { buildHub, updateHubHeader } from './ui/hub.js';
 import { renderDeploy } from './ui/deploy.js';
 import { CombatHud } from './ui/combat-hud.js';
 import { renderEnd } from './ui/end.js';
+import { playStory } from './ui/story.js';
+import { CAMPAIGN } from './data/campaign.js';
 import { renderSlots } from './ui/slots.js';
 import { audio } from './engine/audio.js';
 
@@ -37,9 +39,22 @@ function toHub(){
   updateHubHeader(save);
 }
 
-function onSelectMission(mission, modeLabel){
+/** Acte d'une mission de campagne (null pour un défi ou un duel libre). */
+function acteOf(mission){ return CAMPAIGN.find(a => a.missions.includes(mission)) || null; }
+
+async function onSelectMission(mission, modeLabel){
   currentMission = mission;
   currentModeLabel = modeLabel;
+  // Récit d'avant-mission (et ouverture de l'acte pour sa première
+  // mission), une fois par sélection : « Réessayer » ne le rejoue pas.
+  const acte = acteOf(mission);
+  if(acte && !mission.isDefi){
+    if(acte.missions[0] === mission && acte.narration_debut){
+      await playStory({ lines: acte.narration_debut, mid: acte.id, where: 'narration_debut', title: `${acte.label} — ${acte.titre}`, bg: 'assets/illus/pf-12.webp' });
+    }
+    await playStory({ lines: mission.narr_avant, mid: mission.id, where: 'narr_avant', title: `${mission.num}. ${mission.name}`, bg: 'assets/illus/pf-12.webp' });
+    if(currentMission !== mission) return;
+  }
   goTo('screen-deploy');
   renderDeploy(mission, modeLabel, save, launchMatch);
   assetsReady.then(() => {
@@ -83,7 +98,12 @@ function onMatchEnd({ victory }){
     else recordVictory(save, currentMission.id);
   }
   else recordDefeat(save);
-  setTimeout(() => {
+  setTimeout(async () => {
+    const m = currentMission;
+    if(acteOf(m) && !m.isDefi){
+      const where = victory ? 'narr_victoire' : 'narr_defaite';
+      await playStory({ lines: m[where], mid: m.id, where, title: victory ? 'VICTOIRE' : 'DÉFAITE', bg: 'assets/illus/pf-14.webp' });
+    }
     goTo('screen-end');
     renderEnd(victory, currentMission, save, match?.sim, toHub, () => {
       goTo('screen-deploy');

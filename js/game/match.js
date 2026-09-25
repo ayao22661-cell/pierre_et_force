@@ -9,6 +9,7 @@ import { EffectsLayer } from '../engine/effects.js';
 import { CHAMPS } from '../data/champions.js';
 import { MOVES } from './duel.js';
 import { audio } from '../engine/audio.js';
+import { COMBAT_VOICES } from '../data/voices.js';
 import { WEAPON_BY_KEY } from '../data/weapons.js';
 
 const THEME_DEFAULT = { g1:'#3a2c1e', g2:'#463524', lane:'#6a5138', acc:'#c9a24a', wall:'#1c140c' };
@@ -103,6 +104,8 @@ export class Match{
     this._tickFn = (dt) => this._tick(dt);
     renderer.addFrameListener(this._tickFn);
     this._running = true;
+    // Cri d'entrée du héros (en duel, il attend le gong : voir 'duel-fight').
+    if(this.sim.mode !== 'duel') setTimeout(() => { if(this._running) this._shout(this.sim.player, 'debut'); }, 1200);
     this._hud = null; // assigné par CombatHud après construction
   }
 
@@ -127,6 +130,13 @@ export class Match{
     if(n > 1 && i === m.get(k)) i = (i + 1) % n;
     m.set(k, i);
     return i;
+  }
+
+  /** Cri de combat d'un champion (sa propre voix), s'il en a un pour ce moment. */
+  _shout(unit, moment, o = {}){
+    const key = unit?.kind === 'champ' ? unit.key : null;
+    if(!key || !COMBAT_VOICES[key]?.includes(moment)) return;
+    audio.voice(`combat/${key}_${moment}`, { polite: !o.force });
   }
 
   _onSimEvent(e){
@@ -187,6 +197,7 @@ export class Match{
       }
       case 'cast': {
         audio.sfx(e.ability?.ult ? 'ultime' : 'sort');
+        if(e.ability?.ult) this._shout(e.unit, 'ultime', { force: e.unit.isPlayer });
         const v = this.views.get(e.unit.id);
         if(v) v.flashHit();
         this.renderer.units3d?.notifyAction(e.unit.id, 'cast');
@@ -298,6 +309,7 @@ export class Match{
         break;
       case 'duel-fight':
         audio.sfx('gong');
+        if(!this._introShout){ this._introShout = true; setTimeout(() => this._shout(this.sim.player, 'debut'), 500); }
         if(this._hud) this._hud.announce('COMBAT !');
         break;
       case 'duel-round-end':
@@ -318,6 +330,7 @@ export class Match{
         break;
       case 'end':
         this._running = false;
+        this._shout(this.sim.player, e.victory ? 'victoire' : 'defaite', { force: true });
         this.onEnd({ victory: e.victory });
         break;
     }
