@@ -1174,6 +1174,19 @@ export class BabylonUnits{
     // L'arrière de la culasse doit s'arrêter au creux du pouce, pas dans le
     // poignet : on avance l'arme le long des doigts si elle déborde.
     // (g.grip est en unités de l'os ; ×sMean ramène en mètres.)
+    // Le point de prise mesuré est au milieu des os de la main ; le creux
+    // du poing, lui, est côté paume (là où se replient les doigts). Sans
+    // ce décalage, la crosse traversait le dos de la main.
+    const side = /Left/.test(boneName) ? 'Left' : 'Right';
+    const tipNode = inst.nodeByBaseName.get('mixamorig:' + side + 'HandIndex3') || inst.nodeByBaseName.get('mixamorig:' + side + 'HandIndex2')
+      || inst.nodeByBaseName.get('mixamorig:' + side + 'HandMiddle3') || inst.nodeByBaseName.get('mixamorig:' + side + 'HandMiddle2');
+    let palm = V3.Cross(g.axis, g.up).normalize();
+    if(tipNode){
+      tipNode.computeWorldMatrix(true);
+      const tip = V3.TransformCoordinates(tipNode.getAbsolutePosition(), BABYLON.Matrix.Invert(handNode.getWorldMatrix()));
+      if(V3.Dot(tip.subtract(g.grip), palm) < 0) palm.scaleInPlace(-1);
+    }
+    pivot.position.addInPlace(palm.scale(0.03 / sMean));
     const wristToGrip = V3.Dot(g.grip, g.up) * sMean;
     const shift = Math.max(0, gs.rear * k - wristToGrip * 0.45);
     if(shift > 0) pivot.position.addInPlace(g.up.scale(shift / sMean));
