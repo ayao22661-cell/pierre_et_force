@@ -106,6 +106,8 @@ const M = {
   m148: { biome: 'sgrun' },                                 // La Chambre des Copies
   m149: { biome: 'sgrun' },                                 // L'Avant-Dernier Émissaire
   m150: { biome: 'void' },                                  // Ce Qui Reste de Sgrün
+  m151: { biome: 'sahel' },                                 // L'Épreuve de l'Empereur (Niani)
+  m152: { biome: 'essence' },                               // La Page du Géant
 
   // DÉFIS
   d_cour: { biome: 'abidjan', setting: 'cour' },

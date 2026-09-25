@@ -28,6 +28,7 @@ function allMissionIds(){
 }
 
 function modeForMission(m, idx, acte, acteIdx){
+  if(m.mode) return m.mode;   // mission au mode imposé (épreuves des légendes : COMBAT)
   const isLast = acte.missions[acte.missions.length-1].id === m.id;
   if(isLast) return 'BOSS';
   if(idx === 0) return 'SIÈGE';

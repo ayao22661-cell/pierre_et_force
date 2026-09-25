@@ -63,7 +63,8 @@ export function renderEnd(victory, mission, save, sim, onHub, onRetry){
     if(leveled) rewards.appendChild(rewardRow('NIVEAU+', `Niveau ${save.level} atteint !`, true));
 
     // Déblocage d'allié à la fin de l'acte
-    const newAlly = mission?.id ? UNLOCK_BY_MISSION[mission.id] : null;
+    // `recrue` : la légende battue en épreuve rejoint l'équipe.
+    const newAlly = mission?.recrue || (mission?.id ? UNLOCK_BY_MISSION[mission.id] : null);
     if(newAlly && !save.allies_unlocked.includes(newAlly)){
       save.allies_unlocked.push(newAlly);
       const champName = CHAMPS[newAlly]?.name || newAlly;

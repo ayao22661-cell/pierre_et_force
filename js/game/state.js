@@ -151,7 +151,10 @@ export function isMissionDone(save, id){
 export function isMissionAvailable(save, allMissionIds, id){
   const idx = allMissionIds.indexOf(id);
   if(idx <= 0) return true;
-  return isMissionDone(save, allMissionIds[idx-1]);
+  if(isMissionDone(save, id) || isMissionDone(save, allMissionIds[idx-1])) return true;
+  // Mission ajoutée après coup au milieu de la campagne : une partie déjà
+  // plus avancée ne doit pas se retrouver bloquée derrière elle.
+  return allMissionIds.slice(idx + 1).some(m => isMissionDone(save, m));
 }
 
 export function recordVictory(save, missionId){

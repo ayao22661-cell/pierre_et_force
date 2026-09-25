@@ -174,9 +174,32 @@ export const CHAMPS = {
       {name:"Ce Qui Ne Peut Pas",desc:"Coupe la parole aux pierres : réduit au silence tout autour.",type:"nova",cd:[16,15,14,13,12],cost:75,radius:300,team:"enemy",dmg:[70,110,150,190,230],ratio:0.8,cc:{t:"silence",d:1.6},color:"#bfeaff"},
       {name:"Champ des Possibles",desc:"Fige une zone où tout ralentit : dégâts continus pendant 4 s.",type:"zone",cd:[20,19,18,17,16],cost:70,range:600,radius:200,dur:4,tick:0.5,dmg:[24,32,40,48,56],cc:{t:"slow",d:0.8,p:0.35},color:"#5FD4FF"},
       {name:"Transaction Finale",desc:"Déchire l'espace de part en part : rien ne reste debout sur la ligne.",type:"line",cd:[110,95,80],cost:140,range:960,width:130,delay:0.8,dmg:[360,540,720],ratio:1.7,cc:{t:"stun",d:1.4},color:"#5FD4FF",ult:true}
+    ]},
+  // ── Légendes : on les affronte en épreuve, puis ils rejoignent l'équipe ──
+  KANKOU:{name:"Kankou Moussa",title:"L'Empereur",role:"Mage",
+    body:2, hp:720,hpL:110, mana:480,manaL:60, atk:60,atkL:3.4, arm:36,armL:4.6, as:0.62,asL:0.016, ms:320, range:300, ranged:true,
+    fx:"#F0C860", proj:"#ffe39a",
+    passive:{name:"Le Poids de l'Or",desc:"Ses soins et boucliers sont 25% plus forts, et ses ultimes frappent 20% plus fort."},
+    innate:{healP:0.25,shieldP:0.25,ultDmg:0.2},
+    abil:[
+      {name:"Pluie d'Or",desc:"L'or tombe du ciel sur la zone visée.",type:"circle",cd:[8,7.5,7,6.5,6],cost:55,range:600,radius:170,delay:0.6,dmg:[85,130,175,220,265],ratio:1.0,color:"#F0C860"},
+      {name:"Route du Sel",desc:"Une caravane fend la ligne et ralentit tout ce qu'elle traverse.",type:"line",cd:[12,11,10,9,8],cost:60,range:700,width:90,delay:0.5,dmg:[70,110,150,190,230],ratio:0.8,cc:{t:"slow",d:1.5,p:0.35},color:"#e8d5a0"},
+      {name:"Trésor de Niani",desc:"Couvre d'or les alliés proches : un bouclier pour eux, de l'armure pour lui pendant 3 s.",type:"nova",team:"ally",cd:[16,15,14,13,12],cost:70,radius:320,shield:[80,120,160,200,240],shieldR:0.05,buff:{arm:[10,15,20,25,30],d:3},color:"#F0C860"},
+      {name:"Les Cinq Pierres",desc:"Il rappelle un instant les cinq pierres qu'il a tenues : tout autour est écrasé et étourdi.",type:"nova",team:"enemy",cd:[100,85,70],cost:130,radius:320,dmg:[300,450,600],ratio:1.4,cc:{t:"stun",d:1.2},color:"#ffe39a",ult:true}
+    ]},
+  YASUKE:{name:"Yasuke",title:"Le Samouraï venu d'Afrique",role:"Combattant",
+    body:2, hp:700,hpL:106, mana:280,manaL:36, atk:70,atkL:4.2, arm:34,armL:4.4, as:0.66,asL:0.024, ms:335, range:100, ranged:false,
+    fx:"#E84A5F",
+    passive:{name:"Six shaku deux bu",desc:"Il ne plie pas : contrôles subis −30%, et 10% de chance de coup critique."},
+    innate:{ccRes:0.3,crit:0.1},
+    abil:[
+      {name:"Iaï",desc:"Dégaine et frappe en un seul geste, au bout d'une ruée.",type:"dash",cd:[9,8.5,8,7.5,7],cost:45,range:380,radius:90,dmg:[75,115,155,195,235],ratio:1.0,color:"#E84A5F"},
+      {name:"Vent d'Est",desc:"Taille large devant lui : dégâts et ralentissement.",type:"cone",cd:[7,6.5,6,5.5,5],cost:40,range:230,angle:1.3,dmg:[80,120,160,200,240],ratio:1.0,cc:{t:"slow",d:1.2,p:0.3},color:"#f07a8a"},
+      {name:"Garde de Nijō",desc:"Tient la position : bouclier et armure pendant 3 s.",type:"self",cd:[15,14,13,12,11],cost:45,shield:[80,130,180,230,280],shieldR:0.08,buff:{arm:[12,17,22,27,32],d:3},color:"#b3263a"},
+      {name:"Honnō-ji",desc:"La nuit du temple : il traverse la zone en une série de coups, puis frappe plus vite.",type:"blink",cd:[85,70,55],cost:90,range:550,radius:210,dmg:[280,420,560],ratio:1.4,cc:{t:"stun",d:1.0},buff:{as:0.4,d:4},color:"#E84A5F",ult:true}
     ]}
 };
-export const PLAYABLE = ["TARINE","KAREN","FULGENCE","SAM","LUNDGREN","BABA","DARK"];
+export const PLAYABLE = ["TARINE","KAREN","FULGENCE","SAM","LUNDGREN","BABA","DARK","KANKOU","YASUKE"];
 export const ACTE_FOES = [
   {pool:["BABA","DARK"],boss:"DARK"},
   {pool:["DARK","SCHISSIN"],boss:"SCHISSIN"},
