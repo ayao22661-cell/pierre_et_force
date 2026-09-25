@@ -11,7 +11,7 @@ export const STORY_CODE = { narration_debut: 'nd', narration_fin: 'nf', narr_ava
 /** Nom affiché des personnages sans fiche dans le Codex. */
 export const VOICE_NAMES = { PNJ_H: 'Le prêteur', PNJ_F: 'La doyenne', PNJ_VIEUX: "L'Ancien", KEITA: 'Général Keïta', DARK: "L'Ombre", KANKOU: 'Kankou Moussa' };
 
-/** Réplique -> personnage qui la dit (45 répliques). */
+/** Réplique -> personnage qui la dit (46 répliques). */
 export const RECIT_VOICES = {
   "m1_av_2":"BABA_TUNDE",
   "m1_vi_2":"BABA_TUNDE",
@@ -57,7 +57,8 @@ export const RECIT_VOICES = {
   "m6_de_3":"TARINE",
   "m6_de_4":"LUNDGREN",
   "m108_av_1":"PNJ_VIEUX",
-  "m108_vi_1":"SAM"
+  "m108_vi_1":"SAM",
+  "m108_de_1":"SAM"
 };
 
 /** Cris de combat disponibles par champion : debut, ultime, victoire, defaite. */
