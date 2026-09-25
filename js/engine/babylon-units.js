@@ -1618,12 +1618,24 @@ export class BabylonUnits{
     st.pivot.setEnabled(!u.dead);
   }
 
+  /**
+   * Vide la scène des personnages et bâtiments de la partie terminée
+   * (le moteur, lui, reste prêt pour la suivante). Sans ça, les corps et
+   * les tours de la partie perdue restaient à l'écran au combat suivant.
+   */
+  clearUnits(){
+    for(const [id, inst] of this.instances){
+      if(inst.ready) this._disposeInstance(id, inst);
+      else inst.disposed = true;   // chargement en cours : jeté à l'arrivée
+    }
+    this.instances.clear();
+    for(const [, st] of this.structures){ st.disposed = true; st.pivot?.dispose(); }
+    this.structures.clear();
+  }
+
   destroy(){
     this._resizeObserver?.disconnect();
-    for(const [id, inst] of this.instances){ if(inst.ready) this._disposeInstance(id, inst); }
-    this.instances.clear();
-    for(const [, st] of this.structures){ st.pivot?.dispose(); }
-    this.structures.clear();
+    this.clearUnits();
     this.engine.stopRenderLoop();
     this.engine.dispose();
     this.canvas.remove();

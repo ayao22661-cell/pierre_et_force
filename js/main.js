@@ -65,6 +65,10 @@ async function onSelectMission(mission, modeLabel){
 }
 
 function launchMatch(cfg){
+  // « Réessayer » relance directement : la partie précédente doit d'abord
+  // être entièrement retirée (unités 3D, décor, effets, interface).
+  match?.destroy(); match = null;
+  hud?.destroy(); hud = null;
   save.lastChamp = cfg.champ;
   writeSave(save);
   goTo('screen-game');
