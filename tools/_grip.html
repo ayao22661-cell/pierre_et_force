@@ -10,8 +10,9 @@ const eng=new BABYLON.Engine(document.getElementById('c'),true,{preserveDrawingB
 const sc=new BABYLON.Scene(eng);sc.clearColor=new BABYLON.Color4(.62,.64,.68,1);
 new BABYLON.HemisphericLight('h',new BABYLON.Vector3(.3,1,.2),sc).intensity=1;
 new BABYLON.DirectionalLight('s',new BABYLON.Vector3(-.5,-1,-.4),sc).intensity=1;
-const m=await BABYLON.SceneLoader.ImportMeshAsync('','assets/models/',MOD[key],sc);
+const m=await BABYLON.SceneLoader.ImportMeshAsync('','assets/models/',q.get('model')||MOD[key],sc);
 for(const ag of sc.animationGroups) ag.dispose();
+if(q.get('dbg2')) for(const me of m.meshes){ me.computeWorldMatrix(true); const bb=me.getBoundingInfo().boundingBox; console.log('MESH', me.name, me.getTotalVertices(), 'vis', me.isVisible, 'min', bb.minimumWorld.toString(), 'max', bb.maximumWorld.toString(), 'mat', me.material&&me.material.getClassName(), me.material&&me.material.alpha, 'skel', !!me.skeleton, 'scale', me.absoluteScaling&&me.absoluteScaling.toString()); }
 const nodes=new Map();
 for(const b of m.skeletons[0].bones){const t=b.getTransformNode&&b.getTransformNode(); if(t) nodes.set(b.name,t);}
 const clip=q.get('anim')||'pro-sword-and-shield-pack-sword-and-shield-idle.glb';
@@ -32,7 +33,9 @@ for(const n of Object.getOwnPropertyNames(BabylonUnits.prototype)) if(n.startsWi
 const inst={ nodeByBaseName, disposed:false };
 const mode=q.get('axis');
 if(mode) for(const w of (await import('./js/engine/babylon-units.js')).WEAPON_BY_KEY[key]) w.axis=mode;
-await BabylonUnits.prototype._attachWeapons.call(fake, inst, { key, id: 1 });
+const unitT={ key, id: 1 };
+if(q.get('gear')){ const { ITEMS } = await import('./js/data/items.js'); unitT.gear={}; for(const id of q.get('gear').split(',')){ const it=ITEMS.find(i=>i.id===id); if(it) unitT.gear[it.slot]=it; } }
+await BabylonUnits.prototype._attachWeapons.call(fake, inst, unitT);
 if(q.get('dbg')){ const g=fake._measureGrip.call(fake, inst, 'mixamorig:RightHand'); console.log('BONES', [...nodes.keys()].filter(n=>/RightHand/.test(n)).join(','), 'axis', g.axis.toString(), 'up', g.up.toString(), 'grip', g.grip.toString());
  const h=nodes.get('mixamorig:RightHand'); const sp=nodes.get('mixamorig:Spine1'); h.computeWorldMatrix(true); const ax=BABYLON.Vector3.TransformNormal(g.axis,h.getWorldMatrix()).normalize(); console.log('world axis', ax.toString(), 'hand', h.getAbsolutePosition().toString(), 'spine', sp.getAbsolutePosition().toString()); }
 

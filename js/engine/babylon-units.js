@@ -91,6 +91,9 @@ export const WEAPON_LIBRARY = {
 };
 
 function modelForUnit(u){
+  // Armure riggée achetée par le joueur : le héros la porte réellement
+  // (même squelette Mixamo, donc toutes ses animations restent valables).
+  if(u.kind === 'champ' && u.gear?.armor?.model) return u.gear.armor.model;
   if(u.kind === 'champ')  return MODEL_BY_KEY[u.key] || MODEL_FALLBACK;
   if(u.kind === 'minion') return u.team === 0 ? MODEL_MINION_ALLY : MODEL_MINION_ENEMY;
   return null; // tours / autel restent en PixiJS (Graphics), pas de GLB
@@ -1043,7 +1046,8 @@ export class BabylonUnits{
    */
   async _attachWeapons(inst, unit){
     const list = this._weaponList(unit);
-    if(unit.gear?.armor) this._armorAura(inst, unit.gear.armor.aura);
+    // Armure sans modèle riggé : une aura de sa couleur, faute de mieux.
+    if(unit.gear?.armor && !unit.gear.armor.model) this._armorAura(inst, unit.gear.armor.aura);
     if(!list || !list.length) return;
     for(const w of list){
       const boneName = 'mixamorig:' + w.hand;

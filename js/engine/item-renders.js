@@ -38,6 +38,7 @@ export const ITEM_ART = {
   lance:    { prop: 'LANCE', rot: [0, 0, 0] },
   kora:     { prop: 'HARPE', rot: [0, 0.5, 0] },
   boussole: { prop: 'BOUSSOLE', rot: [0, 0.3, 0] },
+  bouclier_garde: { prop: 'BOUCLIER_GARDIEN', rot: [0, Math.PI + 0.35, 0], halo: '#5ab0ff' },
   armure_ombre: { prop: 'ARMURE_1', rot: [0, Math.PI + 0.4, 0], halo: '#8a5cff' },
   armure_garde: { prop: 'ARMURE_2', rot: [0, Math.PI + 0.4, 0], halo: '#5ab0ff' },
   exo:          { prop: 'ARMURE3', rot: [0, -0.5, 0], halo: '#ff8a3d' },
