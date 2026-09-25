@@ -34,3 +34,12 @@ pour les bruitages.
 | sort, impact_sol, ui_achat (pièces) | 80 CC0 RPG SFX | rubberduck | https://opengameart.org/content/80-cc0-rpg-sfx |
 | soin, niveau | Cure Magic | Someoneman | https://opengameart.org/content/cure-magic |
 | ultime | Earth Element Magic Spell | qubodup | https://opengameart.org/content/earth-element-magic-spell |
+
+## Voix des personnages (assets/audio/voix/)
+
+Synthèse hors ligne, fichiers intégrés au jeu. Détails : tools/voix/README.md.
+
+- Moteur : Chatterbox multilingue — Resemble AI, licence MIT.
+- Timbres de référence : Multilingual LibriSpeech (français), OpenSLR 94 —
+  licence CC-BY 4.0 (Pratap et al., 2020), via le modèle Piper
+  `fr_FR-mls-medium` (rhasspy/piper-voices).
