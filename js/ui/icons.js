@@ -17,6 +17,9 @@ const PATHS = {
   fist: '<path d="M7 11V8.2a1.6 1.6 0 0 1 3.2 0V10"/><path d="M10.2 9.5V7.4a1.6 1.6 0 0 1 3.2 0V10"/><path d="M13.4 9.8V8a1.6 1.6 0 0 1 3.2 0v2.3"/><path d="M16.6 10.2a1.5 1.5 0 0 1 3 .3v2.8c0 3.9-2.8 6.7-6.6 6.7h-1.4C8 20 5.2 17.6 5 14.2l-.2-2a1.6 1.6 0 0 1 2.2-1.6"/><path d="M7 14.5c1.4-.9 3.3-1 4.8-.3"/>',
   lock: '<rect x="5.5" y="10.5" width="13" height="10" rx="1.5"/><path d="M8.5 10.5V7.5a3.5 3.5 0 0 1 7 0v3"/>',
   play: '<path d="M8 5l11 7-11 7z"/>',
+  // Haut-parleur — son actif / coupé
+  sound_on: '<path d="M4 9.5h3.5L12 5.5v13l-4.5-4H4z"/><path d="M15.5 9a4 4 0 0 1 0 6"/><path d="M18 6.5a7.5 7.5 0 0 1 0 11"/>',
+  sound_off: '<path d="M4 9.5h3.5L12 5.5v13l-4.5-4H4z"/><path d="M16 9.5l5 5M21 9.5l-5 5"/>',
   back: '<path d="M15 5l-7 7 7 7"/>',
   plus: '<path d="M12 5v14M5 12h14"/>',
   flag: '<path d="M5 21V4"/><path d="M5 4h12l-2.5 4L17 12H5"/>',

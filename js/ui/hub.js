@@ -12,6 +12,7 @@ import { isDefiDone } from '../game/state.js';
 import { isMissionDone, isMissionAvailable, writeSave, spellRank, maxSpellRank, spellPointsLeft, spendSpellPoint } from '../game/state.js';
 import { renderShop, renderEveil, ensureShopSave } from './shop.js';
 import { el } from './screens.js';
+import { soundPanel, muteButton } from './sound-controls.js';
 
 const CAMP_LABEL = { allie: 'ALLIÉ', ennemi: 'EMPIRE', neutre: 'LÉGENDE' };
 const CAMP_BADGE = { allie: 'ally', ennemi: 'enemy', neutre: 'legend' };
@@ -212,6 +213,9 @@ function buildDuels(save, onSelectMission, host){
 }
 
 export function updateHubHeader(save){
+  // Coupure rapide du son, à côté du niveau et des cauris (posée une fois).
+  const cur = document.querySelector('.hub-currency');
+  if(cur && !cur.querySelector('.sound-mute')) cur.prepend(muteButton('icon-btn hub-mute'));
   const lvl = document.getElementById('hub-level');
   if(lvl) lvl.textContent = save.level;
   // Icône cauri devant le compteur (une seule fois, l'en-tête est réutilisé).
@@ -465,6 +469,8 @@ function renderProfile(save){
     stones.appendChild(st);
   });
   side.appendChild(stones);
+
+  side.appendChild(soundPanel());
 
   const slotBtn = el('button', 'pf-btn pf-btn-ghost pf-btn-sm profile-slot-btn', 'Changer de sauvegarde');
   slotBtn.addEventListener('click', () => window.dispatchEvent(new Event('pf-go-to-slots')));
