@@ -4,7 +4,7 @@
 import { CAMPAIGN } from '../data/campaign.js';
 import { CHAMPS } from '../data/champions.js';
 import { CAST } from '../data/cast.js';
-import { portraitFor, champKeyFor } from '../engine/portraits.js';
+import { portraitFor, champKeyFor, setAnimatedPortrait } from '../engine/portraits.js';
 import { icon, iconSvg, iconForAbility, iconForMode } from './icons.js';
 import { DEFIS, defisAvailable } from '../data/defis.js';
 import { DUELS, duelsAvailable, FREE_DUEL } from '../data/combat.js';
@@ -271,7 +271,7 @@ function renderCodex(){
     const card = el('button', 'hero-card camp-' + (CAMP_BADGE[c.camp] || 'legend'));
     card.type = 'button';
     const img = el('img', 'hero-card-img');
-    img.src = portraitFor(k); img.alt = ''; img.loading = 'lazy';
+    setAnimatedPortrait(img, k); img.alt = '';
     card.appendChild(img);
     if(champKeyFor(k)) card.appendChild(el('span', 'hero-card-play', iconSvg('sword'), ));
     card.appendChild(el('span', 'hero-card-name', c.name.split(' ')[0]));
@@ -295,7 +295,7 @@ function openChampDetail(key){
   detail.style.setProperty('--accent', accent);
   const stage = el('div', 'hero-stage');
   const img = el('img', 'hero-stage-img');
-  img.src = portraitFor(key); img.alt = c.name;
+  setAnimatedPortrait(img, key); img.alt = c.name;
   stage.appendChild(img);
   const back = el('button', 'icon-btn hero-back', iconSvg('back'));
   back.setAttribute('aria-label', 'Retour aux héros');

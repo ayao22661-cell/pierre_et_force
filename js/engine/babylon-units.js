@@ -436,6 +436,12 @@ const PROFILE_BY_KEY = {
   SYLLA:'sylla', SCHISSIN:'schissin', OUSMANE:'ousmane', SUB:'sub', GROB:'grob',
   KRAG:'krag', MURK:'murk', VAEL:'vael', SGRUN:'sgrun', KANKOU:'kankou', YASUKE:'yasuke',
 };
+/** Animation « maison » d'un personnage (1er idle de son profil), pour
+ *  les cartes animées du Codex. Les PNJ sans profil gardent une posture calme. */
+export function homeIdleFor(castKey){
+  const k = castKey === 'BABA_TUNDE' ? 'BABA' : castKey;
+  return PROFILES[PROFILE_BY_KEY[k]]?.idle[0] || 'standing-idle.glb';
+}
 function profileForUnit(u){
   if(u.kind === 'minion') return PROFILES[u.team === 0 ? 'sbire' : 'orc'];
   return PROFILES[PROFILE_BY_KEY[u.key]] || PROFILES.tarine;

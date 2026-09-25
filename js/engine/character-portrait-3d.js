@@ -96,7 +96,7 @@ function getEngine(){
   return sharedEngine;
 }
 
-async function renderModelSnapshot(modelFile){
+async function renderModelSnapshot(modelFile, opts = {}){
   const engine = getEngine();
   const scene = new BABYLON.Scene(engine);
   scene.clearColor = new BABYLON.Color4(0.05, 0.045, 0.06, 1);
@@ -125,7 +125,8 @@ async function renderModelSnapshot(modelFile){
 
     // Joue un instant l'idle pour sortir de la pose de bind (souvent
     // un T-pose) avant la capture, pour une posture naturelle.
-    const idleFile = MODEL_IDLE_ANIM[modelFile] || DEFAULT_IDLE_ANIM;
+    const idleFile = opts.anim || MODEL_IDLE_ANIM[modelFile] || DEFAULT_IDLE_ANIM;
+    let clip = null;
     if(idleFile){
       try{
         const animContainer = await withTimeout(
@@ -150,7 +151,15 @@ async function renderModelSnapshot(modelFile){
             const target = nodeByName.get(ta.target?.name);
             if(target) cloned.addTargetedAnimation(ta.animation, target);
           }
-          if(cloned.targetedAnimations.length) cloned.start(false, 1.0, 0.4, 0.9); // petite tranche de l'idle, hors T-pose
+          if(cloned.targetedAnimations.length){
+            if(opts.fps){
+              // Boucle complète, pilotée image par image plus bas.
+              const fps = sourceGroup.targetedAnimations[0]?.animation.framePerSecond || 30;
+              clip = { group: cloned, from: sourceGroup.from, to: sourceGroup.to, fps };
+              cloned.start(true, 1.0, sourceGroup.from, sourceGroup.to);
+              cloned.pause();
+            }else cloned.start(false, 1.0, 0.4, 0.9); // petite tranche de l'idle, hors T-pose
+          }
         }
       }catch(e){ /* pas grave si l'idle échoue : on capture la bind pose */ }
     }
@@ -165,6 +174,42 @@ async function renderModelSnapshot(modelFile){
 
     // Quelques rendus pour laisser l'animation avancer et les textures se stabiliser.
     for(let i = 0; i < 8; i++) scene.render();
+
+    // Mode « carte animée » : une image par pas de temps sur toute la
+    // boucle de l'animation (assemblées ensuite en WebP animé).
+    if(opts.fps){
+      if(!clip) throw new Error('pas d\'animation pour ' + modelFile);
+      const dur = (clip.to - clip.from) / clip.fps;
+      // Cadrage : le portrait fixe est pris dans une posture souvent
+      // basse ; sur toute la boucle, un grand gabarit qui se redresse
+      // sortirait du cadre. On recule la caméra juste assez pour que le
+      // sommet du crâne reste visible sur toutes les images.
+      // Sans os « HeadTop_End » (certains auto-rigs), on l'estime depuis
+      // la tête et le cou : le crâne fait environ deux fois et demie leur écart.
+      const bone = (re) => scene.transformNodes.find(n => re.test(n.name));
+      const headTop = bone(/HeadTop_End$/), head = bone(/:Head$/), neck = bone(/:Neck$/);
+      let zoom = 1;
+      if(headTop || (head && neck)){
+        const yOf = (n) => { n.computeWorldMatrix(true); return n.getAbsolutePosition().y; };
+        let top = 0;
+        for(let i = 0; i < 16; i++){
+          clip.group.goToFrame(clip.from + (clip.to - clip.from) * i / 16);
+          scene.render();
+          top = Math.max(top, headTop ? yOf(headTop) : yOf(head) + 2.5 * (yOf(head) - yOf(neck)));
+        }
+        zoom = Math.max(1, (top + 0.2) / 1.78);
+        camera.radius *= zoom;
+        camera.target = new BABYLON.Vector3(0, 1.05 * zoom, 0);
+      }
+      const n = Math.max(2, Math.min(opts.maxFrames || 64, Math.round(dur * opts.fps)));
+      const frames = [];
+      for(let i = 0; i < n; i++){
+        clip.group.goToFrame(clip.from + (clip.to - clip.from) * i / n);
+        scene.render(); scene.render();
+        frames.push(engine.getRenderingCanvas().toDataURL('image/png'));
+      }
+      return { frames, fps: n / dur, zoom };
+    }
 
     // Lecture directe du framebuffer via toDataURL — plus simple et plus
     // fiable que BABYLON.Tools.CreateScreenshotUsingRenderTargetAsync,
@@ -244,6 +289,22 @@ export async function renderPortraitsOffline(keys){
     const modelFile = CAST_MODEL[k] || DEFAULT_MODEL;
     if(modelSnapshotCache.has(modelFile)) keySnapshotCache.set(k, modelSnapshotCache.get(modelFile));
   }
+}
+
+/**
+ * Rendu hors ligne d'une carte animée : mêmes caméra et lumières que le
+ * portrait, mais toute la boucle de l'animation « maison » du personnage.
+ * Renvoie { frames: [dataURL PNG…], fps } (outil tools/_portraits.html?anim=1).
+ */
+export async function renderCardFramesOffline(key, anim, fps = 10, maxFrames = 96){
+  const modelFile = CAST_MODEL[key] || DEFAULT_MODEL;
+  return renderModelSnapshot(modelFile, { anim, fps, maxFrames });
+}
+
+/** Carte animée pré-rendue (WebP animé) pour une clé du CAST. */
+export function portraitAnimFor3D(key){
+  const modelFile = CAST_MODEL[key] || DEFAULT_MODEL;
+  return PORTRAIT_IMG_BASE + 'anim/' + modelFile.replace(/\.glb$/, '') + '.webp';
 }
 
 /** Retourne le portrait 3D déjà en cache pour une clé CAST (synchrone, comme l'ancien portraitFor). */
