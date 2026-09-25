@@ -426,6 +426,8 @@ export class Match{
     window.removeEventListener('keyup', this._onKeyUp);
     this.renderer.removeFrameListener(this._tickFn);
     for(const v of this.views.values()) v.destroy();
+    this.views.clear();
+    this.renderer.units3d?.clearUnits();
     this.fx.clear();
     this.terrain?.destroy();
   }
