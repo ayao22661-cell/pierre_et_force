@@ -1156,7 +1156,20 @@ export class BabylonUnits{
     // Repère de l'arme (X, Y = crosse→canon, Z = bouche) et repère de la
     // main (X, Y = axe du poing côté pouce, Z = le long des doigts).
     const Yc = gs.up, Zc = gs.fwd, Xc = V3.Cross(Yc, Zc).normalize();
-    const Yh = g.axis, Zh = g.up, Xh = V3.Cross(Yh, Zh).normalize();
+    // Le canon prolonge l'AVANT-BRAS : les doigts d'un poing fermé sont
+    // pliés, et s'aligner sur eux relevait le canon (et enfonçait l'arrière
+    // de l'arme dans le poignet).
+    const side0 = /Left/.test(boneName) ? 'Left' : 'Right';
+    const fore = inst.nodeByBaseName.get('mixamorig:' + side0 + 'ForeArm');
+    let aim = g.up.clone();
+    if(fore){
+      fore.computeWorldMatrix(true); handNode.computeWorldMatrix(true);
+      const f = V3.TransformCoordinates(fore.getAbsolutePosition(), BABYLON.Matrix.Invert(handNode.getWorldMatrix()));
+      const d = f.scale(-1);                                  // du coude vers le poignet, prolongé
+      const dp = d.subtract(g.axis.scale(V3.Dot(d, g.axis)));
+      if(dp.length() > 1e-4 && V3.Dot(dp, g.up) > 0) aim = dp.normalize();
+    }
+    const Yh = g.axis, Zh = aim, Xh = V3.Cross(Yh, Zh).normalize();
     const rows = (a, b, c) => BABYLON.Matrix.FromValues(a.x, a.y, a.z, 0, b.x, b.y, b.z, 0, c.x, c.y, c.z, 0, 0, 0, 0, 1);
     const R = rows(Xc, Yc, Zc).transpose().multiply(rows(Xh, Yh, Zh));
     const inner = new BABYLON.TransformNode('wgun_' + unit.id, this.scene);
@@ -1187,9 +1200,9 @@ export class BabylonUnits{
       if(V3.Dot(tip.subtract(g.grip), palm) < 0) palm.scaleInPlace(-1);
     }
     pivot.position.addInPlace(palm.scale(0.03 / sMean));
-    const wristToGrip = V3.Dot(g.grip, g.up) * sMean;
-    const shift = Math.max(0, gs.rear * k - wristToGrip * 0.45);
-    if(shift > 0) pivot.position.addInPlace(g.up.scale(shift / sMean));
+    const wristToGrip = V3.Dot(g.grip, aim) * sMean;
+    const shift = Math.max(0, gs.rear * k - wristToGrip * 0.2);
+    if(shift > 0) pivot.position.addInPlace(aim.scale(shift / sMean));
     if(w.offset) pivot.position.addInPlace(new V3(w.offset[0], w.offset[1], w.offset[2]));
     pivot.parent = handNode;
     if(Math.abs(sMean - 1) > 0.02) pivot.scaling.setAll(1 / sMean);
