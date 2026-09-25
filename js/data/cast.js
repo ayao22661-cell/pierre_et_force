@@ -36,7 +36,20 @@ export const CAST = {
     o:{skin:"#7a4a2b",cloth:"#1c3a5e",accent:"#c9a86a",hair:"#c8c0b0",eye:"#e6c98a",hairStyle:6,mark:0,beard:1,smile:false,prop:"epaulet"}},
   KANKOU:{name:"Kankou Moussa",titre:"L'Empereur",role:"EMPEREUR",camp:"neutre",
     bio:"Au sommet de sa puissance il possédait cinq pierres héritées de l'aube des temps. Sous les ruines, il a pris sa décision.",
-    o:{skin:"#6b4226",cloth:"#4a3410",accent:"#f0c860",hair:"#141018",eye:"#ffd76b",hairStyle:0,mark:4,beard:3,crown:true,smile:false,prop:"medal"}},
+    o:{skin:"#6b4226",cloth:"#4a3410",accent:"#f0c860",hair:"#141018",eye:"#ffd76b",hairStyle:0,mark:4,beard:3,crown:true,smile:false,prop:"medal"},
+    // Faits : chroniques d'al-Umari et d'Ibn Khaldoun, Atlas catalan.
+    // Entrées `legende` : le récit de Pierre et Force.
+    chrono:[
+      {date:"Vers 1280", texte:"Naît dans la famille régnante du Mali, petit-neveu de Soundiata Keïta, le fondateur de l'empire."},
+      {date:"Vers 1312", texte:"Devient mansa, empereur du Mali. L'empire s'étend de l'Atlantique jusqu'au-delà du fleuve Niger, et il tient les mines d'or du Bambouk et du Bouré."},
+      {date:"1324", texte:"Part en pèlerinage à La Mecque avec une caravane de milliers de personnes et des tonnes d'or. Au Caire, il en donne tant que le cours de l'or s'effondre pour des années, raconte le chroniqueur al-Umari."},
+      {date:"1325", texte:"Sur le chemin du retour, ses généraux rattachent Gao à l'empire. Il ramène avec lui des savants et l'architecte andalou Abu Ishaq al-Sahili."},
+      {date:"Vers 1327", texte:"Fait bâtir la grande mosquée Djinguereber à Tombouctou. La ville devient l'un des grands centres du savoir du monde musulman."},
+      {date:"Vers 1337", texte:"Meurt au sommet de sa puissance ; les sources hésitent sur la date exacte. Son fils Maghan lui succède."},
+      {date:"1375", texte:"L'Atlas catalan le représente sur son trône, une pépite d'or à la main : l'Europe le tient pour l'homme le plus riche du monde."},
+      {date:"Légende", legende:true, texte:"Il possédait cinq pierres héritées de l'aube des temps. Sous les ruines de Niani, dans la Chambre des Poids, il les a séparées : personne, pas même lui, ne tenait debout sous leur poids réuni."},
+      {date:"Aujourd'hui", legende:true, texte:"Sept siècles plus tard, son écho met à l'épreuve le porteur de l'Équilibre. Tarine tient debout : l'Empereur marche désormais à ses côtés."},
+    ]},
   // `chrono` : chronologie affichée dans sa fiche (onglet Héros). Les
   // faits sont ceux des sources (lettres des jésuites, chronique de
   // Nobunaga, journal de Matsudaira Ietada) ; l'entrée marquée
@@ -53,6 +66,7 @@ export const CAST = {
       {date:"21 juin 1582", texte:"Akechi Mitsuhide trahit Nobunaga au temple Honnō-ji ; le seigneur se donne la mort. Yasuke rejoint le combat au château de Nijō, auprès de son fils Nobutada, puis rend son sabre."},
       {date:"1582", texte:"Mitsuhide l'épargne et le fait conduire à la mission jésuite de Kyoto. Ensuite, les sources se taisent."},
       {date:"Légende", legende:true, texte:"Une page du carnet du Général Keïta parle d'un géant venu d'Afrique qui aurait traversé les mers avec une pierre tiède cousue dans sa ceinture. Personne ne l'a jamais vue briller, et personne ne sait où il l'a laissée."},
+      {date:"Aujourd'hui", legende:true, texte:"Seule rescapée du carnet brûlé, cette page s'embrase au contact de la pierre de Tarine. Yasuke en sort, le met à l'épreuve comme on l'avait jugé lui-même, puis rejoint son équipe."},
     ]},
 
   // ---- L'empire de Sgrün ----
