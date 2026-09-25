@@ -41,8 +41,6 @@ export const ITEM_ART = {
   bouclier_garde: { prop: 'BOUCLIER_GARDIEN', rot: [0, Math.PI + 0.35, 0], halo: '#5ab0ff' },
   armure_ombre: { prop: 'ARMURE_1', rot: [0, Math.PI + 0.4, 0], halo: '#8a5cff' },
   armure_garde: { prop: 'ARMURE_2', rot: [0, Math.PI + 0.4, 0], halo: '#5ab0ff' },
-  exo:          { prop: 'ARMURE3', rot: [0, -0.5, 0], halo: '#ff8a3d' },
-  armure_or:    { prop: 'ARMURE4', rot: [0, 0.4, 0], halo: '#f0c35a' },
   perle:    { draw: 'cowrie' },
   ceinture: { draw: 'kente' },
   gants:    { draw: 'bracer' },

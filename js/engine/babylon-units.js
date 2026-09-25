@@ -772,24 +772,6 @@ export class BabylonUnits{
   }
 
   /**
-   * Armure achetée : une aura de sa couleur autour du héros. Les modèles
-   * d'armure sont des figurines d'un seul bloc, sans squelette ; posées
-   * sur le corps, elles resteraient figées pendant que le héros bouge.
-   */
-  _armorAura(inst, color){
-    if(!color || inst.disposed) return;
-    if(!this._auraLayer){
-      this._auraLayer = new BABYLON.HighlightLayer('armorAura', this.scene, { blurHorizontalSize: 0.9, blurVerticalSize: 0.9 });
-      this._auraLayer.innerGlow = false;
-    }
-    const c = BABYLON.Color3.FromHexString(color);
-    for(const m of inst.pivot.getChildMeshes(false)){
-      if(m.getTotalVertices && m.getTotalVertices() > 0) this._auraLayer.addMesh(m, c);
-    }
-    inst.aura = true;
-  }
-
-  /**
    * Bouclier sanglé : le bras passe DERRIÈRE lui, pas au travers. Centré
    * sur l'os, il était traversé de part en part par l'avant-bras. On le
    * construit directement dans le repère de l'avant-bras :
@@ -1046,8 +1028,6 @@ export class BabylonUnits{
    */
   async _attachWeapons(inst, unit){
     const list = this._weaponList(unit);
-    // Armure sans modèle riggé : une aura de sa couleur, faute de mieux.
-    if(unit.gear?.armor && !unit.gear.armor.model) this._armorAura(inst, unit.gear.armor.aura);
     if(!list || !list.length) return;
     for(const w of list){
       const boneName = 'mixamorig:' + w.hand;

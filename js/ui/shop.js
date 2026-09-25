@@ -9,11 +9,19 @@ import { iconSvg, icon, iconForStats } from './icons.js';
 import { writeSave } from '../game/state.js';
 import { el } from './screens.js';
 
+const REMOVED_ITEMS = { exo: 2900, armure_or: 3000 };
+
 // ── Assure les champs nécessaires dans la sauvegarde ──────────────────────────
 export function ensureShopSave(save) {
   if (!save.talents)   save.talents   = {};   // { nodeId: rang }
   if (!save.items)     save.items     = [];   // [itemId, ...]
   if (!save.talPts)    save.talPts    = 0;    // points de talent dépensables
+  // Objets retirés de la boutique (armures qui ne pouvaient pas être
+  // portées) : remboursés, pour ne rien faire perdre à qui les avait.
+  for (const [id, cost] of Object.entries(REMOVED_ITEMS)) {
+    const i = save.items.indexOf(id);
+    if (i >= 0) { save.items.splice(i, 1); save.cauris += cost; writeSave(save); }
+  }
   // On donne 1 point de talent par niveau au-delà de 1
   const earned = Math.max(0, (save.level - 1) * 1);
   const spent  = Object.values(save.talents).reduce((a, b) => a + b, 0);
