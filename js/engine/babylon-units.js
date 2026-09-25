@@ -53,6 +53,9 @@ const MODEL_BY_KEY = {
   MURK:     'MURK.glb',
   VAEL:     'SAMIA.glb',   // Vael n'a pas de modèle propre : silhouette de Samia
   SGRUN:    'SGRUN.glb',
+  // Légendes, jouables une fois leur épreuve gagnée.
+  KANKOU:   'KANKOU.glb',
+  YASUKE:   'YASUKE.glb',
 };
 const MODEL_MINION_ALLY  = 'SBIRE.glb';
 const MODEL_MINION_ENEMY = 'ORC.glb';
@@ -358,6 +361,34 @@ const PROFILES = {
     jump  : ['jumping.glb'],
   },
   // Sbires ennemis (orcs) : hache et corps-à-corps brutal.
+  // Kankou Moussa — l'Empereur : sceptre en main, sorts à deux mains, posture royale.
+  kankou: {
+    idle  : ['standing-idle-03.glb', 'standing-idle.glb', 'looking.glb'],
+    walk  : ['great-sword-walk.glb', 'start-walking.glb'],
+    run   : ['standing-sprint-forward.glb', 'running.glb'],
+    attack: ['standing-1h-magic-attack-01.glb', 'standing-2h-magic-attack-02.glb', 'standing-2h-magic-attack-03.glb', 'standing-1h-magic-attack-02.glb'],
+    cast  : ['standing-2h-cast-spell-01.glb', 'standing-2h-magic-attack-04.glb', 'spell-cast.glb', 'standing-1h-cast-spell-01.glb'],
+    hit   : ['standing-react-small-from-front.glb', 'standing-block-react-large.glb'],
+    death : ['standing-react-death-backward.glb', 'falling-back-death.glb'],
+    dodge : ['standing-dodge-backward.glb', 'standing-dodge-left.glb'],
+    block : ['body-block.glb', 'center-block.glb'],
+    taunt : ['standing-taunt-battlecry.glb'],
+    jump  : ['jumping.glb'],
+  },
+  // Yasuke — le samouraï : grande lame à deux mains, gardes basses, coupes amples.
+  yasuke: {
+    idle  : ['great-sword-pack-great-sword-idle.glb', 'great-sword-pack-great-sword-idle-2.glb', 'great-sword-pack-great-sword-idle-3.glb'],
+    walk  : ['great-sword-walk-1.glb', 'great-sword-pack-great-sword-walk.glb'],
+    run   : ['great-sword-run.glb', 'great-sword-pack-great-sword-run.glb'],
+    attack: ['great-sword-slash.glb', 'great-sword-pack-great-sword-slash.glb', 'great-sword-pack-great-sword-slash-2.glb', 'great-sword-pack-great-sword-slash-3.glb', 'great-sword-slash-1.glb', 'great-sword-pack-great-sword-attack.glb'],
+    cast  : ['great-sword-pack-great-sword-high-spin-attack.glb', 'great-sword-pack-great-sword-slide-attack.glb', 'great-sword-jump-attack.glb'],
+    hit   : ['great-sword-impact.glb', 'great-sword-pack-great-sword-impact.glb', 'great-sword-pack-great-sword-blocking.glb'],
+    death : ['two-handed-sword-death.glb', 'great-sword-pack-two-handed-sword-death.glb', 'falling-back-death.glb'],
+    dodge : ['standing-dodge-backward.glb', 'standing-dodge-left.glb', 'standing-dodge-right.glb'],
+    block : ['great-sword-pack-great-sword-blocking.glb', 'great-sword-blocking-1.glb'],
+    taunt : ['pro-melee-axe-pack-standing-taunt-battlecry.glb'],
+    jump  : ['great-sword-pack-great-sword-jump.glb'],
+  },
   orc: {
     idle  : ['orc-idle.glb', 'dwarf-idle-2.glb', 'pro-melee-axe-pack-standing-idle.glb', 'pro-melee-axe-pack-standing-idle-looking-ver-2.glb'],
     walk  : ['orc-walk.glb', 'pro-melee-axe-pack-standing-walk-forward.glb'],
@@ -403,7 +434,7 @@ for(const [name, prof] of Object.entries(PROFILES)){
 const PROFILE_BY_KEY = {
   TARINE:'tarine', BABA:'baba', SAM:'sam', LUNDGREN:'lundgren', KAREN:'karen', FULGENCE:'fulgence', DARK:'dark',
   SYLLA:'sylla', SCHISSIN:'schissin', OUSMANE:'ousmane', SUB:'sub', GROB:'grob',
-  KRAG:'krag', MURK:'murk', VAEL:'vael', SGRUN:'sgrun',
+  KRAG:'krag', MURK:'murk', VAEL:'vael', SGRUN:'sgrun', KANKOU:'kankou', YASUKE:'yasuke',
 };
 function profileForUnit(u){
   if(u.kind === 'minion') return PROFILES[u.team === 0 ? 'sbire' : 'orc'];

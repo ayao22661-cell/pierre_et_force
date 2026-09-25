@@ -55,6 +55,9 @@ export const WEAPON_BY_KEY = {
   GROB:     [{ file: 'EPEE1.glb',     hand: 'RightHand', height: 1.60, grip: 0.12, roll: Math.PI / 2 }],
   KRAG:     [{ file: 'LANCE.glb',     hand: 'RightHand', height: 2.10, grip: 0.38, roll: Math.PI / 2 }],
   VAEL:     [{ file: 'EPEE.glb',      hand: 'RightHand', height: 1.00, grip: 0.14, roll: Math.PI / 2 }],
+  // ── Légendes ──────────────────────────────────────────────
+  KANKOU:   [{ file: 'BATON_MAGIQUE.glb', hand: 'RightHand', height: 1.80, grip: 0.42, roll: 0 }],
+  YASUKE:   [{ file: 'EPEE1.glb',     hand: 'RightHand', height: 1.20, grip: 0.12, roll: Math.PI / 2 }],
   SGRUN: [
     { file: 'BATON_MAGIQUE.glb', hand: 'RightHand', height: 1.85, grip: 0.42, roll: 0 },
     { file: 'BOUSSOLE.glb',      hand: 'LeftHand',  height: 0.28, grip: 0.5,  roll: 0 },

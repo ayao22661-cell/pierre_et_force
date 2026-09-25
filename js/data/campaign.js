@@ -1600,10 +1600,16 @@ export const CAMPAIGN = [
 // exactement ce qu'attendent les positions suivantes.
 // ─────────────────────────────────────────────────────────────
 for(const acte of CAMPAIGN){
-  const ajouts = EXTRA.filter(m => m.acte === acte.id).sort((a, b) => a.at - b.at);
+  const ajouts = EXTRA.filter(m => m.acte === acte.id && m.apres == null).sort((a, b) => a.at - b.at);
   for(const m of ajouts){
     const { acte: _a, at, ...mission } = m;
     acte.missions.splice(Math.min(at, acte.missions.length), 0, mission);
+  }
+  // Puis celles qui se placent juste après une mission donnée (`apres`).
+  for(const m of EXTRA.filter(m => m.acte === acte.id && m.apres != null)){
+    const { acte: _a, apres, ...mission } = m;
+    const i = acte.missions.findIndex(x => x.id === apres);
+    acte.missions.splice(i < 0 ? acte.missions.length : i + 1, 0, mission);
   }
 }
 

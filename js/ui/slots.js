@@ -5,6 +5,7 @@
 // recharger la page.
 // ============================================================
 import { CHAMPS } from '../data/champions.js';
+import { MISSION_COUNT } from '../data/campaign.js';
 import { listSlots, setActiveSlot, deleteSlot, getActiveSlot } from '../game/state.js';
 import { icon } from './icons.js';
 import { el } from './screens.js';
@@ -29,7 +30,7 @@ export function renderSlots(onPick){
     if(info.exists){
       const champName = CHAMPS[info.lastChamp]?.name || 'Tarine Keïta';
       label.appendChild(el('div', 'slot-card-sub',
-        `Niveau ${info.level} · ${info.missionsDone}/50 missions · ${champName}`));
+        `Niveau ${info.level} · ${info.missionsDone}/${MISSION_COUNT} missions · ${champName}`));
     } else {
       label.appendChild(el('div', 'slot-card-sub slot-card-empty', 'Emplacement vide'));
     }

@@ -1136,5 +1136,63 @@ export const EXTRA = [
     ],
     journal_victoire: "Il m'a proposé de ne plus avoir à choisir. C'était la première offre honnête qu'on m'ait faite, et la seule que je ne pouvais pas accepter. Je rentre à Abidjan. J'ai un atelier à rouvrir."
   }
+,
 
+  // ═══ LÉGENDES — deux épreuves, deux alliés ════════════════
+  // `apres` : insérées juste après une mission précise, une fois tous les
+  // autres ajouts faits, pour ne rien décaler de l'ordre existant.
+  // `mode: 'COMBAT'` : un duel en rounds gagnants contre la légende ;
+  // `recrue` : elle rejoint l'équipe une fois battue.
+  {
+    acte: 'acte7', apres: 'm21',
+    id: 'm151', name: "L'Épreuve de l'Empereur",
+    desc: "L'écho de Kankou Moussa ne donne rien sans avoir pesé celui qui reçoit.",
+    brief: "Le message est transmis, mais l'Empereur n'est pas reparti. Sept siècles plus tôt, il a séparé les cinq pierres parce que personne ne tenait debout sous leur poids. Avant de marcher aux côtés du porteur de l'Équilibre, il veut savoir s'il tient, lui.",
+    mode: 'COMBAT', roundsToWin: 2, roundTime: 75, foeMult: 1.05,
+    allies_requis: [], allies_dispo: [],
+    ennemis: ["KANKOU"], ennemis_extra: 0,
+    recrue: "KANKOU",
+    xp: 260, cauris: 180,
+    narr_avant: [
+      "La projection ne s'éteint pas. Elle se solidifie, grain d'or après grain d'or.",
+      "— Un message ne suffit pas, dit l'Empereur. J'ai vu des rois plus sages que toi tomber sous une seule pierre.",
+      "Il plante son sceptre dans le sable. Le sol de Niani s'aplanit tout autour, comme une cour prête pour un duel."
+    ],
+    narr_victoire: [
+      "L'Empereur pose un genou à terre, sans honte, et sourit pour la première fois.",
+      "— Tu ne gagnes pas en frappant plus fort. Tu gagnes en ne tombant pas. C'est ce que j'attendais.",
+      "Il se relève, et son or se tourne vers Tarine : Kankou Moussa rejoint l'équipe."
+    ],
+    narr_defaite: [
+      "Le sceptre s'abat une dernière fois, doucement, presque avec regret.",
+      "— Reviens quand tu sauras perdre sans lâcher, dit l'Empereur. Je ne suis pas pressé. Je ne l'ai jamais été."
+    ],
+    journal_victoire: "Kankou Moussa s'est battu contre moi pour voir si je tenais debout. Maintenant il marche avec nous. Lundgren n'a rien dit pendant une heure, et je crois que c'est la première fois que je le vois ému."
+  },
+  {
+    acte: 'acte8', apres: 'm131',
+    id: 'm152', name: "La Page du Géant",
+    desc: "Un fragment du carnet a survécu au feu. Il parle d'un homme, pas d'une pierre.",
+    brief: "Parmi les fragments sauvés, une page entière, intacte, que le feu a contournée. Le Général y raconte un géant venu d'Afrique qui servit un seigneur du Japon il y a quatre siècles, et la pierre tiède cousue dans sa ceinture. Posée sur la pierre de Tarine, la page s'est mise à chauffer.",
+    mode: 'COMBAT', roundsToWin: 2, roundTime: 75, foeMult: 1.1,
+    allies_requis: [], allies_dispo: [],
+    ennemis: ["YASUKE"], ennemis_extra: 0,
+    recrue: "YASUKE",
+    xp: 240, cauris: 170,
+    narr_avant: [
+      "La page brûle sans se consumer. L'odeur de pétrole disparaît, remplacée par celle du bois de cèdre.",
+      "Un temple en flammes se dessine autour d'eux, puis s'efface. Il ne reste qu'une silhouette immense, en armure rouge et bleue.",
+      "— Six shaku deux bu, dit-il en saluant. On m'a mesuré avant de me juger. À ton tour."
+    ],
+    narr_victoire: [
+      "Yasuke abaisse sa lame et incline la tête, exactement comme on le lui a appris il y a quatre cents ans.",
+      "— Ton père portait la même chaleur dans sa poche. Il l'a sentie, lui aussi, en lisant mon nom.",
+      "Le temple disparaît pour de bon. Le géant, lui, reste : Yasuke rejoint l'équipe."
+    ],
+    narr_defaite: [
+      "La lame s'arrête à un doigt de la gorge de Tarine.",
+      "— Au temple, on ne m'a pas laissé de deuxième chance, dit Yasuke. Toi, je t'en laisse une."
+    ],
+    journal_victoire: "Papa avait gardé une seule page intacte, et c'était celle-là. Un homme qui a traversé les mers avec une pierre dans sa ceinture et qui s'est battu pour quelqu'un jusqu'au bout. Je crois que Papa voulait que je le rencontre."
+  }
 ];
