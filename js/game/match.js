@@ -8,6 +8,8 @@ import { UnitView } from '../engine/unit-view.js';
 import { EffectsLayer } from '../engine/effects.js';
 import { CHAMPS } from '../data/champions.js';
 import { MOVES } from './duel.js';
+import { audio } from '../engine/audio.js';
+import { WEAPON_BY_KEY } from '../data/weapons.js';
 
 const THEME_DEFAULT = { g1:'#3a2c1e', g2:'#463524', lane:'#6a5138', acc:'#c9a24a', wall:'#1c140c' };
 
@@ -134,6 +136,7 @@ export class Match{
         this.renderer.units3d?.notifyAction(e.from.id, 'attack', { interval: 1 / (e.from.as || 0.7), force: true });
         break;
       case 'projectile':
+        audio.sfx('tir');
         this.fx.spawnProjectile({ x: e.from.x, y: e.from.y, target: e.to, color: hexNum(e.color), size: e.isAbility ? 13 : 10 });
         // Tir de base (mages, soutiens) : animation d'attaque à distance.
         // force: true (pas seulement e.manual) — cet événement n'est émis
@@ -150,6 +153,8 @@ export class Match{
         const v = this.views.get(e.unit.id);
         if(v) v.flashHit();
         if(e.dmg > 0){
+          // En duel, les coups ont leur propre son (fight-impact).
+          if(this.sim.mode !== 'duel') audio.sfx(e.heavy || e.crit ? 'coup_lourd' : 'coup_leger', { vol: 0.7 });
           this.renderer.units3d?.notifyAction(e.unit.id, 'hit');
           this.fx.spawnFloatText(e.unit.x, e.unit.y - (e.unit.r||20) - 6, Math.round(e.dmg).toString(), '#ffe27a', e.heavy, e.crit);
           // Coup critique ou dégât d'ultime : impact au sol plus large sous
@@ -164,6 +169,7 @@ export class Match{
         break;
       }
       case 'heal':
+        audio.sfx('soin');
         this.fx.spawnFloatText(e.unit.x, e.unit.y - (e.unit.r||20) - 6, '+' + Math.round(e.amount), '#7dffb0');
         this.fx.spawnImpact(e.unit.x, e.unit.y, 0x7dffb0, 34);
         break;
@@ -180,6 +186,7 @@ export class Match{
         break;
       }
       case 'cast': {
+        audio.sfx(e.ability?.ult ? 'ultime' : 'sort');
         const v = this.views.get(e.unit.id);
         if(v) v.flashHit();
         this.renderer.units3d?.notifyAction(e.unit.id, 'cast');
@@ -219,12 +226,14 @@ export class Match{
         this.fx.spawnGroundPulse(e.x, e.y, hexNum(e.color), e.radius);
         break;
       case 'ground-impact':
+        audio.sfx('impact_sol', { vol: e.heavy ? 1 : 0.7 });
         this.fx.spawnImpact(e.x, e.y, hexNum(e.color), e.radius, { heavy: e.heavy });
         if(e.heavy) this.renderer.shakeCamera(9, 0.2);
         break;
       case 'death': {
         this.fx.spawnImpact(e.unit.x, e.unit.y, 0xffffff, 70);
         if(e.unit.kind === 'champ' && !e.silent){
+          audio.sfx('elimination');
           this.fx.spawnFloatText(e.unit.x, e.unit.y - 30, 'ÉLIMINÉ', '#ff6a5a', true);
         }
         break;
@@ -243,6 +252,7 @@ export class Match{
         const id = e.unit.id;
         switch(e.kind){
           case 'strike': {
+            audio.sfx('elan', { vol: e.move === 'heavy' ? 1 : 0.8 });
             // Coup n° e.step de l'enchaînement : un clip différent à chaque
             // étape, joué dans la durée exacte du coup (élan + phase active).
             // Le clip couvre tout le coup (élan + phase active + retour) :
@@ -261,31 +271,37 @@ export class Match{
               { dur: heavy ? 0.62 : 0.46, set: heavy ? 'hitHeavy' : 'hitLight' });
             break;
           }
-          case 'knockdown': u3.playFight(id, 'death', Math.floor(Math.random() * 2), { dur: 0.9, hold: true }); break;
+          case 'knockdown': audio.sfx('chute'); u3.playFight(id, 'death', Math.floor(Math.random() * 2), { dur: 0.9, hold: true }); break;
           case 'getup':     u3.releaseFight(id); break;
           case 'block-on':  u3.playFight(id, 'block', 0, { dur: 0.5, hold: true }); break;
           case 'block-off': u3.releaseFight(id); break;
-          case 'blocked':   this.fx.spawnFloatText(e.unit.x, e.unit.y - 40, 'GARDE', '#9ec5ff'); break;
-          case 'dodge':     u3.playFight(id, 'dodge', Math.floor(Math.random() * 3), { dur: 0.42 }); break;
+          case 'blocked':   audio.sfx('garde'); this.fx.spawnFloatText(e.unit.x, e.unit.y - 40, 'GARDE', '#9ec5ff'); break;
+          case 'dodge':     audio.sfx('esquive'); u3.playFight(id, 'dodge', Math.floor(Math.random() * 3), { dur: 0.42 }); break;
           case 'dodge-perfect': this.fx.spawnFloatText(e.unit.x, e.unit.y - 40, 'ESQUIVE !', '#ffd166', true); break;
         }
         break;
       }
-      case 'fight-impact':
+      case 'fight-impact': {
+        // Le son suit l'arme : lame qui tranche, sinon coup de poing.
+        const armed = !!(WEAPON_BY_KEY[e.from.key] || []).length || !!e.from.gear?.main;
+        audio.sfx(e.heavy ? 'coup_lourd' : armed ? 'lame' : 'coup_leger');
         // Secousse + rapprochement bref de la caméra sur le coup qui porte.
         this.renderer.units3d?.duelImpact(e.heavy);
         // Impact : gerbe d'étincelles, plus large sur un coup lourd.
         this.fx.spawnImpact(e.to.x, e.to.y - 20, e.heavy ? 0xffc04a : 0xffffff, e.heavy ? 150 : 90);
         break;
+      }
 
       // ── Mode Combat ──
       case 'duel-round':
         if(this._hud){ this._hud.showDuelBar(this.sim); this._hud.announce(`ROUND ${e.round}`); }
         break;
       case 'duel-fight':
+        audio.sfx('gong');
         if(this._hud) this._hud.announce('COMBAT !');
         break;
       case 'duel-round-end':
+        audio.sfx(e.winner === 0 ? 'round_gagne' : 'round_perdu');
         if(this._hud) this._hud.announce(e.winner === 0 ? 'ROUND REMPORTÉ' : 'ROUND PERDU');
         break;
       case 'duel-combo':

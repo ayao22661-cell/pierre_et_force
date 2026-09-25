@@ -11,6 +11,7 @@ import { renderDeploy } from './ui/deploy.js';
 import { CombatHud } from './ui/combat-hud.js';
 import { renderEnd } from './ui/end.js';
 import { renderSlots } from './ui/slots.js';
+import { audio } from './engine/audio.js';
 
 // Préchargement des portraits 3D (capture des modèles GLB, voir
 // engine/character-portrait-3d.js). Le Hub s'affiche IMMÉDIATEMENT
@@ -28,6 +29,7 @@ let currentMission = null;
 let currentModeLabel = 'SIÈGE';
 
 function toHub(){
+  audio.music('menu');
   match?.destroy(); match = null;
   hud?.destroy(); hud = null;
   goTo('screen-hub');
@@ -51,6 +53,8 @@ function launchMatch(cfg){
   save.lastChamp = cfg.champ;
   writeSave(save);
   goTo('screen-game');
+  // Musique du combat : duel, boss, ou affrontement de campagne.
+  audio.music(cfg.mode === 'duel' ? 'duel' : cfg.mode === 'boss' ? 'boss' : 'combat');
 
   if(!renderer){
     renderer = new Renderer(document.getElementById('game-mount'));
@@ -72,6 +76,7 @@ function launchMatch(cfg){
 }
 
 function onMatchEnd({ victory }){
+  audio.music(victory ? 'victoire' : 'defaite');
   if(victory){
     // Un défi est rejouable : il ne compte pas dans la progression de campagne.
     if(currentMission.isDefi) recordDefiVictory(save, currentMission.id);
@@ -103,6 +108,12 @@ function pickSlot(){
     }
   });
 }
+
+// Son : le navigateur n'autorise l'audio qu'après un geste du joueur.
+// Chaque bouton cliqué fait son petit bruit d'interface.
+document.addEventListener('pointerdown', () => audio.unlock(), { once: true, capture: true });
+document.addEventListener('click', (ev) => { if(ev.target.closest('button')) audio.sfx('ui_clic'); }, true);
+audio.music('menu');
 
 const btnStart = document.getElementById('btn-start');
 btnStart.addEventListener('click', () => {
