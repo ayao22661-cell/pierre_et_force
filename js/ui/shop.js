@@ -8,6 +8,7 @@ import { TALENT_TREES, ITEMS } from '../data/items.js';
 import { iconSvg, icon, iconForStats } from './icons.js';
 import { writeSave } from '../game/state.js';
 import { el } from './screens.js';
+import { audio } from '../engine/audio.js';
 
 const REMOVED_ITEMS = { exo: 2900, armure_or: 3000 };
 
@@ -103,6 +104,7 @@ export function renderShop(save) {
   buy.disabled = !canBuy;
   if (canBuy) {
     buy.addEventListener('click', () => {
+      audio.sfx('ui_achat');
       save.cauris -= pick.cost;
       save.items.push(pick.id);
       writeSave(save);

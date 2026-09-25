@@ -7,6 +7,7 @@ import { iconSvg } from './icons.js';
 import { CAMPAIGN } from '../data/campaign.js';
 import { CHAMPS } from '../data/champions.js';
 import { writeSave } from '../game/state.js';
+import { audio } from '../engine/audio.js';
 
 // Alliés débloqués à la fin de chaque acte (boss battu).
 // Génère automatiquement la map mission-fin-d-acte → champion.
@@ -60,6 +61,7 @@ export function renderEnd(victory, mission, save, sim, onHub, onRetry){
     rewards.appendChild(rewardRow('Expérience', `+${xp} XP`));
     rewards.appendChild(rewardRow('Cauris', `+${cauris} ` + iconSvg('shell')));
     if(kills) rewards.appendChild(rewardRow('Éliminations', `${kills} ` + iconSvg('sword')));
+    if(leveled) audio.sfx('niveau');
     if(leveled) rewards.appendChild(rewardRow('NIVEAU+', `Niveau ${save.level} atteint !`, true));
 
     // Déblocage d'allié à la fin de l'acte
@@ -68,6 +70,7 @@ export function renderEnd(victory, mission, save, sim, onHub, onRetry){
     if(newAlly && !save.allies_unlocked.includes(newAlly)){
       save.allies_unlocked.push(newAlly);
       const champName = CHAMPS[newAlly]?.name || newAlly;
+      audio.sfx('recrue');
       rewards.appendChild(rewardRow('Allié débloqué ' + iconSvg('spark'), `${champName} rejoint l'équipe`, true));
     }
 
