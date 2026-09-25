@@ -46,6 +46,7 @@ let focus=q.get('wide')?new BABYLON.Vector3(0,1,0):hand.getAbsolutePosition();
 if(q.get('focus')==='arme' && inst.weapons?.[0]){ inst.weapons[0].computeWorldMatrix(true); focus=inst.weapons[0].getAbsolutePosition().clone(); }
 cam0.dispose();
 const cam=new BABYLON.ArcRotateCamera('c',parseFloat(q.get('a')||'-1.2'),parseFloat(q.get('b')||'1.3'),parseFloat(q.get('r')||(q.get('wide')?'4':'0.9')),focus,sc);
+cam.minZ=0.01;
 await sc.whenReadyAsync();for(let i=0;i<4;i++)sc.render();
 document.title='DONE';
 }catch(e){document.title='ERR';console.log('ERREUR',e.stack)}})();

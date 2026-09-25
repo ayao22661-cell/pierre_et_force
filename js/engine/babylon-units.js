@@ -1138,7 +1138,14 @@ export class BabylonUnits{
     const up = new V3(-e2[0] * sU, -e2[1] * sU, -e2[2] * sU).normalize();          // de la crosse vers le canon
     let fwd = new V3(e1[0] * muzzle, e1[1] * muzzle, e1[2] * muzzle);
     fwd = fwd.subtract(up.scale(V3.Dot(fwd, up))).normalize();
-    return { span: Math.max(tMax - tMin, 1e-6), grip, up, fwd };
+    // Recul de l'arrière de l'arme derrière la crosse (le long du canon) :
+    // c'est lui qui risque de rentrer dans le poignet.
+    let rear = 0;
+    for(let i = 0; i < N; i++){
+      const d = (pts[i * 3] - grip.x) * fwd.x + (pts[i * 3 + 1] - grip.y) * fwd.y + (pts[i * 3 + 2] - grip.z) * fwd.z;
+      if(-d > rear) rear = -d;
+    }
+    return { span: Math.max(tMax - tMin, 1e-6), grip, up, fwd, rear };
   }
 
   _attachGun(inst, unit, w, model, boneName, handNode){
@@ -1159,13 +1166,19 @@ export class BabylonUnits{
     inner.rotationQuaternion = BABYLON.Quaternion.FromRotationMatrix(R);
     const pivot = new BABYLON.TransformNode('wgrip_' + unit.id, this.scene);
     inner.parent = pivot;
-    pivot.position.copyFrom(g.grip);
-    if(w.offset) pivot.position.addInPlace(new V3(w.offset[0], w.offset[1], w.offset[2]));
-    pivot.parent = handNode;
     handNode.computeWorldMatrix(true);
     const sc3 = new V3();
     handNode.getWorldMatrix().decompose(sc3);
     const sMean = (Math.abs(sc3.x) + Math.abs(sc3.y) + Math.abs(sc3.z)) / 3 || 1;
+    pivot.position.copyFrom(g.grip);
+    // L'arrière de la culasse doit s'arrêter au creux du pouce, pas dans le
+    // poignet : on avance l'arme le long des doigts si elle déborde.
+    // (g.grip est en unités de l'os ; ×sMean ramène en mètres.)
+    const wristToGrip = V3.Dot(g.grip, g.up) * sMean;
+    const shift = Math.max(0, gs.rear * k - wristToGrip * 0.45);
+    if(shift > 0) pivot.position.addInPlace(g.up.scale(shift / sMean));
+    if(w.offset) pivot.position.addInPlace(new V3(w.offset[0], w.offset[1], w.offset[2]));
+    pivot.parent = handNode;
     if(Math.abs(sMean - 1) > 0.02) pivot.scaling.setAll(1 / sMean);
     return pivot;
   }
