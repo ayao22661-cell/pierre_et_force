@@ -315,6 +315,21 @@ function openChampDetail(key){
   lore.appendChild(el('p', '', c.bio));
   if(!champKey) lore.open = true;
   side.appendChild(lore);
+  // Chronologie : les dates de sa vie, puis ce qu'en dit la légende.
+  if(c.chrono?.length){
+    const chrono = el('details', 'hero-lore hero-chrono');
+    chrono.appendChild(el('summary', '', iconSvg('flag') + '<span>Chronologie</span>'));
+    const list = el('ol', 'chrono');
+    for(const e of c.chrono){
+      const li = el('li', 'chrono-item' + (e.legende ? ' legende' : ''));
+      li.appendChild(el('span', 'chrono-date', e.date));
+      li.appendChild(el('p', 'chrono-text', e.texte));
+      list.appendChild(li);
+    }
+    chrono.appendChild(list);
+    chrono.open = true;
+    side.appendChild(chrono);
+  }
   detail.appendChild(side);
   box.appendChild(detail);
   document.getElementById('panel-codex').scrollTop = 0;

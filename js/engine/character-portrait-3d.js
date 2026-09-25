@@ -37,6 +37,9 @@ const CAST_MODEL = {
   GROB:       'GROB.glb',
   KEITA:      'KEITA.glb',
   KANKOU:     'KANKOU.glb',
+  // Portrait seul (assets/portraits/YASUKE.webp) : le modèle de 24 Mo n'est
+  // pas embarqué dans le jeu, il ne sert qu'à régénérer l'image.
+  YASUKE:     'YASUKE.glb',
   DARK:       'DARK.glb',
   SGRUN:      'SGRUN.glb',
   SCHISSIN:   'SCHISSIN.glb',
