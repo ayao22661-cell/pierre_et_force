@@ -587,7 +587,7 @@ const polar = {
     // La base de Sgrün : un vaisseau posé sur la neige et ses sentinelles.
     c.scatterModel('AVION.glb', 2, Z.top(9), { height: 2.4, r: 3.6, fixed: true, shadow: 0.6 });
     // Près de la voie, dans le champ de la caméra (au-delà du bord haut, on ne les voyait pas).
-    for(const f of ['ARMURE_2.glb', 'ARMURE3.glb']) c.scatterModel(f, 2, Z.and(Z.field, Z.nearLane(1.5, 7)), { height: 2.3, r: 0.8, fixed: true });
+    for(const f of ['ARMURE_2.glb', 'ARMURE_1.glb']) c.scatterModel(f, 2, Z.and(Z.field, Z.nearLane(1.5, 7)), { height: 2.3, r: 0.8, fixed: true });
   },
 };
 
@@ -770,7 +770,7 @@ const voidB = {
       c.put(R.pick(shard), x, z, { y: 2 + R() * 3, s: 0.4 + R() * 0.5, solid: false, shadow: false });
     }
     c.scatterModel('BOUSSOLE.glb', 4, Z.and(Z.field, Z.nearLane(2, 99)), { height: 1.8, r: 1.0, y: null });
-    c.scatterModel('ARMURE3.glb', 3, Z.and(Z.field, Z.nearLane(1.5, 7)), { height: 2.4, r: 0.9, fixed: true });
+    c.scatterModel('ARMURE_2.glb', 3, Z.and(Z.field, Z.nearLane(1.5, 7)), { height: 2.4, r: 0.9, fixed: true });
     floatingMotes(c, S, '#c8a8ff');
   },
 };
@@ -809,7 +809,7 @@ const sgrun = {
     c.scatter([cr, col[1]], 12, Z.and(Z.field, Z.nearLane(1.5, 99)), { s: [0.7, 1.0] });
     for(const side of [-1, 1]) laneFollow(c, pyl, side * (c.laneHalf + 1.2), 12, {});
     // Sentinelles en armure : figées en faction de part et d'autre de l'allée.
-    const armures = ['ARMURE_1.glb', 'ARMURE_2.glb', 'ARMURE3.glb', 'ARMURE4.glb'];
+    const armures = ['ARMURE_1.glb', 'ARMURE_2.glb'];
     if(c.path) for(const side of [-1, 1]){
       const P = c.path;
       for(let t = 6; t < P.length - 6; t += 9){
@@ -856,7 +856,7 @@ const tower = {
     c.row(col, 'bottom', { step: 5, offset: 0.6, jitter: 0, gapChance: 0, s: [0.3, 0.3] });
     c.clusters(deskT, 12, 4, 2.5, Z.and(Z.field, Z.nearLane(1, 99)), { s: [1, 1], pad: 0.8 });
     c.scatter(plant, 10, Z.border, { s: [0.8, 1.1] });
-    for(const f of ['ARMURE_1.glb', 'ARMURE4.glb']) c.scatterModel(f, 3, Z.and(Z.field, Z.nearLane(2, 99)), { height: 2.2, r: 0.8 });
+    for(const f of ['ARMURE_1.glb', 'ARMURE_2.glb']) c.scatterModel(f, 3, Z.and(Z.field, Z.nearLane(2, 99)), { height: 2.2, r: 0.8 });
   },
 };
 

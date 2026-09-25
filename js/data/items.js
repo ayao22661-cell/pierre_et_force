@@ -2,9 +2,8 @@
 // `slot` : où l'objet se porte sur le héros du joueur (voir game/gear.js).
 //   main  — tenu en main droite, remplace l'arme du personnage ;
 //   off   — main gauche / avant-bras (bouclier, kora, boussole) ;
-//   armor — armure : ses stats ; avec `model` (armure riggée sur Mixamo,
-//           assets/models/), le héros la porte réellement. Sans modèle
-//           riggé, une aura de sa couleur autour du héros.
+//   armor — armure riggée sur Mixamo (`model`, dans assets/models/) : le
+//           héros la porte réellement, avec toutes ses animations.
 // `wear` : comment le modèle 3D se tient (mêmes champs que WEAPON_BY_KEY).
 const SWORD = (file, height, grip = 0.14) => ({ file, hand: 'RightHand', height, grip, roll: Math.PI / 2 });
 const GUN = (file, height) => ({ file, hand: 'RightHand', height, grip: 0.42, roll: 0 });
@@ -27,17 +26,15 @@ export const ITEMS = [
   {id:"revolver",name:"Revolver de Bassam",cost:1050,tier:2,from:["pistolet","gants"],st:{atk:24,as:0.2,crit:0.08},ico:"🔫",slot:"main",wear:GUN('PISTOLET2.glb', 0.36)},
   {id:"kora",name:"Kora du Griot",cost:950,tier:2,from:["perle","ceinture"],st:{hp:150,mana:250,regen:5},ico:"🪕",slot:"off",wear:{file:'HARPE.glb',hand:'LeftHand',height:0.7,grip:0.5,roll:0}},
   {id:"bouclier_garde",name:"Bouclier du Gardien",cost:1050,tier:2,from:["gilet","gants"],st:{arm:25,hp:200,as:0.08},ico:"🛡",slot:"off",wear:{file:'BOUCLIER_GARDIEN.glb',hand:'LeftForeArm',height:0.66,grip:0.5,roll:0,strap:true}},
-  {id:"armure_ombre",name:"Armure de l'Ombre",cost:1100,tier:2,from:["gilet","ceinture"],st:{arm:35,hp:200},ico:"🥷",slot:"armor",aura:"#8a5cff",prop:"ARMURE_1",model:"ARMURE_OMBRE.glb"},
-  {id:"armure_garde",name:"Armure du Gardien",cost:1150,tier:2,from:["gilet","gilet"],st:{arm:30,hp:320},ico:"🛡",slot:"armor",aura:"#5ab0ff",prop:"ARMURE_2"},
+  {id:"armure_ombre",name:"Armure de l'Ombre",cost:1100,tier:2,from:["gilet","ceinture"],st:{arm:35,hp:200},ico:"🥷",slot:"armor",prop:"ARMURE_1",model:"ARMURE_OMBRE.glb"},
+  {id:"armure_garde",name:"Armure du Gardien",cost:1150,tier:2,from:["gilet","gilet"],st:{arm:30,hp:320},ico:"🛡",slot:"armor",prop:"ARMURE_2",model:"ARMURE_GARDIEN.glb"},
   {id:"coupe",name:"Coupe-Coupe de l'Éveillé",cost:2900,tier:3,from:["faucille","arc"],st:{atk:60,as:0.35,crit:0.25,pen:0.12},ico:"🔱",slot:"main",wear:SWORD('EPEE.glb', 1.05)},
   {id:"rempart",name:"Rempart de Kong",cost:2800,tier:3,from:["bouclier","masque"],st:{arm:70,hp:650,regen:10},ico:"🏯",slot:"off",wear:{file:'BOUCLIER.glb',hand:'LeftForeArm',height:0.7,grip:0.5,roll:0,strap:true}},
   {id:"sceptre",name:"Sceptre de Kankou Moussa",cost:3000,tier:3,from:["baton","masque"],st:{atk:70,mana:500,ah:25,hp:200},ico:"👑",slot:"main",wear:{file:'BATON_MAGIQUE.glb',hand:'RightHand',height:1.85,grip:0.42,roll:0}},
   {id:"lamevide",name:"Lame du Vide",cost:3000,tier:3,from:["faucille","baton"],st:{atk:80,ah:15,crit:0.2,pen:0.3},ico:"🌑",slot:"main",wear:SWORD('EPEE.glb', 1.1)},
   {id:"ailes",name:"Ailes du Harmattan",cost:2600,tier:3,from:["bottes","arc"],st:{ms:70,as:0.4,ah:15},ico:"🪽"},
   {id:"coeur",name:"Cœur de Pierre",cost:3200,tier:3,from:["rempart","gilet"],st:{arm:100,hp:900,regen:15,thorns:0.25},ico:"💎"},
-  {id:"canon",name:"Canon de Sgrün",cost:2800,tier:3,from:["revolver","arc"],st:{atk:55,as:0.35,crit:0.2},ico:"🔫",slot:"main",wear:GUN('PISTOLET3.glb', 0.42)},
-  {id:"exo",name:"Exo-armure de Sgrün",cost:2900,tier:3,from:["armure_garde","bottes"],st:{arm:80,hp:500,as:0.1,ms:15},ico:"🤖",slot:"armor",aura:"#ff8a3d",prop:"ARMURE3"},
-  {id:"armure_or",name:"Armure de Kankou",cost:3000,tier:3,from:["armure_ombre","masque"],st:{arm:60,hp:700,regen:8},ico:"👑",slot:"armor",aura:"#f0c35a",prop:"ARMURE4"}
+  {id:"canon",name:"Canon de Sgrün",cost:2800,tier:3,from:["revolver","arc"],st:{atk:55,as:0.35,crit:0.2},ico:"🔫",slot:"main",wear:GUN('PISTOLET3.glb', 0.42)}
 ];
 export const TALENT_TREES = [
   {id:"eveil",name:"Pierre de l'Éveil",color:"#39FF7A",nodes:[
