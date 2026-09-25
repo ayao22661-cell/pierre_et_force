@@ -314,6 +314,21 @@ button{ font:inherit; color:inherit; }
 .hero-lore summary .pf-ico{ color:var(--pf-gold); }
 .hero-lore p{ font-size:13px; line-height:1.6; color:var(--pf-text-dim); padding-bottom:12px; max-width:62ch; }
 
+/* Chronologie : un fil doré, une pierre par date. La dernière entrée,
+   la légende, se distingue par sa pierre pleine et son texte penché. */
+.chrono{ list-style:none; margin:0; padding:2px 0 14px; position:relative; }
+.chrono::before{ content:''; position:absolute; left:5px; top:8px; bottom:18px; width:1px; background:linear-gradient(180deg, var(--pf-gold-dim), rgba(122,95,42,.2)); }
+.chrono-item{ position:relative; padding:0 0 12px 22px; }
+.chrono-item::before{
+  content:''; position:absolute; left:1px; top:5px; width:9px; height:9px; transform:rotate(45deg);
+  border:1px solid var(--pf-gold); background:#0d0e15;
+}
+.chrono-date{ display:block; font-family:var(--pf-font-display); font-size:15px; letter-spacing:1px; color:var(--pf-gold); line-height:1.2; }
+.chrono-text{ margin:2px 0 0; font-size:13px; line-height:1.55; color:var(--pf-text-dim); max-width:62ch; }
+.chrono-item.legende{ margin-top:4px; padding-top:10px; border-top:1px solid rgba(201,162,74,.16); }
+.chrono-item.legende::before{ top:15px; background:var(--pf-gold); box-shadow:0 0 8px var(--pf-gold-glow); }
+.chrono-item.legende .chrono-text{ font-family:Georgia, 'Times New Roman', serif; font-style:italic; color:var(--pf-text-soft); }
+
 /* ══════════════════════════════════════════════════════════════
    PROFIL
    ══════════════════════════════════════════════════════════════ */

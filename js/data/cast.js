@@ -37,6 +37,23 @@ export const CAST = {
   KANKOU:{name:"Kankou Moussa",titre:"L'Empereur",role:"EMPEREUR",camp:"neutre",
     bio:"Au sommet de sa puissance il possédait cinq pierres héritées de l'aube des temps. Sous les ruines, il a pris sa décision.",
     o:{skin:"#6b4226",cloth:"#4a3410",accent:"#f0c860",hair:"#141018",eye:"#ffd76b",hairStyle:0,mark:4,beard:3,crown:true,smile:false,prop:"medal"}},
+  // `chrono` : chronologie affichée dans sa fiche (onglet Héros). Les
+  // faits sont ceux des sources (lettres des jésuites, chronique de
+  // Nobunaga, journal de Matsudaira Ietada) ; l'entrée marquée
+  // `legende` appartient au récit de Pierre et Force.
+  YASUKE:{name:"Yasuke",titre:"Le Samouraï venu d'Afrique",role:"DUELLISTE",camp:"neutre",
+    bio:"Arrivé au Japon en 1579 au service d'un jésuite, il devient en 1581 l'homme de confiance d'Oda Nobunaga, le seigneur qui unifiait le pays. Les historiens débattent encore du titre exact qu'il portait ; la légende, elle, a tranché.",
+    o:{skin:"#4a2e1c",cloth:"#1e2f5e",accent:"#b3263a",hair:"#141018",eye:"#e6c98a",hairStyle:1,mark:0,beard:0,smile:false},
+    chrono:[
+      {date:"Vers 1555", texte:"Naît en Afrique de l'Est. Son origine exacte reste discutée : le Mozambique pour la plupart des récits, l'Éthiopie ou le Soudan du Sud pour d'autres."},
+      {date:"1579", texte:"Débarque au Japon aux côtés d'Alessandro Valignano, le jésuite chargé d'inspecter les missions d'Asie."},
+      {date:"23 mars 1581", texte:"À Kyoto, la foule se presse pour le voir. Oda Nobunaga le fait venir, doute que sa peau soit vraie et la fait frotter. Convaincu, il le prend à son service."},
+      {date:"1581", texte:"Nobunaga lui donne le nom de Yasuke, une résidence et une solde. Une chronique ajoute un sabre court, et le montre portant les armes de son seigneur."},
+      {date:"Mai 1582", texte:"Suit Nobunaga lors de la campagne contre le clan Takeda. Le journal de Matsudaira Ietada le décrit : six shaku deux bu, près d'un mètre quatre-vingt-dix, la peau noire comme l'encre."},
+      {date:"21 juin 1582", texte:"Akechi Mitsuhide trahit Nobunaga au temple Honnō-ji ; le seigneur se donne la mort. Yasuke rejoint le combat au château de Nijō, auprès de son fils Nobutada, puis rend son sabre."},
+      {date:"1582", texte:"Mitsuhide l'épargne et le fait conduire à la mission jésuite de Kyoto. Ensuite, les sources se taisent."},
+      {date:"Légende", legende:true, texte:"Une page du carnet du Général Keïta parle d'un géant venu d'Afrique qui aurait traversé les mers avec une pierre tiède cousue dans sa ceinture. Personne ne l'a jamais vue briller, et personne ne sait où il l'a laissée."},
+    ]},
 
   // ---- L'empire de Sgrün ----
   SGRUN:{name:"Sgrün",titre:"L'Empire",role:"OMBRE",camp:"ennemi",
