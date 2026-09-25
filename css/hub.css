@@ -326,6 +326,9 @@ button{ font:inherit; color:inherit; }
 .chrono-date{ display:block; font-family:var(--pf-font-display); font-size:15px; letter-spacing:1px; color:var(--pf-gold); line-height:1.2; }
 .chrono-text{ margin:2px 0 0; font-size:13px; line-height:1.55; color:var(--pf-text-dim); max-width:62ch; }
 .chrono-item.legende{ margin-top:4px; padding-top:10px; border-top:1px solid rgba(201,162,74,.16); }
+/* Plusieurs entrées de légende : seule la première ouvre la section. */
+.chrono-item.legende + .chrono-item.legende{ margin-top:0; padding-top:0; border-top:none; }
+.chrono-item.legende + .chrono-item.legende::before{ top:5px; }
 .chrono-item.legende::before{ top:15px; background:var(--pf-gold); box-shadow:0 0 8px var(--pf-gold-glow); }
 .chrono-item.legende .chrono-text{ font-family:Georgia, 'Times New Roman', serif; font-style:italic; color:var(--pf-text-soft); }
 
