@@ -2,9 +2,9 @@
 // `slot` : où l'objet se porte sur le héros du joueur (voir game/gear.js).
 //   main  — tenu en main droite, remplace l'arme du personnage ;
 //   off   — main gauche / avant-bras (bouclier, kora, boussole) ;
-//   armor — armure : ses stats, et une aura de sa couleur autour du héros
-//           (les modèles ARMURE sont des figurines d'un seul bloc, sans
-//           squelette : elles ne peuvent pas se plier avec le corps).
+//   armor — armure : ses stats ; avec `model` (armure riggée sur Mixamo,
+//           assets/models/), le héros la porte réellement. Sans modèle
+//           riggé, une aura de sa couleur autour du héros.
 // `wear` : comment le modèle 3D se tient (mêmes champs que WEAPON_BY_KEY).
 const SWORD = (file, height, grip = 0.14) => ({ file, hand: 'RightHand', height, grip, roll: Math.PI / 2 });
 const GUN = (file, height) => ({ file, hand: 'RightHand', height, grip: 0.42, roll: 0 });
@@ -26,7 +26,8 @@ export const ITEMS = [
   {id:"lance",name:"Lance Sénoufo",cost:1050,tier:2,from:["lame","gants"],st:{atk:28,arm:10,pen:0.08},ico:"🔱",slot:"main",wear:{file:'LANCE.glb',hand:'RightHand',height:1.95,grip:0.38,roll:Math.PI/2}},
   {id:"revolver",name:"Revolver de Bassam",cost:1050,tier:2,from:["pistolet","gants"],st:{atk:24,as:0.2,crit:0.08},ico:"🔫",slot:"main",wear:GUN('PISTOLET2.glb', 0.36)},
   {id:"kora",name:"Kora du Griot",cost:950,tier:2,from:["perle","ceinture"],st:{hp:150,mana:250,regen:5},ico:"🪕",slot:"off",wear:{file:'HARPE.glb',hand:'LeftHand',height:0.7,grip:0.5,roll:0}},
-  {id:"armure_ombre",name:"Armure de l'Ombre",cost:1100,tier:2,from:["gilet","ceinture"],st:{arm:35,hp:200},ico:"🥷",slot:"armor",aura:"#8a5cff",prop:"ARMURE_1"},
+  {id:"bouclier_garde",name:"Bouclier du Gardien",cost:1050,tier:2,from:["gilet","gants"],st:{arm:25,hp:200,as:0.08},ico:"🛡",slot:"off",wear:{file:'BOUCLIER_GARDIEN.glb',hand:'LeftForeArm',height:0.66,grip:0.5,roll:0,strap:true}},
+  {id:"armure_ombre",name:"Armure de l'Ombre",cost:1100,tier:2,from:["gilet","ceinture"],st:{arm:35,hp:200},ico:"🥷",slot:"armor",aura:"#8a5cff",prop:"ARMURE_1",model:"ARMURE_OMBRE.glb"},
   {id:"armure_garde",name:"Armure du Gardien",cost:1150,tier:2,from:["gilet","gilet"],st:{arm:30,hp:320},ico:"🛡",slot:"armor",aura:"#5ab0ff",prop:"ARMURE_2"},
   {id:"coupe",name:"Coupe-Coupe de l'Éveillé",cost:2900,tier:3,from:["faucille","arc"],st:{atk:60,as:0.35,crit:0.25,pen:0.12},ico:"🔱",slot:"main",wear:SWORD('EPEE.glb', 1.05)},
   {id:"rempart",name:"Rempart de Kong",cost:2800,tier:3,from:["bouclier","masque"],st:{arm:70,hp:650,regen:10},ico:"🏯",slot:"off",wear:{file:'BOUCLIER.glb',hand:'LeftForeArm',height:0.7,grip:0.5,roll:0,strap:true}},
