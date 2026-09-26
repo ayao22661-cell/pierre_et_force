@@ -11,7 +11,7 @@ export const STORY_CODE = { narration_debut: 'nd', narration_fin: 'nf', narr_ava
 /** Nom affiché des personnages sans fiche dans le Codex. */
 export const VOICE_NAMES = { PNJ_H: 'Le prêteur', PNJ_F: 'La doyenne', PNJ_VIEUX: "L'Ancien", KEITA: 'Général Keïta', DARK: "L'Ombre", KANKOU: 'Kankou Moussa', CENDRE: 'La Reine Cendre', CHRONOPHAGE: 'Le Chronophage', SKYGGE: 'Den skyggeløse mannen', SKYGGE_OMBRE: 'Den skyggeløse mannen' };
 
-/** Réplique -> personnage qui la dit (254 répliques). */
+/** Réplique -> personnage qui la dit (283 répliques). */
 export const RECIT_VOICES = {
   "m1_av_2":"BABA_TUNDE",
   "m1_vi_2":"BABA_TUNDE",
@@ -266,8 +266,37 @@ export const RECIT_VOICES = {
   "m50_av_2":"SGRUN",
   "m50_av_3":"LUNDGREN",
   "m150_av_1":"SGRUN",
-  "m150_av_2":"TARINE"
+  "m150_av_2":"TARINE",
+  "m155_av_2":"DINGANE",
+  "m155_av_3":"TARINE",
+  "m155_av_4":"DINGANE",
+  "m155_vi_1":"DINGANE",
+  "m155_de_1":"DINGANE",
+  "m156_av_2":"CENDRE",
+  "m156_av_3":"TARINE",
+  "m156_vi_1":"CENDRE",
+  "m156_de_1":"CENDRE",
+  "m153_av_1":"ADANDE",
+  "m153_av_2":"TARINE",
+  "m153_vi_1":"ADANDE",
+  "m153_vi_2":"ADANDE",
+  "m153_de_1":"ADANDE",
+  "m154_av_1":"CHRONOPHAGE",
+  "m154_av_2":"TARINE",
+  "m154_av_3":"CHRONOPHAGE",
+  "m154_vi_1":"CHRONOPHAGE",
+  "m154_de_1":"CHRONOPHAGE",
+  "m157_av_2":"SKYGGE",
+  "m157_av_3":"TARINE",
+  "m157_av_4":"SKYGGE",
+  "m157_vi_1":"SKYGGE",
+  "m157_vi_3":"LUNDGREN",
+  "m157_de_1":"SKYGGE",
+  "m40_vi_5":"SKYGGE",
+  "m46_av_4":"SKYGGE",
+  "m49_vi_5":"SAM",
+  "m150_vi_5":"SKYGGE_OMBRE"
 };
 
 /** Cris de combat disponibles par champion : debut, ultime, victoire, defaite. */
-export const COMBAT_VOICES = {"TARINE":["debut","ultime","victoire","defaite"],"SAM":["debut","ultime","victoire","defaite"],"KAREN":["debut","ultime","victoire","defaite"],"FULGENCE":["debut","ultime","victoire","defaite"],"BABA":["debut","ultime","victoire","defaite"],"LUNDGREN":["debut","ultime","victoire","defaite"],"DARK":["debut","ultime","victoire","defaite"],"SYLLA":["debut","ultime","victoire","defaite"],"SCHISSIN":["debut","ultime","victoire","defaite"],"OUSMANE":["debut","ultime","victoire","defaite"],"SUB":["debut","ultime","victoire","defaite"],"GROB":["debut","ultime","victoire","defaite"],"KRAG":["debut","ultime","victoire","defaite"],"MURK":["debut","ultime","victoire","defaite"],"VAEL":["debut","ultime","victoire","defaite"],"SGRUN":["debut","ultime","victoire","defaite"],"KANKOU":["debut","ultime","victoire","defaite"],"YASUKE":["debut","ultime","victoire","defaite"],"ADANDE":["debut","ultime","victoire","defaite"],"DINGANE":["ultime","defaite"]};
+export const COMBAT_VOICES = {"TARINE":["debut","ultime","victoire","defaite"],"SAM":["debut","ultime","victoire","defaite"],"KAREN":["debut","ultime","victoire","defaite"],"FULGENCE":["debut","ultime","victoire","defaite"],"BABA":["debut","ultime","victoire","defaite"],"LUNDGREN":["debut","ultime","victoire","defaite"],"DARK":["debut","ultime","victoire","defaite"],"SYLLA":["debut","ultime","victoire","defaite"],"SCHISSIN":["debut","ultime","victoire","defaite"],"OUSMANE":["debut","ultime","victoire","defaite"],"SUB":["debut","ultime","victoire","defaite"],"GROB":["debut","ultime","victoire","defaite"],"KRAG":["debut","ultime","victoire","defaite"],"MURK":["debut","ultime","victoire","defaite"],"VAEL":["debut","ultime","victoire","defaite"],"SGRUN":["debut","ultime","victoire","defaite"],"KANKOU":["debut","ultime","victoire","defaite"],"YASUKE":["debut","ultime","victoire","defaite"],"ADANDE":["debut","ultime","victoire","defaite"],"DINGANE":["debut","ultime","victoire","defaite"],"CENDRE":["debut","ultime","victoire","defaite"],"CHRONOPHAGE":["debut","ultime","victoire","defaite"],"SKYGGE":["debut","ultime","victoire","defaite"]};
