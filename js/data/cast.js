@@ -68,6 +68,68 @@ export const CAST = {
       {date:"Légende", legende:true, texte:"Une page du carnet du Général Keïta parle d'un géant venu d'Afrique qui aurait traversé les mers avec une pierre tiède cousue dans sa ceinture. Personne ne l'a jamais vue briller, et personne ne sait où il l'a laissée."},
       {date:"Aujourd'hui", legende:true, texte:"Seule rescapée du carnet brûlé, cette page s'embrase au contact de la pierre de Tarine. Yasuke en sort, le met à l'épreuve comme on l'avait jugé lui-même, puis rejoint son équipe."},
     ]},
+  // Adandé : personnage du récit. Les entrées non marquées `legende`
+  // décrivent l'histoire réelle des guerrières du Dahomey (les Agojie,
+  // que les Européens appelaient « Amazones »), pas sa vie à elle.
+  ADANDE:{name:"Adandé",titre:"La Dernière Mino",role:"LAME",camp:"neutre",
+    bio:"Guerrière du Dahomey arrachée à sa dernière bataille par la Pierre de l'Air. Un visage d'ange, et la lame la plus rapide de deux siècles.",
+    o:{skin:"#5a3520",cloth:"#1e3a6e",accent:"#e8e4d8",hair:"#141018",eye:"#e6c98a",hairStyle:2,mark:0,beard:0,smile:true},
+    chrono:[
+      {date:"XVIIᵉ siècle", texte:"Le royaume du Dahomey, dans l'actuel Bénin, forme un corps de guerrières d'élite : les Agojie, ou Mino, « nos mères ». Les voyageurs européens les appelleront les Amazones."},
+      {date:"XIXᵉ siècle", texte:"Sous les rois Ghézo puis Glèlè, elles sont plusieurs milliers. Entraînées dès l'enfance, elles gardent le palais d'Abomey et combattent en première ligne."},
+      {date:"1890", texte:"Première guerre contre la France. Les Agojie chargent à Cotonou et à Atchoupa ; les officiers français parlent de leur courage dans leurs rapports."},
+      {date:"1892", texte:"Seconde guerre. Face aux fusils à répétition, les guerrières se battent jusqu'au bout. Abomey tombe ; le roi Béhanzin se rend en 1894."},
+      {date:"1979", texte:"Nawi, la dernière Agojie connue, s'éteint à plus de cent ans."},
+      {date:"Légende", legende:true, texte:"Au matin de sa dernière bataille, en 1892, une pierre froide tombée d'un ciel sans nuages l'enveloppe de vent. Adandé disparaît du champ de bataille et de l'histoire."},
+      {date:"Aujourd'hui", legende:true, texte:"La Pierre de l'Air la dépose dans le Vide, au milieu des éclats de Vael. Elle croit d'abord que Tarine est l'ennemi. Elle se trompe rarement deux fois."},
+    ]},
+  // Dingane : faits historiques (sources sud-africaines et récits des
+  // Voortrekkers) ; les entrées `legende` appartiennent au récit.
+  DINGANE:{name:"Dingane",titre:"Le Roi de la Colline de l'Éléphant",role:"ROI",camp:"neutre",
+    bio:"Roi zoulou au temps où les colons hollandais entrent sur ses terres. Stratège implacable, il a vu tomber son monde et refuse de voir tomber celui de Tarine.",
+    o:{skin:"#4a2e1c",cloth:"#7a5a30",accent:"#e8d5a0",hair:"#141018",eye:"#e6c98a",hairStyle:0,mark:0,beard:1,crown:true,smile:false},
+    chrono:[
+      {date:"Vers 1795", texte:"Naît dans la famille royale zouloue, fils de Senzangakhona et demi-frère de Shaka, le fondateur du royaume."},
+      {date:"1828", texte:"Prend le pouvoir après la mort de Shaka, tué dans un complot où il a sa part. Il devient roi des Zoulous."},
+      {date:"Vers 1829", texte:"Fait bâtir sa capitale, uMgungundlovu, « le lieu secret de l'éléphant » : un immense enclos royal sur une colline."},
+      {date:"1837", texte:"Les Voortrekkers, colons d'origine hollandaise venus du Cap, arrivent dans le Natal et réclament des terres à son royaume."},
+      {date:"Février 1838", texte:"À uMgungundlovu, il fait exécuter le chef boer Piet Retief et ses hommes, venus négocier. La guerre éclate."},
+      {date:"16 décembre 1838", texte:"Bataille de la rivière Ncome, que les Boers appellent Blood River. Ses régiments se brisent contre les chariots et les fusils."},
+      {date:"1840", texte:"Vaincu par son demi-frère Mpande, allié aux Boers, il s'enfuit vers le nord et y meurt la même année."},
+      {date:"Légende", legende:true, texte:"La veille de Ncome, un sorcier lui aurait offert une pierre lourde comme une montagne. Il l'aurait refusée : « Un roi qui a besoin d'une pierre pour tenir debout n'est plus un roi. »"},
+      {date:"Aujourd'hui", legende:true, texte:"La Pierre de la Terre se souvient de ce refus. Au cœur de la guerre d'Abidjan, elle fait lever son écho pour juger Tarine, qui, lui, a accepté la sienne."},
+    ]},
+  // Ennemis de la deuxième vague (personnages du récit).
+  CENDRE:{name:"La Reine Cendre",titre:"La Gardienne Déchue",role:"REINE",camp:"ennemi",
+    bio:"Gardienne de la Pierre du Feu pendant quatre siècles, elle a vendu sa flamme à Sgrün en échange de l'éternité. Il ne lui reste que les braises.",
+    o:{skin:"#3a2418",cloth:"#2a2420",accent:"#ff6a2a",hair:"#141018",eye:"#ff8a3a",hairStyle:0,mark:3,beard:0,crown:true,smile:false},
+    chrono:[
+      {date:"XVIᵉ siècle", legende:true, texte:"Choisie par la Pierre du Feu, elle en devient la gardienne. Sa flamme veille sur les forges de toute une région."},
+      {date:"Quatre siècles", legende:true, texte:"Les porteurs passent, meurent, oublient. Elle reste, et la solitude refroidit ce que la pierre réchauffait."},
+      {date:"Il y a vingt ans", legende:true, texte:"Sgrün lui propose l'éternité contre sa flamme. Elle accepte. La Pierre du Feu lui échappe et finit entre les mains de Sylla."},
+      {date:"Aujourd'hui", legende:true, texte:"Elle garde les étages de la Tour Postel pour Sgrün, et elle attend le porteur qui osera reprendre ce qu'elle a perdu."},
+    ]},
+  CHRONOPHAGE:{name:"Le Chronophage",titre:"Le Chasseur de Temps",role:"CHASSEUR",camp:"ennemi",
+    bio:"Venu d'un futur lointain pour ramener Adandé à son époque, il efface au passage tout ce qu'elle a touché. Il ne parle jamais au présent.",
+    o:{skin:"#d8d4c8",cloth:"#e8e4d8",accent:"#e8c060",hair:"#e8e4d8",eye:"#e8c060",hairStyle:0,mark:0,beard:0,smile:false},
+    chrono:[
+      {date:"Dans un futur lointain", legende:true, texte:"Une époque où l'on répare les accidents du temps. Chaque personne déplacée est une faute à corriger."},
+      {date:"1892", legende:true, texte:"L'enlèvement d'Adandé par la Pierre de l'Air ouvre une déchirure. On l'envoie la refermer."},
+      {date:"Aujourd'hui", legende:true, texte:"Il la retrouve aux côtés de Tarine. Pour lui, l'équipe entière est une erreur à effacer."},
+    ]},
+
+  // Den skyggeløse mannen (« l'homme sans ombre », en norvégien) : personnage
+  // du récit, entièrement légendaire. Allié dans la première partie ; la
+  // suite du jeu en fera le grand méchant. Sgrün est son ombre arrachée.
+  SKYGGE:{name:"Den skyggeløse mannen",titre:"L'Homme sans Ombre",role:"DIEU",camp:"neutre",
+    bio:"Un dieu du Nord chassé du ciel, retrouvé endormi sous la glace. Il se bat aux côtés de Tarine avec une patience infinie. Au soleil, il ne laisse aucune ombre.",
+    o:{skin:"#d8cfc4",cloth:"#5a6470",accent:"#9fc4e8",hair:"#d8d8d0",eye:"#9fc4e8",hairStyle:1,mark:0,beard:1,smile:false},
+    chrono:[
+      {date:"Avant les runes", legende:true, texte:"Les récits du Nord parlent d'un dieu qui gardait la frontière entre le jour et la nuit. Aucun ne donne son vrai nom."},
+      {date:"Un hiver sans fin", legende:true, texte:"Les sagas disent qu'on l'a chassé du ciel. Elles ne disent pas pourquoi. Elles disent seulement qu'il n'a plus d'ombre depuis ce jour."},
+      {date:"Sept siècles", legende:true, texte:"Il dort sous la glace, au fond d'une faille que personne ne visite. Pendant ce temps, quelque chose qui lui appartenait apprend à marcher seul."},
+      {date:"Aujourd'hui", legende:true, texte:"La base de Sgrün fend la glace et le réveille. Il offre son épée à Tarine et dit avoir une dette envers Sgrün. Il ne dit pas laquelle."},
+    ]},
 
   // ---- L'empire de Sgrün ----
   SGRUN:{name:"Sgrün",titre:"L'Empire",role:"OMBRE",camp:"ennemi",

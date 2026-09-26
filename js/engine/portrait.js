@@ -27,12 +27,13 @@ var P_ROLE_BG={
   TANK     :["#2a1f52","#0a0518"], ASSASSIN:["#4a1a1a","#160404"],
   MAGE     :["#123f45","#04161a"], OMBRE   :["#241238","#080312"],
   ERUDIT   :["#1b3550","#050e18"], EMISSAIRE:["#301028","#0e0410"],
-  EMPEREUR :["#4a3410","#150e02"], TEMOIN  :["#3d2036","#100510"]
+  EMPEREUR :["#4a3410","#150e02"], TEMOIN  :["#3d2036","#100510"],
+  DIEU     :["#26323e","#080c12"]
 };
 var P_GLYPHS={
   DUELLISTE:"\u2694", SOUTIEN:"\u271A", TANK:"\u26E8", ASSASSIN:"\u2620",
   MAGE:"\u2726", OMBRE:"\u25C6", ERUDIT:"\u269B", EMISSAIRE:"\u2668",
-  EMPEREUR:"\u265B", TEMOIN:"\u270D"
+  EMPEREUR:"\u265B", TEMOIN:"\u270D", DIEU:"\u2735"
 };
 
 // ---------- Briques de dessin ----------

@@ -9,7 +9,7 @@
 export const STORY_CODE = { narration_debut: 'nd', narration_fin: 'nf', narr_avant: 'av', narr_victoire: 'vi', narr_defaite: 'de' };
 
 /** Nom affiché des personnages sans fiche dans le Codex. */
-export const VOICE_NAMES = { PNJ_H: 'Le prêteur', PNJ_F: 'La doyenne', PNJ_VIEUX: "L'Ancien", KEITA: 'Général Keïta', DARK: "L'Ombre", KANKOU: 'Kankou Moussa' };
+export const VOICE_NAMES = { PNJ_H: 'Le prêteur', PNJ_F: 'La doyenne', PNJ_VIEUX: "L'Ancien", KEITA: 'Général Keïta', DARK: "L'Ombre", KANKOU: 'Kankou Moussa', CENDRE: 'La Reine Cendre', CHRONOPHAGE: 'Le Chronophage', SKYGGE: 'Den skyggeløse mannen', SKYGGE_OMBRE: 'Den skyggeløse mannen' };
 
 /** Réplique -> personnage qui la dit (254 répliques). */
 export const RECIT_VOICES = {
@@ -270,4 +270,4 @@ export const RECIT_VOICES = {
 };
 
 /** Cris de combat disponibles par champion : debut, ultime, victoire, defaite. */
-export const COMBAT_VOICES = {"TARINE":["debut","ultime","victoire","defaite"],"SAM":["debut","ultime","victoire","defaite"],"KAREN":["debut","ultime","victoire","defaite"],"FULGENCE":["debut","ultime","victoire","defaite"],"BABA":["debut","ultime","victoire","defaite"],"LUNDGREN":["debut","ultime","victoire","defaite"],"DARK":["debut","ultime","victoire","defaite"],"SYLLA":["debut","ultime","victoire","defaite"],"SCHISSIN":["debut","ultime","victoire","defaite"],"OUSMANE":["debut","ultime","victoire","defaite"],"SUB":["debut","ultime","victoire","defaite"],"GROB":["debut","ultime","victoire","defaite"],"KRAG":["debut","ultime","victoire","defaite"],"MURK":["debut","ultime","victoire","defaite"],"VAEL":["debut","ultime","victoire","defaite"],"SGRUN":["debut","ultime","victoire","defaite"],"KANKOU":["debut","ultime","victoire","defaite"],"YASUKE":["debut","ultime","victoire","defaite"]};
+export const COMBAT_VOICES = {"TARINE":["debut","ultime","victoire","defaite"],"SAM":["debut","ultime","victoire","defaite"],"KAREN":["debut","ultime","victoire","defaite"],"FULGENCE":["debut","ultime","victoire","defaite"],"BABA":["debut","ultime","victoire","defaite"],"LUNDGREN":["debut","ultime","victoire","defaite"],"DARK":["debut","ultime","victoire","defaite"],"SYLLA":["debut","ultime","victoire","defaite"],"SCHISSIN":["debut","ultime","victoire","defaite"],"OUSMANE":["debut","ultime","victoire","defaite"],"SUB":["debut","ultime","victoire","defaite"],"GROB":["debut","ultime","victoire","defaite"],"KRAG":["debut","ultime","victoire","defaite"],"MURK":["debut","ultime","victoire","defaite"],"VAEL":["debut","ultime","victoire","defaite"],"SGRUN":["debut","ultime","victoire","defaite"],"KANKOU":["debut","ultime","victoire","defaite"],"YASUKE":["debut","ultime","victoire","defaite"],"ADANDE":["debut","ultime","victoire","defaite"],"DINGANE":["ultime","defaite"]};

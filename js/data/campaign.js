@@ -1293,7 +1293,9 @@ export const CAMPAIGN = [
           "Tarine utilise la Pierre de l'Eau pour créer un courant ascendant massif.",
           "La bulle est propulsée vers la surface à une vitesse folle.",
           "Ils jaillissent hors de l'océan et retombent sur le pont du bateau de pêche.",
-          "Sains et saufs."
+          "Sains et saufs.",
+          "Sur le pont, Tarine lui tend la Pierre de l'Eau, le temps de reprendre son souffle. L'homme sans ombre recule d'un pas, comme devant une flamme.",
+          "— Garde-la, dit Den skyggeløse mannen. Je ne touche plus à ces choses-là. Pas encore."
         ],
         narr_defaite:[
           "Le magma heurte la bulle.",
@@ -1461,14 +1463,15 @@ export const CAMPAIGN = [
         id:"m46",num:46,name:"Le Fantôme de l'Essence",
         desc:"Combattre le protecteur personnel de Sgrün.",
         brief:"Un homme en uniforme se tient devant la salle du trône. Ses yeux brillent du bleu de Sgrün, mais son visage... C'est le Général Keïta.",
-        allies_requis:[],allies_dispo:["LUNDGREN","BABA","FULGENCE","SAM"],
+        allies_requis:[],allies_dispo:["LUNDGREN","BABA","FULGENCE","SAM","SKYGGE"],
         ennemis:["DARK"],ennemis_extra:5,
         xp:1200,
         narr_avant:[
           "Tarine s'arrête net.",
           "— Papa ?",
           "L'homme lève une arme familière. L'arme de service.",
-          "— Ce n'est pas ton père, dit Sam, livide. C'est un écho de son esprit que Sgrün a capturé à sa mort."
+          "— Ce n'est pas ton père, dit Sam, livide. C'est un écho de son esprit que Sgrün a capturé à sa mort.",
+          "— Sgrün garde tout ce qu'il arrache, dit Den skyggeløse mannen à voix basse. Il ne sait pas faire autrement. Il a appris ça de quelqu'un."
         ],
         narr_victoire:[
           "Tarine désarme le Général sans le blesser gravement.",
@@ -1552,7 +1555,9 @@ export const CAMPAIGN = [
           "Tarine utilise la Terre pour s'ancrer, le Feu pour attaquer, l'Eau pour se soigner, et l'Équilibre pour contrer l'Air.",
           "Sgrün est acculé.",
           "La Pierre de l'Air se détache de son torse.",
-          "Sgrün s'effondre, son corps d'énergie se dissipant."
+          "Sgrün s'effondre, son corps d'énergie se dissipant.",
+          "Plus tard, Sam le fera remarquer à voix basse : pendant tout le combat, Sgrün n'a jamais frappé l'homme sans ombre le premier.",
+          "— Il l'évitait, dit Sam. Comme on évite un miroir."
         ],
         narr_defaite:[
           "Sgrün crée un vide parfait.",
@@ -1565,7 +1570,7 @@ export const CAMPAIGN = [
         id:"m50",num:50,name:"Le Choix de l'Éveillé",
         desc:"Maîtriser l'Omnipotence.",
         brief:"Avec les Cinq Pierres réunies, la réalité s'effondre. Vous avez le pouvoir de tout réécrire. Sgrün veut que vous fassiez la même erreur que lui.",
-        allies_requis:[],allies_dispo:["LUNDGREN","SAM","BABA","FULGENCE","KAREN"],
+        allies_requis:[],allies_dispo:["LUNDGREN","SAM","BABA","FULGENCE","KAREN","SKYGGE"],
         ennemis:["DARK"],ennemis_extra:12,
         xp:3000,
         narr_avant:[

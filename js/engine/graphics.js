@@ -287,6 +287,7 @@ export class Graphics{
   // ── Ombres ─────────────────────────────────────────────────
   addCaster(node){
     if(!this.shadowGen || !node) return;
+    if(node.metadata?.noShadow) return;   // l'Homme sans ombre n'en projette aucune
     for(const m of node.getChildMeshes(false)) if(m.getTotalVertices() > 0) this.shadowGen.addShadowCaster(m, false);
   }
   /** Maillage qui reçoit les ombres (le sol). */

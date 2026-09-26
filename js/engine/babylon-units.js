@@ -33,6 +33,9 @@ import { Graphics } from './graphics.js';
 const GLB_BASE = 'assets/models/';
 const ANIM_BASE = 'assets/animations/';
 
+// Personnages qui ne projettent aucune ombre au sol.
+const NO_SHADOW = new Set(['SKYGGE']);
+
 // Les 7 champions jouables ont chacun leur modèle dédié (Hunyuan 3D +
 // rig Mixamo), comme les 13 autres personnages du récit (portraits,
 // voir character-portrait-3d.js) et les deux sbires.
@@ -57,6 +60,12 @@ const MODEL_BY_KEY = {
   // Légendes, jouables une fois leur épreuve gagnée.
   KANKOU:   'KANKOU.glb',
   YASUKE:   'YASUKE.glb',
+  ADANDE:   'ADANDE.glb',
+  SKYGGE:   'SKYGGE.glb',
+  DINGANE:  'DINGANE.glb',
+  // Ennemis de la deuxième vague.
+  CENDRE:      'CENDRE.glb',
+  CHRONOPHAGE: 'CHRONOPHAGE.glb',
 };
 const MODEL_MINION_ALLY  = 'SBIRE.glb';
 const MODEL_MINION_ENEMY = 'ORC.glb';
@@ -436,6 +445,8 @@ const PROFILE_BY_KEY = {
   TARINE:'tarine', BABA:'baba', SAM:'sam', LUNDGREN:'lundgren', KAREN:'karen', FULGENCE:'fulgence', DARK:'dark',
   SYLLA:'sylla', SCHISSIN:'schissin', OUSMANE:'ousmane', SUB:'sub', GROB:'grob',
   KRAG:'krag', MURK:'murk', VAEL:'vael', SGRUN:'sgrun', KANKOU:'kankou', YASUKE:'yasuke',
+  // Nouveaux venus : même gestuelle qu'un personnage de même arme.
+  ADANDE:'vael', DINGANE:'karen', CENDRE:'kankou', CHRONOPHAGE:'sam', SKYGGE:'yasuke',
 };
 /** Animation « maison » d'un personnage (1er idle de son profil), pour
  *  les cartes animées du Codex. Les PNJ sans profil gardent une posture calme. */
@@ -1467,6 +1478,8 @@ export class BabylonUnits{
       for(const m of pivot.getChildMeshes(false)) m.visibility = 0.45;
     };
     ghostify();
+    // Den skyggeløse mannen ne projette aucune ombre (indice du récit).
+    if(NO_SHADOW.has(unit.key)) pivot.metadata = { ...(pivot.metadata || {}), noShadow: true };
     this.gfx?.addCaster(pivot);
     this._attachWeapons(inst, unit).then(ghostify).then(() => this.gfx?.addCaster(pivot)).catch(e => console.error('[BabylonUnits] ❌ échec attache d\'arme pour', unit.key, e));
     return inst;

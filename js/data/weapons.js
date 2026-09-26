@@ -58,6 +58,17 @@ export const WEAPON_BY_KEY = {
   // ── Légendes ──────────────────────────────────────────────
   KANKOU:   [{ file: 'BATON_MAGIQUE.glb', hand: 'RightHand', height: 1.80, grip: 0.42, roll: 0 }],
   YASUKE:   [{ file: 'EPEE1.glb',     hand: 'RightHand', height: 1.20, grip: 0.12, roll: Math.PI / 2 }],
+  // Adandé : la lame courte des guerrières du Dahomey.
+  ADANDE:   [{ file: 'EPEE3.glb',     hand: 'RightHand', height: 0.85, grip: 0.14, roll: Math.PI / 2 }],
+  // Dingane : la sagaie courte (iklwa) et le grand bouclier de cuir.
+  DINGANE:  [
+    { file: 'LANCE.glb',            hand: 'RightHand',   height: 1.55, grip: 0.4, roll: Math.PI / 2 },
+    { file: 'BOUCLIER_GARDIEN.glb', hand: 'LeftForeArm', height: 0.95, grip: 0.5, roll: 0, strap: true },
+  ],
+  // Den skyggeløse mannen : la grande épée runique d'un dieu déchu.
+  SKYGGE:   [{ file: 'EPEE1.glb',     hand: 'RightHand', height: 1.35, grip: 0.12, roll: Math.PI / 2 }],
+  CENDRE:      [{ file: 'BATON_MAGIQUE.glb', hand: 'RightHand', height: 1.75, grip: 0.42, roll: 0 }],
+  CHRONOPHAGE: [{ file: 'PISTOLET3.glb',     hand: 'RightHand', height: 0.42, grip: 0.42, roll: 0 }],
   SGRUN: [
     { file: 'BATON_MAGIQUE.glb', hand: 'RightHand', height: 1.85, grip: 0.42, roll: 0 },
     { file: 'BOUSSOLE.glb',      hand: 'LeftHand',  height: 0.28, grip: 0.5,  roll: 0 },

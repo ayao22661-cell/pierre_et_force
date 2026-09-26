@@ -197,9 +197,65 @@ export const CHAMPS = {
       {name:"Vent d'Est",desc:"Taille large devant lui : dégâts et ralentissement.",type:"cone",cd:[7,6.5,6,5.5,5],cost:40,range:230,angle:1.3,dmg:[80,120,160,200,240],ratio:1.0,cc:{t:"slow",d:1.2,p:0.3},color:"#f07a8a"},
       {name:"Garde de Nijō",desc:"Tient la position : bouclier et armure pendant 3 s.",type:"self",cd:[15,14,13,12,11],cost:45,shield:[80,130,180,230,280],shieldR:0.08,buff:{arm:[12,17,22,27,32],d:3},color:"#b3263a"},
       {name:"Honnō-ji",desc:"La nuit du temple : il traverse la zone en une série de coups, puis frappe plus vite.",type:"blink",cd:[85,70,55],cost:90,range:550,radius:210,dmg:[280,420,560],ratio:1.4,cc:{t:"stun",d:1.0},buff:{as:0.4,d:4},color:"#E84A5F",ult:true}
+    ]},
+  // ── Deuxième vague de légendes ──────────────────────────────────────
+  ADANDE:{name:"Adandé",title:"La Dernière Mino",role:"Assassin",
+    body:0, hp:600,hpL:92, mana:300,manaL:38, atk:76,atkL:4.6, arm:26,armL:3.4, as:0.78,asL:0.03, ms:355, range:95, ranged:false,
+    fx:"#3FB8E8",
+    passive:{name:"Visage d'Ange",desc:"Elle sourit avant de frapper : 15% de coups critiques, et chaque élimination réduit ses délais de 20%."},
+    innate:{crit:0.15,cdKill:0.2},
+    abil:[
+      {name:"Lame d'Abomey",desc:"Fond sur la cible et la frappe au bout de sa course.",type:"dash",cd:[8,7.5,7,6.5,6],cost:42,range:420,radius:85,dmg:[80,122,164,206,248],ratio:1.0,color:"#3FB8E8"},
+      {name:"Danse des Mino",desc:"Devient insaisissable : vitesse, cadence et esquive des tirs.",type:"self",cd:[15,14,13,12,11],cost:50,buff:{ms:[90,100,110,120,130],d:2,veil:true,as:0.3},color:"#bfe8ff"},
+      {name:"Pas à Travers le Temps",desc:"Disparaît et resurgit plus loin, frappant tout ce qui l'entoure.",type:"blink",cd:[13,12,11,10,9],cost:55,range:420,radius:130,dmg:[70,108,146,184,222],ratio:0.8,cc:{t:"slow",d:1,p:0.3},color:"#3FB8E8"},
+      {name:"Dernier Matin d'Abomey",desc:"La charge de 1892, qu'elle n'a jamais pu finir : une série de coups impossibles à suivre.",type:"blink",cd:[80,65,50],cost:90,range:600,radius:210,dmg:[300,450,600],ratio:1.5,cc:{t:"stun",d:0.8},buff:{as:0.5,ms:60,d:4},color:"#3FB8E8",ult:true}
+    ]},
+  DINGANE:{name:"Dingane",title:"Le Roi de la Colline de l'Éléphant",role:"Combattant",
+    body:2, hp:820,hpL:124, mana:300,manaL:38, atk:66,atkL:3.8, arm:42,armL:5, as:0.64,asL:0.02, ms:330, range:130, ranged:false,
+    fx:"#C8A050",
+    passive:{name:"Le Roi ne Plie Pas",desc:"Contrôles subis −25%, et ses boucliers sont 20% plus forts."},
+    innate:{ccRes:0.25,shieldP:0.2},
+    abil:[
+      {name:"Iklwa",desc:"La sagaie courte : une ruée et un coup sec qui ralentit.",type:"dash",cd:[8,7.5,7,6.5,6],cost:40,range:360,radius:90,dmg:[72,110,148,186,224],ratio:0.95,cc:{t:"slow",d:1.2,p:0.35},color:"#C8A050"},
+      {name:"Les Cornes du Buffle",desc:"L'encerclement des régiments zoulous : large balayage devant lui.",type:"cone",cd:[9,8.5,8,7.5,7],cost:45,range:260,angle:1.6,dmg:[78,118,158,198,238],ratio:0.9,cc:{t:"slow",d:1.4,p:0.3},color:"#e8d5a0"},
+      {name:"Mur de Cuir",desc:"Lève son grand bouclier : protection et armure pendant 3 s.",type:"self",cd:[15,14,13,12,11],cost:45,shield:[90,140,190,240,290],shieldR:0.08,buff:{arm:[14,19,24,29,34],d:3},color:"#8a6a3a"},
+      {name:"uMgungundlovu",desc:"Tous ses régiments d'un seul cri : tout autour est frappé et étourdi.",type:"nova",team:"enemy",cd:[95,80,65],cost:120,radius:340,dmg:[280,420,560],ratio:1.3,cc:{t:"stun",d:1.3},color:"#C8A050",ult:true}
+    ]},
+  CENDRE:{name:"La Reine Cendre",title:"La Gardienne Déchue",role:"Mage",
+    body:1, hp:900,hpL:140, mana:500,manaL:62, atk:64,atkL:3.6, arm:34,armL:4.4, as:0.62,asL:0.016, ms:320, range:320, ranged:true,
+    fx:"#FF6A2A", proj:"#ffb070",
+    passive:{name:"Ce Qui Reste des Braises",desc:"Ses ultimes frappent 25% plus fort, et ses braises la régénèrent sans cesse."},
+    innate:{ultDmg:0.25,regen:6},
+    abil:[
+      {name:"Pluie de Braises",desc:"Des braises tombent sur la zone visée.",type:"circle",cd:[8,7.5,7,6.5,6],cost:55,range:620,radius:180,delay:0.6,dmg:[90,135,180,225,270],ratio:1.0,color:"#FF6A2A"},
+      {name:"Couloir de Cendre",desc:"Une traînée de cendre brûlante qui ralentit tout ce qu'elle traverse.",type:"line",cd:[12,11,10,9,8],cost:60,range:720,width:95,delay:0.5,dmg:[70,110,150,190,230],ratio:0.8,cc:{t:"slow",d:1.6,p:0.35},color:"#b0a090"},
+      {name:"Terre Brûlée",desc:"Le sol s'embrase : dégâts continus pendant 4 s.",type:"zone",cd:[18,17,16,15,14],cost:70,range:600,radius:200,dur:4,tick:0.5,dmg:[26,34,42,50,58],cc:{t:"slow",d:0.8,p:0.3},color:"#FF6A2A"},
+      {name:"Couronne Incandescente",desc:"Sa couronne se rallume un instant : tout autour flambe et reste figé.",type:"nova",team:"enemy",cd:[100,85,70],cost:130,radius:330,delay:0.4,dmg:[320,480,640],ratio:1.5,cc:{t:"stun",d:1.3},color:"#ffb070",ult:true}
+    ]},
+  CHRONOPHAGE:{name:"Le Chronophage",title:"Le Chasseur de Temps",role:"Tireur",
+    body:1, hp:780,hpL:118, mana:420,manaL:54, atk:72,atkL:4.2, arm:30,armL:4, as:0.7,asL:0.026, ms:330, range:520, ranged:true,
+    fx:"#E8C060", proj:"#fff0b0",
+    passive:{name:"Hors du Temps",desc:"Contrôles subis −30%, et chaque élimination réduit ses délais de 25%."},
+    innate:{ccRes:0.3,cdKill:0.25},
+    abil:[
+      {name:"Balle Anachronique",desc:"Un tir qui arrive avant d'être parti : dégâts et ralentissement.",type:"shot",cd:[6,5.5,5,4.5,4],cost:45,range:680,width:34,speed:1500,dmg:[80,120,160,200,240],ratio:0.95,cc:{t:"slow",d:1.5,p:0.35},color:"#E8C060"},
+      {name:"Saut Temporel",desc:"Il se retire d'une seconde et réapparaît plus loin.",type:"blink",cd:[14,13,12,11,10],cost:55,range:450,radius:110,dmg:[60,92,124,156,188],ratio:0.7,color:"#fff0b0"},
+      {name:"Boucle",desc:"Une zone où le temps se répète : dégâts continus et ralentissement.",type:"zone",cd:[18,17,16,15,14],cost:70,range:620,radius:190,dur:4,tick:0.5,dmg:[22,30,38,46,54],cc:{t:"slow",d:0.8,p:0.4},color:"#E8C060"},
+      {name:"Effacement",desc:"Il raye une ligne du temps : rien ne reste debout sur son passage.",type:"line",cd:[105,90,75],cost:130,range:960,width:120,delay:0.8,dmg:[340,510,680],ratio:1.6,cc:{t:"stun",d:1.4},color:"#E8C060",ult:true}
+    ]},
+  SKYGGE:{name:"Den skyggeløse mannen",title:"L'Homme sans Ombre",role:"Combattant",
+    body:2, hp:860,hpL:128, mana:320,manaL:40, atk:74,atkL:4.4, arm:38,armL:4.6, as:0.66,asL:0.022, ms:340, range:120, ranged:false,
+    fx:"#9FC4E8",
+    passive:{name:"Sans Ombre",desc:"Rien ne l'accroche au sol : contrôles subis −25%, et il se régénère sans cesse. Ses ultimes frappent 20% plus fort."},
+    innate:{ccRes:0.25,regen:6,ultDmg:0.2},
+    abil:[
+      {name:"Lame du Crépuscule",desc:"Fond sur la cible dans un éclat de lumière froide.",type:"dash",cd:[8,7.5,7,6.5,6],cost:42,range:400,radius:95,dmg:[78,118,158,198,238],ratio:1.0,color:"#9FC4E8"},
+      {name:"Hiver des Dieux",desc:"Un souffle glacé devant lui : dégâts et ralentissement.",type:"cone",cd:[8,7.5,7,6.5,6],cost:45,range:250,angle:1.4,dmg:[80,120,160,200,240],ratio:0.95,cc:{t:"slow",d:1.5,p:0.35},color:"#dff0ff"},
+      {name:"Pas de Lumière",desc:"Sans ombre, on le perd de vue : vitesse, cadence et esquive des tirs.",type:"self",cd:[16,15,14,13,12],cost:50,buff:{ms:[80,90,100,110,120],d:2.5,veil:true,as:0.25},color:"#e8f4ff"},
+      {name:"Le Jour Qui Ne Finit Pas",desc:"Il fait tomber le jour sur tout ce qui l'entoure : dégâts et étourdissement. Aucune ombre ne reste.",type:"nova",team:"enemy",cd:[95,80,65],cost:120,radius:350,delay:0.3,dmg:[300,450,600],ratio:1.4,cc:{t:"stun",d:1.3},color:"#f4faff",ult:true}
     ]}
 };
-export const PLAYABLE = ["TARINE","KAREN","FULGENCE","SAM","LUNDGREN","BABA","DARK","KANKOU","YASUKE"];
+export const PLAYABLE = ["TARINE","KAREN","FULGENCE","SAM","LUNDGREN","BABA","DARK","KANKOU","YASUKE","ADANDE","DINGANE","SKYGGE"];
 export const ACTE_FOES = [
   {pool:["BABA","DARK"],boss:"DARK"},
   {pool:["DARK","SCHISSIN"],boss:"SCHISSIN"},

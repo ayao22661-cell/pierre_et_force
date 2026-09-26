@@ -108,6 +108,11 @@ const M = {
   m150: { biome: 'void' },                                  // Ce Qui Reste de Sgrün
   m151: { biome: 'sahel' },                                 // L'Épreuve de l'Empereur (Niani)
   m152: { biome: 'essence' },                               // La Page du Géant
+  m153: { biome: 'void' },                                  // La Dernière Mino
+  m154: { biome: 'void' },                                  // Le Chasseur de Temps
+  m157: { biome: 'polar' },                                 // L'Homme sans Ombre
+  m155: { biome: 'abidjan', setting: 'rue' },               // Le Roi Qui a Refusé
+  m156: { biome: 'tower', variant: 'feu' },                 // La Reine Cendre
 
   // DÉFIS
   d_cour: { biome: 'abidjan', setting: 'cour' },
