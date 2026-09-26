@@ -96,6 +96,16 @@ export class Renderer{
     this._cine = { t: 0, dur, zoom, slow };
   }
 
+  /** Arrêt sur image très bref (en secondes) : le coup « accroche ». */
+  hitstop(sec = 0.06){
+    // Pas plus d'un arrêt par quart de seconde : une zone d'ultime qui
+    // frappe plusieurs cibles à chaque tic ne doit pas hacher l'image.
+    const now = performance.now();
+    if(now - (this._stopAt || 0) < 250) return;
+    this._stopAt = now;
+    this._stop = sec;
+  }
+
   _onTick(ticker){
     const real = Math.min(ticker.deltaMS / 1000, 0.1);
     let scale = 1;
@@ -111,6 +121,7 @@ export class Renderer{
         this.camera.targetZoom = 1 + (c.zoom - 1) * w;
       }
     }
+    if(this._stop > 0){ this._stop -= real; scale = Math.min(scale, 0.04); }
     this.timeScale = scale;
     if(this.units3d?.scene) this.units3d.scene.animationTimeScale = scale;
     const tz = this.camera.targetZoom ?? 1;

@@ -35,8 +35,9 @@ function momentFor(missionId, night){
   for(const a of CAMPAIGN) for(const m of a.missions){
     if(m.id !== missionId) continue;
     const t = [m.brief || '', ...(m.narr_avant || []).slice(0, 2)].join(' ').toLowerCase();
-    if(/\b(aube|petit matin|lever du (jour|soleil)|au matin)\b/.test(t)) return 'aube';
-    if(/\b(soir|crépuscule|couchant|coucher du soleil|fin d'après-midi)\b/.test(t)) return 'crepuscule';
+    // Mots-clés en français et en anglais (le récit est traduit en jeu).
+    if(/\b(aube|petit matin|lever du (jour|soleil)|au matin|dawn|early morning|sunrise|in the morning)\b/.test(t)) return 'aube';
+    if(/\b(soir|crépuscule|couchant|coucher du soleil|fin d'après-midi|evening|dusk|twilight|sunset|late afternoon)\b/.test(t)) return 'crepuscule';
     return 'jour';
   }
   return 'jour';
@@ -87,7 +88,7 @@ export class BabylonTerrain{
     // Graphismes : brouillard et éclairage d'environnement AVANT la
     // création des matériaux (ils sont figés ensuite).
     this.gfx = scene.metadata?.gfx || null;
-    this.gfx?.beginPlace({ ...this.place, moment: momentFor(this.theme.missionId, !!this.place.night), seed: this.theme.missionId || this.seed });
+    this.gfx?.beginPlace({ ...this.place, moment: this.theme.moment || momentFor(this.theme.missionId, !!this.place.night), seed: this.theme.missionId || this.seed });
 
     const bx = layout.w / WORLD_SCALE, bz = layout.h / WORLD_SCALE;
     this.play = { x0: 0, x1: bx, z0: 0, z1: -bz };

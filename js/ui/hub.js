@@ -12,7 +12,8 @@ import { isDefiDone } from '../game/state.js';
 import { isMissionDone, isMissionAvailable, writeSave, spellRank, maxSpellRank, spellPointsLeft, spendSpellPoint } from '../game/state.js';
 import { renderShop, renderEveil, ensureShopSave } from './shop.js';
 import { el } from './screens.js';
-import { graphicsPanel, soundPanel, muteButton } from './sound-controls.js';
+import { graphicsPanel, soundPanel, muteButton, languagePanel } from './sound-controls.js';
+import { t, locale, shortName, isEN } from '../i18n/i18n.js';
 
 const CAMP_LABEL = { allie: 'ALLIÉ', ennemi: 'EMPIRE', neutre: 'LÉGENDE' };
 const CAMP_BADGE = { allie: 'ally', ennemi: 'enemy', neutre: 'legend' };
@@ -50,7 +51,7 @@ function missionCard({ num, name, mode, state, art, slice, total, reward }){
   card.style.backgroundImage = `url(${art})`;
   card.style.backgroundSize = `${Math.max(1, total) * 100}% auto`;
   card.style.backgroundPosition = `${total > 1 ? (slice / (total - 1)) * 100 : 50}% 30%`;
-  card.setAttribute('aria-label', `${num}. ${name} — ${mode}`);
+  card.setAttribute('aria-label', `${num}. ${name} — ${t(mode)}`);
   if(state === 'lock') card.disabled = true;
 
   card.appendChild(el('span', 'mcard-num', String(num)));
@@ -70,9 +71,9 @@ export function buildHub(save, onSelectMission){
   // Deux listes dans l'onglet Missions : la campagne (linéaire) et les
   // défis (rejouables, débloqués à l'avancement).
   const switcher = el('div', 'seg');
-  const btnCamp = el('button', 'seg-btn active', 'Campagne');
-  const btnDefis = el('button', 'seg-btn', 'Défis');
-  const btnDuel = el('button', 'seg-btn', 'Combat');
+  const btnCamp = el('button', 'seg-btn active', t('Campagne'));
+  const btnDefis = el('button', 'seg-btn', t('Défis'));
+  const btnDuel = el('button', 'seg-btn', t('Combat'));
   switcher.appendChild(btnCamp); switcher.appendChild(btnDefis); switcher.appendChild(btnDuel);
   root.appendChild(switcher);
   const listCamp = el('div', 'mission-list');
@@ -101,7 +102,7 @@ export function buildHub(save, onSelectMission){
     const done = acte.missions.filter(m => isMissionDone(save, m.id)).length;
     const block = el('section', 'acte');
     const head = el('div', 'acte-head');
-    head.appendChild(el('span', 'acte-roman', acte.label.replace('ACTE ', '')));
+    head.appendChild(el('span', 'acte-roman', acte.label.replace(/^\S+\s+/, '')));
     head.appendChild(el('span', 'acte-name', acte.titre.toLowerCase()));
     const pips = el('span', 'acte-pips');
     acte.missions.forEach((m, i) => pips.appendChild(el('i', i < done ? 'on' : '')));
@@ -136,7 +137,7 @@ export function buildHub(save, onSelectMission){
 
   const doneCount = save.missions_done.length;
   const progEl = document.getElementById('hub-progress');
-  if(progEl) progEl.textContent = `${doneCount} / ${ids.length} missions`;
+  if(progEl) progEl.textContent = t('{a} / {b} missions', { a: doneCount, b: ids.length });
 
   ensureShopSave(save);
   _bindTabs();
@@ -156,7 +157,7 @@ function buildDefis(save, onSelectMission, host){
   const open = defisAvailable(done);
   const head = el('div', 'acte-head');
   head.appendChild(el('span', 'acte-roman', iconSvg('target')));
-  head.appendChild(el('span', 'acte-name', 'rejouables, pour gagner des cauris'));
+  head.appendChild(el('span', 'acte-name', t('rejouables, pour gagner des cauris')));
   host.appendChild(head);
   const grid = el('div', 'mcard-grid');
   DEFIS.forEach((d, i) => {
@@ -164,7 +165,7 @@ function buildDefis(save, onSelectMission, host){
     const state = avail ? (isDefiDone(save, d.id) ? 'done' : 'next') : 'lock';
     const card = missionCard({ num: d.num, name: d.name, mode: d.mode, state, art: artForActe(i), slice: 1, total: 3, reward: `+${d.cauris}` });
     if(!avail){
-      card.appendChild(el('span', 'mcard-req', `${d.req} missions`));
+      card.appendChild(el('span', 'mcard-req', t('{n} missions', { n: d.req })));
     } else {
       // isDefi : la fin de match saura ne pas l'ajouter à la campagne.
       card.addEventListener('click', () => onSelectMission({ ...d, isDefi: true }, d.mode));
@@ -184,13 +185,13 @@ function buildDuels(save, onSelectMission, host){
   const open = duelsAvailable(done);
   const head = el('div', 'acte-head');
   head.appendChild(el('span', 'acte-roman', iconSvg('fist')));
-  head.appendChild(el('span', 'acte-name', 'duels en rounds gagnants, un contre un'));
+  head.appendChild(el('span', 'acte-name', t('duels en rounds gagnants, un contre un')));
   host.appendChild(head);
 
   // Combat libre : son personnage, son adversaire.
   const freeHead = el('div', 'acte-head');
   freeHead.appendChild(el('span', 'acte-roman', iconSvg('user')));
-  freeHead.appendChild(el('span', 'acte-name', 'combat libre, ton personnage contre l\'adversaire de ton choix'));
+  freeHead.appendChild(el('span', 'acte-name', t('combat libre, ton personnage contre l\'adversaire de ton choix')));
   const freeCard = missionCard({ num: '★', name: FREE_DUEL.name, mode: 'COMBAT', state: 'next', art: artForActe(4), slice: 1, total: 3 });
   freeCard.classList.add('mcard-free');
   freeCard.addEventListener('click', () => onSelectMission({ ...FREE_DUEL, isDefi: true }, 'COMBAT'));
@@ -205,7 +206,7 @@ function buildDuels(save, onSelectMission, host){
     const avail = open.includes(d);
     const state = avail ? (isDefiDone(save, d.id) ? 'done' : 'next') : 'lock';
     const card = missionCard({ num: d.num, name: d.name, mode: 'COMBAT', state, art: artForActe(i), slice: 1, total: 3, reward: `+${d.cauris}` });
-    if(!avail) card.appendChild(el('span', 'mcard-req', `${d.req} missions`));
+    if(!avail) card.appendChild(el('span', 'mcard-req', t('{n} missions', { n: d.req })));
     else card.addEventListener('click', () => onSelectMission({ ...d, isDefi: true }, 'COMBAT'));
     grid.appendChild(card);
   });
@@ -222,7 +223,7 @@ export function updateHubHeader(save){
   const caurisBadge = document.getElementById('hub-cauris-badge');
   if(caurisBadge && !caurisBadge.querySelector('svg')) caurisBadge.insertBefore(icon('shell'), caurisBadge.firstChild);
   const cauris = document.getElementById('hub-cauris');
-  if(cauris) cauris.textContent = save.cauris.toLocaleString('fr-FR');
+  if(cauris) cauris.textContent = save.cauris.toLocaleString(locale());
 }
 
 // ---------------------------------------------------------------------
@@ -274,7 +275,7 @@ function renderCodex(){
     setAnimatedPortrait(img, k); img.alt = '';
     card.appendChild(img);
     if(champKeyFor(k)) card.appendChild(el('span', 'hero-card-play', iconSvg('sword'), ));
-    card.appendChild(el('span', 'hero-card-name', c.name.split(' ')[0]));
+    card.appendChild(el('span', 'hero-card-name', shortName(c.name)));
     card.setAttribute('aria-label', `${c.name}, ${c.titre}`);
     card.addEventListener('click', () => openChampDetail(k));
     box.appendChild(card);
@@ -298,11 +299,11 @@ function openChampDetail(key){
   setAnimatedPortrait(img, key); img.alt = c.name;
   stage.appendChild(img);
   const back = el('button', 'icon-btn hero-back', iconSvg('back'));
-  back.setAttribute('aria-label', 'Retour aux héros');
+  back.setAttribute('aria-label', t('Retour aux héros'));
   back.addEventListener('click', renderCodex);
   stage.appendChild(back);
   const plate = el('div', 'hero-plate');
-  plate.appendChild(el('span', 'camp-tag', CAMP_LABEL[c.camp] || 'LÉGENDE'));
+  plate.appendChild(el('span', 'camp-tag', t(CAMP_LABEL[c.camp] || 'LÉGENDE')));
   plate.appendChild(el('div', 'hero-plate-name', c.name));
   plate.appendChild(el('div', 'hero-plate-title', c.titre));
   stage.appendChild(plate);
@@ -316,14 +317,14 @@ function openChampDetail(key){
   if(champKey && currentSave) side.appendChild(_renderAbilityPanel(champKey));
   // La bio reste à portée de main, repliée : l'image passe en premier.
   const lore = el('details', 'hero-lore');
-  lore.appendChild(el('summary', '', iconSvg('scroll') + '<span>Histoire</span>'));
+  lore.appendChild(el('summary', '', iconSvg('scroll') + `<span>${t('Histoire')}</span>`));
   lore.appendChild(el('p', '', c.bio));
   if(!champKey) lore.open = true;
   side.appendChild(lore);
   // Chronologie : les dates de sa vie, puis ce qu'en dit la légende.
   if(c.chrono?.length){
     const chrono = el('details', 'hero-lore hero-chrono');
-    chrono.appendChild(el('summary', '', iconSvg('flag') + '<span>Chronologie</span>'));
+    chrono.appendChild(el('summary', '', iconSvg('flag') + `<span>${t('Chronologie')}</span>`));
     const list = el('ol', 'chrono');
     for(const e of c.chrono){
       const li = el('li', 'chrono-item' + (e.legende ? ' legende' : ''));
@@ -348,7 +349,7 @@ function openChampDetail(key){
  * jouée avec ce champion (voir game/state.js, awardSpellPoint) —
  * indépendant des points de talent (onglet Éveil, communs à tous).
  */
-const SLOT_KEYS = ['A', 'Z', 'E', 'R'];
+const SLOT_KEYS = isEN ? ['Q', 'W', 'E', 'R'] : ['A', 'Z', 'E', 'R'];
 function _renderAbilityPanel(champKey){
   const d = CHAMPS[champKey];
   const panel = el('div', 'abil');
@@ -386,9 +387,9 @@ function _renderAbilityPanel(champKey){
     const atRank = (v) => Array.isArray(v) ? (v[rank] ?? v[v.length - 1]) : v;
     info.innerHTML = '';
     const top = el('div', 'abil-top');
-    top.appendChild(el('span', 'abil-name', a.name + (a.ult ? ' <em>ultime</em>' : '')));
+    top.appendChild(el('span', 'abil-name', a.name + (a.ult ? ` <em>${t('ultime')}</em>` : '')));
     const canSpend = rank < max && spellPointsLeft(currentSave, champKey) > 0;
-    const up = el('button', 'pf-btn pf-btn-sm abil-up' + (canSpend ? ' pf-btn-brand' : ' disabled'), rank >= max ? 'Max' : iconSvg('plus') + ' Rang');
+    const up = el('button', 'pf-btn pf-btn-sm abil-up' + (canSpend ? ' pf-btn-brand' : ' disabled'), rank >= max ? t('Max') : iconSvg('plus') + ' ' + t('Rang'));
     if(canSpend) up.addEventListener('click', () => { spendSpellPoint(currentSave, champKey, selected); refresh(); });
     else up.disabled = true;
     top.appendChild(up);
@@ -415,27 +416,27 @@ function renderProfile(save){
   if(!root) return;
   root.innerHTML = '';
 
-  const t = CHAMPS.TARINE;
+  const hero0 = CHAMPS.TARINE;
   const cast = CAST.TARINE;
 
   const hero = el('div', 'profile-hero');
-  hero.style.setProperty('--accent', t.fx);
+  hero.style.setProperty('--accent', hero0.fx);
   const img = el('img', 'profile-hero-img');
-  img.src = portraitFor('TARINE'); img.alt = t.name;
+  img.src = portraitFor('TARINE'); img.alt = hero0.name;
   hero.appendChild(img);
   const plate = el('div', 'hero-plate');
-  const lvl = el('div', 'profile-level', `<b>${save.level}</b><small>niv</small>`);
+  const lvl = el('div', 'profile-level', `<b>${save.level}</b><small>${t('niv')}</small>`);
   plate.appendChild(lvl);
-  plate.appendChild(el('div', 'hero-plate-name', t.name));
-  plate.appendChild(el('div', 'hero-plate-title', cast?.titre || t.role));
+  plate.appendChild(el('div', 'hero-plate-name', hero0.name));
+  plate.appendChild(el('div', 'hero-plate-title', cast?.titre || t(hero0.role)));
   const xpNeed = xpForLevel(save.level);
   const xpPct = save.level >= ACCOUNT_MAX ? 100 : Math.min(100, Math.round(100 * save.xp / xpNeed));
   const bar = el('div', 'pf-bar pf-bar-xp profile-xp-bar');
   const fill = el('div', 'pf-bar-fill'); fill.style.transform = `scaleX(${xpPct/100})`;
   bar.appendChild(fill);
-  bar.title = save.level >= ACCOUNT_MAX ? 'Niveau max' : `${save.xp} / ${xpNeed} XP`;
+  bar.title = save.level >= ACCOUNT_MAX ? t('Niveau max') : `${save.xp} / ${xpNeed} XP`;
   plate.appendChild(bar);
-  plate.appendChild(el('div', 'profile-xp-txt', save.level >= ACCOUNT_MAX ? 'max' : `${save.xp} / ${xpNeed} xp`));
+  plate.appendChild(el('div', 'profile-xp-txt', save.level >= ACCOUNT_MAX ? t('max') : `${save.xp} / ${xpNeed} xp`));
   hero.appendChild(plate);
   root.appendChild(hero);
 
@@ -445,18 +446,18 @@ function renderProfile(save){
   // déjà dans Héros) : missions, victoires, éliminations, alliés.
   const st = save.stats || {};
   const stats = el('div', 'stat-grid');
-  stats.appendChild(statTile('flag', `${save.missions_done.length}<small>/${ids.length}</small>`, 'Missions'));
-  stats.appendChild(statTile('fist', `${st.wins || 0}<small>/${st.games || 0}</small>`, 'Victoires'));
-  stats.appendChild(statTile('sword', st.kills || 0, 'Éliminations'));
-  stats.appendChild(statTile('user', save.allies_unlocked.length, 'Alliés'));
+  stats.appendChild(statTile('flag', `${save.missions_done.length}<small>/${ids.length}</small>`, t('Missions')));
+  stats.appendChild(statTile('fist', `${st.wins || 0}<small>/${st.games || 0}</small>`, t('Victoires')));
+  stats.appendChild(statTile('sword', st.kills || 0, t('Éliminations')));
+  stats.appendChild(statTile('user', save.allies_unlocked.length, t('Alliés')));
   side.appendChild(stats);
 
   // La campagne, acte par acte : une pierre qui se remplit.
   const actsDone = CAMPAIGN.filter(a => a.missions.every(m => isMissionDone(save, m.id))).length;
   const stonesHead = el('div', 'acte-head');
   stonesHead.appendChild(el('span', 'acte-roman', iconSvg('gem')));
-  stonesHead.appendChild(el('span', 'acte-name', 'la campagne'));
-  stonesHead.appendChild(el('span', 'profile-count', `${actsDone}<small>/${CAMPAIGN.length} actes</small>`));
+  stonesHead.appendChild(el('span', 'acte-name', t('la campagne')));
+  stonesHead.appendChild(el('span', 'profile-count', `${actsDone}<small>/${t('{n} actes', { n: CAMPAIGN.length })}</small>`));
   side.appendChild(stonesHead);
   const stones = el('div', 'act-stones');
   CAMPAIGN.forEach(acte => {
@@ -465,15 +466,16 @@ function renderProfile(save){
     const st = el('div', 'act-stone' + (done === total ? ' full' : done ? ' part' : ''));
     st.style.setProperty('--fill', (done / total).toFixed(3));
     st.title = `${acte.label} — ${acte.titre} : ${done}/${total}`;
-    st.appendChild(el('span', '', acte.label.replace('ACTE ', '')));
+    st.appendChild(el('span', '', acte.label.replace(/^\S+\s+/, '')));
     stones.appendChild(st);
   });
   side.appendChild(stones);
 
   side.appendChild(soundPanel());
   side.appendChild(graphicsPanel());
+  side.appendChild(languagePanel());
 
-  const slotBtn = el('button', 'pf-btn pf-btn-ghost pf-btn-sm profile-slot-btn', 'Changer de sauvegarde');
+  const slotBtn = el('button', 'pf-btn pf-btn-ghost pf-btn-sm profile-slot-btn', t('Changer de sauvegarde'));
   slotBtn.addEventListener('click', () => window.dispatchEvent(new Event('pf-go-to-slots')));
   side.appendChild(slotBtn);
   root.appendChild(side);
@@ -503,7 +505,7 @@ function renderJournal(save){
     any = true;
     const block = el('section', 'journal-acte');
     const head = el('div', 'acte-head');
-    head.appendChild(el('span', 'acte-roman', acte.label.replace('ACTE ', '')));
+    head.appendChild(el('span', 'acte-roman', acte.label.replace(/^\S+\s+/, '')));
     head.appendChild(el('span', 'acte-name', acte.titre.toLowerCase()));
     const pips = el('span', 'acte-pips');
     acte.missions.forEach(m => pips.appendChild(el('i', isMissionDone(save, m.id) ? 'on' : '')));
@@ -518,6 +520,6 @@ function renderJournal(save){
     root.appendChild(block);
   });
   if(!any){
-    root.appendChild(el('div', 'empty-state', iconSvg('scroll') + '<p>Chaque victoire ajoute une page au journal de Tarine.</p>'));
+    root.appendChild(el('div', 'empty-state', iconSvg('scroll') + `<p>${t('Chaque victoire ajoute une page au journal de Tarine.')}</p>`));
   }
 }

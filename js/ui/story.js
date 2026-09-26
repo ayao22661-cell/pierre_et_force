@@ -13,6 +13,7 @@ import { audio } from '../engine/audio.js';
 import { RECIT_VOICES, VOICE_NAMES, STORY_CODE } from '../data/voices.js';
 import { CAST } from '../data/cast.js';
 import { setAnimatedPortrait } from '../engine/portraits.js';
+import { t as tr } from '../i18n/i18n.js';
 
 const TYPE_MS = 18;   // vitesse d'écriture (ms par caractère)
 
@@ -28,7 +29,7 @@ export function playStory({ lines, mid, where, title, bg }){
       <div class="story-bg"><img alt=""></div>
       <div class="story-top">
         <span class="story-title"></span>
-        <button type="button" class="pf-btn pf-btn-ghost pf-btn-sm story-skip">PASSER</button>
+        <button type="button" class="pf-btn pf-btn-ghost pf-btn-sm story-skip">${tr('PASSER')}</button>
       </div>
       <div class="story-cast"><img class="story-portrait" alt=""></div>
       <div class="story-box">

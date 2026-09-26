@@ -6,6 +6,8 @@
 // dans un petit panneau, avec de quoi la transmettre telle quelle.
 // ============================================================
 
+import { t as tr } from '../i18n/i18n.js';
+
 const lines = [];
 let panel = null;
 
@@ -21,7 +23,7 @@ function render(){
     ].join(';');
     const head = document.createElement('div');
     head.style.cssText = 'display:flex;justify-content:space-between;gap:8px;margin-bottom:6px;font-weight:bold;color:#ff8f87';
-    head.innerHTML = '<span>Erreur — faites une capture d\'écran</span>';
+    head.innerHTML = `<span>${tr('Erreur — faites une capture d\'écran')}</span>`;
     const close = document.createElement('button');
     close.textContent = '✕';
     close.style.cssText = 'background:none;border:0;color:#ff8f87;font-size:16px;cursor:pointer';

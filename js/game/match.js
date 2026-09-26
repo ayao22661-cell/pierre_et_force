@@ -11,6 +11,7 @@ import { MOVES } from './duel.js';
 import { audio } from '../engine/audio.js';
 import { COMBAT_VOICES } from '../data/voices.js';
 import { WEAPON_BY_KEY } from '../data/weapons.js';
+import { t as tr, isEN } from '../i18n/i18n.js';
 
 const THEME_DEFAULT = { g1:'#3a2c1e', g2:'#463524', lane:'#6a5138', acc:'#c9a24a', wall:'#1c140c' };
 
@@ -64,10 +65,11 @@ export class Match{
       if(k === 'escape' || k === 'p'){ this._hud?.togglePause(); return; }
       if(this.paused) return;
       this.keys[k] = true;
-      const slot = { a: 0, z: 1, e: 2, r: 3 }[k];
+      // AZERTY en français, QWERTY en anglais (W y lance le 2e sort).
+      const slot = (isEN ? { q: 0, w: 1, e: 2, r: 3 } : { a: 0, z: 1, e: 2, r: 3 })[k];
       if(slot !== undefined) this.sim.requestCast(this.sim.player, slot);
       // Espace (ou W) : coup de base à la main.
-      if(k === ' ' || k === 'spacebar' || k === 'w'){ e.preventDefault(); this.basicAttack(); }
+      if(k === ' ' || k === 'spacebar' || (k === 'w' && !isEN)){ e.preventDefault(); this.basicAttack(); }
       // Mode Combat : coup lourd, garde (maintenue) et esquive.
       if(this.sim.mode === 'duel'){
         if(k === 'k'){ e.preventDefault(); this.sim.duelStrike('heavy'); }
@@ -143,6 +145,7 @@ export class Match{
   _burst(kind, x, y, o){ this.renderer.units3d?.gfx?.burst(kind, x, y, o); }
 
   _onSimEvent(e){
+    this._hud?.tutorial?.event(e);
     switch(e.type){
       case 'swing':
         // Coup dans le vide : juste l'animation, aucun dégât.
@@ -178,6 +181,12 @@ export class Match{
           }
           if(e.heavy) this.renderer.shakeCamera(10, 0.2);
           else if(e.crit) this.renderer.shakeCamera(5, 0.12);
+          // Coups portés par le joueur : arrêt sur image sur les gros coups,
+          // petite secousse sur les autres. Le joueur doit sentir qu'il frappe.
+          if(this.sim.mode !== 'duel' && e.from?.isPlayer){
+            if(e.heavy || e.crit) this.renderer.hitstop?.(e.heavy ? 0.09 : 0.06);
+            else this.renderer.shakeCamera(2.5, 0.07);
+          }
           // Dégât lourd (capacité, ultime) : gerbe 3D. Les coups de mêlée
           // ont déjà la leur (événement 'melee').
           if(this.sim.mode !== 'duel' && e.heavy){
@@ -264,7 +273,7 @@ export class Match{
         this._burst(e.unit.kind === 'champ' ? 'death' : 'dust', e.unit.x, e.unit.y, { color: e.unit.fx || '#ffffff', scale: e.unit.kind === 'champ' ? 1 : 0.6 });
         if(e.unit.kind === 'champ' && !e.silent){
           audio.sfx('elimination');
-          this.fx.spawnFloatText(e.unit.x, e.unit.y - 30, 'ÉLIMINÉ', '#ff6a5a', true);
+          this.fx.spawnFloatText(e.unit.x, e.unit.y - 30, tr('ÉLIMINÉ'), '#ff6a5a', true);
         }
         break;
       }
@@ -305,9 +314,9 @@ export class Match{
           case 'getup':     u3.releaseFight(id); break;
           case 'block-on':  u3.playFight(id, 'block', 0, { dur: 0.5, hold: true }); break;
           case 'block-off': u3.releaseFight(id); break;
-          case 'blocked':   audio.sfx('garde'); this.fx.spawnFloatText(e.unit.x, e.unit.y - 40, 'GARDE', '#9ec5ff'); break;
+          case 'blocked':   audio.sfx('garde'); this.fx.spawnFloatText(e.unit.x, e.unit.y - 40, tr('GARDE'), '#9ec5ff'); break;
           case 'dodge':     audio.sfx('esquive'); u3.playFight(id, 'dodge', Math.floor(Math.random() * 3), { dur: 0.42 }); break;
-          case 'dodge-perfect': this.fx.spawnFloatText(e.unit.x, e.unit.y - 40, 'ESQUIVE !', '#ffd166', true); break;
+          case 'dodge-perfect': this.fx.spawnFloatText(e.unit.x, e.unit.y - 40, tr('ESQUIVE !'), '#ffd166', true); break;
         }
         break;
       }
@@ -326,16 +335,16 @@ export class Match{
 
       // ── Mode Combat ──
       case 'duel-round':
-        if(this._hud){ this._hud.showDuelBar(this.sim); this._hud.announce(`ROUND ${e.round}`); }
+        if(this._hud){ this._hud.showDuelBar(this.sim); this._hud.announce(tr('ROUND {n}', { n: e.round })); }
         break;
       case 'duel-fight':
         audio.sfx('gong');
         if(!this._introShout){ this._introShout = true; setTimeout(() => this._shout(this.sim.player, 'debut'), 500); }
-        if(this._hud) this._hud.announce('COMBAT !');
+        if(this._hud) this._hud.announce(tr('COMBAT !'));
         break;
       case 'duel-round-end':
         audio.sfx(e.winner === 0 ? 'round_gagne' : 'round_perdu');
-        if(this._hud) this._hud.announce(e.winner === 0 ? 'ROUND REMPORTÉ' : 'ROUND PERDU');
+        if(this._hud) this._hud.announce(e.winner === 0 ? tr('ROUND REMPORTÉ') : tr('ROUND PERDU'));
         break;
       case 'duel-combo':
         if(this._hud) this._hud.showCombo(e.combo);
@@ -420,24 +429,24 @@ export class Match{
     const m = this.sim.mode;
     if(m === 'siege'){
       const ne = this.sim.autelEnnemi;
-      return `Autel ennemi ${Math.round(100*ne.hp/ne.maxHp)}%`;
+      return tr('Autel ennemi {p}%', { p: Math.round(100*ne.hp/ne.maxHp) });
     }
     if(m === 'defense'){
       const na = this.sim.autelAllie;
       const wave = this.sim.defenseWaveN, total = this.sim.defenseWaveTotal;
-      return `Défense — Autel ${Math.round(100*na.hp/na.maxHp)}% • Vague ${wave}/${total}`;
+      return tr('Défense — Autel {p}% • Vague {w}/{t}', { p: Math.round(100*na.hp/na.maxHp), w: wave, t: total });
     }
     if(m === 'boss'){
       if(this.sim.boss){
-        return `BOSS — ${this.sim.boss.name} ${Math.round(100*this.sim.boss.hp/this.sim.boss.maxHp)}% PV`;
+        return tr('BOSS — {name} {p}% PV', { name: this.sim.boss.name, p: Math.round(100*this.sim.boss.hp/this.sim.boss.maxHp) });
       }
       return 'BOSS';
     }
     if(m === 'duel'){
       const s2 = this.sim;
-      return `Round ${s2.roundNo} — manches ${s2.roundWins[0]} / ${s2.roundWins[1]} (${s2.roundsToWin} gagnantes)`;
+      return tr('Round {n} — manches {a} / {b} ({w} gagnantes)', { n: s2.roundNo, a: s2.roundWins[0], b: s2.roundWins[1], w: s2.roundsToWin });
     }
-    return `Score ${this.sim.teamKills[0]} – ${this.sim.teamKills[1]} / ${this.sim.killGoal}`;
+    return tr('Score {a} – {b} / {g}', { a: this.sim.teamKills[0], b: this.sim.teamKills[1], g: this.sim.killGoal });
   }
 
   destroy(){

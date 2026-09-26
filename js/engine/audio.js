@@ -17,6 +17,7 @@
 //
 // Une entrée sans fichier (`files: []`) est simplement muette.
 // ============================================================
+import { isEN } from '../i18n/i18n.js';
 
 const BASE = 'assets/audio/';
 
@@ -64,6 +65,7 @@ export const MUSIC = {
   boss:     { files: ['music/boss.mp3'], vol: 0.55, loop: true },
   victoire: { files: ['music/victoire.mp3'], vol: 0.6, loop: false },
   defaite:  { files: ['music/defaite.mp3'], vol: 0.6, loop: false },
+  intro:    { files: ['music/prologue.mp3'], vol: 0.7, loop: false },
 };
 
 const PREFS_KEY = 'pf_audio';
@@ -159,7 +161,11 @@ class AudioEngine{
     const path = 'voix/' + file + '.mp3';
     const token = {};
     this._voiceToken = token;
-    return Promise.resolve(this._load(path)).then(buf => new Promise(done => {
+    // En anglais : la voix anglaise (voix/en/…), sinon la voix française.
+    const load = isEN
+      ? Promise.resolve(this._load('voix/en/' + file + '.mp3')).then(b => b || this._load(path))
+      : Promise.resolve(this._load(path));
+    return load.then(buf => new Promise(done => {
       if(!buf || this._voiceToken !== token || (this.speaking && o.polite)) return done();
       const src = this.ctx.createBufferSource();
       src.buffer = buf;

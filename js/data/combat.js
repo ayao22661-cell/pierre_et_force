@@ -28,7 +28,7 @@ export const DUELS = [
   {
     id: 'c_karen', num: 'C2', name: 'Karen Keïta', mode: 'COMBAT', req: 2,
     opponent: 'KAREN', foeMult: 0.85, roundsToWin: 2, roundTime: 60,
-    desc: "Un entraînement avec sa sœur. Elle ne retient rien.",
+    desc: "Un entraînement avec sa mère. Elle ne retient rien.",
     brief: "Karen soigne, protège et immobilise. Un duel contre elle est une leçon de patience : elle ne cherche pas à gagner vite, elle cherche à ce que vous perdiez lentement.",
     ennemis: ['KAREN'], ennemis_extra: 0, allies_dispo: [],
     xp: 55, cauris: 90,

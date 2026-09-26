@@ -36,6 +36,44 @@ const ANIM_BASE = 'assets/animations/';
 // Personnages qui ne projettent aucune ombre au sol.
 const NO_SHADOW = new Set(['SKYGGE']);
 
+// ── Liseré de silhouette ────────────────────────────────────────────
+// Tous les personnages reçoivent le même éclairage de contour : ça unifie
+// des modèles venus d'horizons différents, et la couleur dit tout de suite
+// qui est qui (doré : le joueur, bleu : ses alliés, rouge : l'ennemi).
+const RIM = {
+  p: { c: [1.0, 0.82, 0.42], k: 0.9 },
+  0: { c: [0.55, 0.78, 1.0], k: 0.7 },
+  1: { c: [1.0, 0.36, 0.28], k: 0.85 },
+};
+class PfRimPlugin extends BABYLON.MaterialPluginBase{
+  constructor(material, rim){
+    super(material, 'PfRim', 210, { PF_RIM: false });
+    this.rim = rim;
+    this._enable(true);
+  }
+  prepareDefines(defines){ defines.PF_RIM = true; }
+  getClassName(){ return 'PfRimPlugin'; }
+  getUniforms(){
+    return { ubo: [{ name: 'pfRimColor', size: 3, type: 'vec3' }, { name: 'pfRim', size: 1, type: 'float' }],
+      fragment: 'uniform vec3 pfRimColor; uniform float pfRim;' };
+  }
+  bindForSubMesh(ubo){
+    ubo.updateFloat3('pfRimColor', this.rim.c[0], this.rim.c[1], this.rim.c[2]);
+    ubo.updateFloat('pfRim', this.rim.k);
+  }
+  getCustomCode(type){
+    if(type !== 'fragment') return null;
+    return {
+      CUSTOM_FRAGMENT_BEFORE_FRAGCOLOR: `
+        #ifdef PF_RIM
+          float pfF = 1.0 - clamp(dot(normalize(normalW), normalize(vEyePosition.xyz - vPositionW)), 0.0, 1.0);
+          finalColor.rgb += pfRimColor * pow(pfF, 2.2) * pfRim;
+        #endif
+      `,
+    };
+  }
+}
+
 // Les 7 champions jouables ont chacun leur modèle dédié (Hunyuan 3D +
 // rig Mixamo), comme les 13 autres personnages du récit (portraits,
 // voir character-portrait-3d.js) et les deux sbires.
@@ -1404,6 +1442,22 @@ export class BabylonUnits{
     return ag;
   }
 
+  /** Copie d'un matériau de modèle pour un camp (partagée par tout ce camp). */
+  _sideMaterial(mat, side){
+    this._sideMats ||= new Map();
+    const key = mat.uniqueId + ':' + side;
+    let m = this._sideMats.get(key);
+    if(m) return m;
+    if(!(mat instanceof BABYLON.PBRMaterial)) return mat;
+    m = mat.clone(mat.name + '_' + side);
+    // Même rendu pour tous : ni plastique brillant, ni métal, reflets modérés.
+    if(!m.metallicTexture){ m.metallic = 0; m.roughness = Math.max(m.roughness ?? 1, 0.6); }
+    m.environmentIntensity = Math.min(m.environmentIntensity ?? 1, 0.8);
+    new PfRimPlugin(m, RIM[side]);
+    this._sideMats.set(key, m);
+    return m;
+  }
+
   /** Crée (si besoin) et retourne l'instance 3D pour une unité du sim. */
   async ensure(unit){
     if(this.instances.has(unit.id)) return this.instances.get(unit.id);
@@ -1417,6 +1471,9 @@ export class BabylonUnits{
     if(this.instances.get(unit.id) !== placeholder) return null; // unité retirée pendant le chargement
     const entry = container.instantiateModelsToScene(name => name + '_' + unit.id, false);
     const root = entry.rootNodes[0];
+    // Matière commune à l'équipe (liseré, brillance harmonisée).
+    const side = unit.isPlayer ? 'p' : (unit.team === 1 ? 1 : 0);
+    for(const m of root.getChildMeshes(false)) if(m.material) m.material = this._sideMaterial(m.material, side);
     // Animations embarquées dans le modèle : inutiles (on utilise la bibliothèque).
     for(const ag of entry.animationGroups) ag.dispose();
 

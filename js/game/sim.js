@@ -15,6 +15,7 @@ import { Fighter, MOVES } from './duel.js';
 import { tryCastAbility } from './abilities.js';
 import { computeBonuses } from './bonuses.js';
 import { gearFor } from './gear.js';
+import { t as tr } from '../i18n/i18n.js';
 
 let UID = 1;
 
@@ -556,6 +557,7 @@ export class Sim{
     else if(this.mode === 'duel') this._tickDuel(dt);
     else this._tickArena(dt);
     // Après TOUS les déplacements (les sbires avancent dans le tick du mode).
+    this._tickKnockback(dt);
     this._separate(dt);
     this._resolveObstacles();
 
@@ -709,6 +711,17 @@ export class Sim{
    * pas se faire « bousculer » hors de sa trajectoire. Les structures
    * (Autel, tours) ne bougent pas mais repoussent ceux qui entrent dedans.
    */
+  /** Recul bref des unités frappées fort (critique, ultime). */
+  _tickKnockback(dt){
+    for(const u of this.units){
+      const kb = u._kb;
+      if(!kb) continue;
+      if(u.dead || kb.t <= 0){ u._kb = null; continue; }
+      u.x += kb.vx * dt; u.y += kb.vy * dt;
+      kb.vx *= 0.82; kb.vy *= 0.82; kb.t -= dt;
+    }
+  }
+
   _separate(dt){
     const mob = this.units.filter(u => !u.dead && u.ms > 0);
     const rad = (u) => u.kind === 'minion' ? 22 : 26;
@@ -895,6 +908,13 @@ export class Sim{
     // impact plus large, léger tremblement caméra sur un ultime) — voir
     // match.js. « heavy » marque les dégâts venant d'un ultime.
     this.onEvent({ type: 'hit', unit: t, dmg, color: u.fx, crit: !!opts.crit, heavy: !!opts.heavy, from: u });
+    // Le coup se sent : un critique ou un ultime fait reculer la cible
+    // (hors mode Combat, qui a ses propres réactions, et hors boss/décor).
+    if(this.mode !== 'duel' && (opts.heavy || opts.crit) && u && u !== t && t.ms > 0 && !t.isBoss && t.kind !== 'autel'){
+      const dx = t.x - u.x, dy = t.y - u.y, d = Math.hypot(dx, dy) || 1;
+      const f = opts.heavy ? 260 : 150;
+      t._kb = { vx: dx / d * f, vy: dy / d * f, t: 0.16 };
+    }
 
     // Vol de vie (ls) — seulement pour les attaques de base
     // (jamais en mode Combat : pas de récupération de PV en duel).
@@ -921,7 +941,7 @@ export class Sim{
       if(t.reviveReady && t.team === 0){
         t.reviveReady = false;
         t.hp = t.maxHp * 0.3;
-        this.onEvent({ type: 'announce', text: 'DEUXIÈME VIE !' });
+        this.onEvent({ type: 'announce', text: tr('DEUXIÈME VIE !') });
         return;
       }
       t.dead = true;
@@ -1038,7 +1058,7 @@ export class Sim{
       // les défenses traînaient en longueur au lieu de monter en intensité.
       this.waveTimer = Math.max(10, 20 - this.defenseWaveN * 2);
       this._spawnDefenseWave();
-      this.onEvent({ type: 'announce', text: `VAGUE ${this.defenseWaveN} / ${this.defenseWaveTotal}` });
+      this.onEvent({ type: 'announce', text: tr('VAGUE {n} / {t}', { n: this.defenseWaveN, t: this.defenseWaveTotal }) });
     }
     // Déplacer les sbires ennemis en mode défense
     this.units.forEach(u => { if(u.kind === 'minion' && !u.dead && u.team === 1) this._minionMove(u, dt); });
@@ -1094,7 +1114,7 @@ export class Sim{
     // Annonce à mi-temps si le boss est sous 50% PV
     if(this.boss && !this._bossHalfAnnounced && (this.boss.hp / this.boss.maxHp) < 0.5){
       this._bossHalfAnnounced = true;
-      this.onEvent({ type: 'announce', text: `${this.boss.name} est affaibli !` });
+      this.onEvent({ type: 'announce', text: tr('{name} est affaibli !', { name: this.boss.name }) });
     }
     // Mise à jour HUD : HP du boss
     this.onEvent({ type: 'boss-hp', boss: this.boss });

@@ -9,6 +9,7 @@ import { MISSION_COUNT } from '../data/campaign.js';
 import { listSlots, setActiveSlot, deleteSlot, getActiveSlot } from '../game/state.js';
 import { icon } from './icons.js';
 import { el } from './screens.js';
+import { t as tr } from '../i18n/i18n.js';
 
 /**
  * @param {(slot:number) => void} onPick - appelé quand un emplacement est
@@ -26,19 +27,19 @@ export function renderSlots(onPick){
     const left = el('div', 'slot-card-left');
     left.appendChild(icon('shield', 'pf-ico-lg'));
     const label = el('div', '');
-    label.appendChild(el('div', 'slot-card-title', `EMPLACEMENT ${info.slot}`));
+    label.appendChild(el('div', 'slot-card-title', tr('EMPLACEMENT {n}', { n: info.slot })));
     if(info.exists){
       const champName = CHAMPS[info.lastChamp]?.name || 'Tarine Keïta';
       label.appendChild(el('div', 'slot-card-sub',
-        `Niveau ${info.level} · ${info.missionsDone}/${MISSION_COUNT} missions · ${champName}`));
+        tr('Niveau {lvl} · {done}/{total} missions · {name}', { lvl: info.level, done: info.missionsDone, total: MISSION_COUNT, name: champName })));
     } else {
-      label.appendChild(el('div', 'slot-card-sub slot-card-empty', 'Emplacement vide'));
+      label.appendChild(el('div', 'slot-card-sub slot-card-empty', tr('Emplacement vide')));
     }
     left.appendChild(label);
     card.appendChild(left);
 
     const right = el('div', 'slot-card-right');
-    const go = el('button', 'pf-btn pf-btn-brand pf-btn-sm', info.exists ? 'CONTINUER' : 'NOUVELLE PARTIE');
+    const go = el('button', 'pf-btn pf-btn-brand pf-btn-sm', info.exists ? tr('CONTINUER') : tr('NOUVELLE PARTIE'));
     go.addEventListener('click', () => {
       setActiveSlot(info.slot);
       onPick(info.slot);
@@ -46,7 +47,7 @@ export function renderSlots(onPick){
     right.appendChild(go);
     if(info.exists){
       const del = el('button', 'pf-btn pf-btn-ghost pf-btn-sm slot-card-del', '✕');
-      del.title = 'Supprimer cette sauvegarde';
+      del.title = tr('Supprimer cette sauvegarde');
       del.addEventListener('click', (ev) => {
         ev.stopPropagation();
         if(del.dataset.confirm === '1'){
@@ -54,7 +55,7 @@ export function renderSlots(onPick){
           renderSlots(onPick);
         } else {
           del.dataset.confirm = '1';
-          del.textContent = 'SÛR ?';
+          del.textContent = tr('SÛR ?');
           del.classList.add('confirm');
           setTimeout(() => { del.dataset.confirm = '0'; del.textContent = '✕'; del.classList.remove('confirm'); }, 2500);
         }

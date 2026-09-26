@@ -9,8 +9,11 @@ import { portraitFor } from '../engine/portraits.js';
 import { el } from './screens.js';
 import { Minimap } from '../engine/minimap.js';
 import { graphicsPanel, soundPanel } from './sound-controls.js';
+import { Tutorial } from './tutorial.js';
+import { t as tr, isEN } from '../i18n/i18n.js';
 
-const KEYS = ['A', 'Z', 'E', 'R'];
+// Touches des sorts : clavier AZERTY en français, QWERTY en anglais.
+const KEYS = isEN ? ['Q', 'W', 'E', 'R'] : ['A', 'Z', 'E', 'R'];
 
 export class CombatHud{
   constructor(renderer, match, onPause){
@@ -39,7 +42,9 @@ export class CombatHud{
       // rien, et la place est mieux employée par le bandeau des manches.
       this.root.querySelector('.hud-minimap')?.classList.add('hidden');
     }
-    this._tickFn = (dt) => this._update(dt);
+    // Conseils de prise en main (premiers combats seulement).
+    this.tutorial = new Tutorial(this.root, this.match.sim);
+    this._tickFn = (dt) => { this._update(dt); if(!this.match.paused) this.tutorial.update(dt); };
     renderer.addFrameListener(this._tickFn);
   }
 
@@ -50,7 +55,7 @@ export class CombatHud{
     const top = el('div', 'hud-top');
     const obj = el('div', 'pf-panel hud-objective');
     obj.id = 'hud-objective-text';
-    obj.textContent = 'Objectif';
+    obj.textContent = tr('Objectif');
     top.appendChild(obj);
     this.root.appendChild(top);
     this.objEl = obj;
@@ -124,11 +129,11 @@ export class CombatHud{
     // pour que le joueur sente le coup partir.
     const basic = el('div', 'spell-slot basic-slot');
     basic.appendChild(el('div', 'spell-ico', iconSvg('fist', 'pf-ico-lg')));
-    basic.title = 'Coup de base (Espace)';
+    basic.title = tr('Coup de base (Espace)');
     // Le glyphe U+23B5 (⎵) ne s'affiche pas proprement dans toutes les
     // polices/systèmes (rendu cassé/quasi invisible) — texte simple à la
     // place, cohérent avec les badges A/Z/E/R à côté.
-    basic.appendChild(el('span', 'key key-wide', 'ESP'));
+    basic.appendChild(el('span', 'key key-wide', tr('ESP')));
     const fire = (ev) => { ev.preventDefault(); if(!this.match.paused) this.match.basicAttack(); };
     basic.addEventListener('click', fire);
     basic.addEventListener('touchstart', fire, { passive: false });
@@ -146,7 +151,7 @@ export class CombatHud{
     // Coup léger (enchaînable), coup lourd (projette), garde (maintenue)
     // et esquive. Le coup de base reste à sa place : il déclenche le léger.
     if(this.match.sim?.mode === 'duel'){
-      basic.title = 'Coup léger (Espace)';
+      basic.title = tr('Coup léger (Espace)');
       const mk = (cls, label, key, down, up) => {
         const b = el('div', 'spell-slot duel-slot ' + cls);
         b.appendChild(el('div', 'spell-ico', iconSvg(cls === 'duel-guard' ? 'shield' : 'fist', 'pf-ico-lg')));
@@ -164,10 +169,10 @@ export class CombatHud{
         }
         return b;
       };
-      basicRow.appendChild(mk('duel-heavy', 'LOURD', 'K', () => this.match.sim.duelStrike('heavy')));
-      basicRow.appendChild(mk('duel-guard', 'GARDE', 'L',
+      basicRow.appendChild(mk('duel-heavy', tr('LOURD'), 'K', () => this.match.sim.duelStrike('heavy')));
+      basicRow.appendChild(mk('duel-guard', tr('GARDE'), 'L',
         () => this.match.sim.duelBlock(true), () => this.match.sim.duelBlock(false)));
-      basicRow.appendChild(mk('duel-dodge', 'ESQUIVE', 'M', () => this.match.sim.duelDodge()));
+      basicRow.appendChild(mk('duel-dodge', tr('ESQUIVE'), 'M', () => this.match.sim.duelDodge()));
     }
     actions.appendChild(basicRow);
     actions.appendChild(spells);
@@ -178,17 +183,17 @@ export class CombatHud{
     // petit téléphone.
     const pause = el('button', 'hud-pause-btn', iconSvg('pause'));
     pause.type = 'button';
-    pause.setAttribute('aria-label', 'Pause');
+    pause.setAttribute('aria-label', tr('Pause'));
     pause.addEventListener('click', () => this.togglePause());
     this.root.appendChild(pause);
 
     // Menu de pause : reprendre ou quitter la mission (sans défaite enregistrée).
     this.onQuit = onPause;
     const menu = el('div', 'hud-pause-menu hidden');
-    menu.appendChild(el('div', 'hud-pause-title', 'Pause'));
-    const resume = el('button', 'pf-btn pf-btn-brand', 'Reprendre');
+    menu.appendChild(el('div', 'hud-pause-title', tr('Pause')));
+    const resume = el('button', 'pf-btn pf-btn-brand', tr('Reprendre'));
     resume.addEventListener('click', () => this.togglePause(false));
-    const quit = el('button', 'pf-btn pf-btn-ghost', 'Quitter la mission');
+    const quit = el('button', 'pf-btn pf-btn-ghost', tr('Quitter la mission'));
     quit.addEventListener('click', () => { this.togglePause(false); this.onQuit?.(); });
     menu.appendChild(soundPanel());
     menu.appendChild(graphicsPanel());
@@ -277,7 +282,7 @@ export class CombatHud{
   _bar(kind, cls){
     const wrap = el('div', '');
     const row = el('div', 'pf-label-row');
-    row.innerHTML = `<span>${kind === 'hp' ? 'PV' : 'Mana'}</span><span id="hud-${kind}-txt"></span>`;
+    row.innerHTML = `<span>${kind === 'hp' ? tr('PV') : tr('Mana')}</span><span id="hud-${kind}-txt"></span>`;
     wrap.appendChild(row);
     const bar = el('div', 'pf-bar ' + cls);
     const fill = el('div', 'pf-bar-fill');
@@ -319,11 +324,11 @@ export class CombatHud{
       box.appendChild(top); box.appendChild(track); box.appendChild(pips);
       return box;
     };
-    bar.appendChild(mk('p', sim.player.name || 'Joueur'));
+    bar.appendChild(mk('p', sim.player.name || tr('Joueur')));
     const timer = el('div', 'hud-duel-timer');
     timer.id = 'hud-duel-timer';
     bar.appendChild(timer);
-    bar.appendChild(mk('f', sim.duelFoe?.name || 'Adversaire'));
+    bar.appendChild(mk('f', sim.duelFoe?.name || tr('Adversaire')));
     this.root.insertBefore(bar, this.root.firstChild);
     this._duelEl = bar;
     const combo = el('div', 'hud-combo hidden');
@@ -349,7 +354,7 @@ export class CombatHud{
 
   showCombo(n){
     if(!this._comboEl) return;
-    this._comboEl.textContent = n + ' COUPS';
+    this._comboEl.textContent = tr('{n} COUPS', { n });
     this._comboEl.classList.remove('hidden');
     this._comboEl.classList.remove('pop');
     void this._comboEl.offsetWidth;   // relance l'animation

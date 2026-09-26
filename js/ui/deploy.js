@@ -9,11 +9,12 @@ import { icon, iconSvg, iconForRole } from './icons.js';
 import { el } from './screens.js';
 import { opponentsFaced, DUELS } from '../data/combat.js';
 
+import { t as tr, shortName } from '../i18n/i18n.js';
 const MODE_MAP = { 'SIÈGE': 'siege', 'ARÈNE': 'arena', 'DÉFENSE': 'defense', 'BOSS': 'boss', 'COMBAT': 'duel' };
 
 export function renderDeploy(mission, modeLabel, save, onLaunch){
   document.getElementById('deploy-mission-name').textContent = `${mission.num}. ${mission.name}`;
-  document.getElementById('deploy-mode').textContent = modeLabel;
+  document.getElementById('deploy-mode').textContent = tr(modeLabel);
   const brief = document.getElementById('deploy-brief');
   brief.textContent = mission.brief || mission.desc || '';
   // Brief replié sur 3 lignes : un toucher l'ouvre en entier.
@@ -25,7 +26,7 @@ export function renderDeploy(mission, modeLabel, save, onLaunch){
   const free = !!mission.free;
   const foePool = free ? opponentsFaced(save) : [];
   if(free) state.foe = foePool.includes(save.lastFoe) ? save.lastFoe : foePool[0];
-  document.getElementById('deploy-allies-title').textContent = free ? 'TON ADVERSAIRE' : 'ALLIÉ (1 max)';
+  document.getElementById('deploy-allies-title').textContent = free ? tr('TON ADVERSAIRE') : tr('ALLIÉ (1 max)');
   // Combat libre : cartes animées façon sélection de champion (voir
   // components.css, « .deploy-free »). `picked` marque la carte qu'on
   // vient de verrouiller, `entered` évite de rejouer l'apparition en
@@ -56,9 +57,9 @@ export function renderDeploy(mission, modeLabel, save, onLaunch){
   const preview = document.getElementById('deploy-team-preview');
 
   function updatePreview(){
-    if(free){ preview.textContent = `${CHAMPS[state.champ].name} contre ${CHAMPS[state.foe].name}`; return; }
+    if(free){ preview.textContent = tr('{a} contre {b}', { a: CHAMPS[state.champ].name, b: CHAMPS[state.foe].name }); return; }
     const names = [state.champ, ...state.allies].map(k => CHAMPS[k].name);
-    preview.textContent = 'Équipe : ' + names.join(', ');
+    preview.textContent = tr('Équipe : {names}', { names: names.join(', ') });
   }
 
   // Tuile de sélection façon « champion select » MOBA : portrait carré,
@@ -74,9 +75,9 @@ export function renderDeploy(mission, modeLabel, save, onLaunch){
     tile.appendChild(img);
     tile.appendChild(el('div', 'champ-tile-overlay'));
     const role = el('div', 'champ-tile-role', iconSvg(iconForRole(c.role), 'pf-ico-sm'));
-    role.title = c.role;
+    role.title = tr(c.role);
     tile.appendChild(role);
-    tile.appendChild(el('div', 'champ-tile-name', c.name.split(' ')[0]));
+    tile.appendChild(el('div', 'champ-tile-name', shortName(c.name)));
     tile.addEventListener('click', onClick);
     return tile;
   }
@@ -102,7 +103,7 @@ export function renderDeploy(mission, modeLabel, save, onLaunch){
     const info = el('div', 'hero-banner-info');
     const roleRow = el('div', 'hero-banner-role');
     roleRow.appendChild(icon(iconForRole(c.role), 'pf-ico-sm'));
-    roleRow.appendChild(el('span', '', c.role.toUpperCase()));
+    roleRow.appendChild(el('span', '', tr(c.role).toUpperCase()));
     info.appendChild(roleRow);
     info.appendChild(el('div', 'hero-banner-name', c.name));
     info.appendChild(el('div', 'hero-banner-title', entry?.titre || ''));
