@@ -9,6 +9,7 @@ import { iconSvg, icon, iconForStats } from './icons.js';
 import { writeSave } from '../game/state.js';
 import { el } from './screens.js';
 import { audio } from '../engine/audio.js';
+import { t as tr, locale } from '../i18n/i18n.js';
 
 const REMOVED_ITEMS = { exo: 2900, armure_or: 3000 };
 
@@ -37,7 +38,7 @@ export function ensureShopSave(save) {
 // Le texte se limite au nom, aux statistiques en pastilles et au prix,
 // qui sert lui-même de bouton d'achat.
 const TIER_COLOR = { 1: '#d08a4e', 2: '#b9c3d4', 3: '#f0c35a' };
-const TIER_NAME = { 1: 'Bronze', 2: 'Argent', 3: 'Or' };
+const TIER_NAME = { 1: tr('Bronze'), 2: tr('Argent'), 3: tr('Or') };
 const STAT_ICON = { atk: 'sword', hp: 'heart', arm: 'shield', mana: 'bolt', as: 'target', ms: 'boot', ah: 'spark', crit: 'target', ls: 'drop', regen: 'leaf', pen: 'sword', thorns: 'shield' };
 const ITEM_BY_ID = Object.fromEntries(ITEMS.map(it => [it.id, it]));
 export const itemImage = (id) => `assets/items/${id}.webp`;
@@ -50,7 +51,7 @@ function statChips(st){
   Object.entries(st).forEach(([k, v]) => {
     const val = typeof v === 'number' && v < 1 && v > -1 ? Math.round(v * 100) + '%' : v;
     // Valeur ET libellé : une icône seule ne disait pas de quoi il s'agit.
-    const c = el('span', 'chip', iconSvg(STAT_ICON[k] || 'spark') + `${v > 0 ? '+' : ''}${val}<small>${STAT_LABEL[k] || k}</small>`);
+    const c = el('span', 'chip', iconSvg(STAT_ICON[k] || 'spark') + `${v > 0 ? '+' : ''}${val}<small>${tr(STAT_LABEL[k] || k)}</small>`);
     box.appendChild(c);
   });
   return box;
@@ -70,7 +71,7 @@ export function renderShop(save) {
     seg.appendChild(b);
   });
   head.appendChild(seg);
-  head.appendChild(el('span', 'pf-badge pf-badge-gold shop-purse', `${iconSvg('shell')} <span id="shop-cauris">${save.cauris.toLocaleString('fr-FR')}</span>`));
+  head.appendChild(el('span', 'pf-badge pf-badge-gold shop-purse', `${iconSvg('shell')} <span id="shop-cauris">${save.cauris.toLocaleString(locale())}</span>`));
   root.appendChild(head);
 
   const list = ITEMS.filter(it => it.tier === shopTier);
@@ -100,7 +101,7 @@ export function renderShop(save) {
   const owned = save.items.includes(pick.id);
   const canBuy = !owned && save.cauris >= pick.cost;
   const buy = el('button', 'pf-btn shop-buy' + (owned ? ' owned' : canBuy ? ' pf-btn-brand' : ' disabled'),
-    owned ? iconSvg('check') + ' Possédé' : iconSvg('shell') + ' ' + pick.cost.toLocaleString('fr-FR'));
+    owned ? iconSvg('check') + ' ' + tr('Possédé') : iconSvg('shell') + ' ' + pick.cost.toLocaleString(locale()));
   buy.disabled = !canBuy;
   if (canBuy) {
     buy.addEventListener('click', () => {
@@ -110,7 +111,7 @@ export function renderShop(save) {
       writeSave(save);
       renderShop(save);
       const hc = document.getElementById('hub-cauris');
-      if(hc) hc.textContent = save.cauris.toLocaleString('fr-FR');
+      if(hc) hc.textContent = save.cauris.toLocaleString(locale());
     });
   }
   info.appendChild(buy);
@@ -146,7 +147,7 @@ export function renderEveil(save) {
   ensureShopSave(save);
 
   const header = el('div', 'eveil-top');
-  header.appendChild(el('span', 'eveil-top-lbl', 'Points d\'éveil'));
+  header.appendChild(el('span', 'eveil-top-lbl', tr('Points d\'éveil')));
   header.appendChild(el('span', 'eveil-top-pts' + (save.talPtsLeft ? ' has' : ''), `<b>${save.talPtsLeft}</b>/${save.talPtsTotal}`));
   root.appendChild(header);
 
@@ -156,7 +157,7 @@ export function renderEveil(save) {
     section.style.setProperty('--tree-color', tree.color);
     const title = el('div', 'stone-head');
     title.appendChild(el('span', 'stone-gem', iconSvg('gem')));
-    title.appendChild(el('span', 'stone-name', tree.name.replace(/^Pierre (de l'|du |de la )/, '')));
+    title.appendChild(el('span', 'stone-name', tree.name.replace(/^Pierre (de l'|du |de la )/, '').replace(/^Stone of /, '').replace(/ Stone$/, '')));
     title.appendChild(el('span', 'stone-count', String(totalInTree)));
     section.appendChild(title);
 
@@ -167,14 +168,14 @@ export function renderEveil(save) {
       const maxed   = current >= node.max;
       const tile = el('div', 'talent' + (locked ? ' locked' : '') + (maxed ? ' maxed' : ''));
       tile.appendChild(el('div', 'talent-name', node.name));
-      tile.appendChild(el('div', 'talent-desc', locked ? `${iconSvg('lock')} ${node.req} pts dans la pierre` : node.desc));
+      tile.appendChild(el('div', 'talent-desc', locked ? `${iconSvg('lock')} ${tr('{n} pts dans la pierre', { n: node.req })}` : node.desc));
       const foot = el('div', 'talent-foot');
       const pips = el('div', 'eveil-pips');
       for (let i = 0; i < node.max; i++) pips.appendChild(el('i', 'eveil-pip' + (i < current ? ' filled' : '')));
       foot.appendChild(pips);
       if (!locked && !maxed && save.talPtsLeft > 0) {
         const btn = el('button', 'icon-btn talent-plus', iconSvg('plus'));
-        btn.setAttribute('aria-label', 'Ajouter un rang à ' + node.name);
+        btn.setAttribute('aria-label', tr('Ajouter un rang à {name}', { name: node.name }));
         btn.addEventListener('click', () => {
           save.talents[node.id] = current + 1;
           save.talPtsLeft--;
@@ -185,7 +186,7 @@ export function renderEveil(save) {
       } else if (!locked && current > 0) {
         // Bouton reset (récupère les points)
         const rst = el('button', 'icon-btn talent-rst', '↺');
-        rst.setAttribute('aria-label', 'Réinitialiser ' + node.name);
+        rst.setAttribute('aria-label', tr('Réinitialiser {name}', { name: node.name }));
         rst.addEventListener('click', () => {
           save.talPtsLeft += current;
           save.talents[node.id] = 0;

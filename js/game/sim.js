@@ -15,6 +15,7 @@ import { Fighter, MOVES } from './duel.js';
 import { tryCastAbility } from './abilities.js';
 import { computeBonuses } from './bonuses.js';
 import { gearFor } from './gear.js';
+import { t as tr } from '../i18n/i18n.js';
 
 let UID = 1;
 
@@ -940,7 +941,7 @@ export class Sim{
       if(t.reviveReady && t.team === 0){
         t.reviveReady = false;
         t.hp = t.maxHp * 0.3;
-        this.onEvent({ type: 'announce', text: 'DEUXIÈME VIE !' });
+        this.onEvent({ type: 'announce', text: tr('DEUXIÈME VIE !') });
         return;
       }
       t.dead = true;
@@ -1057,7 +1058,7 @@ export class Sim{
       // les défenses traînaient en longueur au lieu de monter en intensité.
       this.waveTimer = Math.max(10, 20 - this.defenseWaveN * 2);
       this._spawnDefenseWave();
-      this.onEvent({ type: 'announce', text: `VAGUE ${this.defenseWaveN} / ${this.defenseWaveTotal}` });
+      this.onEvent({ type: 'announce', text: tr('VAGUE {n} / {t}', { n: this.defenseWaveN, t: this.defenseWaveTotal }) });
     }
     // Déplacer les sbires ennemis en mode défense
     this.units.forEach(u => { if(u.kind === 'minion' && !u.dead && u.team === 1) this._minionMove(u, dt); });
@@ -1113,7 +1114,7 @@ export class Sim{
     // Annonce à mi-temps si le boss est sous 50% PV
     if(this.boss && !this._bossHalfAnnounced && (this.boss.hp / this.boss.maxHp) < 0.5){
       this._bossHalfAnnounced = true;
-      this.onEvent({ type: 'announce', text: `${this.boss.name} est affaibli !` });
+      this.onEvent({ type: 'announce', text: tr('{name} est affaibli !', { name: this.boss.name }) });
     }
     // Mise à jour HUD : HP du boss
     this.onEvent({ type: 'boss-hp', boss: this.boss });

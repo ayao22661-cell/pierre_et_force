@@ -35,8 +35,9 @@ function momentFor(missionId, night){
   for(const a of CAMPAIGN) for(const m of a.missions){
     if(m.id !== missionId) continue;
     const t = [m.brief || '', ...(m.narr_avant || []).slice(0, 2)].join(' ').toLowerCase();
-    if(/\b(aube|petit matin|lever du (jour|soleil)|au matin)\b/.test(t)) return 'aube';
-    if(/\b(soir|crépuscule|couchant|coucher du soleil|fin d'après-midi)\b/.test(t)) return 'crepuscule';
+    // Mots-clés en français et en anglais (le récit est traduit en jeu).
+    if(/\b(aube|petit matin|lever du (jour|soleil)|au matin|dawn|early morning|sunrise|in the morning)\b/.test(t)) return 'aube';
+    if(/\b(soir|crépuscule|couchant|coucher du soleil|fin d'après-midi|evening|dusk|twilight|sunset|late afternoon)\b/.test(t)) return 'crepuscule';
     return 'jour';
   }
   return 'jour';

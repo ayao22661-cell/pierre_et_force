@@ -22,6 +22,7 @@
 // Un seul objet par moteur (BabylonUnits le crée). Le terrain appelle
 // beginPlace() / finishPlace() / endPlace() autour de chaque combat.
 // ============================================================
+import { t as tr } from '../i18n/i18n.js';
 
 const PREF_KEY = 'pf_gfx';
 const AUTO_KEY = 'pf_gfx_auto';
@@ -578,5 +579,5 @@ export class Graphics{
 /** Palier effectif, pour l'affichage (« Auto (Moyenne) »). */
 export function qualityLabel(){
   const p = gfxPref();
-  return p === 'auto' ? `Auto (${QUALITY_LABEL[effectiveTier()]})` : QUALITY_LABEL[p];
+  return p === 'auto' ? `${tr('Auto')} (${tr(QUALITY_LABEL[effectiveTier()])})` : tr(QUALITY_LABEL[p]);
 }

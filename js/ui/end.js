@@ -8,6 +8,7 @@ import { CAMPAIGN } from '../data/campaign.js';
 import { CHAMPS } from '../data/champions.js';
 import { writeSave } from '../game/state.js';
 import { audio } from '../engine/audio.js';
+import { t as tr } from '../i18n/i18n.js';
 
 // Alliés débloqués à la fin de chaque acte (boss battu).
 // Génère automatiquement la map mission-fin-d-acte → champion.
@@ -26,7 +27,7 @@ const UNLOCK_BY_MISSION = (() => {
 
 export function renderEnd(victory, mission, save, sim, onHub, onRetry){
   const title = document.getElementById('end-title');
-  title.textContent = victory ? 'VICTOIRE' : 'DÉFAITE';
+  title.textContent = victory ? tr('VICTOIRE') : tr('DÉFAITE');
   title.style.color = victory ? 'var(--pf-good)' : 'var(--pf-danger)';
 
   const sub = document.getElementById('end-subtitle');
@@ -58,11 +59,11 @@ export function renderEnd(victory, mission, save, sim, onHub, onRetry){
       leveled = true;
     }
 
-    rewards.appendChild(rewardRow('Expérience', `+${xp} XP`));
-    rewards.appendChild(rewardRow('Cauris', `+${cauris} ` + iconSvg('shell')));
-    if(kills) rewards.appendChild(rewardRow('Éliminations', `${kills} ` + iconSvg('sword')));
+    rewards.appendChild(rewardRow(tr('Expérience'), `+${xp} XP`));
+    rewards.appendChild(rewardRow(tr('Cauris'), `+${cauris} ` + iconSvg('shell')));
+    if(kills) rewards.appendChild(rewardRow(tr('Éliminations'), `${kills} ` + iconSvg('sword')));
     if(leveled) audio.sfx('niveau');
-    if(leveled) rewards.appendChild(rewardRow('NIVEAU+', `Niveau ${save.level} atteint !`, true));
+    if(leveled) rewards.appendChild(rewardRow(tr('NIVEAU+'), tr('Niveau {n} atteint !', { n: save.level }), true));
 
     // Déblocage d'allié à la fin de l'acte
     // `recrue` : la légende battue en épreuve rejoint l'équipe.
@@ -71,19 +72,19 @@ export function renderEnd(victory, mission, save, sim, onHub, onRetry){
       save.allies_unlocked.push(newAlly);
       const champName = CHAMPS[newAlly]?.name || newAlly;
       audio.sfx('recrue');
-      rewards.appendChild(rewardRow('Allié débloqué ' + iconSvg('spark'), `${champName} rejoint l'équipe`, true));
+      rewards.appendChild(rewardRow(tr('Allié débloqué') + ' ' + iconSvg('spark'), tr('{name} rejoint l\'équipe', { name: champName }), true));
     }
 
     writeSave(save);
   } else {
     // games est déjà incrémenté par recordDefeat() (game/state.js).
     writeSave(save);
-    rewards.appendChild(rewardRow('Conseil', 'Reviens avec un allié pour équilibrer le combat.'));
+    rewards.appendChild(rewardRow(tr('Conseil'), tr('Reviens avec un allié pour équilibrer le combat.')));
   }
 
   document.getElementById('btn-hub').onclick    = onHub;
   document.getElementById('btn-retry').onclick   = onRetry;
-  document.getElementById('btn-retry').textContent = victory ? 'REJOUER' : 'RÉESSAYER';
+  document.getElementById('btn-retry').textContent = victory ? tr('REJOUER') : tr('RÉESSAYER');
 }
 
 function rewardRow(label, val, highlight=false){

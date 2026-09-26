@@ -7,6 +7,7 @@
 // en pratique. Les conseils déjà vus sont retenus sur l'appareil.
 // ============================================================
 import { el } from './screens.js';
+import { t as tr } from '../i18n/i18n.js';
 
 const STORE = 'pf2_tips_v1';
 const touch = () => window.matchMedia?.('(pointer: coarse)').matches;
@@ -18,22 +19,22 @@ function markSeen(id){ try{ const s = seen(); s.add(id); localStorage.setItem(ST
 // `after` : il attend qu'un autre conseil soit passé.
 const TIPS = [
   { id: 'move', modes: 'moba', show: (t) => t.time > 1.2,
-    text: () => touch() ? "Pose ton pouce à gauche de l'écran et fais-le glisser pour te déplacer." : "Déplace-toi avec les flèches du clavier.",
+    text: () => touch() ? tr("Pose ton pouce à gauche de l'écran et fais-le glisser pour te déplacer.") : tr("Déplace-toi avec les flèches du clavier."),
     done: (t) => t.moved > 90 },
   { id: 'attack', modes: 'moba', after: 'move',
-    text: () => touch() ? "Approche-toi d'un ennemi et touche le bouton rouge pour frapper." : "Approche-toi d'un ennemi et appuie sur Espace pour frapper.",
+    text: () => touch() ? tr("Approche-toi d'un ennemi et touche le bouton rouge pour frapper.") : tr("Approche-toi d'un ennemi et appuie sur Espace pour frapper."),
     done: (t) => t.hits > 0 },
   { id: 'spells', modes: 'moba', after: 'attack', show: (t) => t.hits > 1,
-    text: () => touch() ? "Tes compétences sont en bas à droite. Elles coûtent du mana et se rechargent : utilise-les souvent." : "Tes compétences : A, Z, E et R. Elles coûtent du mana et se rechargent : utilise-les souvent.",
+    text: () => touch() ? tr("Tes compétences sont en bas à droite. Elles coûtent du mana et se rechargent : utilise-les souvent.") : tr("Tes compétences : A, Z, E et R. Elles coûtent du mana et se rechargent : utilise-les souvent."),
     done: (t) => t.casts > 0 },
   { id: 'lowhp', modes: 'all', show: (t) => t.hpPct < 0.35,
-    text: () => "Tes PV sont bas. Recule un instant et laisse tes alliés prendre les coups.",
+    text: () => tr("Tes PV sont bas. Recule un instant et laisse tes alliés prendre les coups."),
     done: (t) => t.hpPct > 0.6 },
   { id: 'duel', modes: 'duel', show: (t) => t.time > 1.5,
-    text: () => touch() ? "Duel ! Bouton rouge : coup rapide. LOURD : coup puissant mais lent. Gagne deux manches." : "Duel ! Espace : coup rapide. K : coup lourd, puissant mais lent. Gagne deux manches.",
+    text: () => touch() ? tr("Duel ! Bouton rouge : coup rapide. LOURD : coup puissant mais lent. Gagne deux manches.") : tr("Duel ! Espace : coup rapide. K : coup lourd, puissant mais lent. Gagne deux manches."),
     done: (t) => t.hits > 1 },
   { id: 'duel-guard', modes: 'duel', after: 'duel', show: (t) => t.hurt > 0,
-    text: () => touch() ? "GARDE bloque les coups. ESQUIVE les évite, au dernier moment c'est encore mieux." : "L (maintenu) : garde, pour bloquer. M : esquive, au dernier moment c'est encore mieux.",
+    text: () => touch() ? tr("GARDE bloque les coups. ESQUIVE les évite, au dernier moment c'est encore mieux.") : tr("L (maintenu) : garde, pour bloquer. M : esquive, au dernier moment c'est encore mieux."),
     done: (t) => t.guards > 0 },
 ];
 

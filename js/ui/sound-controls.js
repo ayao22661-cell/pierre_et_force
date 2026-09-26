@@ -8,6 +8,7 @@ import { audio } from '../engine/audio.js';
 import { iconSvg } from './icons.js';
 import { el } from './screens.js';
 import { gfxPref, setGfxPref, qualityLabel, QUALITY_LABEL } from '../engine/graphics.js';
+import { t as tr, LANG, setLang } from '../i18n/i18n.js';
 
 // Tous les contrôles affichés, pour qu'ils restent d'accord entre eux.
 // Un contrôle retiré de la page (fin de combat) est oublié.
@@ -28,7 +29,7 @@ export function muteButton(cls = 'icon-btn'){
   const paint = () => {
     const m = audio.prefs.muted;
     b.innerHTML = iconSvg(m ? 'sound_off' : 'sound_on');
-    b.setAttribute('aria-label', m ? 'Rétablir le son' : 'Couper le son');
+    b.setAttribute('aria-label', m ? tr('Rétablir le son') : tr('Couper le son'));
     b.classList.toggle('muted', m);
   };
   b.addEventListener('click', () => { audio.setPrefs({ muted: !audio.prefs.muted }); refreshAll(); });
@@ -40,10 +41,10 @@ export function muteButton(cls = 'icon-btn'){
 export function soundPanel(){
   const box = el('div', 'sound-panel');
   const head = el('div', 'sound-head');
-  head.appendChild(el('span', 'sound-title', 'Son'));
+  head.appendChild(el('span', 'sound-title', tr('Son')));
   head.appendChild(muteButton('icon-btn sound-mute-sm'));
   box.appendChild(head);
-  for(const [key, label] of [['music', 'Musique'], ['voice', 'Voix'], ['sfx', 'Bruitages']]){
+  for(const [key, label] of [['music', tr('Musique')], ['voice', tr('Voix')], ['sfx', tr('Bruitages')]]){
     const row = el('label', 'sound-row');
     row.appendChild(el('span', 'sound-lbl', label));
     const input = el('input', 'sound-range');
@@ -77,7 +78,7 @@ export function soundPanel(){
 export function graphicsPanel(){
   const box = el('div', 'sound-panel gfx-panel');
   const head = el('div', 'sound-head');
-  head.appendChild(el('span', 'sound-title', 'Graphismes'));
+  head.appendChild(el('span', 'sound-title', tr('Graphismes')));
   const now = el('span', 'gfx-now');
   head.appendChild(now);
   box.appendChild(head);
@@ -89,13 +90,33 @@ export function graphicsPanel(){
     now.textContent = qualityLabel();
   };
   for(const k of ['auto', 'basse', 'moyenne', 'haute']){
-    const b = el('button', 'gfx-opt', QUALITY_LABEL[k]);
+    const b = el('button', 'gfx-opt', tr(QUALITY_LABEL[k]));
     b.type = 'button';
     b.addEventListener('click', () => { setGfxPref(k); audio.sfx('ui_clic'); paint(); });
     btns[k] = b; seg.appendChild(b);
   }
   box.appendChild(seg);
-  box.appendChild(el('p', 'gfx-hint', 'Haute : ombres fines, occlusion et halo complet. Basse : pour les téléphones modestes.'));
+  box.appendChild(el('p', 'gfx-hint', tr('Haute : ombres fines, occlusion et halo complet. Basse : pour les téléphones modestes.')));
   paint();
+  return box;
+}
+
+/**
+ * Panneau « Langue » : français ou anglais. Le jeu se recharge pour tout
+ * reconstruire dans la nouvelle langue (la partie en cours est sauvegardée).
+ */
+export function languagePanel(){
+  const box = el('div', 'sound-panel gfx-panel lang-panel');
+  const head = el('div', 'sound-head');
+  head.appendChild(el('span', 'sound-title', tr('Langue')));
+  box.appendChild(head);
+  const seg = el('div', 'gfx-seg');
+  for(const [k, label] of [['fr', 'Français'], ['en', 'English']]){
+    const b = el('button', 'gfx-opt' + (k === LANG ? ' on' : ''), label);
+    b.type = 'button';
+    b.addEventListener('click', () => { if(k !== LANG) setLang(k); });
+    seg.appendChild(b);
+  }
+  box.appendChild(seg);
   return box;
 }

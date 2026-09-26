@@ -10,12 +10,13 @@
 // ============================================================
 import { el } from './screens.js';
 import { audio } from '../engine/audio.js';
+import { t as tr, isEN } from '../i18n/i18n.js';
 
 const GLB = 'assets/models/';
 const ANIM = 'assets/animations/';
 
 /** Texte du conte (identique aux voix enregistrées). */
-export const INTRO_LINES = [
+const INTRO_FR = [
   "Écoute, enfant. Je vais te dire comment tout a commencé.",
   "Il y a sept siècles, j'étais l'Empereur du Mali. J'avais plus d'or que tous les rois de la terre.",
   "Mais l'or n'était rien à côté de ce qu'on m'a confié : cinq pierres. L'Eau, la Terre, le Feu, l'Air, et l'Équilibre.",
@@ -25,6 +26,17 @@ export const INTRO_LINES = [
   "Aujourd'hui, à Abidjan, dans une cour de Marcory, un bricoleur ouvre le colis que son père lui a envoyé.",
   "Il ne le sait pas encore… mais ce conte, c'est lui qui va l'écrire.",
 ];
+const INTRO_EN = [
+  "Listen, child. I will tell you how it all began.",
+  "Seven centuries ago, I was the Emperor of Mali. I had more gold than all the kings of the earth.",
+  "But gold was nothing compared to what was entrusted to me: five stones. Water, Earth, Fire, Air, and Balance.",
+  "United, they gave the power to rewrite everything. And no man can stand under such a weight.",
+  "So I separated them, and entrusted them to the world, so that no one would ever unite them again.",
+  "But one day, a shadow began to search for them. Its name is Sgrün.",
+  "Today, in Abidjan, in a courtyard in Marcory, a tinkerer opens the parcel his father sent him.",
+  "He does not know it yet… but this tale is his to write.",
+];
+export const INTRO_LINES = isEN ? INTRO_EN : INTRO_FR;
 
 // Les cinq pierres : Eau, Terre, Feu, Air, Équilibre.
 const STONES = ['#3fa9f5', '#c08a4a', '#ff6a2a', '#e8f4ff', '#6fe0b0'];
@@ -71,7 +83,7 @@ export function playIntro(){
       <canvas class="intro-canvas"></canvas>
       <div class="intro-veil"></div>
       <div class="intro-flash"></div>
-      <button type="button" class="pf-btn pf-btn-ghost pf-btn-sm intro-skip">PASSER</button>
+      <button type="button" class="pf-btn pf-btn-ghost pf-btn-sm intro-skip">${tr('PASSER')}</button>
       <p class="intro-sub"></p>
       <div class="intro-end"><img src="assets/logo-clair.webp" alt="Pierre et Force"></div>`;
     (document.getElementById('app') || document.body).appendChild(root);

@@ -1,6 +1,10 @@
 // ============================================================
 // MAIN — bootstrap de l'application.
 // ============================================================
+// La langue d'abord : en anglais, le texte des données est remplacé
+// avant que quoi que ce soit ne le lise.
+import './i18n/boot.js';
+import { translateDom, t, isEN, setLang } from './i18n/i18n.js';
 import { Renderer } from './engine/renderer.js';
 import { Match } from './game/match.js';
 import { preloadAllPortraits } from './engine/portraits.js';
@@ -14,6 +18,7 @@ import { playStory } from './ui/story.js';
 import { playIntro } from './ui/intro.js';
 import { installErrorReport, report } from './ui/error-report.js';
 installErrorReport();
+translateDom(document.body);
 import { CAMPAIGN } from './data/campaign.js';
 import { renderSlots } from './ui/slots.js';
 import { audio } from './engine/audio.js';
@@ -82,7 +87,7 @@ function launchMatch(cfg){
     if(!renderer) renderer = new Renderer(document.getElementById('game-mount'));
   }catch(e){
     renderer = null;
-    report('démarrage du moteur graphique', e);
+    report(t('démarrage du moteur graphique'), e);
     return;
   }
   // Le combat ne dépend QUE du moteur de rendu (renderer.ready) — les
@@ -101,7 +106,7 @@ function launchMatch(cfg){
   }).catch(e => {
     // Sans ça, un échec du moteur (WebGL indisponible, fichier manquant…)
     // laissait un écran noir sans la moindre explication.
-    report('lancement du combat', e);
+    report(t('lancement du combat'), e);
   });
 }
 
@@ -117,7 +122,7 @@ function onMatchEnd({ victory }){
     const m = currentMission;
     if(acteOf(m) && !m.isDefi){
       const where = victory ? 'narr_victoire' : 'narr_defaite';
-      await playStory({ lines: m[where], mid: m.id, where, title: victory ? 'VICTOIRE' : 'DÉFAITE', bg: 'assets/illus/pf-14.webp' });
+      await playStory({ lines: m[where], mid: m.id, where, title: victory ? t('VICTOIRE') : t('DÉFAITE'), bg: 'assets/illus/pf-14.webp' });
     }
     goTo('screen-end');
     renderEnd(victory, currentMission, save, match?.sim, toHub, () => {
@@ -161,6 +166,13 @@ btnStart.addEventListener('click', () => {
   goTo('screen-slots');
   renderSlots(pickSlot);
 });
+// Langue : bouton de l'écran titre (et panneau dans le Profil).
+const btnLang = document.getElementById('btn-lang');
+if(btnLang){
+  btnLang.textContent = isEN ? 'Français' : 'English';
+  btnLang.lang = isEN ? 'fr' : 'en';
+  btnLang.addEventListener('click', () => setLang(isEN ? 'fr' : 'en'));
+}
 // Le prologue se revoit depuis l'écran titre.
 document.getElementById('btn-prologue')?.addEventListener('click', () => playIntro());
 document.getElementById('btn-slots-back')?.addEventListener('click', () => goTo('screen-title'));
