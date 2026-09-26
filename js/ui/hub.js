@@ -12,7 +12,7 @@ import { isDefiDone } from '../game/state.js';
 import { isMissionDone, isMissionAvailable, writeSave, spellRank, maxSpellRank, spellPointsLeft, spendSpellPoint } from '../game/state.js';
 import { renderShop, renderEveil, ensureShopSave } from './shop.js';
 import { el } from './screens.js';
-import { soundPanel, muteButton } from './sound-controls.js';
+import { graphicsPanel, soundPanel, muteButton } from './sound-controls.js';
 
 const CAMP_LABEL = { allie: 'ALLIÉ', ennemi: 'EMPIRE', neutre: 'LÉGENDE' };
 const CAMP_BADGE = { allie: 'ally', ennemi: 'enemy', neutre: 'legend' };
@@ -471,6 +471,7 @@ function renderProfile(save){
   side.appendChild(stones);
 
   side.appendChild(soundPanel());
+  side.appendChild(graphicsPanel());
 
   const slotBtn = el('button', 'pf-btn pf-btn-ghost pf-btn-sm profile-slot-btn', 'Changer de sauvegarde');
   slotBtn.addEventListener('click', () => window.dispatchEvent(new Event('pf-go-to-slots')));

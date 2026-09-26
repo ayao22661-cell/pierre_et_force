@@ -1118,7 +1118,7 @@ export const EXTRA = [
     id: 'm150', name: "Ce Qui Reste de Sgrün",
     desc: "L'entité vaincue n'a pas disparu. Elle propose autre chose.",
     brief: "Le dernier fragment de Sgrün n'a plus la force de contraindre qui que ce soit. Il lui reste la parole, et une offre à faire à celui qui tient désormais les cinq pierres.",
-    allies_requis: [], allies_dispo: ["SAM", "KAREN", "LUNDGREN", "FULGENCE"],
+    allies_requis: [], allies_dispo: ["SAM", "KAREN", "LUNDGREN", "FULGENCE", "SKYGGE"],
     ennemis: ["SGRUN"], ennemis_extra: 2,
     xp: 350,
     narr_avant: [
@@ -1129,7 +1129,10 @@ export const EXTRA = [
     narr_victoire: [
       "Le dernier fragment se disperse sans bruit, et le silence qui suit est le premier vrai silence depuis des mois.",
       "Les cinq pierres pèsent exactement leur poids. Pas plus.",
-      "Quelque part, très loin, une cour d'atelier attend à Marcory."
+      "Quelque part, très loin, une cour d'atelier attend à Marcory.",
+      "Personne ne voit la dernière brume de Sgrün glisser sur le sol et venir se coller aux pieds de Den skyggeløse mannen.",
+      "Pour la première fois depuis sept siècles, une ombre s'étire derrière lui. Elle est plus longue qu'elle ne devrait.",
+      "— Enfin, dit-il, d'une voix qui n'est plus tout à fait la sienne. Je suis entier."
     ],
     narr_defaite: [
       "L'offre reste sur la table. Elle est très raisonnable, et c'est bien le problème."
@@ -1194,5 +1197,146 @@ export const EXTRA = [
       "— Au temple, on ne m'a pas laissé de deuxième chance, dit Yasuke. Toi, je t'en laisse une."
     ],
     journal_victoire: "Papa avait gardé une seule page intacte, et c'était celle-là. Un homme qui a traversé les mers avec une pierre dans sa ceinture et qui s'est battu pour quelqu'un jusqu'au bout. Je crois que Papa voulait que je le rencontre."
+  },
+  // ── L'Homme sans Ombre : allié de la première partie. La suite du jeu
+  // en fera le grand méchant (Sgrün est son ombre arrachée) : ses répliques
+  // et celles des autres sèment les indices, sans jamais les expliquer.
+  {
+    acte: 'acte6', apres: 'm123',
+    id: 'm157', name: "L'Homme sans Ombre",
+    desc: "Sous la base de Sgrün, la glace s'est fendue. Quelqu'un dormait au fond.",
+    brief: "Les secousses de la base ont ouvert une faille sous la glace, profonde de plusieurs centaines de mètres. Au fond, un homme dort debout, une épée runique entre les mains, depuis sept siècles. La pierre de Tarine le réveille. Il ne demande pas où il est. Il demande qui a volé son sommeil, puis il veut voir ce que vaut le porteur.",
+    mode: 'COMBAT', roundsToWin: 2, roundTime: 75, foeMult: 1.1,
+    allies_requis: [], allies_dispo: [],
+    ennemis: ["SKYGGE"], ennemis_extra: 0,
+    recrue: "SKYGGE",
+    xp: 260, cauris: 180,
+    narr_avant: [
+      "Sous la base, la glace s'est fendue sur des centaines de mètres. Au fond de la faille, un homme dort debout, une épée runique entre les mains.",
+      "Ses yeux s'ouvrent quand la pierre de Tarine approche. Des yeux couleur d'hiver.",
+      "— Sept siècles de sommeil, dit l'homme. Et le premier visage que je vois porte une pierre de Kankou Moussa.",
+      "— Qui êtes-vous ? demande Tarine.",
+      "— Ceux du Nord m'appelaient Den skyggeløse mannen. Montre-moi si tu mérites que je me souvienne du reste."
+    ],
+    narr_victoire: [
+      "L'homme abaisse son épée. La lumière blanche de la base tombe droit sur lui.",
+      "— Tu te bats contre Sgrün, dit-il. Moi aussi. Il m'a pris quelque chose, il y a très longtemps, et je compte le reprendre.",
+      "Lundgren fixe longtemps la glace aux pieds de l'étranger.",
+      "— Sept siècles, et je n'ai jamais vu un homme marcher au soleil sans ombre.",
+      "L'étranger sourit sans répondre. Den skyggeløse mannen rejoint l'équipe."
+    ],
+    narr_defaite: [
+      "L'épée runique s'arrête contre la gorge de Tarine, froide comme la faille.",
+      "— Tu hésites encore, dit l'homme sans ombre. Sgrün, lui, n'hésitera pas."
+    ],
+    journal_victoire: "Un homme dormait sous la glace depuis sept siècles. Il connaît Sgrün, il connaît Kankou Moussa, et il connaissait mon nom avant que je le lui dise. Lundgren dit qu'il n'a pas d'ombre. J'ai regardé : il a raison. Il dit que c'est une vieille histoire. Je n'ai pas insisté."
+  },
+  // ── Deuxième vague : Dingane, la Reine Cendre, Adandé, le Chronophage ──
+  {
+    acte: 'acte9', apres: 'm135',
+    id: 'm155', name: "Le Roi Qui a Refusé",
+    desc: "La Pierre de la Terre fait lever l'écho d'un roi qui n'a jamais voulu d'elle.",
+    brief: "En pleine guerre d'Abidjan, la pierre de Tarine se met à peser comme une montagne. Au bout de la rue, la poussière se lève et dessine un enclos royal sur une colline. Un roi zoulou de 1838 attend là : celui qui a refusé une pierre la veille de sa dernière bataille veut savoir pourquoi Tarine, lui, l'a acceptée.",
+    mode: 'COMBAT', roundsToWin: 2, roundTime: 75, foeMult: 1.1,
+    allies_requis: [], allies_dispo: [],
+    ennemis: ["DINGANE"], ennemis_extra: 0,
+    recrue: "DINGANE",
+    xp: 250, cauris: 175,
+    narr_avant: [
+      "La rue se tait. Les barricades se couvrent de poussière rouge, et une colline se dessine là où il n'y en a jamais eu.",
+      "Au sommet, un homme immense, une sagaie courte à la main, un bouclier de cuir sur le bras.",
+      "— On m'a offert une pierre, un jour, dit Dingane. Je l'ai refusée. Un roi qui a besoin d'une pierre pour tenir debout n'est plus un roi.",
+      "— Alors pourquoi vous êtes là ? demande Tarine.",
+      "— Pour voir si toi, tu tiens debout sans elle."
+    ],
+    narr_victoire: [
+      "Le roi recule d'un pas, le premier de la journée. Il plante sa sagaie dans le sol et la laisse là.",
+      "— J'ai perdu à la rivière parce que j'étais seul contre des fusils, dit Dingane. Toi, tu n'es pas seul. C'est ta vraie force.",
+      "Il ramasse son bouclier et se tourne vers la rue en guerre : Dingane rejoint l'équipe."
+    ],
+    narr_defaite: [
+      "Le bouclier de cuir s'abat comme un mur. Tarine roule dans la poussière rouge.",
+      "— Relève-toi sans regarder ta pierre, dit Dingane. Quand tu y arriveras, reviens."
+    ],
+    journal_victoire: "Un roi de 1838 m'a demandé si je tenais debout sans ma pierre. Je n'avais jamais pensé à la question. Il dit que ma vraie force, ce sont les autres. Karen a souri quand je le lui ai répété."
+  },
+  {
+    acte: 'acte10', apres: 'm138',
+    id: 'm156', name: "La Reine Cendre",
+    desc: "Au dernier étage brûlé de la Tour Postel, la première gardienne du Feu attend.",
+    brief: "Les dossiers de l'étage parlent d'une femme qui a gardé la Pierre du Feu pendant quatre siècles, avant de la vendre à Sgrün contre l'éternité. Elle garde maintenant l'étage le plus haut de la tour. Elle a tout perdu sauf sa couronne, et elle veut la pierre que Sylla lui a prise.",
+    mode: 'BOSS', foeMult: 1.15,
+    allies_requis: [], allies_dispo: ["KAREN", "FULGENCE", "LUNDGREN"],
+    ennemis: ["CENDRE"], ennemis_extra: 2,
+    xp: 280, cauris: 190,
+    narr_avant: [
+      "Le dernier étage sent le bois brûlé. Les murs de verre sont noircis de l'intérieur.",
+      "Une femme est assise sur un trône de cendre, une couronne éteinte sur la tête.",
+      "— Quatre siècles, dit la Reine Cendre. J'ai gardé ce feu quatre siècles. Et vous le portez comme un briquet.",
+      "— On ne l'a pas vendu, nous, répond Tarine."
+    ],
+    narr_victoire: [
+      "La couronne roule sur le sol et se fend en deux. Les braises s'éteignent une à une.",
+      "— Il m'avait promis l'éternité, murmure la Reine Cendre. Il ne m'a jamais dit qu'elle serait froide.",
+      "Lundgren ramasse les deux moitiés de la couronne sans un mot, et les garde."
+    ],
+    narr_defaite: [
+      "Le sol de l'étage s'embrase. Il faut redescendre, vite, par l'escalier de secours.",
+      "— Revenez avec plus de feu que ça, dit la Reine Cendre. Ou ne revenez pas."
+    ],
+    journal_victoire: "La Reine Cendre a vendu sa flamme contre l'éternité. Elle a eu l'éternité, mais sans la flamme. Je crois que c'est la chose la plus triste que j'aie vue depuis le début."
+  },
+  {
+    acte: 'acte13', apres: 'm145',
+    id: 'm153', name: "La Dernière Mino",
+    desc: "Un éclat du Vide dépose une guerrière de 1892 au milieu du combat.",
+    brief: "Parmi les éclats tournants de Vael, l'un d'eux ne reflète pas le présent. Il se brise, et une guerrière du Dahomey en sort, lame au poing, au milieu de sa dernière bataille. Pour elle, la bataille n'est pas finie, et Tarine ressemble beaucoup à un ennemi.",
+    mode: 'COMBAT', roundsToWin: 2, roundTime: 75, foeMult: 1.1,
+    allies_requis: [], allies_dispo: [],
+    ennemis: ["ADANDE"], ennemis_extra: 0,
+    recrue: "ADANDE",
+    xp: 270, cauris: 185,
+    narr_avant: [
+      "L'éclat se fend. Il en sort une odeur de poudre et de terre mouillée, et une femme qui sourit.",
+      "— Abomey ne tombera pas aujourd'hui, dit Adandé. Pas tant que je suis debout.",
+      "— Abomey ? Madame, on est en 2026, dit Tarine.",
+      "Elle sourit encore. C'est le sourire le plus doux qu'il ait jamais vu, et il comprend trop tard qu'il annonce le premier coup."
+    ],
+    narr_victoire: [
+      "La lame s'arrête à un doigt de sa gorge. Adandé regarde autour d'elle : les éclats, le vide, les inconnus.",
+      "— Tu ne te bats pas comme eux, dit Adandé. Tu te bats comme quelqu'un qui protège.",
+      "Elle range sa lame. — Si ma bataille est finie, j'en choisirai une autre. La tienne. Adandé rejoint l'équipe."
+    ],
+    narr_defaite: [
+      "Elle frappe trois fois avant qu'il ait levé la main.",
+      "— Tu es lent, dit Adandé, sans méchanceté. Les Français aussi étaient lents. Reviens plus vite."
+    ],
+    journal_victoire: "Une guerrière de 1892 est tombée du Vide. Elle a failli me couper en deux en souriant. Maintenant elle est avec nous, et elle pose mille questions sur les téléphones."
+  },
+  {
+    acte: 'acte13', apres: 'm153',
+    id: 'm154', name: "Le Chasseur de Temps",
+    desc: "Quelqu'un est venu du futur pour ramener Adandé. Et effacer le reste.",
+    brief: "Depuis l'arrivée d'Adandé, les éclats du Vide se figent un à un, comme des horloges arrêtées. Une silhouette blanche et or marche entre eux sans jamais se presser. Le Chronophage vient réparer une erreur du temps : Adandé. Et tout ce qu'elle a touché depuis.",
+    mode: 'BOSS', foeMult: 1.15,
+    allies_requis: [], allies_dispo: ["ADANDE", "SAM", "LUNDGREN"],
+    ennemis: ["CHRONOPHAGE"], ennemis_extra: 2,
+    xp: 290, cauris: 200,
+    narr_avant: [
+      "Les éclats s'arrêtent de tourner. Le silence qui suit a quelque chose de mécanique.",
+      "— Adandé. Née en 1872. Disparue en 1892. Retour prévu, dit le Chronophage.",
+      "— Elle ne retourne nulle part, répond Tarine.",
+      "— Correction supplémentaire enregistrée."
+    ],
+    narr_victoire: [
+      "Le casque miroir se fissure, et l'armure blanche se replie sur elle-même comme une montre qu'on referme.",
+      "— Erreur non corrigée, dit le Chronophage. Elle le restera.",
+      "Il disparaît. Adandé garde la main sur sa lame longtemps après."
+    ],
+    narr_defaite: [
+      "Le temps saute. Une seconde manque, puis une autre.",
+      "— Reprise de la correction à la prochaine occurrence, dit le Chronophage."
+    ],
+    journal_victoire: "Un chasseur est venu du futur pour reprendre Adandé. On l'a arrêté. Elle m'a demandé si c'était ça, les amis, dans mon époque. J'ai dit oui."
   }
 ];

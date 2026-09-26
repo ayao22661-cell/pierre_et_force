@@ -11,6 +11,8 @@ import { renderDeploy } from './ui/deploy.js';
 import { CombatHud } from './ui/combat-hud.js';
 import { renderEnd } from './ui/end.js';
 import { playStory } from './ui/story.js';
+import { installErrorReport, report } from './ui/error-report.js';
+installErrorReport();
 import { CAMPAIGN } from './data/campaign.js';
 import { renderSlots } from './ui/slots.js';
 import { audio } from './engine/audio.js';
@@ -75,8 +77,12 @@ function launchMatch(cfg){
   // Musique du combat : duel, boss, ou affrontement de campagne.
   audio.music(cfg.mode === 'duel' ? 'duel' : cfg.mode === 'boss' ? 'boss' : 'combat');
 
-  if(!renderer){
-    renderer = new Renderer(document.getElementById('game-mount'));
+  try{
+    if(!renderer) renderer = new Renderer(document.getElementById('game-mount'));
+  }catch(e){
+    renderer = null;
+    report('démarrage du moteur graphique', e);
+    return;
   }
   // Le combat ne dépend QUE du moteur de rendu (renderer.ready) — les
   // portraits de l'UI (hub/codex/déploiement) sont une préoccupation
@@ -91,6 +97,10 @@ function launchMatch(cfg){
     match._hud = hud;
     hud.announce(`${currentMission.num}. ${currentMission.name}`);
     window.__pf = { match, renderer };
+  }).catch(e => {
+    // Sans ça, un échec du moteur (WebGL indisponible, fichier manquant…)
+    // laissait un écran noir sans la moindre explication.
+    report('lancement du combat', e);
   });
 }
 

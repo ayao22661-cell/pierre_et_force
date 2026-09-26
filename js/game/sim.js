@@ -772,6 +772,9 @@ export class Sim{
       // reportaient 100% de leur agressivité sur le joueur/alliés, sans
       // aucun partage de dégâts — d'où des missions Défense écrasantes.
       if(o.kind === 'autel' && this.mode !== 'siege' && this.mode !== 'defense') continue;
+      // Indice du récit : Sgrün ne frappe jamais l'homme sans ombre le
+      // premier. Il ne se défend que s'il a été touché par lui.
+      if(u.key === 'SGRUN' && o.key === 'SKYGGE' && !o._hitSgrun) continue;
       const d = Math.hypot(o.x-u.x, o.y-u.y);
       if(d < bd){ bd = d; best = o; }
     }
@@ -834,6 +837,7 @@ export class Sim{
 
   _applyDamage(u, t, rawDmg, opts = {}){
     if(t.dead) return;
+    if(u?.key === 'SKYGGE' && t.key === 'SGRUN') u._hitSgrun = true;
 
     // Mode Combat : chaîne de coups du joueur. Elle se casse dès qu'il
     // encaisse, et retombe toute seule après un temps sans toucher.

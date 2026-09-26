@@ -28,9 +28,13 @@
 //    ne bougent pas tous à l'unisson.
 // ============================================================
 import { WEAPON_BY_KEY } from '../data/weapons.js';
+import { Graphics } from './graphics.js';
 
 const GLB_BASE = 'assets/models/';
 const ANIM_BASE = 'assets/animations/';
+
+// Personnages qui ne projettent aucune ombre au sol.
+const NO_SHADOW = new Set(['SKYGGE']);
 
 // Les 7 champions jouables ont chacun leur modèle dédié (Hunyuan 3D +
 // rig Mixamo), comme les 13 autres personnages du récit (portraits,
@@ -56,6 +60,12 @@ const MODEL_BY_KEY = {
   // Légendes, jouables une fois leur épreuve gagnée.
   KANKOU:   'KANKOU.glb',
   YASUKE:   'YASUKE.glb',
+  ADANDE:   'ADANDE.glb',
+  SKYGGE:   'SKYGGE.glb',
+  DINGANE:  'DINGANE.glb',
+  // Ennemis de la deuxième vague.
+  CENDRE:      'CENDRE.glb',
+  CHRONOPHAGE: 'CHRONOPHAGE.glb',
 };
 const MODEL_MINION_ALLY  = 'SBIRE.glb';
 const MODEL_MINION_ENEMY = 'ORC.glb';
@@ -435,6 +445,8 @@ const PROFILE_BY_KEY = {
   TARINE:'tarine', BABA:'baba', SAM:'sam', LUNDGREN:'lundgren', KAREN:'karen', FULGENCE:'fulgence', DARK:'dark',
   SYLLA:'sylla', SCHISSIN:'schissin', OUSMANE:'ousmane', SUB:'sub', GROB:'grob',
   KRAG:'krag', MURK:'murk', VAEL:'vael', SGRUN:'sgrun', KANKOU:'kankou', YASUKE:'yasuke',
+  // Nouveaux venus : même gestuelle qu'un personnage de même arme.
+  ADANDE:'vael', DINGANE:'karen', CENDRE:'kankou', CHRONOPHAGE:'sam', SKYGGE:'yasuke',
 };
 /** Animation « maison » d'un personnage (1er idle de son profil), pour
  *  les cartes animées du Codex. Les PNJ sans profil gardent une posture calme. */
@@ -515,10 +527,14 @@ export class BabylonUnits{
 
     this._buildCamera();
     this._buildLights();
+    // Graphismes (qualité, halo, ombres, environnement, particules, météo).
+    this.gfx = new Graphics(this);
+    (this.scene.metadata = this.scene.metadata || {}).gfx = this.gfx;
 
     let _frameCount = 0;
     this.engine.runRenderLoop(() => {
       this._syncCameraFromPixi();
+      this.gfx.update();
       this.scene.render();
       _frameCount++;
       if(_frameCount === 1){
@@ -587,7 +603,7 @@ export class BabylonUnits{
    */
   setDuelCamera(o){
     if(!o){
-      if(this._duelCam){ this._duelCam.dispose(); this._duelCam = null; this.scene.activeCamera = this.camera; }
+      if(this._duelCam){ this.gfx?.detachCamera(this._duelCam); this._duelCam.dispose(); this._duelCam = null; this.scene.activeCamera = this.camera; }
       return;
     }
     const BB = window.BABYLON;
@@ -597,6 +613,7 @@ export class BabylonUnits{
       c.minZ = 0.15; c.maxZ = 400;
       c.inputs.clear();
       this._duelCam = c;
+      this.gfx?.attachCamera(c);
       this._duelYaw = null;
       this._duelPunch = 0;
     }
@@ -1058,6 +1075,152 @@ export class BabylonUnits{
   }
 
   /**
+   * ARMES À FEU — un pistolet ne se tient pas comme une épée : son axe le
+   * plus long est le CANON, pas la poignée. Tenu comme une lame, il pointait
+   * vers le ciel, crosse dans le vide. On mesure donc sur le modèle :
+   *   • l'axe du canon (axe principal des sommets) et le côté de la bouche ;
+   *   • la crosse (la partie qui dépasse sous le canon, d'un seul côté) ;
+   * puis on met la crosse dans le poing, dressée comme un manche (base côté
+   * auriculaire), et le canon dans le prolongement de la main.
+   */
+  _gunShape(model){
+    const pts = [];
+    const v = new BABYLON.Vector3();
+    for(const m of model.getChildMeshes().concat([model])){
+      if(!m.getTotalVertices || !m.getTotalVertices()) continue;
+      const pos = m.getVerticesData('position');
+      if(!pos) continue;
+      m.computeWorldMatrix(true);
+      const wm = m.getWorldMatrix();
+      const n = pos.length / 3, step = Math.max(1, Math.floor(n / 4000));
+      for(let i = 0; i < n; i += step){
+        BABYLON.Vector3.TransformCoordinatesFromFloatsToRef(pos[i * 3], pos[i * 3 + 1], pos[i * 3 + 2], wm, v);
+        pts.push(v.x, v.y, v.z);
+      }
+    }
+    const N = pts.length / 3;
+    const V3 = BABYLON.Vector3;
+    if(!N) return { span: 1, grip: V3.Zero(), up: new V3(0, 1, 0), fwd: new V3(0, 0, 1) };
+    let cx = 0, cy = 0, cz = 0;
+    for(let i = 0; i < N; i++){ cx += pts[i * 3]; cy += pts[i * 3 + 1]; cz += pts[i * 3 + 2]; }
+    cx /= N; cy /= N; cz /= N;
+    let xx = 0, xy = 0, xz = 0, yy = 0, yz = 0, zz = 0;
+    for(let i = 0; i < N; i++){
+      const x = pts[i * 3] - cx, y = pts[i * 3 + 1] - cy, z = pts[i * 3 + 2] - cz;
+      xx += x * x; xy += x * y; xz += x * z; yy += y * y; yz += y * z; zz += z * z;
+    }
+    const mul = (a) => [xx * a[0] + xy * a[1] + xz * a[2], xy * a[0] + yy * a[1] + yz * a[2], xz * a[0] + yz * a[1] + zz * a[2]];
+    const norm = (a) => { const l = Math.hypot(a[0], a[1], a[2]) || 1; return [a[0] / l, a[1] / l, a[2] / l]; };
+    const dot = (a, b) => a[0] * b[0] + a[1] * b[1] + a[2] * b[2];
+    const power = (seed, against) => {
+      let a = norm(seed);
+      for(let it = 0; it < 60; it++){
+        a = mul(a);
+        if(against){ const d = dot(a, against); a = [a[0] - against[0] * d, a[1] - against[1] * d, a[2] - against[2] * d]; }
+        a = norm(a);
+      }
+      return a;
+    };
+    const e1 = power([0.577, 0.577, 0.577]);                                  // canon
+    const e2 = power(Math.abs(e1[0]) < 0.9 ? [1, 0, 0] : [0, 1, 0], e1);      // plan canon / crosse
+    // Coordonnées de chaque sommet dans (e1, e2).
+    const T = new Float32Array(N), U = new Float32Array(N);
+    let tMin = 1e9, tMax = -1e9, uPos = 0, uNeg = 0;
+    for(let i = 0; i < N; i++){
+      const x = pts[i * 3] - cx, y = pts[i * 3 + 1] - cy, z = pts[i * 3 + 2] - cz;
+      T[i] = x * e1[0] + y * e1[1] + z * e1[2];
+      U[i] = x * e2[0] + y * e2[1] + z * e2[2];
+      if(T[i] < tMin) tMin = T[i]; if(T[i] > tMax) tMax = T[i];
+      if(U[i] > uPos) uPos = U[i]; if(-U[i] > uNeg) uNeg = -U[i];
+    }
+    // La crosse est ce qui dépasse le plus loin du canon (le dessus de la
+    // culasse, lui, reste proche de l'axe).
+    const sU = uPos >= uNeg ? 1 : -1;
+    let uMax = 0;
+    for(let i = 0; i < N; i++) uMax = Math.max(uMax, U[i] * sU);
+    let gx = 0, gy = 0, gz = 0, gt = 0, gn = 0;
+    for(let i = 0; i < N; i++){
+      if(U[i] * sU < uMax * 0.35) continue;
+      gx += pts[i * 3]; gy += pts[i * 3 + 1]; gz += pts[i * 3 + 2]; gt += T[i]; gn++;
+    }
+    const grip = gn ? new V3(gx / gn, gy / gn, gz / gn) : new V3(cx, cy, cz);
+    // La crosse est à l'arrière : la bouche du canon est de l'autre côté.
+    const muzzle = (gn && gt / gn > 0) ? -1 : 1;
+    const up = new V3(-e2[0] * sU, -e2[1] * sU, -e2[2] * sU).normalize();          // de la crosse vers le canon
+    let fwd = new V3(e1[0] * muzzle, e1[1] * muzzle, e1[2] * muzzle);
+    fwd = fwd.subtract(up.scale(V3.Dot(fwd, up))).normalize();
+    // Recul de l'arrière de l'arme derrière la crosse (le long du canon) :
+    // c'est lui qui risque de rentrer dans le poignet.
+    let rear = 0;
+    for(let i = 0; i < N; i++){
+      const d = (pts[i * 3] - grip.x) * fwd.x + (pts[i * 3 + 1] - grip.y) * fwd.y + (pts[i * 3 + 2] - grip.z) * fwd.z;
+      if(-d > rear) rear = -d;
+    }
+    return { span: Math.max(tMax - tMin, 1e-6), grip, up, fwd, rear };
+  }
+
+  _attachGun(inst, unit, w, model, boneName, handNode){
+    const V3 = BABYLON.Vector3;
+    const gs = this._gunShape(model);
+    const k = (w.height || 0.36) / gs.span;
+    const g = this._measureGrip(inst, boneName);
+    // Repère de l'arme (X, Y = crosse→canon, Z = bouche) et repère de la
+    // main (X, Y = axe du poing côté pouce, Z = le long des doigts).
+    const Yc = gs.up, Zc = gs.fwd, Xc = V3.Cross(Yc, Zc).normalize();
+    // Le canon prolonge l'AVANT-BRAS : les doigts d'un poing fermé sont
+    // pliés, et s'aligner sur eux relevait le canon (et enfonçait l'arrière
+    // de l'arme dans le poignet).
+    const side0 = /Left/.test(boneName) ? 'Left' : 'Right';
+    const fore = inst.nodeByBaseName.get('mixamorig:' + side0 + 'ForeArm');
+    let aim = g.up.clone();
+    if(fore){
+      fore.computeWorldMatrix(true); handNode.computeWorldMatrix(true);
+      const f = V3.TransformCoordinates(fore.getAbsolutePosition(), BABYLON.Matrix.Invert(handNode.getWorldMatrix()));
+      const d = f.scale(-1);                                  // du coude vers le poignet, prolongé
+      const dp = d.subtract(g.axis.scale(V3.Dot(d, g.axis)));
+      if(dp.length() > 1e-4 && V3.Dot(dp, g.up) > 0) aim = dp.normalize();
+    }
+    const Yh = g.axis, Zh = aim, Xh = V3.Cross(Yh, Zh).normalize();
+    const rows = (a, b, c) => BABYLON.Matrix.FromValues(a.x, a.y, a.z, 0, b.x, b.y, b.z, 0, c.x, c.y, c.z, 0, 0, 0, 0, 1);
+    const R = rows(Xc, Yc, Zc).transpose().multiply(rows(Xh, Yh, Zh));
+    const inner = new BABYLON.TransformNode('wgun_' + unit.id, this.scene);
+    model.position.subtractInPlace(gs.grip);          // la crosse sur l'origine
+    model.parent = inner;
+    inner.scaling.setAll(k);
+    inner.rotationQuaternion = BABYLON.Quaternion.FromRotationMatrix(R);
+    const pivot = new BABYLON.TransformNode('wgrip_' + unit.id, this.scene);
+    inner.parent = pivot;
+    handNode.computeWorldMatrix(true);
+    const sc3 = new V3();
+    handNode.getWorldMatrix().decompose(sc3);
+    const sMean = (Math.abs(sc3.x) + Math.abs(sc3.y) + Math.abs(sc3.z)) / 3 || 1;
+    pivot.position.copyFrom(g.grip);
+    // L'arrière de la culasse doit s'arrêter au creux du pouce, pas dans le
+    // poignet : on avance l'arme le long des doigts si elle déborde.
+    // (g.grip est en unités de l'os ; ×sMean ramène en mètres.)
+    // Le point de prise mesuré est au milieu des os de la main ; le creux
+    // du poing, lui, est côté paume (là où se replient les doigts). Sans
+    // ce décalage, la crosse traversait le dos de la main.
+    const side = /Left/.test(boneName) ? 'Left' : 'Right';
+    const tipNode = inst.nodeByBaseName.get('mixamorig:' + side + 'HandIndex3') || inst.nodeByBaseName.get('mixamorig:' + side + 'HandIndex2')
+      || inst.nodeByBaseName.get('mixamorig:' + side + 'HandMiddle3') || inst.nodeByBaseName.get('mixamorig:' + side + 'HandMiddle2');
+    let palm = V3.Cross(g.axis, g.up).normalize();
+    if(tipNode){
+      tipNode.computeWorldMatrix(true);
+      const tip = V3.TransformCoordinates(tipNode.getAbsolutePosition(), BABYLON.Matrix.Invert(handNode.getWorldMatrix()));
+      if(V3.Dot(tip.subtract(g.grip), palm) < 0) palm.scaleInPlace(-1);
+    }
+    pivot.position.addInPlace(palm.scale(0.03 / sMean));
+    const wristToGrip = V3.Dot(g.grip, aim) * sMean;
+    const shift = Math.max(0, gs.rear * k - wristToGrip * 0.2);
+    if(shift > 0) pivot.position.addInPlace(aim.scale(shift / sMean));
+    if(w.offset) pivot.position.addInPlace(new V3(w.offset[0], w.offset[1], w.offset[2]));
+    pivot.parent = handNode;
+    if(Math.abs(sMean - 1) > 0.02) pivot.scaling.setAll(1 / sMean);
+    return pivot;
+  }
+
+  /**
    * Accroche les armes d'un champion. Toutes les entrées utilisent le même
    * format mesuré : hauteur réelle en mètres, position de la poignée le long
    * de l'arme, et une rotation autour de son axe (`roll`) pour orienter le
@@ -1079,6 +1242,14 @@ export class BabylonUnits{
       if(inst.disposed) return;
       const entry = container.instantiateModelsToScene(name => name + '_w' + list.indexOf(w) + '_' + unit.id, false);
       const model = entry.rootNodes[0];
+
+      // Arme à feu : prise propre (crosse dans le poing, canon devant).
+      if(w.gun || /PISTOLET/i.test(w.file)){
+        const pv = this._attachGun(inst, unit, w, model, boneName, handNode);
+        inst.weapons = inst.weapons || [];
+        inst.weapons.push(pv);
+        continue;
+      }
 
       // 1. Mesure de l'arme : son VRAI axe long, par analyse des sommets.
       //    Plusieurs modèles sont posés en diagonale dans leur fichier (EPEE
@@ -1307,7 +1478,10 @@ export class BabylonUnits{
       for(const m of pivot.getChildMeshes(false)) m.visibility = 0.45;
     };
     ghostify();
-    this._attachWeapons(inst, unit).then(ghostify).catch(e => console.error('[BabylonUnits] ❌ échec attache d\'arme pour', unit.key, e));
+    // Den skyggeløse mannen ne projette aucune ombre (indice du récit).
+    if(NO_SHADOW.has(unit.key)) pivot.metadata = { ...(pivot.metadata || {}), noShadow: true };
+    this.gfx?.addCaster(pivot);
+    this._attachWeapons(inst, unit).then(ghostify).then(() => this.gfx?.addCaster(pivot)).catch(e => console.error('[BabylonUnits] ❌ échec attache d\'arme pour', unit.key, e));
     return inst;
   }
 
@@ -1636,6 +1810,7 @@ export class BabylonUnits{
   destroy(){
     this._resizeObserver?.disconnect();
     this.clearUnits();
+    this.gfx?.dispose();
     this.engine.stopRenderLoop();
     this.engine.dispose();
     this.canvas.remove();

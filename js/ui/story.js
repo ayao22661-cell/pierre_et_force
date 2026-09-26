@@ -64,9 +64,11 @@ export function playStory({ lines, mid, where, title, bg }){
       root.classList.toggle('is-narration', !spk);
       if(spk){
         $name.textContent = VOICE_NAMES[spk] || CAST[spk]?.name?.split(' ')[0] || '';
+        // Même visage, voix transformée (SKYGGE_OMBRE : le retournement).
+        const face = CAST[spk] ? spk : spk.replace(/_OMBRE$/, '');
         if(spk !== lastSpk){
           $cast.classList.remove('in');
-          if(CAST[spk]){ setAnimatedPortrait($img, spk); void $cast.offsetWidth; $cast.classList.add('in'); }
+          if(CAST[face]){ setAnimatedPortrait($img, face); void $cast.offsetWidth; $cast.classList.add('in'); }
         }
         audio.voice('recit/' + id);
       }else{

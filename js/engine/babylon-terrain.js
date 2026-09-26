@@ -24,6 +24,23 @@ import { bakeGround } from './scene/ground-bake.js';
 import { matCache } from './scene/geo.js';
 import * as T from './scene/textures.js';
 import { valueNoise, smooth, clamp } from './scene/noise.js';
+import { CAMPAIGN } from '../data/campaign.js';
+
+/**
+ * Moment de la journée d'une mission, lu dans son récit : « l'aube »,
+ * « le soir »… (la nuit vient déjà du lieu). Défaut : plein jour.
+ */
+function momentFor(missionId, night){
+  if(night) return 'nuit';
+  for(const a of CAMPAIGN) for(const m of a.missions){
+    if(m.id !== missionId) continue;
+    const t = [m.brief || '', ...(m.narr_avant || []).slice(0, 2)].join(' ').toLowerCase();
+    if(/\b(aube|petit matin|lever du (jour|soleil)|au matin)\b/.test(t)) return 'aube';
+    if(/\b(soir|crépuscule|couchant|coucher du soleil|fin d'après-midi)\b/.test(t)) return 'crepuscule';
+    return 'jour';
+  }
+  return 'jour';
+}
 
 const WORLD_SCALE = 45; // identique à babylon-units.js
 const MARGIN = 11;      // lisière construite hors de la zone jouable
@@ -67,6 +84,10 @@ export class BabylonTerrain{
     this.place = place || sceneFor(this.theme.missionId);
     this.biome = BIOMES[this.place.biome] || BIOMES.abidjan;
     this.root = new BABYLON.TransformNode('terrainRoot', scene);
+    // Graphismes : brouillard et éclairage d'environnement AVANT la
+    // création des matériaux (ils sont figés ensuite).
+    this.gfx = scene.metadata?.gfx || null;
+    this.gfx?.beginPlace({ ...this.place, moment: momentFor(this.theme.missionId, !!this.place.night), seed: this.theme.missionId || this.seed });
 
     const bx = layout.w / WORLD_SCALE, bz = layout.h / WORLD_SCALE;
     this.play = { x0: 0, x1: bx, z0: 0, z1: -bz };
@@ -88,6 +109,8 @@ export class BabylonTerrain{
     const composer = this._compose();
     const baked = this._bake(composer.shadows);
     this._buildGround(baked);
+    try{ this._buildWater(baked); }catch(e){ console.warn('[BabylonTerrain] eau animée indisponible', e); }
+    try{ this._buildGrass(baked); }catch(e){ console.warn('[BabylonTerrain] herbe indisponible', e); }
     composer.commit(this.root);
 
     // Obstacles solides : arbres, maisons, rochers, murs… Le compositeur
@@ -119,6 +142,7 @@ export class BabylonTerrain{
     }
 
     this._light();
+    this.gfx?.finishPlace();
     if(this.theme.mode === 'duel') this._sky();   // invisible en vue plongeante, et il masquait la carte
     // Modèles 3D réels (sentinelles de Sgrün, vaisseau, artefacts) : chargés
     // après coup pour ne pas retarder l'affichage du terrain.
@@ -249,11 +273,134 @@ export class BabylonTerrain{
     ground.material = mat;
     ground.isPickable = false;
     ground.freezeWorldMatrix();
-    mat.freeze();
+    // Le sol reçoit les ombres des personnages : son matériau n'est pas
+    // figé (figé, il ne se recompile plus quand les ombres s'allument).
+    if(this.gfx) this.gfx.addReceiver(ground);
+    else mat.freeze();
     this.ground = ground;
 
     const meta = this.scene.metadata = this.scene.metadata || {};
     meta.groundHeight = (x, z) => this.height(x, z) + 0.02;
+  }
+
+  /**
+   * EAU ANIMÉE — une surface épouse le relief là où la cuisson a peint de
+   * l'eau (lagune, lac) : vaguelettes qui défilent, reflets du ciel
+   * d'environnement et éclats du soleil. L'eau peinte reste visible
+   * dessous : la surface n'ajoute que le mouvement et la lumière.
+   */
+  _buildWater(baked){
+    if(!baked.water) return;
+    const sc = this.scene, full = (this.gfx?.T?.water || 'full') === 'full';
+    const night = !!this.place.night;
+    const w = this.ground.clone('water');
+    w.unfreezeWorldMatrix();
+    w.position.y += 0.05;
+    w.freezeWorldMatrix();
+    w.isPickable = false;
+    w.receiveShadows = false;
+    const mat = new BABYLON.StandardMaterial('waterMat', sc);
+    const mask = new BABYLON.DynamicTexture('waterMask', baked.water, sc, true);
+    mask.update(true);
+    mask.wrapU = mask.wrapV = BABYLON.Texture.CLAMP_ADDRESSMODE;
+    mask.hasAlpha = true;
+    mat.opacityTexture = mask;
+    mat.alpha = full ? 0.62 : 0.45;
+    mat.diffuseColor = night ? new BABYLON.Color3(0.03, 0.07, 0.14) : new BABYLON.Color3(0.08, 0.28, 0.34);
+    mat.specularColor = night ? new BABYLON.Color3(0.5, 0.6, 0.9) : new BABYLON.Color3(1, 0.97, 0.9);
+    mat.specularPower = 110;
+    const nrm = new BABYLON.DynamicTexture('waterNormal', waterNormalCanvas(this.seed), sc, true);
+    nrm.update(true);
+    const W = this.bounds.x1 - this.bounds.x0, H = this.bounds.z0 - this.bounds.z1;
+    nrm.uScale = W / 5; nrm.vScale = H / 5;
+    nrm.level = 0.7;
+    mat.bumpTexture = nrm;
+    if(full && sc.environmentTexture){
+      mat.reflectionTexture = sc.environmentTexture;
+      mat.reflectionFresnelParameters = new BABYLON.FresnelParameters();
+      mat.reflectionFresnelParameters.bias = 0.12;
+      mat.reflectionFresnelParameters.power = 2;
+      mat.reflectionFresnelParameters.leftColor = BABYLON.Color3.White();
+      mat.reflectionFresnelParameters.rightColor = BABYLON.Color3.Black();
+    }
+    mat.backFaceCulling = true;
+    w.material = mat;
+    // Vaguelettes : la carte de relief défile lentement.
+    this._waterObs = sc.onBeforeRenderObservable.add(() => {
+      const dt = sc.getEngine().getDeltaTime() / 1000 * (sc.animationTimeScale || 1);
+      nrm.uOffset = (nrm.uOffset + dt * 0.018) % 1;
+      nrm.vOffset = (nrm.vOffset + dt * 0.011) % 1;
+    });
+    this.water = w;
+  }
+
+  /**
+   * VÉGÉTATION DENSE — des milliers de touffes d'herbe en instances GPU
+   * (un seul appel de rendu), posées là où le sol peint est de l'herbe et
+   * teintées de sa couleur exacte, hors de la voie, de l'eau et du décor.
+   * Elles ondulent au vent (petit ajout au shader de sommets).
+   */
+  _buildGrass(baked){
+    const k = this.gfx?.T?.grass ?? 0.6;
+    if(!k || this.place.biome === 'polar' || this.place.biome === 'tower') return;
+    const sc = this.scene, B = this.bounds;
+    const PX = 4;                                   // échantillons par unité
+    const sw = Math.round((B.x1 - B.x0) * PX), sh = Math.round((B.z0 - B.z1) * PX);
+    const small = document.createElement('canvas'); small.width = sw; small.height = sh;
+    const sctx = small.getContext('2d', { willReadFrequently: true });
+    sctx.drawImage(baked.color, 0, 0, sw, sh);
+    const img = sctx.getImageData(0, 0, sw, sh).data;
+    let wimg = null, ww = 0, wh = 0;
+    if(baked.water){
+      ww = baked.water.width; wh = baked.water.height;
+      wimg = baked.water.getContext('2d').getImageData(0, 0, ww, wh).data;
+    }
+    const R = rngFrom(this.seed + 404);
+    const area = (B.x1 - B.x0) * (B.z0 - B.z1);
+    const tries = Math.round(area * 14 * k);
+    const mats = [], cols = [];
+    const lane = (this.laneHalf || 2) * 1.15;
+    for(let n = 0; n < tries; n++){
+      const x = B.x0 + R() * (B.x1 - B.x0), z = B.z1 + R() * (B.z0 - B.z1);
+      const i = Math.min(sw - 1, Math.floor((x - B.x0) * PX)), j = Math.min(sh - 1, Math.floor((B.z0 - z) * PX));
+      const o = (j * sw + i) * 4;
+      const r = img[o] / 255, g = img[o + 1] / 255, b = img[o + 2] / 255;
+      const mx = Math.max(r, g, b), mn = Math.min(r, g, b), sat = mx ? (mx - mn) / mx : 0;
+      let hue = 0;
+      if(mx !== mn){
+        if(mx === r) hue = 60 * (((g - b) / (mx - mn)) % 6);
+        else if(mx === g) hue = 60 * ((b - r) / (mx - mn) + 2);
+        else hue = 60 * ((r - g) / (mx - mn) + 4);
+      }
+      if(hue < 0) hue += 360;
+      if(hue < 44 || hue > 165 || sat < 0.18 || mx < 0.12) continue;     // pas de l'herbe
+      if(baked.distAt(x, z) < lane) continue;                            // voie
+      if(wimg){
+        const wi = Math.min(ww - 1, Math.floor((x - B.x0) / (B.x1 - B.x0) * ww)), wj = Math.min(wh - 1, Math.floor((B.z0 - z) / (B.z0 - B.z1) * wh));
+        if(wimg[(wj * ww + wi) * 4 + 3] > 40) continue;                  // eau
+      }
+      if(this.composer?.blocked?.(x, z, 0.25)) continue;                 // décor
+      const s = 0.55 + R() * 0.5;
+      const m = BABYLON.Matrix.Compose(new BABYLON.Vector3(s, s * (0.8 + R() * 0.5), s),
+        BABYLON.Quaternion.RotationAxis(BABYLON.Axis.Y, R() * Math.PI), new BABYLON.Vector3(x, this.height(x, z), z));
+      mats.push(m);
+      const v = 1.0 + R() * 0.25;
+      cols.push(Math.min(1, r * v), Math.min(1, g * v), Math.min(1, b * v), 1);
+    }
+    if(!mats.length) return;
+    const tuft = grassTuft(sc, this.seed);
+    tuft.parent = this.root;
+    const buf = new Float32Array(mats.length * 16);
+    mats.forEach((m, i) => m.copyToArray(buf, i * 16));
+    tuft.thinInstanceSetBuffer('matrix', buf, 16, true);
+    tuft.thinInstanceSetBuffer('color', new Float32Array(cols), 4, true);
+    tuft.isPickable = false;
+    tuft.alwaysSelectAsActiveMesh = true;
+    const wind = tuft.material.pfWind;
+    if(wind) this._grassObs = sc.onBeforeRenderObservable.add(() => {
+      wind.time += sc.getEngine().getDeltaTime() / 1000 * (sc.animationTimeScale || 1);
+    });
+    this.grass = tuft;
   }
 
   /**
@@ -363,6 +510,11 @@ export class BabylonTerrain{
 
   destroy(){
     this._destroyed = true;
+    this.gfx?.endPlace();
+    if(this._waterObs) this.scene.onBeforeRenderObservable.remove(this._waterObs);
+    if(this._grassObs) this.scene.onBeforeRenderObservable.remove(this._grassObs);
+    this.water?.material?.dispose(true, true);
+    this.grass?.material?.dispose(true, true);
     if(this.scene?.metadata) delete this.scene.metadata.groundHeight;
     const hemi = this.scene.getLightByName('hemi'), sun = this.scene.getLightByName('sun');
     if(this._lightBackup){
@@ -381,4 +533,109 @@ export class BabylonTerrain{
     cache.clear();
     this.root.dispose(false, true);
   }
+}
+
+// ── Petits outils de l'eau et de l'herbe ──────────────────────
+function rngFrom(seed){
+  let a = seed >>> 0;
+  return () => { a |= 0; a = (a + 0x6D2B79F5) | 0; let t = Math.imul(a ^ (a >>> 15), 1 | a); t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t; return ((t ^ (t >>> 14)) >>> 0) / 4294967296; };
+}
+
+/** Carte de relief de vaguelettes, raccordable dans les deux sens. */
+function waterNormalCanvas(seed){
+  const S = 256, c = document.createElement('canvas'); c.width = c.height = S;
+  const ctx = c.getContext('2d'), img = ctx.createImageData(S, S);
+  const R = rngFrom(seed + 9);
+  const waves = Array.from({ length: 7 }, () => ({ fx: 1 + Math.floor(R() * 5), fy: Math.floor(R() * 5) - 2, a: 0.4 + R() * 0.6, p: R() * 6.28 }));
+  const h = (x, y) => { let v = 0; for(const w of waves) v += w.a * Math.sin((w.fx * x + w.fy * y) / S * Math.PI * 2 + w.p); return v; };
+  for(let y = 0; y < S; y++) for(let x = 0; x < S; x++){
+    const dx = h(x + 1, y) - h(x - 1, y), dy = h(x, y + 1) - h(x, y - 1);
+    const nx = -dx * 2.2, ny = -dy * 2.2, nz = 1, L = Math.hypot(nx, ny, nz);
+    const o = (y * S + x) * 4;
+    img.data[o] = (nx / L * 0.5 + 0.5) * 255; img.data[o + 1] = (ny / L * 0.5 + 0.5) * 255; img.data[o + 2] = (nz / L * 0.5 + 0.5) * 255; img.data[o + 3] = 255;
+  }
+  ctx.putImageData(img, 0, 0);
+  return c;
+}
+
+/** Brins d'herbe : un dessin blanc (teinté par instance), transparent autour. */
+function bladesCanvas(seed){
+  const W = 128, H = 128, c = document.createElement('canvas'); c.width = W; c.height = H;
+  const ctx = c.getContext('2d'), R = rngFrom(seed + 21);
+  for(let i = 0; i < 26; i++){
+    const x0 = 12 + R() * (W - 24), lean = (R() - 0.5) * 34, top = 8 + R() * 44, wd = 3 + R() * 3;
+    const g = ctx.createLinearGradient(0, H, 0, top);
+    const shade = 185 + Math.round(R() * 70);
+    g.addColorStop(0, `rgb(${shade * 0.55 | 0},${shade * 0.6 | 0},${shade * 0.5 | 0})`);
+    g.addColorStop(1, `rgb(${shade},${shade},${shade * 0.9 | 0})`);
+    ctx.fillStyle = g;
+    ctx.beginPath();
+    ctx.moveTo(x0 - wd, H);
+    ctx.quadraticCurveTo(x0 + lean * 0.4, (H + top) / 2, x0 + lean, top);
+    ctx.quadraticCurveTo(x0 + lean * 0.4 + wd * 0.3, (H + top) / 2, x0 + wd, H);
+    ctx.closePath(); ctx.fill();
+  }
+  return c;
+}
+
+/** Vent : légère oscillation du haut des brins (ajout au shader de sommets). */
+class PfWindPlugin extends BABYLON.MaterialPluginBase{
+  constructor(material){
+    super(material, 'PfWind', 200, { PF_WIND: false });
+    this.time = 0;
+    this._enable(true);
+  }
+  prepareDefines(defines){ defines.PF_WIND = true; }
+  getClassName(){ return 'PfWindPlugin'; }
+  getUniforms(){ return { ubo: [{ name: 'pfTime', size: 1, type: 'float' }], vertex: 'uniform float pfTime;' }; }
+  bindForSubMesh(ubo){ ubo.updateFloat('pfTime', this.time); }
+  getCustomCode(type){
+    if(type !== 'vertex') return null;
+    return {
+      CUSTOM_VERTEX_UPDATE_POSITION: `
+        #ifdef PF_WIND
+          float pfH = clamp(positionUpdated.y / 0.55, 0.0, 1.0);
+          vec3 pfP = vec3(0.0);
+          #ifdef INSTANCES
+            pfP = world3.xyz;
+          #endif
+          positionUpdated.x += sin(pfTime * 1.9 + pfP.x * 0.7 + pfP.z * 0.45) * 0.08 * pfH;
+          positionUpdated.z += cos(pfTime * 1.4 + pfP.z * 0.6 + pfP.x * 0.3) * 0.05 * pfH;
+        #endif
+      `,
+    };
+  }
+}
+
+/** Touffe : deux plans croisés portant le dessin des brins. */
+function grassTuft(scene, seed){
+  const planes = [];
+  // Deux plans en croix, une seule face (le matériau les dessine des deux côtés).
+  for(let i = 0; i < 2; i++){
+    const p = BABYLON.MeshBuilder.CreatePlane('gt' + i, { width: 0.55, height: 0.5 }, scene);
+    p.position.y = 0.25;
+    p.rotation.y = i * Math.PI / 2;
+    p.bakeCurrentTransformIntoVertices();
+    planes.push(p);
+  }
+  const tuft = BABYLON.Mesh.MergeMeshes(planes, true, true);
+  tuft.name = 'grass';
+  // Normales tournées vers le ciel : la touffe est éclairée comme le sol
+  // qui la porte (des plans verticaux vus d'en haut sortaient trop sombres).
+  const nrm = tuft.getVerticesData(BABYLON.VertexBuffer.NormalKind);
+  for(let i = 0; i < nrm.length; i += 3){ nrm[i] = 0; nrm[i + 1] = 1; nrm[i + 2] = 0; }
+  tuft.setVerticesData(BABYLON.VertexBuffer.NormalKind, nrm);
+  const mat = new BABYLON.StandardMaterial('grassMat', scene);
+  const tex = new BABYLON.DynamicTexture('grassBlades', bladesCanvas(seed), scene, true);
+  tex.hasAlpha = true; tex.update(true);
+  mat.diffuseTexture = tex;
+  mat.useAlphaFromDiffuseTexture = true;
+  mat.transparencyMode = BABYLON.Material.MATERIAL_ALPHATEST;
+  mat.alphaCutOff = 0.45;
+  mat.backFaceCulling = false;
+  mat.specularColor = BABYLON.Color3.Black();
+  mat.emissiveColor = new BABYLON.Color3(0.06, 0.06, 0.05);
+  try{ mat.pfWind = new PfWindPlugin(mat); }catch(e){ mat.pfWind = null; }
+  tuft.material = mat;
+  return tuft;
 }

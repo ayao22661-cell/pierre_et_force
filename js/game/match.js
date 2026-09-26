@@ -139,6 +139,9 @@ export class Match{
     audio.voice(`combat/${key}_${moment}`, { polite: !o.force });
   }
 
+  /** Particules 3D (module graphismes), si le moteur 3D est prêt. */
+  _burst(kind, x, y, o){ this.renderer.units3d?.gfx?.burst(kind, x, y, o); }
+
   _onSimEvent(e){
     switch(e.type){
       case 'swing':
@@ -175,11 +178,18 @@ export class Match{
           }
           if(e.heavy) this.renderer.shakeCamera(10, 0.2);
           else if(e.crit) this.renderer.shakeCamera(5, 0.12);
+          // Dégât lourd (capacité, ultime) : gerbe 3D. Les coups de mêlée
+          // ont déjà la leur (événement 'melee').
+          if(this.sim.mode !== 'duel' && e.heavy){
+            this._burst('heavy', e.unit.x, e.unit.y, { color: e.color || '#ffd27a' });
+            this.renderer.units3d?.gfx?.pulse(0.5);
+          }
         }
         break;
       }
       case 'heal':
         audio.sfx('soin');
+        this._burst('heal', e.unit.x, e.unit.y, { color: '#7dffb0' });
         this.fx.spawnFloatText(e.unit.x, e.unit.y - (e.unit.r||20) - 6, '+' + Math.round(e.amount), '#7dffb0');
         this.fx.spawnImpact(e.unit.x, e.unit.y, 0x7dffb0, 34);
         break;
@@ -189,6 +199,7 @@ export class Match{
         // large qu'avant (24 -> 34) et un peu plus si le coup est critique.
         const mx = e.to.x - (e.to.x - e.from.x) * 0.15, my = e.to.y - (e.to.y - e.from.y) * 0.15 + (e.to.r||20)*0.5;
         this.fx.spawnImpact(mx, my, hexNum(e.from.fx), e.crit ? 30 : 22, { crit: e.crit });
+        this._burst(e.crit ? 'heavy' : 'hit', e.to.x, e.to.y, { color: e.from.fx || '#ffd27a', scale: e.crit ? 1 : 0.7 });
         // force: true — même raison que pour 'projectile' ci-dessus : cet
         // événement suit toujours un coup déjà résolu (unité à portée),
         // donc jamais de « glissade » à craindre ici.
@@ -198,6 +209,12 @@ export class Match{
       case 'cast': {
         audio.sfx(e.ability?.ult ? 'ultime' : 'sort');
         if(e.ability?.ult) this._shout(e.unit, 'ultime', { force: e.unit.isPlayer });
+        if(e.ability?.ult){
+          this._burst('ult', e.unit.x, e.unit.y, { color: e.unit.fx || '#ffd27a' });
+          this.renderer.units3d?.gfx?.pulse(1.2);
+          // Plan de cinéma sur l'ultime du joueur : rapproché et ralenti.
+          if(e.unit.isPlayer) this.renderer.cinematic?.({ zoom: 1.35, slow: 0.35, dur: 0.85 });
+        }else if(e.unit.kind === 'champ') this._burst('cast', e.unit.x, e.unit.y, { color: e.unit.fx || '#9ec5ff' });
         const v = this.views.get(e.unit.id);
         if(v) v.flashHit();
         this.renderer.units3d?.notifyAction(e.unit.id, 'cast');
@@ -240,9 +257,11 @@ export class Match{
         audio.sfx('impact_sol', { vol: e.heavy ? 1 : 0.7 });
         this.fx.spawnImpact(e.x, e.y, hexNum(e.color), e.radius, { heavy: e.heavy });
         if(e.heavy) this.renderer.shakeCamera(9, 0.2);
+        this._burst(e.heavy ? 'heavy' : 'dust', e.x, e.y, { color: e.color || '#ffb060' });
         break;
       case 'death': {
         this.fx.spawnImpact(e.unit.x, e.unit.y, 0xffffff, 70);
+        this._burst(e.unit.kind === 'champ' ? 'death' : 'dust', e.unit.x, e.unit.y, { color: e.unit.fx || '#ffffff', scale: e.unit.kind === 'champ' ? 1 : 0.6 });
         if(e.unit.kind === 'champ' && !e.silent){
           audio.sfx('elimination');
           this.fx.spawnFloatText(e.unit.x, e.unit.y - 30, 'ÉLIMINÉ', '#ff6a5a', true);
@@ -282,7 +301,7 @@ export class Match{
               { dur: heavy ? 0.62 : 0.46, set: heavy ? 'hitHeavy' : 'hitLight' });
             break;
           }
-          case 'knockdown': audio.sfx('chute'); u3.playFight(id, 'death', Math.floor(Math.random() * 2), { dur: 0.9, hold: true }); break;
+          case 'knockdown': audio.sfx('chute'); this._burst('dust', e.unit.x, e.unit.y, { scale: 1.3 }); u3.playFight(id, 'death', Math.floor(Math.random() * 2), { dur: 0.9, hold: true }); break;
           case 'getup':     u3.releaseFight(id); break;
           case 'block-on':  u3.playFight(id, 'block', 0, { dur: 0.5, hold: true }); break;
           case 'block-off': u3.releaseFight(id); break;
@@ -298,6 +317,8 @@ export class Match{
         audio.sfx(e.heavy ? 'coup_lourd' : armed ? 'lame' : 'coup_leger');
         // Secousse + rapprochement bref de la caméra sur le coup qui porte.
         this.renderer.units3d?.duelImpact(e.heavy);
+        this._burst(e.heavy ? 'heavy' : 'hit', e.to.x, e.to.y, { color: e.from.fx || '#ffd27a', scale: e.heavy ? 1 : 0.75 });
+        if(e.heavy) this.renderer.units3d?.gfx?.pulse(0.7);
         // Impact : gerbe d'étincelles, plus large sur un coup lourd.
         this.fx.spawnImpact(e.to.x, e.to.y - 20, e.heavy ? 0xffc04a : 0xffffff, e.heavy ? 150 : 90);
         break;
@@ -331,6 +352,8 @@ export class Match{
       case 'end':
         this._running = false;
         this._shout(this.sim.player, e.victory ? 'victoire' : 'defaite', { force: true });
+        // Coup final au ralenti.
+        this.renderer.cinematic?.({ zoom: e.victory ? 1.2 : 1.1, slow: 0.3, dur: 1.2 });
         this.onEnd({ victory: e.victory });
         break;
     }

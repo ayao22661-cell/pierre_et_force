@@ -757,6 +757,15 @@ button{ font:inherit; color:inherit; }
 .icon-btn.sound-mute-sm{ width:32px; height:32px; }
 .icon-btn.sound-mute .pf-ico{ color:var(--pf-gold); }
 .icon-btn.sound-mute.muted .pf-ico{ color:var(--pf-text-dim); }
+/* Graphismes : quatre crans, le choix actif en or. */
+.gfx-now{ font-family:var(--pf-font-display); font-size:14px; letter-spacing:1px; color:var(--pf-gold); }
+.gfx-seg{ display:grid; grid-template-columns:repeat(4,1fr); gap:4px; }
+.gfx-opt{
+  padding:7px 0; font-family:var(--pf-font-display); font-size:14px; letter-spacing:1px; cursor:pointer;
+  color:var(--pf-text-dim); background:rgba(255,255,255,.04); border:1px solid var(--pf-panel-border);
+}
+.gfx-opt.on{ color:#1a1206; background:linear-gradient(180deg,#f0c35a,#c9a24a); border-color:#7a5f2a; }
+.gfx-hint{ margin:0; font-size:11px; line-height:1.45; color:var(--pf-text-dim); }
 .sound-row{ display:grid; grid-template-columns:78px 1fr 44px; align-items:center; gap:10px; cursor:pointer; }
 .sound-row.off{ opacity:.5; }
 .sound-lbl{ font-size:12px; letter-spacing:.6px; text-transform:uppercase; color:var(--pf-text-dim); }
