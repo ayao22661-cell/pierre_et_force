@@ -179,3 +179,13 @@
   .spell-slot-pips{ bottom:-10px; }
   .hud-pause-btn{ width:28px; height:28px; }
 }
+
+/* ── Conseils de prise en main (ui/tutorial.js) ── */
+.hud-tip{
+  position:absolute; left:50%; top:clamp(70px, 14vh, 120px); z-index:6; width:min(88vw, 460px);
+  transform:translate(-50%, -8px); opacity:0; pointer-events:none;
+  padding:10px 14px; font-size:14px; line-height:1.45; color:var(--pf-text, #eee); text-align:center;
+  background:rgba(12,13,20,.9); border:1px solid rgba(233,196,106,.55); border-left:3px solid #e9c46a; border-radius:4px;
+  box-shadow:0 6px 24px rgba(0,0,0,.45); transition:opacity .35s ease, transform .35s ease;
+}
+.hud-tip.show{ opacity:1; transform:translate(-50%, 0); }

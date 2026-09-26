@@ -9,6 +9,7 @@ import { portraitFor } from '../engine/portraits.js';
 import { el } from './screens.js';
 import { Minimap } from '../engine/minimap.js';
 import { graphicsPanel, soundPanel } from './sound-controls.js';
+import { Tutorial } from './tutorial.js';
 
 const KEYS = ['A', 'Z', 'E', 'R'];
 
@@ -39,7 +40,9 @@ export class CombatHud{
       // rien, et la place est mieux employée par le bandeau des manches.
       this.root.querySelector('.hud-minimap')?.classList.add('hidden');
     }
-    this._tickFn = (dt) => this._update(dt);
+    // Conseils de prise en main (premiers combats seulement).
+    this.tutorial = new Tutorial(this.root, this.match.sim);
+    this._tickFn = (dt) => { this._update(dt); if(!this.match.paused) this.tutorial.update(dt); };
     renderer.addFrameListener(this._tickFn);
   }
 

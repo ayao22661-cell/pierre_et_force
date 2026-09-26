@@ -143,6 +143,7 @@ export class Match{
   _burst(kind, x, y, o){ this.renderer.units3d?.gfx?.burst(kind, x, y, o); }
 
   _onSimEvent(e){
+    this._hud?.tutorial?.event(e);
     switch(e.type){
       case 'swing':
         // Coup dans le vide : juste l'animation, aucun dégât.
@@ -178,6 +179,12 @@ export class Match{
           }
           if(e.heavy) this.renderer.shakeCamera(10, 0.2);
           else if(e.crit) this.renderer.shakeCamera(5, 0.12);
+          // Coups portés par le joueur : arrêt sur image sur les gros coups,
+          // petite secousse sur les autres. Le joueur doit sentir qu'il frappe.
+          if(this.sim.mode !== 'duel' && e.from?.isPlayer){
+            if(e.heavy || e.crit) this.renderer.hitstop?.(e.heavy ? 0.09 : 0.06);
+            else this.renderer.shakeCamera(2.5, 0.07);
+          }
           // Dégât lourd (capacité, ultime) : gerbe 3D. Les coups de mêlée
           // ont déjà la leur (événement 'melee').
           if(this.sim.mode !== 'duel' && e.heavy){

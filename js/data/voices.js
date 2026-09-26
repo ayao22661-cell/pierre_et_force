@@ -11,7 +11,7 @@ export const STORY_CODE = { narration_debut: 'nd', narration_fin: 'nf', narr_ava
 /** Nom affiché des personnages sans fiche dans le Codex. */
 export const VOICE_NAMES = { PNJ_H: 'Le prêteur', PNJ_F: 'La doyenne', PNJ_VIEUX: "L'Ancien", KEITA: 'Général Keïta', DARK: "L'Ombre", KANKOU: 'Kankou Moussa', CENDRE: 'La Reine Cendre', CHRONOPHAGE: 'Le Chronophage', SKYGGE: 'Den skyggeløse mannen', SKYGGE_OMBRE: 'Den skyggeløse mannen' };
 
-/** Réplique -> personnage qui la dit (283 répliques). */
+/** Réplique -> personnage qui la dit (291 répliques). */
 export const RECIT_VOICES = {
   "m1_av_2":"BABA_TUNDE",
   "m1_vi_2":"BABA_TUNDE",
@@ -295,7 +295,15 @@ export const RECIT_VOICES = {
   "m40_vi_5":"SKYGGE",
   "m46_av_4":"SKYGGE",
   "m49_vi_5":"SAM",
-  "m150_vi_5":"SKYGGE_OMBRE"
+  "m150_vi_5":"SKYGGE_OMBRE",
+  "intro_nd_0":"KANKOU",
+  "intro_nd_1":"KANKOU",
+  "intro_nd_2":"KANKOU",
+  "intro_nd_3":"KANKOU",
+  "intro_nd_4":"KANKOU",
+  "intro_nd_5":"KANKOU",
+  "intro_nd_6":"KANKOU",
+  "intro_nd_7":"KANKOU"
 };
 
 /** Cris de combat disponibles par champion : debut, ultime, victoire, defaite. */

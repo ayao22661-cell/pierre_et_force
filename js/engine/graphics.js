@@ -552,6 +552,15 @@ export class Graphics{
           try{ sessionStorage.setItem(AUTO_KEY, ORDER[ORDER.indexOf(this.tier) - 1]); }catch(e){}
           console.log('[Graphismes] le jeu rame : qualité abaissée d\'un cran.');
           this.reconfigure();
+        }else if(f.low >= 5){
+          // Déjà au plus bas : dernier recours sur les petits téléphones,
+          // on calcule l'image en plus petit (jusqu'à moitié de résolution).
+          f.low = 0;
+          const lvl = this.engine.getHardwareScalingLevel();
+          if(lvl < 2){
+            this.engine.setHardwareScalingLevel(Math.min(2, lvl * 1.25));
+            console.log('[Graphismes] le jeu rame encore : résolution réduite.');
+          }
         }
       }
     }

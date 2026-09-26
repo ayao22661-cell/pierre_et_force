@@ -21,6 +21,7 @@ pour les bruitages.
 | boss.mp3 | Epic Boss Battle | Juhani Junkala (subspaceaudio) | https://opengameart.org/content/boss-battle-music |
 | victoire.mp3 | Medieval: Victory Theme | randommind | https://opengameart.org/content/medieval-victory-theme |
 | defaite.mp3 | Medieval: Defeat Theme | randommind | https://opengameart.org/content/medieval-defeat-theme |
+| intro.mp3 | Storyboard | iamoneabe | https://opengameart.org/content/storyboard |
 
 ## Bruitages (`sfx/`)
 

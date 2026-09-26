@@ -11,6 +11,7 @@ import { renderDeploy } from './ui/deploy.js';
 import { CombatHud } from './ui/combat-hud.js';
 import { renderEnd } from './ui/end.js';
 import { playStory } from './ui/story.js';
+import { playIntro } from './ui/intro.js';
 import { installErrorReport, report } from './ui/error-report.js';
 installErrorReport();
 import { CAMPAIGN } from './data/campaign.js';
@@ -127,8 +128,14 @@ function onMatchEnd({ victory }){
 }
 
 /** Choix d'un emplacement (nouvelle partie ou reprise) → charge cette sauvegarde et entre dans le Hub. */
-function pickSlot(){
+async function pickSlot(){
   save = loadSave();
+  // Prologue au premier lancement de cette sauvegarde.
+  if(!save.introSeen){
+    await playIntro();
+    save.introSeen = true;
+    writeSave(save);
+  }
   toHub();
   // Dès que les vrais rendus 3D sont prêts, on repeint le Hub pour
   // remplacer les silhouettes provisoires — sans bloquer l'affichage
@@ -154,6 +161,8 @@ btnStart.addEventListener('click', () => {
   goTo('screen-slots');
   renderSlots(pickSlot);
 });
+// Le prologue se revoit depuis l'écran titre.
+document.getElementById('btn-prologue')?.addEventListener('click', () => playIntro());
 document.getElementById('btn-slots-back')?.addEventListener('click', () => goTo('screen-title'));
 
 // Retour à l'écran de sauvegardes depuis l'intérieur du jeu (bouton dans
