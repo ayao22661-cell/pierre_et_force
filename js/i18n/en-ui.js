@@ -161,5 +161,13 @@ export const EN_UI = {
 "L (maintenu) : garde, pour bloquer. M : esquive, au dernier moment c'est encore mieux.": "L (hold): guard, to block. M: dodge — even better at the last moment.",
 "démarrage du moteur graphique": "graphics engine start-up",
 "lancement du combat": "combat launch",
-"Score {a} – {b} / {g}": "Score {a} – {b} / {g}"
+"Score {a} – {b} / {g}": "Score {a} – {b} / {g}",
+"Chargement…": "Loading…",
+"Musique : cynicmusic, Matthew Pablo, iamoneabe": "Music: cynicmusic, Matthew Pablo, iamoneabe",
+"NIANI": "NIANI",
+"Empire du Mali — 1324": "Mali Empire — 1324",
+"LE DOMAINE DE SGRÜN": "THE DOMAIN OF SGRÜN",
+"Hors du temps": "Outside of time",
+"ABIDJAN": "ABIDJAN",
+"Marcory — aujourd'hui": "Marcory — today",
 };

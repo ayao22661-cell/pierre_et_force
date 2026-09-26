@@ -65,7 +65,7 @@ export const MUSIC = {
   boss:     { files: ['music/boss.mp3'], vol: 0.55, loop: true },
   victoire: { files: ['music/victoire.mp3'], vol: 0.6, loop: false },
   defaite:  { files: ['music/defaite.mp3'], vol: 0.6, loop: false },
-  intro:    { files: ['music/intro.mp3'], vol: 0.6, loop: false },
+  intro:    { files: ['music/prologue.mp3'], vol: 0.7, loop: false },
 };
 
 const PREFS_KEY = 'pf_audio';

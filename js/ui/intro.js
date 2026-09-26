@@ -1,19 +1,27 @@
 // ============================================================
-// PROLOGUE — cinématique d'ouverture racontée par Kankou Moussa.
+// PROLOGUE — cinématique d'ouverture (≈ 3 min), jouée avec le moteur du
+// jeu lui-même : vrais décors de mission, personnages armés, animations
+// de combat, gerbes de particules, ombres et lumière de chaque lieu.
 //
-// Une petite scène 3D à part (son propre moteur, détruit à la fin),
-// découpée en plans calés sur les répliques : chaque plan dure le temps
-// que Kankou dit sa phrase (voix intégrée, assets/audio/voix/recit/
-// intro_nd_<n>.mp3), sur la musique « intro ». Les sous-titres suivent.
-// Jouée au premier lancement d'une sauvegarde, et rejouable depuis
-// l'écran titre. « Passer » arrête tout à n'importe quel moment.
+// Trois scènes, racontées par Kankou Moussa :
+//   1. NIANI, 1324 — l'Empereur, les cinq pierres, les ombres qui
+//      l'attaquent, la séparation des pierres ;
+//   2. LE DOMAINE DE SGRÜN — l'Empire et ses émissaires ;
+//   3. MARCORY, AUJOURD'HUI — Tarine, la pierre, le premier combat.
+//
+// Mise en scène : un « metteur en scène » avance une horloge (qui ralentit
+// pendant les ralentis), déplace les acteurs, déclenche leurs gestes
+// (coups, esquives, parades, chutes, sorts) et pilote une caméra de
+// cinéma (plans, coupes, travellings, secousses). La musique (bande de
+// 3 min, music/prologue.mp3) et les répliques de Kankou suivent.
+// Jouée au premier lancement, et rejouable depuis l'écran titre.
 // ============================================================
 import { el } from './screens.js';
 import { audio } from '../engine/audio.js';
 import { t as tr, isEN } from '../i18n/i18n.js';
-
-const GLB = 'assets/models/';
-const ANIM = 'assets/animations/';
+import { BabylonUnits } from '../engine/babylon-units.js';
+import { BabylonTerrain } from '../engine/babylon-terrain.js';
+import { arenaLayout } from '../engine/tilemap.js';
 
 /** Texte du conte (identique aux voix enregistrées). */
 const INTRO_FR = [
@@ -38,41 +46,23 @@ const INTRO_EN = [
 ];
 export const INTRO_LINES = isEN ? INTRO_EN : INTRO_FR;
 
+const M = 45;                          // pixels du monde par mètre (WORLD_SCALE)
+const LAYOUT = arenaLayout();
+const C = { x: LAYOUT.w / 2, y: LAYOUT.h / 2 };   // centre de l'arène
+const THEME = { g1: '#3a2c1e', g2: '#463524', lane: '#6a5138', acc: '#c9a24a', wall: '#1c140c' };
 // Les cinq pierres : Eau, Terre, Feu, Air, Équilibre.
 const STONES = ['#3fa9f5', '#c08a4a', '#ff6a2a', '#e8f4ff', '#6fe0b0'];
 
-// Ambiance de chaque plan : ciel (haut, horizon), brouillard, lumières.
-const MOODS = {
-  dusk:   { top: '#2a1d3a', hor: '#f08a3c', fog: '#b86a3a', hemi: '#ffd2a0', ground: '#7a5230', sun: '#ffb070', hemiI: 0.75, sunI: 1.4 },
-  gold:   { top: '#3a2410', hor: '#ffc860', fog: '#c89040', hemi: '#ffe0a0', ground: '#8a6030', sun: '#ffd080', hemiI: 0.85, sunI: 1.6 },
-  night:  { top: '#05060d', hor: '#26304a', fog: '#1a2030', hemi: '#8090c0', ground: '#2a2a34', sun: '#a0b0ff', hemiI: 0.45, sunI: 0.7 },
-  shadow: { top: '#020103', hor: '#2a0f3a', fog: '#12061a', hemi: '#8a50c0', ground: '#140c18', sun: '#c084fc', hemiI: 0.3, sunI: 0.9 },
-  city:   { top: '#1a2340', hor: '#f0905a', fog: '#6a4a50', hemi: '#ffc8a0', ground: '#4a4440', sun: '#ffb080', hemiI: 0.8, sunI: 1.3 },
-};
-
-// Plans : qui est à l'écran, ambiance, caméra de départ -> d'arrivée
-// (alpha, beta, rayon, hauteur visée).
-const SHOTS = [
-  { who: 'KANKOU', mood: 'dusk',   anim: 'idle', from: [2.2, 1.40, 10, 1.1], to: [1.75, 1.38, 4.6, 1.2] },
-  { who: 'KANKOU', mood: 'gold',   anim: 'idle', from: [1.35, 1.30, 3.4, 1.5], to: [1.85, 1.32, 3.0, 1.55], gold: true },
-  { who: 'KANKOU', mood: 'dusk',   anim: 'cast', from: [1.2, 1.20, 5.4, 1.4], to: [1.9, 1.25, 4.8, 1.5], stones: 'appear' },
-  { who: 'KANKOU', mood: 'night',  anim: 'cast', from: [1.9, 1.25, 4.8, 1.6], to: [1.6, 1.05, 4.0, 2.2], stones: 'merge' },
-  { who: 'KANKOU', mood: 'night',  anim: 'idle', from: [1.6, 1.05, 5, 1.8], to: [1.3, 0.75, 13, 2.5], stones: 'scatter' },
-  { who: 'SGRUN',  mood: 'shadow', anim: 'idle', from: [1.57, 1.55, 3.2, 1.6], to: [1.57, 1.45, 4.4, 1.5] },
-  { who: 'TARINE', mood: 'city',   anim: 'idle', from: [2.3, 1.32, 7, 1.1], to: [1.9, 1.35, 3.6, 1.25], hand: true },
-  { who: 'TARINE', mood: 'city',   anim: 'idle', from: [1.9, 1.35, 3.6, 1.25], to: [1.62, 1.45, 1.1, 1.18], hand: true, finale: true },
-];
-
+// Distribution : clé du personnage, camp (0 : alliés, 1 : Empire).
 const CAST = {
-  KANKOU: { file: 'KANKOU.glb', idle: 'pro-melee-axe-pack-unarmed-idle.glb', cast: 'standing-2h-cast-spell-01.glb' },
-  SGRUN:  { file: 'SGRUN.glb',  idle: 'pro-melee-axe-pack-unarmed-idle.glb' },
-  TARINE: { file: 'TARINE.glb', idle: 'pro-melee-axe-pack-unarmed-idle-looking-ver-1.glb' },
+  kankou: ['KANKOU', 0], ombre1: ['DARK', 1], ombre2: ['DARK', 1],
+  sgrun: ['SGRUN', 1], krag: ['KRAG', 1], vael: ['VAEL', 1], murk: ['MURK', 1], sub: ['SUB', 1], grob: ['GROB', 1],
+  tarine: ['TARINE', 0], karen: ['KAREN', 0], fulgence: ['FULGENCE', 0], baba: ['BABA', 0],
 };
 
-const sleep = (ms) => new Promise(r => setTimeout(r, ms));
-const lerp = (a, b, t) => a + (b - a) * t;
+class Skip extends Error{}
 const ease = (t) => t < 0.5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2;
-const col = (h) => BABYLON.Color3.FromHexString(h);
+const easeOut = (t) => 1 - Math.pow(1 - t, 3);
 
 /** Joue le prologue. Résout quand il est fini ou passé. */
 export function playIntro(){
@@ -80,240 +70,472 @@ export function playIntro(){
   return new Promise(resolve => {
     const root = el('div', 'intro');
     root.innerHTML = `
-      <canvas class="intro-canvas"></canvas>
+      <div class="intro-stage"></div>
       <div class="intro-veil"></div>
       <div class="intro-flash"></div>
+      <div class="intro-load"><span>${tr('Chargement…')}</span><i></i></div>
       <button type="button" class="pf-btn pf-btn-ghost pf-btn-sm intro-skip">${tr('PASSER')}</button>
+      <div class="intro-card"><b></b><span></span></div>
       <p class="intro-sub"></p>
-      <div class="intro-end"><img src="assets/logo-clair.webp" alt="Pierre et Force"></div>`;
+      <div class="intro-end"><img src="assets/logo-clair.webp" alt="Pierre et Force"><small>${tr('Musique : cynicmusic, Matthew Pablo, iamoneabe')}</small></div>`;
     (document.getElementById('app') || document.body).appendChild(root);
-    const canvas = root.querySelector('canvas');
-    const $sub = root.querySelector('.intro-sub');
-    const $flash = root.querySelector('.intro-flash');
+    const $ = (s) => root.querySelector(s);
+    const $sub = $('.intro-sub'), $flash = $('.intro-flash'), $card = $('.intro-card'), $veil = $('.intro-veil');
 
-    let done = false, engine = null;
+    let done = false, stage = null, terrain = null, obs = null;
     const finish = () => {
       if(done) return;
       done = true;
       audio.stopVoice();
       audio.music('menu');
       root.classList.add('out');
-      setTimeout(() => { try{ engine?.dispose(); }catch(e){} root.remove(); resolve(); }, 600);
+      setTimeout(() => {
+        try{ if(obs) stage?.scene.onBeforeRenderObservable.remove(obs); }catch(e){}
+        try{ terrain?.destroy(); }catch(e){}
+        try{ stage?.destroy(); }catch(e){}
+        root.remove();
+        delete window.__pfIntroClock;
+        resolve();
+      }, 650);
     };
-    root.querySelector('.intro-skip').addEventListener('click', (e) => { e.stopPropagation(); finish(); });
+    $('.intro-skip').addEventListener('click', (e) => { e.stopPropagation(); finish(); });
 
-    run().catch(e => { console.warn('[intro]', e); finish(); });
+    run().catch(e => { if(!(e instanceof Skip)) console.warn('[prologue]', e); finish(); });
 
     async function run(){
-      engine = new BABYLON.Engine(canvas, true, { preserveDrawingBuffer: false, stencil: true }, true);
-      engine.setHardwareScalingLevel(Math.max(1, (window.devicePixelRatio || 1) / 1.5));
-      const scene = new BABYLON.Scene(engine);
-      scene.fogMode = BABYLON.Scene.FOGMODE_EXP2;
-      scene.fogDensity = 0.014;
+      const V3 = BABYLON.Vector3;
+      // ── Le plateau : le moteur 3D du jeu, avec notre propre caméra ──
+      const fakePixi = { camera: { x: C.x, y: C.y, zoom: 1, baseZoom: 1 }, app: null };
+      stage = new BabylonUnits($('.intro-stage'), fakePixi);
+      const scene = stage.scene, gfx = stage.gfx;
+      const cam = new BABYLON.UniversalCamera('cine', new V3(0, 3, -10), scene);
+      cam.fov = 0.8; cam.minZ = 0.1; cam.maxZ = 600; cam.inputs.clear();
+      scene.activeCamera = cam;
+      gfx.attachCamera(cam);
 
-      const cam = new BABYLON.ArcRotateCamera('ic', 1.7, 1.4, 8, new BABYLON.Vector3(0, 1.2, 0), scene);
-      cam.fov = 0.6; cam.minZ = 0.05;
-      const hemi = new BABYLON.HemisphericLight('ih', new BABYLON.Vector3(0.2, 1, 0.3), scene);
-      const sun = new BABYLON.DirectionalLight('is', new BABYLON.Vector3(-0.5, -0.6, -0.6), scene);
-      const rim = new BABYLON.DirectionalLight('ir', new BABYLON.Vector3(0.3, -0.2, 1), scene);  // contre-jour
-      rim.intensity = 0.9;
-
-      // Ciel : grand dôme peint d'un dégradé vertical.
-      const skyTex = new BABYLON.DynamicTexture('isky', { width: 4, height: 256 }, scene, false);
-      const sky = BABYLON.MeshBuilder.CreateSphere('idome', { diameter: 180, segments: 16, sideOrientation: BABYLON.Mesh.BACKSIDE }, scene);
-      const skyMat = new BABYLON.StandardMaterial('iskym', scene);
-      skyMat.emissiveTexture = skyTex; skyMat.disableLighting = true; skyMat.fogEnabled = false;
-      skyMat.diffuseColor = BABYLON.Color3.Black(); skyMat.specularColor = BABYLON.Color3.Black();
-      sky.material = skyMat; sky.infiniteDistance = true;
-
-      // Sol : un grand disque de sable, légèrement grainé.
-      const grain = new BABYLON.DynamicTexture('igrain', 256, scene, true);
-      { const c = grain.getContext(); const im = c.createImageData(256, 256);
-        for(let i = 0; i < im.data.length; i += 4){ const v = 200 + Math.random() * 55; im.data[i] = im.data[i+1] = im.data[i+2] = v; im.data[i+3] = 255; }
-        c.putImageData(im, 0, 0); grain.update(); }
-      grain.uScale = grain.vScale = 30;
-      const ground = BABYLON.MeshBuilder.CreateDisc('iground', { radius: 70, tessellation: 64 }, scene);
-      ground.rotation.x = Math.PI / 2;
-      const gMat = new BABYLON.StandardMaterial('igm', scene);
-      gMat.diffuseTexture = grain; gMat.specularColor = BABYLON.Color3.Black();
-      ground.material = gMat;
-
-      // Pierres : cinq sphères lumineuses, avec halo.
-      const glow = new BABYLON.GlowLayer('iglow', scene, { mainTextureSamples: 2 });
-      glow.intensity = 0.9;
-      const stones = STONES.map((h, i) => {
-        const m = BABYLON.MeshBuilder.CreateIcoSphere('istone' + i, { radius: 0.11, subdivisions: 4 }, scene);
-        const mat = new BABYLON.StandardMaterial('istm' + i, scene);
-        mat.emissiveColor = col(h); mat.diffuseColor = BABYLON.Color3.Black(); mat.disableLighting = true;
-        m.material = mat; m.setEnabled(false); m.__c = col(h);
-        return m;
-      });
-
-      // Poussière d'or / braises : une texture ronde générée.
-      const dot = new BABYLON.DynamicTexture('idot', 64, scene, false);
-      { const c = dot.getContext(); const g = c.createRadialGradient(32, 32, 0, 32, 32, 32);
-        g.addColorStop(0, 'rgba(255,255,255,1)'); g.addColorStop(1, 'rgba(255,255,255,0)');
-        c.fillStyle = g; c.fillRect(0, 0, 64, 64); dot.update(); dot.hasAlpha = true; }
-      const dust = new BABYLON.ParticleSystem('idust', 600, scene);
-      dust.particleTexture = dot;
-      dust.emitter = new BABYLON.Vector3(0, 3.5, 0);
-      dust.createBoxEmitter(new BABYLON.Vector3(-0.2, -1, -0.2), new BABYLON.Vector3(0.2, -1, 0.2), new BABYLON.Vector3(-3, 0, -3), new BABYLON.Vector3(3, 1, 3));
-      dust.minSize = 0.02; dust.maxSize = 0.07; dust.minLifeTime = 2; dust.maxLifeTime = 4;
-      dust.minEmitPower = 0.3; dust.maxEmitPower = 0.8; dust.emitRate = 0;
-      dust.color1 = new BABYLON.Color4(1, 0.85, 0.4, 1); dust.color2 = new BABYLON.Color4(1, 0.7, 0.2, 0.8);
-      dust.colorDead = new BABYLON.Color4(1, 0.6, 0.1, 0);
-      dust.blendMode = BABYLON.ParticleSystem.BLENDMODE_ADD;
-      dust.start();
-
-      // Personnages : chargés une fois, un seul visible à la fois.
-      const actors = {};
-      await Promise.all(Object.entries(CAST).map(async ([k, c]) => {
-        const cont = await BABYLON.SceneLoader.LoadAssetContainerAsync(GLB, c.file, scene);
-        cont.animationGroups.forEach(g => g.stop());
-        cont.addAllToScene();
-        const rootNode = cont.meshes[0];
-        const nodes = new Map();
-        const add = (n) => { nodes.set(n.name, n); if(/^mixamorig\d+:/.test(n.name)) nodes.set(n.name.replace(/^mixamorig\d+:/, 'mixamorig:'), n); };
-        cont.transformNodes.forEach(add); cont.meshes.forEach(add);
-        const anims = {};
-        for(const [slot, file] of Object.entries(c)){
-          if(slot === 'file') continue;
-          try{
-            const ac = await BABYLON.SceneLoader.LoadAssetContainerAsync(ANIM, file, scene);
-            const src = ac.animationGroups[ac.animationGroups.length - 1];
-            const g = new BABYLON.AnimationGroup(k + '_' + slot, scene);
-            for(const ta of src?.targetedAnimations || []){ const t = nodes.get(ta.target?.name); if(t) g.addTargetedAnimation(ta.animation, t); }
-            ac.animationGroups.forEach(x => x.dispose());
-            if(g.targetedAnimations.length) anims[slot] = g;
-          }catch(e){ /* sans animation, le personnage garde sa pose */ }
-        }
-        rootNode.setEnabled(false);
-        actors[k] = { root: rootNode, anims, hand: nodes.get('mixamorig:RightHand') };
-      }));
-      if(done) return;
-
-      // Fond sonore et lumière de départ.
-      audio.music('intro');
-      let mood = { ...MOODS.dusk }, moodTo = MOODS.dusk, moodT = 1;
-      const paintSky = (m) => {
-        const c = skyTex.getContext(); const g = c.createLinearGradient(0, 0, 0, 256);
-        g.addColorStop(0, m.top); g.addColorStop(0.62, m.hor); g.addColorStop(1, m.fog);
-        c.fillStyle = g; c.fillRect(0, 0, 4, 256); skyTex.update();
-      };
-      const applyMood = (a, b, t) => {
-        const mix = (k) => BABYLON.Color3.Lerp(col(a[k]), col(b[k]), t);
-        scene.fogColor = mix('fog'); scene.clearColor = BABYLON.Color4.FromColor3(mix('fog'), 1);
-        hemi.diffuse = mix('hemi'); hemi.groundColor = mix('ground').scale(0.6);
-        sun.diffuse = mix('sun'); rim.diffuse = mix('sun');
-        gMat.diffuseColor = mix('ground');
-        hemi.intensity = lerp(a.hemiI, b.hemiI, t); sun.intensity = lerp(a.sunI, b.sunI, t);
-      };
-      paintSky(MOODS.dusk); applyMood(MOODS.dusk, MOODS.dusk, 1);
-
-      // Animation continue : caméra, ambiance, pierres, secousse.
-      let shot = null, t0 = 0, dur = 1, shake = 0, stoneMode = null, stoneT0 = 0, handStone = null;
-      const orbit = (i, t) => {
-        const a = t * 0.8 + i * (Math.PI * 2 / 5);
-        return new BABYLON.Vector3(Math.cos(a) * 1.1, 1.7 + Math.sin(t * 1.3 + i) * 0.12, Math.sin(a) * 1.1);
-      };
-      scene.onBeforeRenderObservable.add(() => {
-        const now = performance.now() / 1000;
-        if(shot){
-          const k = ease(Math.min(1, (now - t0) / dur));
-          cam.alpha = lerp(shot.from[0], shot.to[0], k);
-          cam.beta = lerp(shot.from[1], shot.to[1], k);
-          cam.radius = lerp(shot.from[2], shot.to[2], k);
-          cam.target.y = lerp(shot.from[3], shot.to[3], k);
-          // Dernier plan : on vient cadrer la pierre.
-          cam.target.x = 0; cam.target.z = shot.finale ? lerp(0, 0.42, k) : 0;
-        }
-        if(moodT < 1){
-          moodT = Math.min(1, moodT + engine.getDeltaTime() / 1400);
-          applyMood(mood, moodTo, moodT);
-          if(moodT >= 1){ mood = { ...moodTo }; }
-        }
-        if(shake > 0){
-          cam.alpha += (Math.random() - 0.5) * shake * 0.03;
-          cam.beta += (Math.random() - 0.5) * shake * 0.03;
-          shake = Math.max(0, shake - engine.getDeltaTime() / 900);
-        }
-        // Pierres
-        const st = now - stoneT0;
-        stones.forEach((s, i) => {
-          if(stoneMode === 'appear'){
-            const on = st > 0.4 + i * 1.1;
-            s.setEnabled(on);
-            if(on){ s.position.copyFrom(orbit(i, now)); s.scaling.setAll(Math.min(1, (st - 0.4 - i * 1.1) * 3)); }
-          }else if(stoneMode === 'merge'){
-            s.setEnabled(true);
-            const k = Math.min(1, st / 4);
-            const p = BABYLON.Vector3.Lerp(orbit(i, now), new BABYLON.Vector3(0, 2.7, 0), ease(k));
-            s.position.copyFrom(p);
-            s.scaling.setAll(1 + k * 1.5);
-          }else if(stoneMode === 'scatter'){
-            s.setEnabled(st < 5);
-            const a = i * (Math.PI * 2 / 5) + 0.4;
-            const d = st * st * 3;
-            s.position.set(Math.cos(a) * d, 2.7 + st * 2.2, Math.sin(a) * d);
-            s.scaling.setAll(Math.max(0.3, 2.5 - st * 0.5));
-          }else s.setEnabled(false);
-        });
-        if(!handStone) glow.intensity = stoneMode === 'merge' ? 0.9 + Math.min(1, st / 4) * 1.6 : 0.9;
-        if(handStone){
-          // La pierre de l'Équilibre flotte devant lui, sortie de la boîte.
-          handStone.position.set(0, 1.18 + Math.sin(now * 1.6) * 0.03, 0.42);
-          const k = shot?.finale ? Math.min(1, (now - t0) / dur) : 0;
-          handStone.scaling.setAll(0.75 + Math.sin(now * 3) * 0.06 + k * 0.5);
-          glow.intensity = 0.9 + k * 2.2;
-        }
-      });
-      engine.runRenderLoop(() => scene.render());
-      const onResize = () => engine.resize();
-      window.addEventListener('resize', onResize);
-      await scene.whenReadyAsync(true);
-      if(done) return;
-      root.classList.add('ready');
-
-      // Déroulé : un plan par réplique.
-      for(let i = 0; i < SHOTS.length && !done; i++){
-        const s = SHOTS[i], line = INTRO_LINES[i];
-        // Personnage à l'écran et son animation.
-        for(const [k, a] of Object.entries(actors)){
-          const on = k === s.who;
-          a.root.setEnabled(on);
-          for(const g of Object.values(a.anims)) g.stop();
-          if(on){ const g = a.anims[s.anim] || a.anims.idle; g?.start(true, 1.0); }
-        }
-        if(s.mood){ mood = { ...mood }; moodTo = MOODS[s.mood]; moodT = 0; paintSky(moodTo); }
-        dust.emitRate = s.gold ? 160 : (s.mood === 'dusk' ? 25 : 0);
-        dust.color1 = s.mood === 'shadow' ? new BABYLON.Color4(0.75, 0.5, 1, 1) : new BABYLON.Color4(1, 0.85, 0.4, 1);
-        if(s.stones !== undefined || stoneMode){ stoneMode = s.stones || null; stoneT0 = performance.now() / 1000; }
-        if(s.hand && !handStone){
-          handStone = stones[4].clone('ihand'); handStone.setEnabled(true);
-        }
-        if(!s.hand && handStone){ handStone.dispose(); handStone = null; }
-
-        // Sous-titre.
-        $sub.classList.remove('in'); void $sub.offsetWidth;
-        $sub.textContent = line; $sub.classList.add('in');
-
-        // Durée : celle de la voix, avec un minimum de lecture.
-        const minMs = Math.max(3200, line.length * 55);
-        shot = { ...s }; t0 = performance.now() / 1000; dur = minMs / 1000 + 1.2;
-        const voice = audio.voice('recit/intro_nd_' + i);
-        if(s.stones === 'merge') setTimeout(() => { if(!done){ $flash.classList.remove('go'); void $flash.offsetWidth; $flash.classList.add('go'); shake = 1; } }, 3800);
-        await Promise.all([voice, sleep(minMs)]);
-        if(done) break;
-        await sleep(s.finale ? 400 : 1100);   // un temps de conte entre les phrases
+      // ── Les acteurs (tous chargés dès le début, montrés à la demande) ──
+      let nextId = 9000;
+      const A = {};
+      for(const [name, [key, team]] of Object.entries(CAST)){
+        A[name] = { name, on: false, tweens: [], u: { id: nextId++, key, kind: 'champ', team, isPlayer: key === 'TARINE',
+          x: C.x, y: C.y + 40 * M, facing: { x: 0, y: 1 }, target: null, dead: false } };
       }
-      if(done) return;
-      // Fin : l'éclat de la pierre remplit l'écran, puis le titre.
-      root.classList.add('white');
-      await sleep(900);
+      const units = Object.values(A).map(a => a.u);
+      const inst = (a) => stage.instances.get(a.u.id);
+      const ready = (a) => !!inst(a)?.ready;
+
+      // ── Horloges du metteur en scène ──
+      // `clock` : temps de l'action, ralenti pendant les ralentis (wait).
+      // `wall` : temps de la musique, jamais ralenti. Les repères until(t)
+      // sont en temps musique : chaque séquence se recale sur la bande-son.
+      let clock = 0, wall = 0, timeScale = 1, slowUntil = 0;
+      const waiters = [];
+      const wait = (s) => { if(done) throw new Skip(); return new Promise(r => waiters.push({ at: clock + s, r })); };
+      const until = (t) => {
+        if(done) throw new Skip();
+        if(wall > t + 0.3) console.warn('[prologue] repère ' + t + ' s dépassé de ' + (wall - t).toFixed(1) + ' s');
+        return new Promise(r => waiters.push({ wallAt: t, r }));
+      };
+      const slow = (k, dur) => { timeScale = k; slowUntil = clock + dur; };
+
+      // ── Caméra : un plan = une position et une visée, qui peuvent suivre
+      // les acteurs, interpolées de « de » à « vers » sur la durée du plan.
+      let shotCur = null, shake = 0;
+      const shot = (from, to, dur, o = {}) => { shotCur = { from, to: to || from, t0: clock, dur, fov: o.fov || [0.8, 0.8], ease: o.ease || ease }; };
+      const P = (a) => stage._groundPos(a.u.x, a.u.y);
+      const W = (dx, dy) => ({ x: C.x + dx * M, y: C.y + dy * M });
+      const G = (dx, dy, h = 0) => { const w = W(dx, dy); const v = stage._groundPos(w.x, w.y); v.y += h; return v; };
+      const rel = (a) => ({ x: (a.u.x - C.x) / M, y: (a.u.y - C.y) / M });
+      // Position autour d'un acteur : angle 0 = devant lui (vers le bas de la carte).
+      const around = (a, ang, d, h, th = 1.5) => () => {
+        const b = P(a);
+        return { pos: b.add(new V3(Math.sin(ang) * d, h, -Math.cos(ang) * d)), tgt: b.add(new V3(0, th, 0)) };
+      };
+      const between = (a, b, ang, d, h, th = 1.3) => () => {
+        const m = P(a).add(P(b)).scale(0.5);
+        return { pos: m.add(new V3(Math.sin(ang) * d, h, -Math.cos(ang) * d)), tgt: m.add(new V3(0, th, 0)) };
+      };
+      const fixed = (pos, tgt) => () => ({ pos, tgt });
+
+      // ── Gestes et déplacements ──
+      const show = (...as) => as.forEach(a => { a.on = true; });
+      const hide = (...as) => as.forEach(a => { a.on = false; });
+      const place = (a, dx, dy, f) => { const w = W(dx, dy); a.u.x = w.x; a.u.y = w.y; a.tweens = []; if(f) a.u.facing = f; };
+      const face = (a, b) => { const dx = b.u.x - a.u.x, dy = b.u.y - a.u.y, d = Math.hypot(dx, dy) || 1; a.u.facing = { x: dx / d, y: dy / d }; };
+      const move = (a, dx, dy, dur, o = {}) => {
+        const w = W(dx, dy);
+        a.tweens = [{ x0: a.u.x, y0: a.u.y, x1: w.x, y1: w.y, t0: clock, dur, ease: o.ease || ((t) => t), turn: o.turn !== false }];
+      };
+      const toward = (a, b, stop, dur) => {   // court vers b et s'arrête à `stop` mètres
+        const dx = b.u.x - a.u.x, dy = b.u.y - a.u.y, d = Math.hypot(dx, dy) || 1;
+        const k = Math.max(0, d - stop * M) / d;
+        move(a, (a.u.x + dx * k - C.x) / M, (a.u.y + dy * k - C.y) / M, dur);
+      };
+      const knock = (a, from, dist, dur = 0.45) => {   // projeté en arrière, loin de `from`
+        const dx = a.u.x - from.u.x, dy = a.u.y - from.u.y, d = Math.hypot(dx, dy) || 1;
+        move(a, (a.u.x + dx / d * dist * M - C.x) / M, (a.u.y + dy / d * dist * M - C.y) / M, dur, { ease: easeOut, turn: false });
+      };
+      const act = (a, state, i = 0, o = {}) => stage.playFight(a.u.id, state, i, o);
+      const rise = (a) => stage.releaseFight(a.u.id);
+      const fx = (kind, a, color, scale = 1) => gfx.burst(kind, a.u.x, a.u.y, { color, scale });
+      const fxAt = (kind, dx, dy, color, scale = 1) => { const w = W(dx, dy); gfx.burst(kind, w.x, w.y, { color, scale }); };
+      const sfx = (k, vol) => audio.sfx(k, vol ? { vol } : {});
+      const flash = (white = true) => { $flash.classList.toggle('dark', !white); $flash.classList.remove('go'); void $flash.offsetWidth; $flash.classList.add('go'); };
+      const hit = (k = 1) => { shake = Math.max(shake, k); gfx.pulse(0.6 * k); };
+      const blink = (a, dx, dy, color = '#9b59ff') => { fx('death', a, color, 0.7); place(a, dx, dy); fx('death', a, color, 0.7); sfx('sort'); };
+
+      // ── Texte : répliques, cartons de lieu, fondus ──
+      const say = (i) => {
+        $sub.classList.remove('in'); void $sub.offsetWidth;
+        $sub.textContent = INTRO_LINES[i]; $sub.classList.add('in');
+        audio.voice('recit/intro_nd_' + i).then(() => setTimeout(() => { if($sub.textContent === INTRO_LINES[i]) $sub.classList.remove('in'); }, 900));
+      };
+      const card = async (title, sub, dur = 3.2) => {
+        $card.querySelector('b').textContent = title; $card.querySelector('span').textContent = sub;
+        $card.classList.add('in'); await wait(dur); $card.classList.remove('in');
+      };
+      const black = (on, s = 0.8) => { $veil.style.transition = `opacity ${s}s ease`; $veil.style.opacity = on ? '1' : '0'; };
+
+      // ── Lieux : un vrai décor de mission, en arène, avec son ciel ──
+      const setPlace = (missionId, moment, seed) => {
+        try{ terrain?.destroy(); }catch(e){}
+        terrain = new BabylonTerrain(scene, { ...THEME, missionId, mode: 'duel', moment }, LAYOUT, seed, null);
+      };
+      const waitReady = async (as, ms) => {
+        const t1 = performance.now();
+        while(!as.every(ready) && performance.now() - t1 < ms){ if(done) throw new Skip(); await new Promise(r => setTimeout(r, 150)); }
+      };
+
+      // ── Les cinq pierres (sphères lumineuses et leur halo) ──
+      let stones = [];
+      const makeStones = (colors) => {
+        stones.forEach(s => { s.ps.dispose(false); s.m.dispose(); });
+        stones = colors.map((h, i) => {
+          const m = BABYLON.MeshBuilder.CreateIcoSphere('st' + i, { radius: 0.13, subdivisions: 3 }, scene);
+          const mat = new BABYLON.StandardMaterial('stm' + i, scene);
+          mat.emissiveColor = BABYLON.Color3.FromHexString(h); mat.disableLighting = true; mat.diffuseColor = BABYLON.Color3.Black();
+          m.material = mat; m.setEnabled(false);
+          const ps = new BABYLON.ParticleSystem('sth' + i, 60, scene);
+          ps.particleTexture = gfx.tex.glow; ps.emitter = m; ps.createSphereEmitter(0.05, 1);
+          const c = BABYLON.Color3.FromHexString(h);
+          ps.color1 = new BABYLON.Color4(c.r, c.g, c.b, 0.9); ps.color2 = new BABYLON.Color4(1, 1, 1, 0.6); ps.colorDead = new BABYLON.Color4(c.r, c.g, c.b, 0);
+          ps.minSize = 0.25; ps.maxSize = 0.5; ps.minLifeTime = 0.15; ps.maxLifeTime = 0.35; ps.emitRate = 70;
+          ps.minEmitPower = 0; ps.maxEmitPower = 0.2; ps.blendMode = BABYLON.ParticleSystem.BLENDMODE_ADD;
+          return { m, ps, pos: null, glow: 1 };
+        });
+      };
+      const stoneOn = (s, on) => { s.m.setEnabled(on); if(on) s.ps.start(); else s.ps.stop(); };
+
+      // ── Chaque image : horloge, acteurs, caméra, pierres ──
+      let last = performance.now();
+      obs = scene.onBeforeRenderObservable.add(() => {
+        const now = performance.now();
+        const real = Math.min(0.25, (now - last) / 1000); last = now;
+        wall += real;
+        if(slowUntil && clock >= slowUntil){ timeScale = 1; slowUntil = 0; }
+        scene.animationTimeScale = timeScale;
+        clock += real * timeScale;
+        for(let i = waiters.length - 1; i >= 0; i--) if(waiters[i].wallAt !== undefined ? wall >= waiters[i].wallAt : clock >= waiters[i].at){ const w = waiters.splice(i, 1)[0]; w.r(); }
+        // Déplacements.
+        for(const a of Object.values(A)){
+          const tw = a.tweens[0];
+          if(!tw) continue;
+          const k = Math.min(1, (clock - tw.t0) / tw.dur), e = tw.ease(k);
+          const nx = tw.x0 + (tw.x1 - tw.x0) * e, ny = tw.y0 + (tw.y1 - tw.y0) * e;
+          if(tw.turn && (Math.abs(nx - a.u.x) + Math.abs(ny - a.u.y)) > 0.5){ const d = Math.hypot(nx - a.u.x, ny - a.u.y); a.u.facing = { x: (nx - a.u.x) / d, y: (ny - a.u.y) / d }; }
+          a.u.x = nx; a.u.y = ny;
+          if(k >= 1) a.tweens.shift();
+        }
+        stage.update(units);
+        for(const a of Object.values(A)){ const i = inst(a); if(i?.ready && i.pivot) i.pivot.setEnabled(a.on); }
+        // Caméra.
+        if(shotCur){
+          const k = shotCur.ease(Math.min(1, (clock - shotCur.t0) / shotCur.dur));
+          const f = shotCur.from(), t = shotCur.to();
+          cam.position.copyFrom(V3.Lerp(f.pos, t.pos, k));
+          const tg = V3.Lerp(f.tgt, t.tgt, k);
+          if(shake > 0){
+            const s = shake * 0.12;
+            cam.position.addInPlace(new V3((Math.random() - 0.5) * s, (Math.random() - 0.5) * s, (Math.random() - 0.5) * s));
+            shake = Math.max(0, shake - real * 2.2);
+          }
+          cam.setTarget(tg);
+          cam.fov = shotCur.fov[0] + (shotCur.fov[1] - shotCur.fov[0]) * k;
+        }
+        // Pierres.
+        for(const s of stones) if(s.pos){ s.m.position.copyFrom(s.pos(clock)); s.m.scaling.setAll(s.glow); }
+      });
+
+      // ═══ Chargement ═══
+      black(true, 0);
+      setPlace('m19', 'crepuscule', 7);
+      makeStones(STONES);
+      const t0 = performance.now();
+      while(![A.kankou, A.ombre1, A.ombre2].every(ready) && performance.now() - t0 < 30000){
+        if(done) throw new Skip();
+        const n = Object.values(A).filter(ready).length;
+        $('.intro-load i').style.setProperty('--p', Math.round(100 * n / units.length) + '%');
+        await new Promise(r => setTimeout(r, 200));
+      }
+      root.classList.add('ready');
+      audio.music('intro');
+      clock = 0; wall = 0;
+      window.__pfIntroClock = () => ({ wall, clock });
+
+      // ═══════════════ 1. NIANI, 1324 ═══════════════
+      show(A.kankou); place(A.kankou, 0, 0, { x: 0, y: 1 });
+      shot(around(A.kankou, 0.2, 22, 16, 1.2), around(A.kankou, 0, 9, 4.5, 1.6), 9, { fov: [0.9, 0.7] });
+      black(false, 2.2);
+      card(tr('NIANI'), tr('Empire du Mali — 1324'), 4);
+      await until(1.8); say(0);
+      await until(9.5);
+      // Plan bas, héroïque : l'Empereur et son or.
+      shot(around(A.kankou, 0.5, 3.2, 0.5, 1.9), around(A.kankou, -0.4, 3.4, 0.7, 1.9), 8.5, { fov: [0.75, 0.68] });
+      act(A.kankou, 'taunt'); sfx('gong', 0.7);
+      say(1);
+      for(let i = 0; i < 4; i++){ fx('cast', A.kankou, '#ffd27a', 1.2); sfx('soin', 0.5); await wait(1.6); }
+      await until(18);
+      // Les cinq pierres apparaissent autour de lui.
+      shot(around(A.kankou, 0, 7, 2.6, 1.8), around(A.kankou, 1.4, 6.5, 2.2, 2), 10, { fov: [0.8, 0.8] });
+      act(A.kankou, 'cast', 0, { dur: 2.2 });
+      say(2);
+      const orbit = (i) => (t) => { const b = P(A.kankou), a = t * 0.9 + i * Math.PI * 2 / 5; return b.add(new V3(Math.cos(a) * 2.1, 2.7 + Math.sin(t * 1.4 + i) * 0.15, Math.sin(a) * 2.1)); };
+      for(let i = 0; i < 5; i++){ stones[i].pos = orbit(i); stoneOn(stones[i], true); sfx('sort', 0.5); await wait(1.1); }
+      await until(25.5);
+      // Des ombres surgissent et chargent l'Empereur.
+      show(A.ombre1, A.ombre2);
+      place(A.ombre1, -8, -2); place(A.ombre2, 8, -1);
+      fx('death', A.ombre1, '#7a3cff'); fx('death', A.ombre2, '#7a3cff'); sfx('gong'); hit(0.8);
+      face(A.ombre1, A.kankou); face(A.ombre2, A.kankou); face(A.kankou, A.ombre1);
+      shot(around(A.ombre1, 3.9, 2.4, 1.9, 1.6), around(A.ombre1, 3.7, 2.8, 1.7, 1.2), 1.4, { fov: [0.85, 0.85] });
+      act(A.ombre1, 'taunt');
+      await wait(1.2);
+      toward(A.ombre1, A.kankou, 1.4, 1.5); toward(A.ombre2, A.kankou, 1.4, 1.6); sfx('elan');
+      shot(between(A.ombre1, A.kankou, 0.3, 8, 2.2), between(A.ombre1, A.kankou, 0.1, 6, 1.6), 1.6, { fov: [0.85, 0.8] });
+      await wait(1.3);
+      act(A.ombre1, 'attack', 0, { dur: 0.6 }); act(A.kankou, 'dodge', 0, { dur: 0.5 }); sfx('esquive'); slow(0.35, 0.8);
+      await wait(0.6);
+      // L'Empereur riposte : onde d'or, ralenti.
+      shot(around(A.kankou, 0.3, 3, 1.2, 1.5), around(A.kankou, -0.3, 4, 1.6, 1.4), 2.2, { fov: [0.7, 0.9] });
+      act(A.kankou, 'cast', 1, { dur: 1 }); sfx('ultime'); slow(0.3, 1.0);
+      await wait(0.5);
+      fx('ult', A.kankou, '#ffd27a', 1.4); fx('heavy', A.kankou, '#ffe9a0'); flash(); hit(1.4);
+      knock(A.ombre1, A.kankou, 5, 0.6); knock(A.ombre2, A.kankou, 5, 0.6);
+      act(A.ombre1, 'death', 0, { hold: true }); act(A.ombre2, 'death', 1, { hold: true }); sfx('chute'); sfx('coup_lourd');
+      await wait(1.2);
+      shot(around(A.kankou, 2.4, 10, 3, 1), around(A.kankou, 2.7, 10, 3.2, 1), 3);
+      await wait(1.2);
+      fx('death', A.ombre1, '#7a3cff'); fx('death', A.ombre2, '#7a3cff'); sfx('elimination', 0.6); hide(A.ombre1, A.ombre2);
+      await until(36);
+      // Réunies, les pierres donnent le pouvoir de tout réécrire.
+      const merge = (i, t1) => (t) => { const k = Math.min(1, Math.max(0, (t - t1) / 4)); return V3.Lerp(orbit(i)(t), P(A.kankou).add(new V3(0, 3.3, 0)), ease(k)); };
+      const tMerge = clock;
+      stones.forEach((s, i) => { s.pos = merge(i, tMerge); });
+      shot(around(A.kankou, 0.15, 3.5, 0.4, 2.6), around(A.kankou, 0, 4.5, 0.3, 3), 7, { fov: [0.8, 0.95] });
+      act(A.kankou, 'cast', 0, { dur: 4 });
+      say(3);
+      for(let i = 0; i < 5; i++){ stones.forEach(s => { s.glow = 1 + i * 0.35; }); sfx('sort', 0.4 + i * 0.1); await wait(0.9); }
+      flash(); hit(1.6); sfx('impact_sol'); sfx('gong');
+      fxAt('ult', 0, 0, '#ffffff', 1.6);
+      await until(44);
+      // Il les sépare : elles s'envolent aux quatre coins du monde.
+      const tScatter = clock;
+      const scatter = (i) => (t) => { const s = t - tScatter, a = i * Math.PI * 2 / 5 + 0.4, d = s * 1.6 + s * s * 0.25; return P(A.kankou).add(new V3(Math.cos(a) * d, 3.3 + s * 1.1, Math.sin(a) * d)); };
+      stones.forEach((s, i) => { s.pos = scatter(i); s.glow = 1.3; });
+      act(A.kankou, 'cast', 1, { dur: 1.2 }); sfx('elan'); sfx('ultime', 0.6);
+      say(4);
+      shot(around(A.kankou, 0.3, 6, 1.2, 3), around(A.kankou, 0.5, 11, 1.4, 5.5), 8, { fov: [0.8, 0.95] });
+      await until(53);
+      stones.forEach(s => stoneOn(s, false));
+      black(true, 1.6);
+      await until(55.5);
+
+      // ═══════════════ 2. LE DOMAINE DE SGRÜN ═══════════════
+      hide(A.kankou);
+      setPlace('m46', 'nuit', 3);
+      // Nuit hors du temps, mais on doit voir les visages : lumière violette d'appoint.
+      { const h = scene.getLightByName('hemi'); if(h){ h.intensity *= 1.6; h.diffuse = BABYLON.Color3.Lerp(h.diffuse, BABYLON.Color3.FromHexString('#b48cff'), 0.4); }
+        scene.imageProcessingConfiguration.exposure *= 1.35; }
+      await waitReady([A.sgrun, A.krag, A.vael, A.murk, A.sub, A.grob], 8000);
+      show(A.sgrun); place(A.sgrun, 0, -2, { x: 0, y: 1 });
+      const emis = [[A.krag, -4, -5], [A.vael, 4, -5], [A.murk, -6.5, -2.5], [A.sub, 6.5, -2.5], [A.grob, 0, -7]];
+      emis.forEach(([a, x, y]) => place(a, x, y, { x: 0, y: 1 }));
+      shot(around(A.sgrun, 0, 16, 3, 1.8), around(A.sgrun, 0, 4.2, 1.5, 1.8), 9, { fov: [0.75, 0.62], ease: (t) => t });
+      black(false, 2);
+      card(tr('LE DOMAINE DE SGRÜN'), tr('Hors du temps'), 3.6);
+      await wait(2); say(5);
+      await wait(4.5);
+      act(A.sgrun, 'cast', 0, { dur: 1.6 }); sfx('sort'); fx('cast', A.sgrun, '#c084fc', 1.4);
+      await until(66);
+      // Ses émissaires paraissent, un par un.
+      for(const [a] of emis){
+        show(a); fx('death', a, '#c084fc', 1.1); fx('heavy', a, '#7a3cff', 0.8); sfx('gong', 0.8); hit(0.5);
+        shot(around(a, 0.35, 3.2, 0.9, 1.25), around(a, -0.2, 2.8, 1.1, 1.3), 2.6, { fov: [0.78, 0.7] });
+        act(a, 'taunt');
+        await wait(2.6);
+      }
+      // L'Empire au complet.
+      shot(around(A.sgrun, 0, 11, 0.8, 1.6), around(A.sgrun, 0.15, 9, 0.6, 1.8), 6.5, { fov: [0.85, 0.8] });
+      act(A.sgrun, 'taunt'); sfx('gong');
+      await wait(3.6);
+      act(A.sgrun, 'cast', 1, { dur: 1.4 }); fx('ult', A.sgrun, '#c084fc', 1.2); hit(0.8); sfx('ultime', 0.7);
+      await wait(2.4);
+      // Ils partent vers le monde des hommes.
+      emis.forEach(([a, x], i) => move(a, x * 0.6, 9.5, 2.2 + i * 0.15));
+      sfx('elan'); sfx('elan');
+      shot(fixed(G(0, 6, 0.4), G(0, -3, 1.6)), fixed(G(0, 7.5, 0.3), G(0, -1, 1.4)), 3, { fov: [0.95, 0.95] });
+      await wait(3);
+      shot(around(A.sgrun, 0.1, 3.2, 1.5, 1.6), around(A.sgrun, 0, 2.2, 1.6, 1.65), 6, { fov: [0.62, 0.5] });
+      await wait(2); act(A.sgrun, 'taunt'); sfx('gong', 0.6);
+      await until(95.2);
+      black(true, 1.2);
+      await until(97);
+
+      // ═══════════════ 3. ABIDJAN — MARCORY, AUJOURD'HUI ═══════════════
+      hide(A.sgrun, A.krag, A.vael, A.murk, A.sub, A.grob);
+      setPlace('m1', 'crepuscule', 11);
+      await waitReady([A.tarine, A.karen, A.fulgence, A.baba], 8000);
+      makeStones([STONES[4]]);
+      show(A.tarine); place(A.tarine, 0, 0.5, { x: 0, y: 1 });
+      const pierre = stones[0];
+      pierre.pos = () => P(A.tarine).add(new V3(0, 1.25 + Math.sin(clock * 1.7) * 0.05, -0.45));
+      stoneOn(pierre, true);
+      shot(around(A.tarine, 0.6, 16, 10, 1), around(A.tarine, 0.2, 5, 1.8, 1.3), 8, { fov: [0.9, 0.72] });
+      black(false, 2);
+      card(tr('ABIDJAN'), tr('Marcory — aujourd\'hui'), 3.6);
+      await wait(1.4); say(6);
+      await wait(4);
+      shot(around(A.tarine, 0.1, 1.4, 1.35, 1.25), around(A.tarine, -0.1, 1.1, 1.3, 1.25), 3.2, { fov: [0.6, 0.55] });
+      await wait(3.2);
+      // Les émissaires tombent du ciel dans la cour.
+      stoneOn(pierre, false);   // la pierre se cache dans sa main pendant la bagarre
+      show(A.sub, A.grob); place(A.sub, -6, -3); place(A.grob, 6, -3.5);
+      face(A.sub, A.tarine); face(A.grob, A.tarine); face(A.tarine, A.grob);
+      fx('heavy', A.sub, '#9b59ff'); fx('heavy', A.grob, '#ff8a3a'); fx('dust', A.grob, null, 1.6); fx('dust', A.sub, null, 1.6);
+      sfx('impact_sol'); sfx('impact_sol'); hit(1.2);
+      shot(around(A.tarine, 3.4, 5, 2, 1.3), around(A.tarine, 3.2, 5.5, 2.2, 1.2), 2.2);
+      act(A.grob, 'taunt'); act(A.sub, 'taunt');
+      await wait(2.2);
+      // Grob charge. Tarine esquive au dernier moment.
+      toward(A.grob, A.tarine, 1.2, 1.3); sfx('elan');
+      shot(between(A.grob, A.tarine, 1.5, 6, 1.1), between(A.grob, A.tarine, 1.6, 4.5, 1.0), 1.4, { fov: [0.85, 0.8] });
+      await wait(1.2);
+      act(A.grob, 'attack', 0, { dur: 0.7 }); sfx('elan');
+      act(A.tarine, 'dodge', 0, { dur: 0.55 }); move(A.tarine, -1.6, 1.6, 0.45, { turn: false }); sfx('esquive');
+      slow(0.3, 1.1);
+      await wait(1.1);
+      // Riposte : trois coups, le dernier le projette.
+      face(A.tarine, A.grob);
+      shot(between(A.tarine, A.grob, 1.2, 3.8, 1.2), between(A.tarine, A.grob, 1.0, 3.4, 1.1), 2.4, { fov: [0.8, 0.75] });
+      for(let i = 0; i < 3; i++){
+        act(A.tarine, 'attack', i, { dur: 0.5 }); sfx('elan');
+        await wait(0.28);
+        act(A.grob, 'hit', i, { dur: 0.4 }); fx(i === 2 ? 'heavy' : 'hit', A.grob, '#39ff7a', i === 2 ? 1 : 0.7);
+        sfx(i === 2 ? 'coup_lourd' : 'lame'); hit(i === 2 ? 1 : 0.4);
+        if(i === 2){ knock(A.grob, A.tarine, 3.2, 0.4); act(A.grob, 'death', 0, { hold: true }); sfx('chute'); }
+        await wait(0.3);
+      }
+      // Sub surgit dans son dos.
+      await wait(0.4);
+      { const r = rel(A.tarine); blink(A.sub, r.x - 1.3, r.y - 1.1); }
+      face(A.sub, A.tarine);
+      shot(around(A.tarine, 0.5, 2.3, 1.6, 1.4), around(A.tarine, 0.7, 2.1, 1.5, 1.4), 1.8, { fov: [0.75, 0.75] });
+      await wait(0.35);
+      face(A.tarine, A.sub);
+      act(A.sub, 'attack', 0, { dur: 0.55 }); act(A.tarine, 'block', 0, { dur: 0.5, hold: true });
+      await wait(0.3);
+      fx('hit', A.tarine, '#9ec5ff'); sfx('garde'); hit(0.8);
+      await wait(0.7);
+      rise(A.tarine); rise(A.grob);
+      // Deux contre un : il finit par tomber.
+      toward(A.grob, A.tarine, 1.1, 0.9); sfx('elan');
+      act(A.sub, 'attack', 1, { dur: 0.6 });
+      await wait(0.45);
+      fx('hit', A.tarine, '#9b59ff'); sfx('lame'); act(A.tarine, 'hit', 0, { dur: 0.4 });
+      await wait(0.5);
+      act(A.grob, 'attack', 1, { dur: 0.7 }); sfx('elan');
+      await wait(0.4);
+      fx('heavy', A.tarine, '#ff8a3a'); sfx('coup_lourd'); hit(1.3);
+      act(A.tarine, 'death', 0, { hold: true }); knock(A.tarine, A.grob, 2.2, 0.5); sfx('chute');
+      slow(0.35, 1.6); flash(false);
+      shot(around(A.tarine, 2.2, 2.4, 0.5, 0.4), around(A.tarine, 2.0, 2.0, 0.4, 0.4), 2.4, { fov: [0.7, 0.62] });
+      await wait(2.4);
+      // Les siens arrivent.
+      show(A.karen, A.fulgence, A.baba);
+      place(A.fulgence, -10, 5); place(A.baba, 10, 5); place(A.karen, 0, 9);
+      toward(A.fulgence, A.grob, 1.2, 1.4); toward(A.baba, A.sub, 1.2, 1.3);
+      { const r = rel(A.tarine); move(A.karen, r.x, r.y + 1.5, 1.6); }
+      sfx('elan'); sfx('elan');
+      shot(fixed(G(0, 12, 3.5), G(0, 0, 1)), fixed(G(0, 10, 2.8), G(0, 0, 1)), 1.6, { fov: [0.95, 0.9] });
+      await wait(1.4);
+      act(A.fulgence, 'attack', 2, { dur: 0.6 }); act(A.baba, 'attack', 0, { dur: 0.5 }); sfx('elan');
+      await wait(0.3);
+      act(A.grob, 'hit', 1, { dur: 0.5 }); act(A.sub, 'hit', 0, { dur: 0.5 });
+      fx('heavy', A.grob, '#378ADD'); fx('hit', A.sub, '#ffd27a'); sfx('coup_lourd'); sfx('coup_leger'); hit(1);
+      knock(A.grob, A.fulgence, 2.5); knock(A.sub, A.baba, 2.2);
+      shot(between(A.baba, A.sub, 1.5, 4, 1.5), between(A.fulgence, A.grob, -1.5, 4, 1.4), 2.2, { fov: [0.85, 0.85] });
+      await wait(1.1);
+      face(A.karen, A.tarine); act(A.karen, 'cast', 0, { dur: 1 }); sfx('soin');
+      await wait(0.5);
+      fx('heal', A.tarine, '#7dffb0', 1.3);
+      await wait(0.8);
+      // Échanges : Sub contre Baba, Grob contre Fulgence.
+      face(A.sub, A.baba); face(A.baba, A.sub);
+      shot(between(A.baba, A.sub, 1.4, 3.6, 1.3), between(A.baba, A.sub, 1.7, 3.2, 1.2), 2.4);
+      act(A.sub, 'attack', 2, { dur: 0.55 }); sfx('elan');
+      await wait(0.3);
+      act(A.baba, 'dodge', 1, { dur: 0.45 }); sfx('esquive');
+      await wait(0.5);
+      act(A.baba, 'attack', 1, { dur: 0.5 }); await wait(0.3);
+      act(A.sub, 'hit', 1, { dur: 0.4 }); fx('hit', A.sub, '#ffd27a'); sfx('coup_leger'); hit(0.5);
+      await wait(0.7);
+      face(A.grob, A.fulgence); rise(A.grob);
+      shot(between(A.fulgence, A.grob, -1.3, 3.8, 1.4), between(A.fulgence, A.grob, -1.6, 3.4, 1.3), 2.2);
+      act(A.grob, 'attack', 2, { dur: 0.7 }); sfx('elan');
+      await wait(0.35);
+      act(A.fulgence, 'block', 0, { dur: 0.4, hold: true }); fx('hit', A.fulgence, '#9ec5ff'); sfx('garde'); hit(0.9);
+      await wait(0.9); rise(A.fulgence);
+      await wait(0.4);
+      // Tarine se relève. La pierre s'éveille.
+      rise(A.tarine);
+      { const r = rel(A.tarine); place(A.tarine, r.x, r.y, { x: 0, y: -1 }); }
+      shot(around(A.tarine, 0.2, 2.6, 0.35, 1.5), around(A.tarine, -0.3, 2.9, 0.4, 1.6), 3.4, { fov: [0.75, 0.7] });
+      act(A.tarine, 'taunt'); sfx('gong'); stoneOn(pierre, true); pierre.glow = 1.6;
+      fx('cast', A.tarine, '#6fe0b0', 1.3); sfx('soin');
+      await wait(2.4);
+      // Onde d'Équilibre : l'ultime.
+      act(A.tarine, 'cast', 0, { dur: 1.2 }); sfx('ultime'); slow(0.25, 1.8);
+      shot(around(A.tarine, 0, 5, 1, 1.4), around(A.tarine, 0.4, 7.5, 2, 1.2), 2.6, { fov: [0.8, 1.0] });
+      await wait(0.6);
+      fx('ult', A.tarine, '#6fe0b0', 1.6); fx('heavy', A.tarine, '#dff0ff', 1.2); flash(); hit(1.8); sfx('impact_sol');
+      knock(A.sub, A.tarine, 6, 0.7); knock(A.grob, A.tarine, 6, 0.7);
+      act(A.sub, 'death', 1, { hold: true }); act(A.grob, 'death', 0, { hold: true }); sfx('chute'); sfx('coup_lourd');
+      await wait(2.2);
+      fx('death', A.sub, '#9b59ff'); fx('death', A.grob, '#9b59ff'); sfx('elimination', 0.6);
+      hide(A.sub, A.grob);
+      pierre.glow = 1.1;
+      shot(around(A.tarine, 0.4, 7.5, 2, 1.2), around(A.tarine, 1.4, 6, 1.4, 1.3), Math.max(4, 151 - wall), { ease: (t) => t });
+      await until(152);
+      // L'équipe réunie, face au lendemain.
+      place(A.tarine, 0, 0.5, { x: 0, y: 1 }); place(A.karen, -2, -0.6, { x: 0.2, y: 1 });
+      place(A.fulgence, 2.1, -0.6, { x: -0.2, y: 1 }); place(A.baba, 3.9, -1.4, { x: -0.3, y: 1 });
+      [A.tarine, A.karen, A.fulgence, A.baba].forEach(rise);
+      shot(around(A.tarine, 0, 9, 0.6, 1.6), around(A.tarine, 0, 5, 0.45, 1.7), 11, { fov: [0.85, 0.72], ease: (t) => t });
+      act(A.karen, 'taunt'); act(A.fulgence, 'taunt'); act(A.baba, 'taunt'); sfx('gong', 0.7);
+      await wait(4);
+      act(A.tarine, 'taunt'); fx('cast', A.tarine, '#6fe0b0', 1.4);
+      await until(163); say(7);
+      pierre.glow = 0.22;   // gros plan : la pierre flotte à côté de lui, petite
+      pierre.pos = () => P(A.tarine).add(new V3(0.42, 1.2 + Math.sin(clock * 1.7) * 0.04, -0.15));
+      shot(around(A.tarine, 0, 3.2, 1.4, 1.45), around(A.tarine, 0, 1.9, 1.5, 1.5), 7, { fov: [0.62, 0.48] });
+      for(let i = 1; i <= 13; i++){ await wait(0.5); pierre.glow = 0.22 + 0.025 * i; }   // la pierre s'éveille
+      pierre.glow = 3; sfx('ultime', 0.5);
+      $veil.style.background = '#fff8ec'; black(true, 0.9);
+      await wait(1.2);
+      $veil.style.transition = 'background 1s ease'; $veil.style.background = '#07080d';
       root.classList.add('title');
       $sub.classList.remove('in');
-      await sleep(3200);
-      window.removeEventListener('resize', onResize);
+      await until(182);
       finish();
     }
   });

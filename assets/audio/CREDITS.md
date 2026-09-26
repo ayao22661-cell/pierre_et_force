@@ -1,7 +1,7 @@
 # Crédits audio — Pierre et Force
 
 Tous les sons du jeu sont de vrais enregistrements ou des compositions,
-publiés sous licence **CC0 1.0 (domaine public)** : aucune attribution
+publiés sous licence **CC0 1.0 (domaine public)** — sauf ArcLight (Matthew Pablo, CC-BY 3.0), dont l'auteur doit être crédité. Pour les autres, aucune attribution
 n'est exigée, mais on crédite leurs auteurs ici. Aucun son n'est
 synthétisé par le jeu.
 
@@ -21,7 +21,9 @@ pour les bruitages.
 | boss.mp3 | Epic Boss Battle | Juhani Junkala (subspaceaudio) | https://opengameart.org/content/boss-battle-music |
 | victoire.mp3 | Medieval: Victory Theme | randommind | https://opengameart.org/content/medieval-victory-theme |
 | defaite.mp3 | Medieval: Defeat Theme | randommind | https://opengameart.org/content/medieval-defeat-theme |
-| intro.mp3 | Storyboard | iamoneabe | https://opengameart.org/content/storyboard |
+| prologue.mp3 (0:00–1:01) | Epic Endgame Cinematic | cynicmusic (CC0) | https://opengameart.org/content/epic-endgame-cinematic |
+| prologue.mp3 (1:01–2:31) | ArcLight — Epic Orchestral Rock Soundtrack | Matthew Pablo, www.matthewpablo.com (**CC-BY 3.0**, attribution requise) | https://opengameart.org/content/arclight-epic-orchestralrock-soundtrack |
+| prologue.mp3 (2:31–3:04) | Storyboard | iamoneabe (CC0) | https://opengameart.org/content/storyboard |
 
 ## Bruitages (`sfx/`)
 
