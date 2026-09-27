@@ -558,9 +558,18 @@
 .story.out{ animation:story-out .25s ease both; }
 @keyframes story-in{ from{ opacity:0; } }
 @keyframes story-out{ to{ opacity:0; } }
-.story-bg{ position:absolute; inset:0; }
-.story-bg img{ width:100%; height:100%; object-fit:cover; filter:blur(3px) brightness(.38) saturate(.8); transform:scale(1.06); }
-.story-bg::after{ content:''; position:absolute; inset:0; background:linear-gradient(180deg, rgba(7,8,13,.55) 0%, transparent 30%, rgba(7,8,13,.2) 55%, rgba(7,8,13,.95) 100%); }
+.story-bg{ position:absolute; inset:0; z-index:0; }
+/* Fond : la photo du lieu de la mission (js/data/lieux.js), à peine
+   floutée, avec un lent travelling avant pour qu'elle vive. */
+.story-bg img{ width:100%; height:100%; object-fit:cover; filter:blur(1px) brightness(.62) saturate(.95);
+  transform:scale(1.04); animation:story-drift 40s linear both; }
+@keyframes story-drift{ to{ transform:scale(1.16) translate(-1.5%, -1%); } }
+.story-bg::after{ content:''; position:absolute; inset:0; background:linear-gradient(180deg, rgba(7,8,13,.5) 0%, transparent 28%, rgba(7,8,13,.15) 55%, rgba(7,8,13,.95) 100%); }
+/* Pendant un dialogue, un voile sombre derrière le portrait (le portrait
+   est détouré sur fond noir : il lui faut un fond sombre pour rester net). */
+.story-bg::before{ content:''; position:absolute; inset:0; z-index:1; opacity:0; transition:opacity .35s ease;
+  background:radial-gradient(ellipse 34% 52% at 50% 44%, rgba(7,8,13,.92) 0%, rgba(7,8,13,.6) 55%, transparent 100%); }
+.story.is-dialogue .story-bg::before{ opacity:1; }
 .story-top{ position:absolute; top:0; left:0; right:0; display:flex; justify-content:space-between; align-items:center; gap:10px; padding:14px 16px; }
 .story-title{ font-family:var(--pf-font-display); letter-spacing:2px; font-size:13px; line-height:1.3; color:var(--pf-text-dim); }
 .story-cast{
@@ -583,7 +592,7 @@
 .story.is-narration .story-text{ font-style:italic; color:#cfc9b8; }
 .story-next{ position:absolute; right:16px; bottom:8px; font-size:10px; color:var(--pf-brand-lit, #d0463a); animation:story-blink 1.1s ease-in-out infinite; }
 @keyframes story-blink{ 50%{ opacity:.25; transform:translateY(2px); } }
-@media (prefers-reduced-motion: reduce){ .story, .story.out, .story-next{ animation:none; } .story-cast{ transition:none; } }
+@media (prefers-reduced-motion: reduce){ .story, .story.out, .story-next, .story-bg img{ animation:none; } .story-cast{ transition:none; } }
 
 /* ── Prologue : cinématique d'ouverture (ui/intro.js) ── */
 .intro{ position:fixed; inset:0; z-index:70; background:#000; overflow:hidden; user-select:none; -webkit-tap-highlight-color:transparent; }

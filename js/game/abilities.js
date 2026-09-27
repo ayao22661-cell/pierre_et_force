@@ -54,7 +54,21 @@ export function tryCastAbility(sim, u, slot){
   sim.onEvent({ type: 'cast', unit: u, slot, ability: a, rank });
 
   const fn = EXECUTORS[a.type] || EXECUTORS.self;
-  fn(sim, u, a, rank);
+  // Sorts de zone ENNEMIS : un temps d'annonce, la zone s'affiche au sol
+  // et se remplit jusqu'à l'impact. Cible et direction sont figées dès
+  // l'annonce : le joueur peut sortir de la zone. Si le lanceur meurt ou
+  // est étourdi entre-temps, le sort est perdu. Les sorts du joueur et de
+  // ses alliés restent instantanés ; le duel garde son propre rythme.
+  if(u.team === 1 && sim.mode !== 'duel' && TELL_TYPES.has(a.type) && a.team !== 'ally'){
+    const lock = windUp(sim, u, a);
+    setTimeout(() => {
+      if(sim.over || u.dead) return;
+      if(u.cc && u.cc.type === 'stun' && sim.time < u.cc.until) return;
+      fn(sim, u, a, rank, lock);
+    }, lock.delay * 1000);
+  } else {
+    fn(sim, u, a, rank);
+  }
 
   // Passif SAM — "Le Seuil" : déclenche le bonus d'attaque de base après ce sort,
   // avec un verrou de 1 s pour éviter un enchaînement trop rapide.
@@ -73,6 +87,32 @@ export function tryCastAbility(sim, u, slot){
   }
 
   return true;
+}
+
+/** Types de sorts ennemis annoncés au sol avant l'impact. */
+const TELL_TYPES = new Set(['nova', 'cone', 'zone']);
+
+/** Annonce un sort ennemi et renvoie ce qui est figé (lieu, direction, délai). */
+function windUp(sim, u, a){
+  const delay = a.ult ? 0.8 : 0.55;
+  if(a.type === 'nova'){
+    const r = a.radius || 260;
+    sim.onEvent({ type: 'ground-tell', enemy: true, x: u.x, y: u.y, radius: r, delay });
+    return { delay, x: u.x, y: u.y };
+  }
+  if(a.type === 'zone'){
+    const foe = sim._nearestFoe(u, a.range || 400);
+    const x = foe ? foe.x : u.x + u.facing.x * (a.range || 250);
+    const y = foe ? foe.y : u.y + u.facing.y * (a.range || 250);
+    sim.onEvent({ type: 'ground-tell', enemy: true, x, y, radius: a.radius || 170, delay });
+    return { delay, x, y };
+  }
+  // Cône : tourné vers l'ennemi le plus proche au moment de l'annonce.
+  const foe = sim._nearestFoe(u, (a.range || 220) * 1.5);
+  if(foe){ const dx = foe.x - u.x, dy = foe.y - u.y, d = Math.hypot(dx, dy) || 1; u.facing = { x: dx / d, y: dy / d }; }
+  const facing = { ...u.facing };
+  sim.onEvent({ type: 'cone-tell', x: u.x, y: u.y, range: a.range || 220, dir: Math.atan2(facing.y, facing.x), half: (a.angle || 1.2) / 2, delay });
+  return { delay, x: u.x, y: u.y, facing };
 }
 
 /** Récupère la valeur scalaire à l'index de rang dans un tableau, ou la valeur brute. */
@@ -144,7 +184,7 @@ const EXECUTORS = {
     const foe = sim._nearestFoe(u, a.range || 500);
     const tx = foe ? foe.x : u.x + u.facing.x * (a.range||300);
     const ty = foe ? foe.y : u.y + u.facing.y * (a.range||300);
-    sim.onEvent({ type: 'ground-tell', x: tx, y: ty, radius: a.radius||150, color: a.color, delay: a.delay||0.6 });
+    sim.onEvent({ type: 'ground-tell', enemy: u.team === 1 && sim.mode !== 'duel', x: tx, y: ty, radius: a.radius||150, color: a.color, delay: a.delay||0.6 });
     setTimeout(() => {
       if(sim.over) return;
       sim.onEvent({ type: 'ground-impact', x: tx, y: ty, radius: a.radius||150, color: a.color, heavy: a.ult });
@@ -159,8 +199,9 @@ const EXECUTORS = {
   },
 
   // Cône mêlée dans la direction actuelle du lanceur.
-  cone(sim, u, a, rank){
+  cone(sim, u, a, rank, lock){
     const range = a.range || 220, half = (a.angle||1.2)/2;
+    if(lock?.facing) u.facing = lock.facing;
     sim.onEvent({ type: 'fx-cone', unit: u, range, angle: a.angle||1.2, color: a.color });
     for(const t of sim.units){
       if(t.dead || t.team === u.team || t.team === undefined) continue;
@@ -176,9 +217,10 @@ const EXECUTORS = {
   },
 
   // Explosion centrée sur soi — vers les ennemis (dégâts) ou les alliés (soin/bouclier).
-  nova(sim, u, a, rank){
+  nova(sim, u, a, rank, lock){
     const radius = a.radius || 260;
-    sim.onEvent({ type: 'ground-impact', x: u.x, y: u.y, radius, color: a.color, heavy: a.ult });
+    const cx = lock ? lock.x : u.x, cy = lock ? lock.y : u.y;
+    sim.onEvent({ type: 'ground-impact', x: cx, y: cy, radius, color: a.color, heavy: a.ult });
     if(a.team === 'ally'){
       for(const t of sim.units){
         if(t.dead || t.team !== u.team || t.kind !== 'champ') continue;
@@ -189,7 +231,7 @@ const EXECUTORS = {
     } else {
       for(const t of sim.units){
         if(t.dead || t.team === u.team || t.team === undefined) continue;
-        if(Math.hypot(t.x-u.x, t.y-u.y) > radius) continue;
+        if(Math.hypot(t.x-cx, t.y-cy) > radius) continue;
         if(a.dmg) sim._applyDamage(u, t, dmgOf(a, u, rank), { heavy: a.ult, isAbility: true });
         applyCC(sim, u, t, a);
       }
@@ -200,10 +242,10 @@ const EXECUTORS = {
 
   // Zone persistante simplifiée en impact instantané (dégâts aux ennemis,
   // soin aux alliés présents dans le rayon) — pas encore de tick continu.
-  zone(sim, u, a, rank){
-    const foe = sim._nearestFoe(u, a.range || 400);
-    const tx = foe ? foe.x : u.x + u.facing.x * (a.range||250);
-    const ty = foe ? foe.y : u.y + u.facing.y * (a.range||250);
+  zone(sim, u, a, rank, lock){
+    const foe = lock ? null : sim._nearestFoe(u, a.range || 400);
+    const tx = lock ? lock.x : foe ? foe.x : u.x + u.facing.x * (a.range||250);
+    const ty = lock ? lock.y : foe ? foe.y : u.y + u.facing.y * (a.range||250);
     sim.onEvent({ type: 'ground-impact', x: tx, y: ty, radius: a.radius||170, color: a.color, heavy: a.ult });
     for(const t of sim.units){
       if(t.dead) continue;

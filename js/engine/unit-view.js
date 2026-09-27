@@ -307,13 +307,10 @@ export class UnitView {
   setSelected(v){
     this.selRing.clear();
     if(v){
-      const r = (this.unit.r||24) * 1.15;
-      this.selRing.circle(0, 0, r).stroke({ width: 2.5, color: 0xffffff, alpha: 0.85 });
-      for(let i=0;i<4;i++){
-        const a = i*Math.PI/2;
-        const rx = Math.cos(a)*r, ry = Math.sin(a)*r;
-        this.selRing.rect(rx-4,ry-4,8,8).fill({ color: 0xffffff, alpha:0.9 });
-      }
+      // Anneau doré discret sous le héros du joueur (comme dans un MOBA) :
+      // on sait où l'on est sans masquer les pieds du personnage.
+      const r = (this.unit.r||24) * 1.1;
+      this.selRing.circle(0, 0, r).fill({ color: 0xe9c46a, alpha: 0.12 }).stroke({ width: 2, color: 0xe9c46a, alpha: 0.7 });
     }
   }
 

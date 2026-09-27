@@ -172,6 +172,7 @@ export class Match{
           // En duel, les coups ont leur propre son (fight-impact).
           if(this.sim.mode !== 'duel') audio.sfx(e.heavy || e.crit ? 'coup_lourd' : 'coup_leger', { vol: 0.7 });
           this.renderer.units3d?.notifyAction(e.unit.id, 'hit');
+          this.renderer.units3d?.flash(e.unit.id, e.heavy || e.crit ? 1.3 : 1);
           this.fx.spawnFloatText(e.unit.x, e.unit.y - (e.unit.r||20) - 6, Math.round(e.dmg).toString(), '#ffe27a', e.heavy, e.crit);
           // Coup critique ou dégât d'ultime : impact au sol plus large sous
           // la cible (pas seulement le texte) + tremblement de caméra bref,
@@ -260,7 +261,11 @@ export class Match{
         break;
       }
       case 'ground-tell':
-        this.fx.spawnGroundPulse(e.x, e.y, hexNum(e.color), e.radius);
+        if(e.enemy) this.fx.spawnTell({ x: e.x, y: e.y, r: e.radius, dur: e.delay });
+        else this.fx.spawnGroundPulse(e.x, e.y, hexNum(e.color), e.radius);
+        break;
+      case 'cone-tell':
+        this.fx.spawnTell({ x: e.x, y: e.y, r: e.range, dur: e.delay, cone: { dir: e.dir, half: e.half } });
         break;
       case 'ground-impact':
         audio.sfx('impact_sol', { vol: e.heavy ? 1 : 0.7 });
@@ -326,6 +331,7 @@ export class Match{
         audio.sfx(e.heavy ? 'coup_lourd' : armed ? 'lame' : 'coup_leger');
         // Secousse + rapprochement bref de la caméra sur le coup qui porte.
         this.renderer.units3d?.duelImpact(e.heavy);
+        this.renderer.units3d?.flash(e.to.id, e.heavy ? 1.4 : 1);
         this._burst(e.heavy ? 'heavy' : 'hit', e.to.x, e.to.y, { color: e.from.fx || '#ffd27a', scale: e.heavy ? 1 : 0.75 });
         if(e.heavy) this.renderer.units3d?.gfx?.pulse(0.7);
         // Impact : gerbe d'étincelles, plus large sur un coup lourd.

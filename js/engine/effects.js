@@ -67,6 +67,19 @@ export class EffectsLayer{
   }
 
   /** Anneau au sol pulsant — zone de compétence, capture, aura. Aplati comme spawnImpact. */
+  /**
+   * Zone d'alerte au sol (sort ennemi en préparation) : la zone exacte qui
+   * sera touchée, bordée de rouge, et un remplissage qui grandit jusqu'à
+   * l'impact. Cercle (r) ou cône (cone : { dir, half }) — dessinés en
+   * coordonnées du monde, donc justes par rapport aux dégâts.
+   */
+  spawnTell({ x, y, r, dur, cone = null, color = 0xff3b2f }){
+    const g = new PIXI.Graphics();
+    g.x = x; g.y = y;
+    this.layers.fx.addChild(g);
+    this.particles.push({ kind: 'tell', g, t: 0, dur, r, cone, color });
+  }
+
   spawnGroundPulse(x, y, color, r){
     const g = new PIXI.Graphics();
     g.x = x; g.y = y;
@@ -127,6 +140,17 @@ export class EffectsLayer{
         pt.g.clear();
         pt.g.ellipse(0, 0, pt.r * (0.3 + k*0.9), pt.r * (0.3 + k*0.9) * flat)
           .stroke({ width: 4 * (1-k) + 1, color: pt.color, alpha: 1 - k });
+      } else if(pt.kind === 'tell'){
+        const g = pt.g, r = pt.r, c = pt.color, blink = 0.75 + 0.25 * Math.sin(pt.t * 18);
+        const shape = (rr) => {
+          if(!pt.cone) return g.circle(0, 0, rr);
+          const { dir, half } = pt.cone;
+          g.moveTo(0, 0); g.arc(0, 0, rr, dir - half, dir + half); g.lineTo(0, 0);
+          return g;
+        };
+        g.clear();
+        shape(r).fill({ color: c, alpha: 0.13 }).stroke({ width: 2.5, color: c, alpha: 0.85 * blink });
+        shape(r * Math.max(0.05, k)).fill({ color: c, alpha: 0.22 + 0.18 * k });
       } else if(pt.kind === 'flash'){
         pt.g.clear();
         pt.g.circle(0, 0, pt.r * (1 - k*0.3)).fill({ color: 0xffffff, alpha: (1 - k) * 0.85 });

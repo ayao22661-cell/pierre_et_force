@@ -60,11 +60,12 @@ html, body{
   justify-content:flex-end;
 }
 #screen-title .pf-bg-blur{ display:block; filter:blur(60px) saturate(1.05) brightness(.22); }
-#screen-title .pf-bg-img{ object-fit:contain; object-position:center top; }
+/* L'équipe réunie dans la cour (assets/lieux/equipe.webp) : plein cadre. */
+#screen-title .pf-bg-img{ object-fit:cover; object-position:center 40%; }
 #screen-title .pf-bg-overlay{
   background:
     radial-gradient(ellipse 120% 70% at 50% 0%, rgba(7,8,15,.1) 0%, rgba(7,8,15,.4) 60%, rgba(7,8,15,.7) 100%),
-    linear-gradient(180deg, rgba(7,8,15,.25) 0%, rgba(7,8,15,.15) 30%, rgba(7,8,15,.82) 72%, rgba(7,8,15,.98) 100%);
+    linear-gradient(180deg, rgba(7,8,15,.2) 0%, rgba(7,8,15,.05) 30%, rgba(7,8,15,.6) 72%, rgba(7,8,15,.94) 100%);
 }
 
 /* Ornement de titre — ligne dorée encadrant le sous-titre */

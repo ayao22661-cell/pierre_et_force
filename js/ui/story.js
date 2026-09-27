@@ -37,7 +37,7 @@ export function playStory({ lines, mid, where, title, bg }){
         <p class="story-text"></p>
         <span class="story-next" aria-hidden="true">▼</span>
       </div>`;
-    root.querySelector('.story-bg img').src = bg || 'assets/illus/pf-12.webp';
+    root.querySelector('.story-bg img').src = bg || 'assets/lieux/abidjan-cour.webp';
     root.querySelector('.story-title').textContent = title || '';
     document.getElementById('app')?.appendChild(root) || document.body.appendChild(root);
 

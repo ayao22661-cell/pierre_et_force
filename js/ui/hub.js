@@ -1,6 +1,7 @@
 // ============================================================
 // HUB — écran principal : missions, codex des héros, profil, journal.
 // ============================================================
+import { lieuImage } from '../data/lieux.js';
 import { CAMPAIGN } from '../data/campaign.js';
 import { CHAMPS } from '../data/champions.js';
 import { CAST } from '../data/cast.js';
@@ -37,20 +38,15 @@ function modeForMission(m, idx, acte, acteIdx){
   return ['SIÈGE','ARÈNE','SIÈGE','DÉFENSE'][idx % 4];
 }
 
-// Chaque acte est illustré par une seule fresque, découpée entre ses
-// missions : mises côte à côte, les cartes d'un acte recomposent le
-// tableau. C'est l'image qui raconte l'avancée, pas une liste de titres.
-// Illustrations de Pierre et Force (assets/illus) : une par acte, en boucle.
-const ACT_ART = ['pf-01', 'pf-03', 'pf-04', 'pf-05', 'pf-07', 'pf-08', 'pf-09', 'pf-11', 'pf-13', 'pf-06'];
-function artForActe(acteIdx){ return `assets/illus/${ACT_ART[acteIdx % ACT_ART.length]}.webp`; }
-
-function missionCard({ num, name, mode, state, art, slice, total, reward }){
+// Chaque carte montre le lieu de sa mission, photographié avec le moteur
+// du jeu (js/data/lieux.js) : on voit où l'on va se battre.
+function missionCard({ num, name, mode, state, art, reward }){
   // state : 'done' | 'next' | 'avail' | 'lock'
   const card = el('button', `mcard is-${state} mode-${mode.toLowerCase()}`);
   card.type = 'button';
   card.style.backgroundImage = `url(${art})`;
-  card.style.backgroundSize = `${Math.max(1, total) * 100}% auto`;
-  card.style.backgroundPosition = `${total > 1 ? (slice / (total - 1)) * 100 : 50}% 30%`;
+  card.style.backgroundSize = 'cover';
+  card.style.backgroundPosition = '50% 55%';
   card.setAttribute('aria-label', `${num}. ${name} — ${t(mode)}`);
   if(state === 'lock') card.disabled = true;
 
@@ -110,14 +106,13 @@ export function buildHub(save, onSelectMission){
     block.appendChild(head);
 
     const row = el('div', 'mcard-row');
-    const art = artForActe(acteIdx);
     acte.missions.forEach((m, i) => {
       const isDone = isMissionDone(save, m.id);
       const avail = isMissionAvailable(save, ids, m.id);
       const mode = modeForMission(m, globalIdx, acte, acteIdx);
       globalIdx++;
       const state = isDone ? 'done' : avail ? 'next' : 'lock';
-      const card = missionCard({ num: m.num, name: m.name, mode, state, art, slice: i, total: acte.missions.length });
+      const card = missionCard({ num: m.num, name: m.name, mode, state, art: lieuImage(m.id) });
       if(isDone || avail) card.addEventListener('click', () => onSelectMission(m, mode));
       if(state === 'next' && !nextCard) nextCard = card;
       row.appendChild(card);
@@ -163,7 +158,7 @@ function buildDefis(save, onSelectMission, host){
   DEFIS.forEach((d, i) => {
     const avail = open.includes(d);
     const state = avail ? (isDefiDone(save, d.id) ? 'done' : 'next') : 'lock';
-    const card = missionCard({ num: d.num, name: d.name, mode: d.mode, state, art: artForActe(i), slice: 1, total: 3, reward: `+${d.cauris}` });
+    const card = missionCard({ num: d.num, name: d.name, mode: d.mode, state, art: lieuImage(d.id), reward: `+${d.cauris}` });
     if(!avail){
       card.appendChild(el('span', 'mcard-req', t('{n} missions', { n: d.req })));
     } else {
@@ -192,7 +187,7 @@ function buildDuels(save, onSelectMission, host){
   const freeHead = el('div', 'acte-head');
   freeHead.appendChild(el('span', 'acte-roman', iconSvg('user')));
   freeHead.appendChild(el('span', 'acte-name', t('combat libre, ton personnage contre l\'adversaire de ton choix')));
-  const freeCard = missionCard({ num: '★', name: FREE_DUEL.name, mode: 'COMBAT', state: 'next', art: artForActe(4), slice: 1, total: 3 });
+  const freeCard = missionCard({ num: '★', name: FREE_DUEL.name, mode: 'COMBAT', state: 'next', art: lieuImage('c_baba') });
   freeCard.classList.add('mcard-free');
   freeCard.addEventListener('click', () => onSelectMission({ ...FREE_DUEL, isDefi: true }, 'COMBAT'));
   const freeGrid = el('div', 'mcard-grid');
@@ -205,7 +200,7 @@ function buildDuels(save, onSelectMission, host){
   DUELS.forEach((d, i) => {
     const avail = open.includes(d);
     const state = avail ? (isDefiDone(save, d.id) ? 'done' : 'next') : 'lock';
-    const card = missionCard({ num: d.num, name: d.name, mode: 'COMBAT', state, art: artForActe(i), slice: 1, total: 3, reward: `+${d.cauris}` });
+    const card = missionCard({ num: d.num, name: d.name, mode: 'COMBAT', state, art: lieuImage(d.id), reward: `+${d.cauris}` });
     if(!avail) card.appendChild(el('span', 'mcard-req', t('{n} missions', { n: d.req })));
     else card.addEventListener('click', () => onSelectMission({ ...d, isDefi: true }, 'COMBAT'));
     grid.appendChild(card);

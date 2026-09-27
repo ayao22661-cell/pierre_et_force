@@ -41,9 +41,9 @@ const NO_SHADOW = new Set(['SKYGGE']);
 // des modèles venus d'horizons différents, et la couleur dit tout de suite
 // qui est qui (doré : le joueur, bleu : ses alliés, rouge : l'ennemi).
 const RIM = {
-  p: { c: [1.0, 0.82, 0.42], k: 0.9 },
-  0: { c: [0.55, 0.78, 1.0], k: 0.7 },
-  1: { c: [1.0, 0.36, 0.28], k: 0.85 },
+  p: { c: [1.0, 0.82, 0.42], k: 1.05 },
+  0: { c: [0.55, 0.78, 1.0], k: 0.85 },
+  1: { c: [1.0, 0.36, 0.28], k: 1.0 },
 };
 class PfRimPlugin extends BABYLON.MaterialPluginBase{
   constructor(material, rim){
@@ -64,8 +64,25 @@ class PfRimPlugin extends BABYLON.MaterialPluginBase{
   getCustomCode(type){
     if(type !== 'fragment') return null;
     return {
+      // 1. Ombrage « cel » doux, appliqué à la LUMIÈRE reçue (pas à la
+      //    couleur) : deux tons plats, bord adouci, reflets gardés. Des
+      //    modèles venus de sources différentes partagent le même rendu
+      //    peint, sans assombrir les vêtements foncés.
+      CUSTOM_FRAGMENT_BEFORE_FINALCOLORCOMPOSITION: `
+        #ifdef PF_RIM
+          float pfL = dot(diffuseBase, vec3(0.299, 0.587, 0.114));
+          float pfS = smoothstep(0.2, 0.36, pfL);
+          float pfQ = mix(0.4, 0.95, pfS) + max(pfL - 0.95, 0.0) * 0.6;
+          finalDiffuse *= mix(1.0, pfQ / max(pfL, 0.01), 0.6);
+        #endif
+      `,
       CUSTOM_FRAGMENT_BEFORE_FRAGCOLOR: `
         #ifdef PF_RIM
+          // 2. Couleurs : même saturation et même contraste pour tous.
+          float pfL2 = dot(finalColor.rgb, vec3(0.299, 0.587, 0.114));
+          finalColor.rgb = mix(vec3(pfL2), finalColor.rgb, 1.12);
+          finalColor.rgb = max((finalColor.rgb - 0.5) * 1.04 + 0.5, 0.0);
+          // 3. Liseré de contour à la couleur du camp.
           float pfF = 1.0 - clamp(dot(normalize(normalW), normalize(vEyePosition.xyz - vPositionW)), 0.0, 1.0);
           finalColor.rgb += pfRimColor * pow(pfF, 2.2) * pfRim;
         #endif
@@ -571,6 +588,7 @@ export class BabylonUnits{
 
     let _frameCount = 0;
     this.engine.runRenderLoop(() => {
+      if(this.paused) return;   // hors de l'écran de combat (voir Renderer.setActive)
       this._syncCameraFromPixi();
       this.gfx.update();
       this.scene.render();
@@ -1449,12 +1467,20 @@ export class BabylonUnits{
     let m = this._sideMats.get(key);
     if(m) return m;
     if(!(mat instanceof BABYLON.PBRMaterial)) return mat;
-    m = mat.clone(mat.name + '_' + side);
     // Même rendu pour tous : ni plastique brillant, ni métal, reflets modérés.
-    if(!m.metallicTexture){ m.metallic = 0; m.roughness = Math.max(m.roughness ?? 1, 0.6); }
-    m.environmentIntensity = Math.min(m.environmentIntensity ?? 1, 0.8);
+    const prep = (c) => {
+      if(!c.metallicTexture){ c.metallic = 0; c.roughness = Math.max(c.roughness ?? 1, 0.6); }
+      c.environmentIntensity = Math.min(c.environmentIntensity ?? 1, 0.8);
+      return c;
+    };
+    m = prep(mat.clone(mat.name + '_' + side));
     new PfRimPlugin(m, RIM[side]);
     this._sideMats.set(key, m);
+    // Version « éclair » du même matériau, pour l'instant d'un coup reçu.
+    const f = prep(mat.clone(mat.name + '_' + side + '_flash'));
+    f.emissiveColor = new BABYLON.Color3(0.95, 0.9, 0.82);
+    new PfRimPlugin(f, { c: [1, 1, 1], k: 1.4 });
+    (this._flashOf ||= new Map()).set(m, f);
     return m;
   }
 
@@ -1474,6 +1500,12 @@ export class BabylonUnits{
     // Matière commune à l'équipe (liseré, brillance harmonisée).
     const side = unit.isPlayer ? 'p' : (unit.team === 1 ? 1 : 0);
     for(const m of root.getChildMeshes(false)) if(m.material) m.material = this._sideMaterial(m.material, side);
+    // Matériaux « éclair » compilés dès maintenant, pas au premier coup
+    // reçu (sinon petite saccade à ce moment-là).
+    for(const m of root.getChildMeshes(false)){
+      const f = this._flashOf?.get(m.material);
+      if(f && !f._pfReady){ f._pfReady = true; f.forceCompilationAsync(m).catch(() => {}); }
+    }
     // Animations embarquées dans le modèle : inutiles (on utilise la bibliothèque).
     for(const ag of entry.animationGroups) ag.dispose();
 
@@ -1538,8 +1570,29 @@ export class BabylonUnits{
     // Den skyggeløse mannen ne projette aucune ombre (indice du récit).
     if(NO_SHADOW.has(unit.key)) pivot.metadata = { ...(pivot.metadata || {}), noShadow: true };
     this.gfx?.addCaster(pivot);
-    this._attachWeapons(inst, unit).then(ghostify).then(() => this.gfx?.addCaster(pivot)).catch(e => console.error('[BabylonUnits] ❌ échec attache d\'arme pour', unit.key, e));
+    this._attachWeapons(inst, unit).then(ghostify).then(() => { this.gfx?.addCaster(pivot); }).catch(e => console.error('[BabylonUnits] ❌ échec attache d\'arme pour', unit.key, e));
     return inst;
+  }
+
+  /**
+   * Éclair blanc très bref sur le modèle touché : le coup se voit. On
+   * échange un instant le matériau du camp contre sa version « éclair »
+   * (même matériau, lumineux) : compatible avec tous les modes de rendu.
+   */
+  flash(unitId, k = 1){
+    const inst = this.instances.get(unitId);
+    if(!inst?.ready || inst.disposed || inst.state === 'death') return;
+    if(!inst._flashMats){
+      inst._flashMats = [];
+      for(const m of inst.pivot.getChildMeshes(false)){
+        const src = m.material;
+        if(!src || !this._flashOf?.has(src)) continue;
+        inst._flashMats.push([m, src, this._flashOf.get(src)]);
+      }
+    }
+    for(const [m, , f] of inst._flashMats) m.material = f;
+    clearTimeout(inst._flashT);
+    inst._flashT = setTimeout(() => { for(const [m, src] of inst._flashMats) if(!m.isDisposed()) m.material = src; }, 60 + 45 * k);
   }
 
   // ---------------------------------------------------------------
