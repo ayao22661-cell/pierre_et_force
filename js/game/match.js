@@ -11,7 +11,7 @@ import { MOVES } from './duel.js';
 import { audio } from '../engine/audio.js';
 import { COMBAT_VOICES } from '../data/voices.js';
 import { WEAPON_BY_KEY } from '../data/weapons.js';
-import { t as tr, isEN } from '../i18n/i18n.js';
+import { t as tr, isEN, shortName } from '../i18n/i18n.js';
 
 const THEME_DEFAULT = { g1:'#3a2c1e', g2:'#463524', lane:'#6a5138', acc:'#c9a24a', wall:'#1c140c' };
 
@@ -172,6 +172,7 @@ export class Match{
           // En duel, les coups ont leur propre son (fight-impact).
           if(this.sim.mode !== 'duel') audio.sfx(e.heavy || e.crit ? 'coup_lourd' : 'coup_leger', { vol: 0.7 });
           this.renderer.units3d?.notifyAction(e.unit.id, 'hit');
+          this.renderer.units3d?.flash(e.unit.id, e.heavy || e.crit ? 1.3 : 1);
           this.fx.spawnFloatText(e.unit.x, e.unit.y - (e.unit.r||20) - 6, Math.round(e.dmg).toString(), '#ffe27a', e.heavy, e.crit);
           // Coup critique ou dégât d'ultime : impact au sol plus large sous
           // la cible (pas seulement le texte) + tremblement de caméra bref,
@@ -260,7 +261,11 @@ export class Match{
         break;
       }
       case 'ground-tell':
-        this.fx.spawnGroundPulse(e.x, e.y, hexNum(e.color), e.radius);
+        if(e.enemy) this.fx.spawnTell({ x: e.x, y: e.y, r: e.radius, dur: e.delay });
+        else this.fx.spawnGroundPulse(e.x, e.y, hexNum(e.color), e.radius);
+        break;
+      case 'cone-tell':
+        this.fx.spawnTell({ x: e.x, y: e.y, r: e.range, dur: e.delay, cone: { dir: e.dir, half: e.half } });
         break;
       case 'ground-impact':
         audio.sfx('impact_sol', { vol: e.heavy ? 1 : 0.7 });
@@ -274,6 +279,12 @@ export class Match{
         if(e.unit.kind === 'champ' && !e.silent){
           audio.sfx('elimination');
           this.fx.spawnFloatText(e.unit.x, e.unit.y - 30, tr('ÉLIMINÉ'), '#ff6a5a', true);
+          // Champion ennemi abattu par le joueur : annonce en haut de
+          // l'écran et bref ralenti rapproché, le moment fort du combat.
+          if(e.killer?.isPlayer && e.unit.team === 1 && this.sim.mode !== 'duel' && !this.sim.over){
+            this._hud?.announce(tr('{n} éliminé !', { n: shortName(e.unit.d?.name || e.unit.key) }));
+            this.renderer.cinematic?.({ zoom: 1.25, slow: 0.4, dur: 0.7 });
+          }
         }
         break;
       }
@@ -326,6 +337,7 @@ export class Match{
         audio.sfx(e.heavy ? 'coup_lourd' : armed ? 'lame' : 'coup_leger');
         // Secousse + rapprochement bref de la caméra sur le coup qui porte.
         this.renderer.units3d?.duelImpact(e.heavy);
+        this.renderer.units3d?.flash(e.to.id, e.heavy ? 1.4 : 1);
         this._burst(e.heavy ? 'heavy' : 'hit', e.to.x, e.to.y, { color: e.from.fx || '#ffd27a', scale: e.heavy ? 1 : 0.75 });
         if(e.heavy) this.renderer.units3d?.gfx?.pulse(0.7);
         // Impact : gerbe d'étincelles, plus large sur un coup lourd.

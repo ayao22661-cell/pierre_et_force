@@ -70,6 +70,12 @@ export class Renderer{
 
     this._frameListeners = [];
     this.app.ticker.add((ticker) => this._onTick(ticker));
+    // Hors de l'écran de combat (hub, fin de mission, menus), rien ne doit
+    // tourner : sur téléphone, c'était de la batterie et de la chaleur
+    // pour rien, et des menus moins fluides.
+    this._active = true;
+    this._onScreen = (e) => this.setActive(e.detail === 'screen-game');
+    document.addEventListener('pf-screen', this._onScreen);
     this._resizeObserver = new ResizeObserver(() => this._applyZoom());
     this._resizeObserver.observe(this.mount);
     this._applyZoom();
@@ -83,7 +89,9 @@ export class Renderer{
     // bureau, les personnages devenaient minuscules. On resserre la vue
     // (tout grossit ensemble, 3D comprise, via _syncCameraFromPixi).
     const isMobile = Math.min(vw, vh) < 500 || (matchMedia && matchMedia('(pointer: coarse)').matches);
-    const targetView = isMobile ? 650 : 1000;
+    // 440 px de monde sur la hauteur d'un téléphone : un personnage fait
+    // environ un septième de l'écran, comme dans un MOBA mobile.
+    const targetView = isMobile ? 440 : 1000;
     this.camera.baseZoom = Math.min(vw, vh) / targetView;
   }
 
@@ -252,7 +260,16 @@ export class Renderer{
     };
   }
 
+  /** Met en pause (ou relance) le rendu 2D et 3D du combat. */
+  setActive(on){
+    if(on === this._active) return;
+    this._active = on;
+    if(on) this.app.start(); else this.app.stop();
+    if(this.units3d) this.units3d.paused = !on;
+  }
+
   destroy(){
+    document.removeEventListener('pf-screen', this._onScreen);
     this._resizeObserver?.disconnect();
     this.units3d?.destroy();
     this.app.destroy(true, { children: true, texture: true });

@@ -5,6 +5,8 @@ export function goTo(id){
   document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
   const el = document.getElementById(id);
   if(el) el.classList.add('active');
+  // Le moteur de combat écoute : il se met en pause hors de l'écran de jeu.
+  document.dispatchEvent(new CustomEvent('pf-screen', { detail: id }));
 }
 
 let toastTimer = null;

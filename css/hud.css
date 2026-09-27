@@ -189,3 +189,12 @@
   box-shadow:0 6px 24px rgba(0,0,0,.45); transition:opacity .35s ease, transform .35s ease;
 }
 .hud-tip.show{ opacity:1; transform:translate(-50%, 0); }
+
+/* Petits écrans (téléphone à l'horizontale) : pas de bandeau sombre sur
+   toute la largeur, qui mangeait la moitié de l'aire de jeu ; chaque
+   panneau garde son propre fond. Conseils plus compacts, sous l'objectif,
+   pour ne jamais masquer l'action au centre. */
+@media (max-height: 560px){
+  .hud-bottom{ background:none; border-top:none; box-shadow:none; padding-top:0; }
+  .hud-tip{ top:calc(44px + var(--pf-safe-t, 0px)); width:min(62vw, 420px); padding:6px 12px; font-size:12px; line-height:1.35; }
+}

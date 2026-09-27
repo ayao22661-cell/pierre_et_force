@@ -1,0 +1,53 @@
+<!doctype html>
+<html><head><meta charset="utf-8"><base href="../">
+<!-- Photo d'un lieu du jeu, rendue par le moteur lui-même (décor, ciel,
+     lumière, personnages). Sert à fabriquer les fonds des récits et des
+     cartes de mission : voir tools/lieux/README.md.
+     Paramètres : m (mission du lieu), mode (duel | siege), moment,
+     cam=x,y,h (m), tgt=x,y,h (m), fov, cast=CLÉ:x:y:angle:état,…      -->
+<style>html,body{margin:0;background:#000;overflow:hidden}#stage{position:fixed;inset:0}</style>
+</head><body><div id="stage"></div>
+<script src="lib/babylon.js"></script>
+<script src="lib/babylonjs.loaders.min.js"></script>
+<script type="module">
+import { BabylonUnits } from './js/engine/babylon-units.js';
+import { BabylonTerrain } from './js/engine/babylon-terrain.js';
+import { arenaLayout, siegeLayout } from './js/engine/tilemap.js';
+const q = new URLSearchParams(location.search);
+const num = (s, d) => (s || d).split(',').map(Number);
+try{
+  const mode = q.get('mode') || 'duel';
+  const layout = mode === 'siege' ? siegeLayout() : arenaLayout();
+  const M = 45, C = { x: layout.w / 2, y: layout.h / 2 };
+  const stage = new BabylonUnits(document.getElementById('stage'), { camera: { x: C.x, y: C.y, zoom: 1, baseZoom: 1 }, app: null });
+  const scene = stage.scene;
+  const THEME = { g1: '#3a2c1e', g2: '#463524', lane: '#6a5138', acc: '#c9a24a', wall: '#1c140c' };
+  const terrain = new BabylonTerrain(scene, { ...THEME, missionId: q.get('m') || 'm1', mode: mode === 'siege' ? 'siege' : 'duel', moment: q.get('moment') || undefined }, layout, +(q.get('seed') || 7), null);
+  const G = (x, y, h = 0) => { const v = stage._groundPos(C.x + x * M, C.y + y * M); v.y += h; return v; };
+  const [cx, cy, ch] = num(q.get('cam'), '0,9,1.6'), [tx, ty, th] = num(q.get('tgt'), '0,0,1.4');
+  const cam = new BABYLON.UniversalCamera('photo', G(cx, cy, ch), scene);
+  cam.setTarget(G(tx, ty, th)); cam.fov = +(q.get('fov') || 0.75); cam.minZ = 0.1; cam.maxZ = 800; cam.inputs.clear();
+  scene.activeCamera = cam; stage.gfx.attachCamera(cam);
+  // Personnages : CLÉ:x:y:angle(rad, 0 = face caméra vers +y):état
+  const units = [];
+  for(const [i, spec] of (q.get('cast') || '').split(',').filter(Boolean).entries()){
+    const [key, x, y, a, state] = spec.split(':');
+    const ang = +(a || 0);
+    units.push({ id: 5000 + i, key, kind: 'champ', team: key.startsWith('!') ? 1 : 0, isPlayer: false,
+      x: C.x + (+x) * M, y: C.y + (+y) * M, facing: { x: Math.sin(ang), y: Math.cos(ang) }, target: null, dead: false, _state: state });
+  }
+  for(const u of units) u.key = u.key.replace('!', '');
+  window.__stage = stage; window.__units = units;
+  scene.onBeforeRenderObservable.add(() => stage.update(units));
+  const t0 = performance.now();
+  while(performance.now() - t0 < 60000){
+    if(units.every(u => stage.instances.get(u.id)?.ready)) break;
+    await new Promise(r => setTimeout(r, 250));
+  }
+  await new Promise(r => setTimeout(r, 2500));
+  for(const u of units) if(u._state) stage.playFight(u.id, u._state, 0, { dur: 30, hold: true });
+  await new Promise(r => setTimeout(r, +(q.get('wait') || 5000)));
+  await scene.whenReadyAsync();
+  document.title = 'DONE';
+}catch(e){ document.title = 'ERR'; console.log('ERREUR', e.stack); }
+</script></body></html>

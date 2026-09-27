@@ -790,3 +790,12 @@ button{ font:inherit; color:inherit; }
 }
 .icon-btn.hub-mute{ width:30px; height:30px; }
 .icon-btn.hub-mute .pf-ico{ width:15px; height:15px; }
+
+/* Téléphone à l'horizontale : écran bas. Cartes de mission plus larges
+   que hautes, pour que le nom de la mission reste visible au-dessus de
+   la barre d'onglets (la photo du lieu s'y prête bien). */
+@media (max-height:460px) and (orientation:landscape){
+  .mcard{ width:168px; aspect-ratio:4/3; }
+  .mcard-grid .mcard{ aspect-ratio:4/3; }
+  .mcard-name{ font-size:14px; }
+}

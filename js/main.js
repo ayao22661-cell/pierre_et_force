@@ -20,6 +20,7 @@ import { installErrorReport, report } from './ui/error-report.js';
 installErrorReport();
 translateDom(document.body);
 import { CAMPAIGN } from './data/campaign.js';
+import { lieuImage, KEY_ART } from './data/lieux.js';
 import { renderSlots } from './ui/slots.js';
 import { audio } from './engine/audio.js';
 
@@ -47,6 +48,13 @@ function toHub(){
   updateHubHeader(save);
 }
 
+/** Fond d'un écran : la photo du lieu (net et flouté). */
+function setScreenBg(id, src){
+  for(const img of document.querySelectorAll(`#${id} .pf-bg img`)) img.src = src;
+}
+// Titre, sauvegardes et hub : l'équipe réunie dans la cour de Marcory.
+for(const id of ['screen-title', 'screen-slots', 'screen-hub']) setScreenBg(id, KEY_ART);
+
 /** Acte d'une mission de campagne (null pour un défi ou un duel libre). */
 function acteOf(mission){ return CAMPAIGN.find(a => a.missions.includes(mission)) || null; }
 
@@ -58,11 +66,12 @@ async function onSelectMission(mission, modeLabel){
   const acte = acteOf(mission);
   if(acte && !mission.isDefi){
     if(acte.missions[0] === mission && acte.narration_debut){
-      await playStory({ lines: acte.narration_debut, mid: acte.id, where: 'narration_debut', title: `${acte.label} — ${acte.titre}`, bg: 'assets/illus/pf-12.webp' });
+      await playStory({ lines: acte.narration_debut, mid: acte.id, where: 'narration_debut', title: `${acte.label} — ${acte.titre}`, bg: lieuImage(mission.id) });
     }
-    await playStory({ lines: mission.narr_avant, mid: mission.id, where: 'narr_avant', title: `${mission.num}. ${mission.name}`, bg: 'assets/illus/pf-12.webp' });
+    await playStory({ lines: mission.narr_avant, mid: mission.id, where: 'narr_avant', title: `${mission.num}. ${mission.name}`, bg: lieuImage(mission.id) });
     if(currentMission !== mission) return;
   }
+  setScreenBg('screen-deploy', lieuImage(mission.id));
   goTo('screen-deploy');
   renderDeploy(mission, modeLabel, save, launchMatch);
   assetsReady.then(() => {
@@ -122,8 +131,9 @@ function onMatchEnd({ victory }){
     const m = currentMission;
     if(acteOf(m) && !m.isDefi){
       const where = victory ? 'narr_victoire' : 'narr_defaite';
-      await playStory({ lines: m[where], mid: m.id, where, title: victory ? t('VICTOIRE') : t('DÉFAITE'), bg: 'assets/illus/pf-14.webp' });
+      await playStory({ lines: m[where], mid: m.id, where, title: victory ? t('VICTOIRE') : t('DÉFAITE'), bg: lieuImage(m.id) });
     }
+    setScreenBg('screen-end', lieuImage(m.id));
     goTo('screen-end');
     renderEnd(victory, currentMission, save, match?.sim, toHub, () => {
       goTo('screen-deploy');
