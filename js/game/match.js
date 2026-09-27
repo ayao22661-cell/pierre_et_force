@@ -11,7 +11,7 @@ import { MOVES } from './duel.js';
 import { audio } from '../engine/audio.js';
 import { COMBAT_VOICES } from '../data/voices.js';
 import { WEAPON_BY_KEY } from '../data/weapons.js';
-import { t as tr, isEN } from '../i18n/i18n.js';
+import { t as tr, isEN, shortName } from '../i18n/i18n.js';
 
 const THEME_DEFAULT = { g1:'#3a2c1e', g2:'#463524', lane:'#6a5138', acc:'#c9a24a', wall:'#1c140c' };
 
@@ -279,6 +279,12 @@ export class Match{
         if(e.unit.kind === 'champ' && !e.silent){
           audio.sfx('elimination');
           this.fx.spawnFloatText(e.unit.x, e.unit.y - 30, tr('ÉLIMINÉ'), '#ff6a5a', true);
+          // Champion ennemi abattu par le joueur : annonce en haut de
+          // l'écran et bref ralenti rapproché, le moment fort du combat.
+          if(e.killer?.isPlayer && e.unit.team === 1 && this.sim.mode !== 'duel' && !this.sim.over){
+            this._hud?.announce(tr('{n} éliminé !', { n: shortName(e.unit.d?.name || e.unit.key) }));
+            this.renderer.cinematic?.({ zoom: 1.25, slow: 0.4, dur: 0.7 });
+          }
         }
         break;
       }

@@ -170,4 +170,5 @@ export const EN_UI = {
 "Hors du temps": "Outside of time",
 "ABIDJAN": "ABIDJAN",
 "Marcory — aujourd'hui": "Marcory — today",
+"{n} éliminé !": "{n} eliminated!",
 };
