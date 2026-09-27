@@ -163,7 +163,7 @@ export const EN_UI = {
 "lancement du combat": "combat launch",
 "Score {a} – {b} / {g}": "Score {a} – {b} / {g}",
 "Chargement…": "Loading…",
-"Musique : cynicmusic, Matthew Pablo, iamoneabe": "Music: cynicmusic, Matthew Pablo, iamoneabe",
+"Musique : cynicmusic, Matthew Pablo, iamoneabe · Sons : Little Robot Sound Factory, Kenney": "Music: cynicmusic, Matthew Pablo, iamoneabe · Sound: Little Robot Sound Factory, Kenney",
 "NIANI": "NIANI",
 "Empire du Mali — 1324": "Mali Empire — 1324",
 "LE DOMAINE DE SGRÜN": "THE DOMAIN OF SGRÜN",

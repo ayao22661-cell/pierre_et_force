@@ -228,7 +228,7 @@ const PROFILES = {
   },
   // Karen — la sentinelle : garde en bouclier, soins.
   karen: {
-    idle  : ['sword-and-shield-block-idle.glb', 'pro-sword-and-shield-pack-sword-and-shield-block-idle.glb', 'standing-idle.glb', 'dwarf-idle-1.glb', 'lite-sword-and-shield-pack-sword-and-shield-idle.glb'],
+    idle  : ['pro-melee-axe-pack-standing-idle.glb', 'pro-melee-axe-pack-standing-idle-looking-ver-1.glb', 'great-sword-pack-great-sword-idle.glb', 'pro-melee-axe-pack-standing-idle-looking-ver-2.glb'],
     walk  : ['great-sword-walk.glb', 'sword-and-shield-pack-sword-and-shield-walk-2.glb'],
     run   : ['standing-sprint-forward.glb', 'lite-sword-and-shield-pack-sword-and-shield-run.glb'],
     attack: ['standing-1h-magic-attack-01.glb', 'standing-1h-magic-attack-03.glb', 'spell-cast.glb', 'lite-sword-and-shield-pack-sword-and-shield-attack-4.glb'],
@@ -242,7 +242,7 @@ const PROFILES = {
   },
   // Fulgence — le roc : grande épée, coups lourds, blocages.
   fulgence: {
-    idle  : ['dwarf-idle.glb', 'dwarf-idle-1.glb', 'great-sword-pack-great-sword-idle.glb', 'great-sword-pack-great-sword-idle-2.glb', 'great-sword-pack-great-sword-idle-3.glb', 'great-sword-crouching-2.glb'],
+    idle  : ['great-sword-pack-great-sword-idle.glb', 'great-sword-pack-great-sword-idle-2.glb', 'great-sword-pack-great-sword-idle-3.glb', 'great-sword-pack-great-sword-idle-4.glb'],
     walk  : ['great-sword-walk-1.glb', 'great-sword-pack-great-sword-walk.glb', 'great-sword-pack-great-sword-walk-2.glb'],
     run   : ['great-sword-run.glb', 'great-sword-pack-great-sword-run.glb'],
     attack: ['great-sword-slash.glb', 'great-sword-slash-1.glb', 'great-sword-pack-great-sword-slash.glb', 'great-sword-pack-great-sword-slash-2.glb', 'great-sword-pack-great-sword-slash-3.glb', 'great-sword-pack-great-sword-slash-4.glb', 'great-sword-pack-great-sword-attack.glb', 'great-sword-pack-great-sword-high-spin-attack.glb', 'great-sword-kick.glb', 'great-sword-pack-great-sword-kick-2.glb', 'two-hand-sword-combo.glb'],
@@ -256,7 +256,7 @@ const PROFILES = {
   },
   // Dark — l'ombre : furtif, capoeira, combos à deux armes.
   dark: {
-    idle  : ['ninja-idle.glb', 'ginga-variation-3.glb', 'crouch-idle.glb', 'fight-idle-1.glb', 'sword-and-shield-crouch-idle.glb'],
+    idle  : ['sword-and-shield-idle.glb', 'pro-melee-axe-pack-standing-idle.glb', 'pro-sword-and-shield-pack-sword-and-shield-idle.glb', 'sword-and-shield-crouch-idle.glb'],
     walk  : ['crouch-walk-forward.glb', 'walk-forward-arc.glb', 'left-cover-sneak.glb'],
     run   : ['running.glb', 'standing-sprint-forward.glb', 'run.glb'],
     attack: ['dual-weapon-combo-1.glb', 'one-hand-club-combo.glb', 'mutant-punch.glb', 'flying-knee-punch-combo.glb', 'capoeira-pack-chapa-giratoria-2.glb', 'capoeira-pack-bencao.glb', 'capoeira-pack-chapaeu-de-couro.glb', 'standing-melee-attack-downward.glb'],
@@ -326,7 +326,7 @@ const PROFILES = {
   },
   // Sub — l'opérateur : furtif, lame, économie de mouvement.
   sub: {
-    idle  : ['ninja-idle.glb', 'fight-idle.glb', 'crouch-idle.glb', 'fight-idle-1.glb'],
+    idle  : ['sword-and-shield-idle.glb', 'pro-melee-axe-pack-standing-idle.glb', 'pro-sword-and-shield-pack-sword-and-shield-idle.glb'],
     walk  : ['crouch-walk-forward.glb', 'walk-forward-arc.glb', 'left-cover-sneak.glb'],
     run   : ['running.glb', 'standing-sprint-forward.glb'],
     attack: ['dual-weapon-combo.glb', 'dual-weapon-combo-1.glb', 'standing-melee-attack-downward.glb', 'one-hand-club-combo.glb', 'mutant-punch.glb'],
@@ -340,7 +340,7 @@ const PROFILES = {
   },
   // Grob — la masse : lent, brutal, grande lame.
   grob: {
-    idle  : ['dwarf-idle-2.glb', 'orc-idle.glb', 'pro-melee-axe-pack-standing-idle-looking-ver-1.glb', 'great-sword-pack-great-sword-idle.glb'],
+    idle  : ['great-sword-pack-great-sword-idle.glb', 'great-sword-pack-great-sword-idle-2.glb', 'great-sword-pack-great-sword-idle-3.glb'],
     walk  : ['orc-walk.glb', 'great-sword-pack-great-sword-walk.glb'],
     run   : ['great-sword-run.glb', 'pro-melee-axe-pack-standing-run-forward.glb'],
     attack: ['great-sword-pack-great-sword-slash.glb', 'great-sword-pack-great-sword-slash-2.glb', 'great-sword-slash.glb', 'headbutt.glb', 'pro-melee-axe-pack-standing-melee-attack-360-high.glb', 'mutant-punch.glb'],
@@ -354,7 +354,7 @@ const PROFILES = {
   },
   // Krag — l'obsidienne : implacable, ne recule jamais.
   krag: {
-    idle  : ['dwarf-idle-1.glb', 'orc-idle.glb', 'pro-melee-axe-pack-standing-idle-looking-ver-2.glb', 'standing-idle-03.glb'],
+    idle  : ['pro-melee-axe-pack-standing-idle.glb', 'pro-melee-axe-pack-standing-idle-looking-ver-2.glb', 'great-sword-pack-great-sword-idle.glb'],
     walk  : ['orc-walk.glb', 'pro-melee-axe-pack-standing-walk-forward.glb'],
     run   : ['great-sword-run.glb', 'standing-sprint-forward.glb'],
     attack: ['pro-melee-axe-pack-standing-melee-attack-downward.glb', 'pro-melee-axe-pack-standing-melee-attack-horizontal.glb', 'headbutt.glb', 'pro-melee-axe-pack-standing-melee-attack-kick-ver-1.glb', 'punching.glb'],
@@ -382,7 +382,7 @@ const PROFILES = {
   },
   // Vael — la lame invisible : capoeira, vitesse pure.
   vael: {
-    idle  : ['ginga-variation-3.glb', 'bouncing-fight-idle.glb', 'fight-idle-1.glb', 'ninja-idle.glb'],
+    idle  : ['sword-and-shield-idle.glb', 'pro-sword-and-shield-pack-sword-and-shield-idle.glb', 'pro-melee-axe-pack-standing-idle.glb'],
     walk  : ['walk-forward-arc.glb', 'start-walking.glb'],
     run   : ['running.glb', 'standing-sprint-forward.glb', 'run.glb'],
     attack: ['capoeira-pack-armada.glb', 'capoeira-pack-chapa-giratoria.glb', 'inside-crescent-kick.glb', 'dual-weapon-combo.glb', 'flying-knee-punch-combo.glb', 'butterfly-twirl.glb'],
