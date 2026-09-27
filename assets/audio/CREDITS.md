@@ -1,7 +1,7 @@
 # Crédits audio — Pierre et Force
 
 Tous les sons du jeu sont de vrais enregistrements ou des compositions,
-publiés sous licence **CC0 1.0 (domaine public)** — sauf ArcLight (Matthew Pablo, CC-BY 3.0), dont l'auteur doit être crédité. Pour les autres, aucune attribution
+publiés sous licence **CC0 1.0 (domaine public)** — sauf ArcLight (Matthew Pablo, CC-BY 3.0) et la Fantasy Sound Effects Library (Little Robot Sound Factory, CC-BY 3.0), dont les auteurs doivent être crédités (générique de fin du prologue). Pour les autres, aucune attribution
 n'est exigée, mais on crédite leurs auteurs ici. Aucun son n'est
 synthétisé par le jeu.
 
@@ -37,6 +37,11 @@ pour les bruitages.
 | sort, impact_sol, ui_achat (pièces) | 80 CC0 RPG SFX | rubberduck | https://opengameart.org/content/80-cc0-rpg-sfx |
 | soin, niveau | Cure Magic | Someoneman | https://opengameart.org/content/cure-magic |
 | ultime | Earth Element Magic Spell | qubodup | https://opengameart.org/content/earth-element-magic-spell |
+| elan, esquive (souffles, tissu) | RPG Sound Pack | artisticdude (CC0) | https://opengameart.org/content/rpg-sound-pack |
+| sort, ultime, elimination (couches magiques) | Fantasy Sound Effects Library | Little Robot Sound Factory, **CC-BY 3.0, attribution obligatoire** — www.littlerobotsoundfactory.com | https://opengameart.org/content/fantasy-sound-effects-library |
+| chute, impact_sol (terre, débris) | Fantasy Sound Effects Library (pas sur la terre) | Little Robot Sound Factory, CC-BY 3.0 | idem |
+
+Les bruitages de combat sont fabriqués en couches par `tools/sfx/build_sfx.py` : les échantillons ci-dessus (attaque, matière) et des couches synthétiques (corps grave, souffles, résonances métalliques, réverbération stéréo) générées par le script lui-même.
 
 ## Voix des personnages (assets/audio/voix/)
 

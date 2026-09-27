@@ -60,14 +60,19 @@ const CAST = {
   tarine: ['TARINE', 0], karen: ['KAREN', 0], fulgence: ['FULGENCE', 0], baba: ['BABA', 0],
 };
 
+// Rayon du corps (m) : les colosses prennent plus de place.
+const BIG = new Set(['GROB', 'FULGENCE', 'KRAG', 'SGRUN']);
+
 class Skip extends Error{}
 const ease = (t) => t < 0.5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2;
 const easeOut = (t) => 1 - Math.pow(1 - t, 3);
 
 /** Joue le prologue. Résout quand il est fini ou passé. */
+let running = null;   // un seul prologue à la fois (double clic)
 export function playIntro(){
   if(typeof BABYLON === 'undefined') return Promise.resolve();
-  return new Promise(resolve => {
+  if(running) return running;
+  running = new Promise(resolve => {
     const root = el('div', 'intro');
     root.innerHTML = `
       <div class="intro-stage"></div>
@@ -77,7 +82,7 @@ export function playIntro(){
       <button type="button" class="pf-btn pf-btn-ghost pf-btn-sm intro-skip">${tr('PASSER')}</button>
       <div class="intro-card"><b></b><span></span></div>
       <p class="intro-sub"></p>
-      <div class="intro-end"><img src="assets/logo-clair.webp" alt="Pierre et Force"><small>${tr('Musique : cynicmusic, Matthew Pablo, iamoneabe')}</small></div>`;
+      <div class="intro-end"><img src="assets/logo-clair.webp" alt="Pierre et Force"><small>${tr('Musique : cynicmusic, Matthew Pablo, iamoneabe · Sons : Little Robot Sound Factory, Kenney')}</small></div>`;
     (document.getElementById('app') || document.body).appendChild(root);
     const $ = (s) => root.querySelector(s);
     const $sub = $('.intro-sub'), $flash = $('.intro-flash'), $card = $('.intro-card'), $veil = $('.intro-veil');
@@ -95,6 +100,7 @@ export function playIntro(){
         try{ stage?.destroy(); }catch(e){}
         root.remove();
         delete window.__pfIntroClock;
+        running = null;
         resolve();
       }, 650);
     };
@@ -117,7 +123,7 @@ export function playIntro(){
       let nextId = 9000;
       const A = {};
       for(const [name, [key, team]] of Object.entries(CAST)){
-        A[name] = { name, on: false, tweens: [], u: { id: nextId++, key, kind: 'champ', team, isPlayer: key === 'TARINE',
+        A[name] = { name, on: false, tweens: [], bx: C.x, by: C.y + 40 * M, ox: 0, oy: 0, down: false, r: BIG.has(key) ? 0.6 : 0.4, u: { id: nextId++, key, kind: 'champ', team, isPlayer: key === 'TARINE',
           x: C.x, y: C.y + 40 * M, facing: { x: 0, y: 1 }, target: null, dead: false } };
       }
       const units = Object.values(A).map(a => a.u);
@@ -156,14 +162,24 @@ export function playIntro(){
         return { pos: m.add(new V3(Math.sin(ang) * d, h, -Math.cos(ang) * d)), tgt: m.add(new V3(0, th, 0)) };
       };
       const fixed = (pos, tgt) => () => ({ pos, tgt });
+      // Plan de duel : caméra de profil par rapport à l'axe a→b (côté `s` :
+      // +1 / −1), légèrement dans le dos de a pour voir le visage de b.
+      // Toujours lisible, quel que soit l'endroit où les corps ont bougé.
+      const duel = (a, b, s, d, h, th = 1.3, back = 0.35) => () => {
+        const pa = P(a), pb = P(b), m = pa.add(pb).scale(0.5);
+        const u = pb.subtract(pa); u.y = 0; u.normalize();
+        const n = new V3(-u.z * s, 0, u.x * s);
+        return { pos: m.add(n.scale(d)).add(u.scale(-back * d)).add(new V3(0, h, 0)), tgt: m.add(new V3(0, th, 0)) };
+      };
 
       // ── Gestes et déplacements ──
       const show = (...as) => as.forEach(a => { a.on = true; });
       const hide = (...as) => as.forEach(a => { a.on = false; });
-      const place = (a, dx, dy, f) => { const w = W(dx, dy); a.u.x = w.x; a.u.y = w.y; a.tweens = []; if(f) a.u.facing = f; };
+      const place = (a, dx, dy, f) => { const w = W(dx, dy); a.bx = a.u.x = w.x; a.by = a.u.y = w.y; a.ox = a.oy = 0; a.tweens = []; if(f) a.u.facing = f; };
       const face = (a, b) => { const dx = b.u.x - a.u.x, dy = b.u.y - a.u.y, d = Math.hypot(dx, dy) || 1; a.u.facing = { x: dx / d, y: dy / d }; };
       const move = (a, dx, dy, dur, o = {}) => {
         const w = W(dx, dy);
+        a.bx = a.u.x; a.by = a.u.y; a.ox = a.oy = 0;
         a.tweens = [{ x0: a.u.x, y0: a.u.y, x1: w.x, y1: w.y, t0: clock, dur, ease: o.ease || ((t) => t), turn: o.turn !== false }];
       };
       const toward = (a, b, stop, dur) => {   // court vers b et s'arrête à `stop` mètres
@@ -175,8 +191,8 @@ export function playIntro(){
         const dx = a.u.x - from.u.x, dy = a.u.y - from.u.y, d = Math.hypot(dx, dy) || 1;
         move(a, (a.u.x + dx / d * dist * M - C.x) / M, (a.u.y + dy / d * dist * M - C.y) / M, dur, { ease: easeOut, turn: false });
       };
-      const act = (a, state, i = 0, o = {}) => stage.playFight(a.u.id, state, i, o);
-      const rise = (a) => stage.releaseFight(a.u.id);
+      const act = (a, state, i = 0, o = {}) => { if(state === 'death') a.down = true; return stage.playFight(a.u.id, state, i, o); };
+      const rise = (a) => { a.down = false; stage.releaseFight(a.u.id); };
       const fx = (kind, a, color, scale = 1) => gfx.burst(kind, a.u.x, a.u.y, { color, scale });
       const fxAt = (kind, dx, dy, color, scale = 1) => { const w = W(dx, dy); gfx.burst(kind, w.x, w.y, { color, scale }); };
       const sfx = (k, vol) => audio.sfx(k, vol ? { vol } : {});
@@ -239,12 +255,27 @@ export function playIntro(){
         // Déplacements.
         for(const a of Object.values(A)){
           const tw = a.tweens[0];
-          if(!tw) continue;
-          const k = Math.min(1, (clock - tw.t0) / tw.dur), e = tw.ease(k);
-          const nx = tw.x0 + (tw.x1 - tw.x0) * e, ny = tw.y0 + (tw.y1 - tw.y0) * e;
-          if(tw.turn && (Math.abs(nx - a.u.x) + Math.abs(ny - a.u.y)) > 0.5){ const d = Math.hypot(nx - a.u.x, ny - a.u.y); a.u.facing = { x: (nx - a.u.x) / d, y: (ny - a.u.y) / d }; }
-          a.u.x = nx; a.u.y = ny;
-          if(k >= 1) a.tweens.shift();
+          if(tw){
+            const k = Math.min(1, (clock - tw.t0) / tw.dur), e = tw.ease(k);
+            const nx = tw.x0 + (tw.x1 - tw.x0) * e, ny = tw.y0 + (tw.y1 - tw.y0) * e;
+            if(tw.turn && (Math.abs(nx - a.bx) + Math.abs(ny - a.by)) > 0.5){ const d = Math.hypot(nx - a.bx, ny - a.by); a.u.facing = { x: (nx - a.bx) / d, y: (ny - a.by) / d }; }
+            a.bx = nx; a.by = ny;
+            if(k >= 1) a.tweens.shift();
+          }
+          a.u.x = a.bx + a.ox; a.u.y = a.by + a.oy;
+        }
+        // Les corps ne se traversent pas : deux acteurs trop proches
+        // s'écartent doucement (les corps au sol restent où ils tombent).
+        const on = Object.values(A).filter(a => a.on);
+        for(let i = 0; i < on.length; i++) for(let j = i + 1; j < on.length; j++){
+          const a = on[i], b = on[j];
+          const dx = b.u.x - a.u.x, dy = b.u.y - a.u.y, d = Math.hypot(dx, dy) || 0.01;
+          const need = (a.r + b.r) * M;
+          if(d >= need) continue;
+          const push = Math.min(need - d, 6 * M * real) / 2, nx = dx / d, ny = dy / d;
+          const wa = a.down ? 0 : (b.down ? 2 : 1), wb = b.down ? 0 : (a.down ? 2 : 1);
+          a.ox -= nx * push * wa; a.oy -= ny * push * wa; b.ox += nx * push * wb; b.oy += ny * push * wb;
+          a.u.x = a.bx + a.ox; a.u.y = a.by + a.oy; b.u.x = b.bx + b.ox; b.u.y = b.by + b.oy;
         }
         stage.update(units);
         for(const a of Object.values(A)){ const i = inst(a); if(i?.ready && i.pivot) i.pivot.setEnabled(a.on); }
@@ -398,14 +429,17 @@ export function playIntro(){
       makeStones([STONES[4]]);
       show(A.tarine); place(A.tarine, 0, 0.5, { x: 0, y: 1 });
       const pierre = stones[0];
-      pierre.pos = () => P(A.tarine).add(new V3(0, 1.25 + Math.sin(clock * 1.7) * 0.05, -0.45));
+      // La pierre flotte à côté de lui, à hauteur de main : petite, pour ne
+      // jamais masquer l'image quand la caméra est proche.
+      pierre.pos = () => P(A.tarine).add(new V3(0.42, 1.2 + Math.sin(clock * 1.7) * 0.04, -0.15));
+      pierre.glow = 0.6; pierre.ps.minSize = 0.12; pierre.ps.maxSize = 0.24;
       stoneOn(pierre, true);
       shot(around(A.tarine, 0.6, 16, 10, 1), around(A.tarine, 0.2, 5, 1.8, 1.3), 8, { fov: [0.9, 0.72] });
       black(false, 2);
       card(tr('ABIDJAN'), tr('Marcory — aujourd\'hui'), 3.6);
       await wait(1.4); say(6);
       await wait(4);
-      shot(around(A.tarine, 0.1, 1.4, 1.35, 1.25), around(A.tarine, -0.1, 1.1, 1.3, 1.25), 3.2, { fov: [0.6, 0.55] });
+      shot(around(A.tarine, 0.1, 2.3, 1.55, 1.5), around(A.tarine, -0.1, 1.9, 1.55, 1.5), 3.2, { fov: [0.6, 0.52] });
       await wait(3.2);
       // Les émissaires tombent du ciel dans la cour.
       stoneOn(pierre, false);   // la pierre se cache dans sa main pendant la bagarre
@@ -418,7 +452,7 @@ export function playIntro(){
       await wait(2.2);
       // Grob charge. Tarine esquive au dernier moment.
       toward(A.grob, A.tarine, 1.2, 1.3); sfx('elan');
-      shot(between(A.grob, A.tarine, 1.5, 6, 1.1), between(A.grob, A.tarine, 1.6, 4.5, 1.0), 1.4, { fov: [0.85, 0.8] });
+      shot(duel(A.grob, A.tarine, 1, 6, 1.1, 1.2, 0.2), duel(A.grob, A.tarine, 1, 4.5, 1.0, 1.2, 0.3), 1.4, { fov: [0.85, 0.8] });
       await wait(1.2);
       act(A.grob, 'attack', 0, { dur: 0.7 }); sfx('elan');
       act(A.tarine, 'dodge', 0, { dur: 0.55 }); move(A.tarine, -1.6, 1.6, 0.45, { turn: false }); sfx('esquive');
@@ -426,7 +460,7 @@ export function playIntro(){
       await wait(1.1);
       // Riposte : trois coups, le dernier le projette.
       face(A.tarine, A.grob);
-      shot(between(A.tarine, A.grob, 1.2, 3.8, 1.2), between(A.tarine, A.grob, 1.0, 3.4, 1.1), 2.4, { fov: [0.8, 0.75] });
+      shot(duel(A.tarine, A.grob, 1, 3.8, 1.2), duel(A.tarine, A.grob, 1, 3.4, 1.1, 1.3, 0.45), 2.4, { fov: [0.8, 0.75] });
       for(let i = 0; i < 3; i++){
         act(A.tarine, 'attack', i, { dur: 0.5 }); sfx('elan');
         await wait(0.28);
@@ -439,7 +473,7 @@ export function playIntro(){
       await wait(0.4);
       { const r = rel(A.tarine); blink(A.sub, r.x - 1.3, r.y - 1.1); }
       face(A.sub, A.tarine);
-      shot(around(A.tarine, 0.5, 2.3, 1.6, 1.4), around(A.tarine, 0.7, 2.1, 1.5, 1.4), 1.8, { fov: [0.75, 0.75] });
+      shot(duel(A.sub, A.tarine, -1, 3.4, 1.5, 1.3, 0.1), duel(A.sub, A.tarine, -1, 3, 1.4, 1.3, 0.2), 1.8, { fov: [0.75, 0.75] });
       await wait(0.35);
       face(A.tarine, A.sub);
       act(A.sub, 'attack', 0, { dur: 0.55 }); act(A.tarine, 'block', 0, { dur: 0.5, hold: true });
@@ -458,22 +492,22 @@ export function playIntro(){
       fx('heavy', A.tarine, '#ff8a3a'); sfx('coup_lourd'); hit(1.3);
       act(A.tarine, 'death', 0, { hold: true }); knock(A.tarine, A.grob, 2.2, 0.5); sfx('chute');
       slow(0.35, 1.6); flash(false);
-      shot(around(A.tarine, 2.2, 2.4, 0.5, 0.4), around(A.tarine, 2.0, 2.0, 0.4, 0.4), 2.4, { fov: [0.7, 0.62] });
+      shot(around(A.tarine, 2.2, 3.0, 1.0, 1.0), around(A.tarine, 2.0, 2.1, 0.4, 0.4), 2.4, { fov: [0.72, 0.62] });
       await wait(2.4);
       // Les siens arrivent.
       show(A.karen, A.fulgence, A.baba);
-      place(A.fulgence, -10, 5); place(A.baba, 10, 5); place(A.karen, 0, 9);
+      place(A.fulgence, -10, 5); place(A.baba, 10, 5); place(A.karen, -3.5, 8);
       toward(A.fulgence, A.grob, 1.2, 1.4); toward(A.baba, A.sub, 1.2, 1.3);
-      { const r = rel(A.tarine); move(A.karen, r.x, r.y + 1.5, 1.6); }
+      { const r = rel(A.tarine); move(A.karen, r.x - 1.7, r.y + 0.3, 1.6); }   // à son côté, hors du champ du gros plan
       sfx('elan'); sfx('elan');
-      shot(fixed(G(0, 12, 3.5), G(0, 0, 1)), fixed(G(0, 10, 2.8), G(0, 0, 1)), 1.6, { fov: [0.95, 0.9] });
+      shot(fixed(G(1.5, 14, 4), G(0, 0, 1)), fixed(G(1.2, 12.5, 3.2), G(0, 0, 1)), 1.6, { fov: [0.95, 0.9] });
       await wait(1.4);
       act(A.fulgence, 'attack', 2, { dur: 0.6 }); act(A.baba, 'attack', 0, { dur: 0.5 }); sfx('elan');
       await wait(0.3);
       act(A.grob, 'hit', 1, { dur: 0.5 }); act(A.sub, 'hit', 0, { dur: 0.5 });
       fx('heavy', A.grob, '#378ADD'); fx('hit', A.sub, '#ffd27a'); sfx('coup_lourd'); sfx('coup_leger'); hit(1);
       knock(A.grob, A.fulgence, 2.5); knock(A.sub, A.baba, 2.2);
-      shot(between(A.baba, A.sub, 1.5, 4, 1.5), between(A.fulgence, A.grob, -1.5, 4, 1.4), 2.2, { fov: [0.85, 0.85] });
+      shot(duel(A.baba, A.sub, 1, 4.5, 1.5), duel(A.fulgence, A.grob, -1, 5, 1.5), 2.2, { fov: [0.85, 0.85] });
       await wait(1.1);
       face(A.karen, A.tarine); act(A.karen, 'cast', 0, { dur: 1 }); sfx('soin');
       await wait(0.5);
@@ -481,7 +515,7 @@ export function playIntro(){
       await wait(0.8);
       // Échanges : Sub contre Baba, Grob contre Fulgence.
       face(A.sub, A.baba); face(A.baba, A.sub);
-      shot(between(A.baba, A.sub, 1.4, 3.6, 1.3), between(A.baba, A.sub, 1.7, 3.2, 1.2), 2.4);
+      shot(duel(A.baba, A.sub, 1, 3.8, 1.3), duel(A.baba, A.sub, 1, 3.3, 1.2, 1.3, 0.5), 2.4);
       act(A.sub, 'attack', 2, { dur: 0.55 }); sfx('elan');
       await wait(0.3);
       act(A.baba, 'dodge', 1, { dur: 0.45 }); sfx('esquive');
@@ -490,7 +524,7 @@ export function playIntro(){
       act(A.sub, 'hit', 1, { dur: 0.4 }); fx('hit', A.sub, '#ffd27a'); sfx('coup_leger'); hit(0.5);
       await wait(0.7);
       face(A.grob, A.fulgence); rise(A.grob);
-      shot(between(A.fulgence, A.grob, -1.3, 3.8, 1.4), between(A.fulgence, A.grob, -1.6, 3.4, 1.3), 2.2);
+      shot(duel(A.grob, A.fulgence, 1, 4.6, 1.5, 1.4), duel(A.grob, A.fulgence, 1, 4, 1.4, 1.4, 0.5), 2.2);
       act(A.grob, 'attack', 2, { dur: 0.7 }); sfx('elan');
       await wait(0.35);
       act(A.fulgence, 'block', 0, { dur: 0.4, hold: true }); fx('hit', A.fulgence, '#9ec5ff'); sfx('garde'); hit(0.9);
@@ -499,8 +533,8 @@ export function playIntro(){
       // Tarine se relève. La pierre s'éveille.
       rise(A.tarine);
       { const r = rel(A.tarine); place(A.tarine, r.x, r.y, { x: 0, y: -1 }); }
-      shot(around(A.tarine, 0.2, 2.6, 0.35, 1.5), around(A.tarine, -0.3, 2.9, 0.4, 1.6), 3.4, { fov: [0.75, 0.7] });
-      act(A.tarine, 'taunt'); sfx('gong'); stoneOn(pierre, true); pierre.glow = 1.6;
+      shot(around(A.tarine, Math.PI + 0.25, 2.8, 0.45, 1.5), around(A.tarine, Math.PI - 0.3, 3.1, 0.5, 1.6), 3.4, { fov: [0.75, 0.7] });   // face à lui, contre-plongée
+      act(A.tarine, 'taunt'); sfx('gong'); stoneOn(pierre, true); pierre.glow = 1.0;
       fx('cast', A.tarine, '#6fe0b0', 1.3); sfx('soin');
       await wait(2.4);
       // Onde d'Équilibre : l'ultime.
@@ -513,7 +547,7 @@ export function playIntro(){
       await wait(2.2);
       fx('death', A.sub, '#9b59ff'); fx('death', A.grob, '#9b59ff'); sfx('elimination', 0.6);
       hide(A.sub, A.grob);
-      pierre.glow = 1.1;
+      pierre.glow = 0.7;
       shot(around(A.tarine, 0.4, 7.5, 2, 1.2), around(A.tarine, 1.4, 6, 1.4, 1.3), Math.max(4, 151 - wall), { ease: (t) => t });
       await until(152);
       // L'équipe réunie, face au lendemain.
@@ -525,10 +559,9 @@ export function playIntro(){
       await wait(4);
       act(A.tarine, 'taunt'); fx('cast', A.tarine, '#6fe0b0', 1.4);
       await until(163); say(7);
-      pierre.glow = 0.22;   // gros plan : la pierre flotte à côté de lui, petite
-      pierre.pos = () => P(A.tarine).add(new V3(0.42, 1.2 + Math.sin(clock * 1.7) * 0.04, -0.15));
+      pierre.glow = 0.3;   // gros plan : on la garde petite
       shot(around(A.tarine, 0, 3.2, 1.4, 1.45), around(A.tarine, 0, 1.9, 1.5, 1.5), 7, { fov: [0.62, 0.48] });
-      for(let i = 1; i <= 13; i++){ await wait(0.5); pierre.glow = 0.22 + 0.025 * i; }   // la pierre s'éveille
+      for(let i = 1; i <= 13; i++){ await wait(0.5); pierre.glow = 0.3 + 0.03 * i; }   // la pierre s'éveille
       pierre.glow = 3; sfx('ultime', 0.5);
       $veil.style.background = '#fff8ec'; black(true, 0.9);
       await wait(1.2);
@@ -539,4 +572,5 @@ export function playIntro(){
       finish();
     }
   });
+  return running;
 }

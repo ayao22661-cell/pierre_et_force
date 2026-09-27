@@ -43,7 +43,7 @@ export const SFX = {
   chute:        { files: ['sfx/chute_1.mp3', 'sfx/chute_2.mp3', 'sfx/chute_3.mp3', 'sfx/chute_4.mp3'], vol: 0.85, pitch: 0.04, gap: 200 },
   // Sorts et impacts
   sort:         { files: ['sfx/sort_1.mp3', 'sfx/sort_2.mp3', 'sfx/sort_3.mp3', 'sfx/sort_4.mp3'], vol: 0.6,  pitch: 0.06, gap: 90, voices: 3 },
-  ultime:       { files: ['sfx/ultime_1.mp3'], vol: 0.95, gap: 400 },
+  ultime:       { files: ['sfx/ultime_1.mp3', 'sfx/ultime_2.mp3'], vol: 0.95, gap: 400 },
   tir:          { files: ['sfx/tir_1.mp3', 'sfx/tir_2.mp3', 'sfx/tir_3.mp3', 'sfx/tir_4.mp3', 'sfx/tir_5.mp3'], vol: 0.45, pitch: 0.08, gap: 70, voices: 4 },
   impact_sol:   { files: ['sfx/impact_sol_1.mp3', 'sfx/impact_sol_2.mp3', 'sfx/impact_sol_3.mp3'], vol: 0.8,  pitch: 0.05, gap: 120 },
   soin:         { files: ['sfx/soin_1.mp3', 'sfx/soin_2.mp3'], vol: 0.45, pitch: 0.05, gap: 250 },
