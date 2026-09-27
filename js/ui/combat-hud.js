@@ -10,10 +10,10 @@ import { el } from './screens.js';
 import { Minimap } from '../engine/minimap.js';
 import { graphicsPanel, soundPanel } from './sound-controls.js';
 import { Tutorial } from './tutorial.js';
-import { t as tr, isEN } from '../i18n/i18n.js';
+import { t as tr, isFR } from '../i18n/i18n.js';
 
 // Touches des sorts : clavier AZERTY en français, QWERTY en anglais.
-const KEYS = isEN ? ['Q', 'W', 'E', 'R'] : ['A', 'Z', 'E', 'R'];
+const KEYS = !isFR ? ['Q', 'W', 'E', 'R'] : ['A', 'Z', 'E', 'R'];
 
 export class CombatHud{
   constructor(renderer, match, onPause){

@@ -18,7 +18,7 @@
 // ============================================================
 import { el } from './screens.js';
 import { audio } from '../engine/audio.js';
-import { t as tr, isEN } from '../i18n/i18n.js';
+import { t as tr, LANG } from '../i18n/i18n.js';
 import { BabylonUnits } from '../engine/babylon-units.js';
 import { BabylonTerrain } from '../engine/babylon-terrain.js';
 import { arenaLayout } from '../engine/tilemap.js';
@@ -44,7 +44,27 @@ const INTRO_EN = [
   "Today, in Abidjan, in a courtyard in Marcory, a tinkerer opens the parcel his father sent him.",
   "He does not know it yet… but this tale is his to write.",
 ];
-export const INTRO_LINES = isEN ? INTRO_EN : INTRO_FR;
+const INTRO_PT = [
+  "Escute, criança. Vou te contar como tudo começou.",
+  "Há sete séculos, eu era o Imperador do Mali. Tinha mais ouro do que todos os reis da terra.",
+  "Mas o ouro não era nada perto do que me foi confiado: cinco pedras. A Água, a Terra, o Fogo, o Ar e o Equilíbrio.",
+  "Reunidas, elas davam o poder de reescrever tudo. E nenhum homem fica de pé sob um peso assim.",
+  "Então eu as separei, e as confiei ao mundo, para que ninguém nunca mais as reunisse.",
+  "Mas um dia, uma sombra começou a procurá-las. O nome dela é Sgrün.",
+  "Hoje, em Abidjan, num pátio de Marcory, um faz-tudo abre o pacote que o pai lhe mandou.",
+  "Ele ainda não sabe… mas este conto, é ele quem vai escrever.",
+];
+const INTRO_ES = [
+  "Escucha, niño. Voy a contarte cómo empezó todo.",
+  "Hace siete siglos, yo era el Emperador de Malí. Tenía más oro que todos los reyes de la tierra.",
+  "Pero el oro no era nada comparado con lo que me confiaron: cinco piedras. El Agua, la Tierra, el Fuego, el Aire y el Equilibrio.",
+  "Reunidas, daban el poder de reescribirlo todo. Y ningún hombre se mantiene en pie bajo semejante peso.",
+  "Así que las separé, y se las confié al mundo, para que nadie volviera a reunirlas jamás.",
+  "Pero un día, una sombra empezó a buscarlas. Se llama Sgrün.",
+  "Hoy, en Abiyán, en un patio de Marcory, un manitas abre el paquete que le envió su padre.",
+  "Todavía no lo sabe… pero este cuento, es él quien va a escribirlo.",
+];
+export const INTRO_LINES = { en: INTRO_EN, pt: INTRO_PT, es: INTRO_ES }[LANG] || INTRO_FR;
 
 const M = 45;                          // pixels du monde par mètre (WORLD_SCALE)
 const LAYOUT = arenaLayout();

@@ -8,7 +8,7 @@ import { audio } from '../engine/audio.js';
 import { iconSvg } from './icons.js';
 import { el } from './screens.js';
 import { gfxPref, setGfxPref, qualityLabel, QUALITY_LABEL } from '../engine/graphics.js';
-import { t as tr, LANG, setLang } from '../i18n/i18n.js';
+import { t as tr, LANG, LANGS, setLang } from '../i18n/i18n.js';
 
 // Tous les contrôles affichés, pour qu'ils restent d'accord entre eux.
 // Un contrôle retiré de la page (fin de combat) est oublié.
@@ -102,7 +102,7 @@ export function graphicsPanel(){
 }
 
 /**
- * Panneau « Langue » : français ou anglais. Le jeu se recharge pour tout
+ * Panneau « Langue » : français, anglais, portugais ou espagnol. Le jeu se recharge pour tout
  * reconstruire dans la nouvelle langue (la partie en cours est sauvegardée).
  */
 export function languagePanel(){
@@ -111,7 +111,7 @@ export function languagePanel(){
   head.appendChild(el('span', 'sound-title', tr('Langue')));
   box.appendChild(head);
   const seg = el('div', 'gfx-seg');
-  for(const [k, label] of [['fr', 'Français'], ['en', 'English']]){
+  for(const [k, label] of LANGS){
     const b = el('button', 'gfx-opt' + (k === LANG ? ' on' : ''), label);
     b.type = 'button';
     b.addEventListener('click', () => { if(k !== LANG) setLang(k); });

@@ -4,7 +4,7 @@
 // La langue d'abord : en anglais, le texte des données est remplacé
 // avant que quoi que ce soit ne le lise.
 import './i18n/boot.js';
-import { translateDom, t, isEN, setLang } from './i18n/i18n.js';
+import { translateDom, t, LANG, LANGS, setLang } from './i18n/i18n.js';
 import { Renderer } from './engine/renderer.js';
 import { Match } from './game/match.js';
 import { preloadAllPortraits } from './engine/portraits.js';
@@ -179,9 +179,11 @@ btnStart.addEventListener('click', () => {
 // Langue : bouton de l'écran titre (et panneau dans le Profil).
 const btnLang = document.getElementById('btn-lang');
 if(btnLang){
-  btnLang.textContent = isEN ? 'Français' : 'English';
-  btnLang.lang = isEN ? 'fr' : 'en';
-  btnLang.addEventListener('click', () => setLang(isEN ? 'fr' : 'en'));
+  // Affiche la langue suivante, dans sa propre langue ; un appui y passe.
+  const next = LANGS[(LANGS.findIndex(l => l[0] === LANG) + 1) % LANGS.length];
+  btnLang.textContent = next[1];
+  btnLang.lang = next[0];
+  btnLang.addEventListener('click', () => setLang(next[0]));
 }
 // Le prologue se revoit depuis l'écran titre.
 document.getElementById('btn-prologue')?.addEventListener('click', () => playIntro());

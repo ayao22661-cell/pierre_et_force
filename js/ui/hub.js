@@ -14,7 +14,7 @@ import { isMissionDone, isMissionAvailable, writeSave, spellRank, maxSpellRank, 
 import { renderShop, renderEveil, ensureShopSave } from './shop.js';
 import { el } from './screens.js';
 import { graphicsPanel, soundPanel, muteButton, languagePanel } from './sound-controls.js';
-import { t, locale, shortName, isEN } from '../i18n/i18n.js';
+import { t, locale, shortName, isFR } from '../i18n/i18n.js';
 
 const CAMP_LABEL = { allie: 'ALLIÉ', ennemi: 'EMPIRE', neutre: 'LÉGENDE' };
 const CAMP_BADGE = { allie: 'ally', ennemi: 'enemy', neutre: 'legend' };
@@ -344,7 +344,7 @@ function openChampDetail(key){
  * jouée avec ce champion (voir game/state.js, awardSpellPoint) —
  * indépendant des points de talent (onglet Éveil, communs à tous).
  */
-const SLOT_KEYS = isEN ? ['Q', 'W', 'E', 'R'] : ['A', 'Z', 'E', 'R'];
+const SLOT_KEYS = !isFR ? ['Q', 'W', 'E', 'R'] : ['A', 'Z', 'E', 'R'];
 function _renderAbilityPanel(champKey){
   const d = CHAMPS[champKey];
   const panel = el('div', 'abil');
