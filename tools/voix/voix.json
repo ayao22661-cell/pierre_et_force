@@ -23,7 +23,13 @@
   "SAMIA":      {"ref":44,  "pitch":1.0,  "ex":1.0,  "cfg":0.35, "fx":""},
   "PNJ_H":      {"ref":100, "pitch":1.0,  "ex":0.9,  "cfg":0.35, "fx":""},
   "PNJ_F":      {"ref":31,  "pitch":0.98, "ex":1.1,  "cfg":0.35, "fx":""},
-  "PNJ_VIEUX":  {"ref":46,  "pitch":0.95, "ex":0.8,  "cfg":0.4,  "fx":"aecho=0.8:0.4:50:0.12"}
+  "PNJ_VIEUX":  {"ref":46,  "pitch":0.95, "ex":0.8,  "cfg":0.4,  "fx":"aecho=0.8:0.4:50:0.12"},
+  "ADANDE":     {"ref":57,  "pitch":1.0,  "ex":1.2,  "cfg":0.3,  "fx":""},
+  "DINGANE":    {"ref":16,  "pitch":0.94, "ex":1.0,  "cfg":0.35, "fx":"aecho=0.8:0.5:60:0.15"},
+  "CENDRE":     {"ref":75,  "pitch":0.9,  "ex":1.0,  "cfg":0.35, "fx":"aecho=0.8:0.6:35|70:0.35|0.2"},
+  "CHRONOPHAGE":{"ref":36,  "pitch":0.94, "ex":0.5,  "cfg":0.4,  "fx":"flanger=delay=3:depth=3:speed=2"},
+  "SKYGGE":     {"ref":80,  "pitch":0.94, "ex":0.9,  "cfg":0.35, "fx":"aecho=0.8:0.4:50:0.12"},
+  "SKYGGE_OMBRE":{"ref":80, "pitch":0.82, "ex":0.9,  "cfg":0.35, "fx":"aecho=0.8:0.5:60|120:0.25|0.15"}
  },
  "spk": {"1":"BABA_TUNDE","4":"FULGENCE","18":"KAREN","25":"SAM","43":"PNJ_VIEUX","51":"YOURI","52":"TARINE","53":"YOURI","55":"TARINE","81":"TARINE","91":"SYLLA","93":"SAMIA","94":"TARINE","95":"SAMIA","97":"SAMIA","98":"TARINE","99":"SAMIA","102":"SAMIA","103":"TARINE","104":"SAMIA","110":"TARINE","119":"SAM","121":"SAM","132":"LUNDGREN","145":"LUNDGREN","146":"SAM","155":"LUNDGREN","158":"KANKOU","159":"KANKOU","160":"KANKOU","162":"KAREN","163":"KAREN","164":"SCHISSIN","166":"OUSMANE","168":"OUSMANE","169":"PNJ_H","170":"YASUKE","171":"YASUKE","176":"PNJ_F","186":"SCHISSIN","188":"SCHISSIN","189":"SYLLA","190":"SYLLA","191":"GROB","193":"TARINE","195":"LUNDGREN","198":"PNJ_VIEUX","199":"PNJ_VIEUX","201":"BABA_TUNDE","217":"SAM","220":"SAM","229":"VAEL","233":"SAM","234":"TARINE","238":"TARINE","240":"KEITA","248":"SGRUN"},
  "speech": {"14":"T'as encore déplacé les meubles pour t'entraîner ?","21":"Recommence.","34":"Celui-là, je ne peux pas le combattre à ta place.","72":"Depuis trois semaines, les opérations dans le quartier ont augmenté.","122":"La prochaine fois, tu ne seras pas là pour lui, Grün.","123":"La prochaine fois, il n'aura pas besoin de moi.","134":"Pour les pierres, non.","206":"Sgrün veut l'inertie.","213":"Pourquoi ?","226":"Il a pris la dernière pierre.","235":"Restez groupés !","239":"Ce n'est pas ton père. C'est un écho de son esprit que Sgrün a capturé à sa mort.","246":"Je prends celui avec l'épée."},

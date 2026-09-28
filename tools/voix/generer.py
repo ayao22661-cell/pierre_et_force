@@ -1,7 +1,11 @@
 import json, os, sys, subprocess, difflib, re, unicodedata, torch, torchaudio as ta
 REDO = set(sys.argv[2].split(',')) if len(sys.argv) > 2 else set()   # répliques à refaire
 TAKES = int(sys.argv[3]) if len(sys.argv) > 3 else 3
-S = sys.argv[1]; OUT = 'assets/audio/voix'
+S = sys.argv[1]
+# Langue de la synthèse et de la transcription (LANGID=fr|en|pt|es). Le
+# français va dans assets/audio/voix/, les autres dans voix/<langue>/.
+LANGID = os.environ.get('LANGID', 'fr')
+OUT = 'assets/audio/voix' + ('' if LANGID == 'fr' else '/' + LANGID)
 jobs = json.load(open(S + '/jobs.json')); cfg = json.load(open(S + '/voicecfg.json'))['voices']
 from chatterbox.mtl_tts import ChatterboxMultilingualTTS
 from faster_whisper import WhisperModel
@@ -13,13 +17,18 @@ tts = ChatterboxMultilingualTTS.from_pretrained(device='cpu')
 # reconstitution du son (18 s au lieu de 25 s par réplique, même netteté).
 _flow = tts.s3gen.flow_inference
 tts.s3gen.flow_inference = lambda *a, **k: _flow(*a, **{**k, 'n_cfm_timesteps': 6})
-asr = WhisperModel('small', device='cpu', compute_type='int8')
+asr = WhisperModel('small', device='cpu', compute_type='int8', cpu_threads=int(os.environ.get('THREADS', '4')))
 FF = S + '/ff/ffmpeg'
 BASEFX = "highpass=f=70,equalizer=f=160:t=q:w=1:g=4,equalizer=f=3000:t=q:w=1.5:g=3,acompressor=threshold=-20dB:ratio=4:attack=5:release=80:makeup=4"
 def norm(s):
     s = unicodedata.normalize('NFD', s.lower()); s = ''.join(c for c in s if unicodedata.category(c) != 'Mn')
     return [NUM.get(t, t) for t in re.sub(r'[^a-z0-9 ]+', ' ', s).split()]
-NUM = dict(zip('0 1 2 3 4 5 6 7 8 9 10 12 15 20 100'.split(), 'zero un deux trois quatre cinq six sept huit neuf dix douze quinze vingt cent'.split()))
+NUM = dict(zip('0 1 2 3 4 5 6 7 8 9 10 12 15 20 100'.split(), {
+    'fr': 'zero un deux trois quatre cinq six sept huit neuf dix douze quinze vingt cent',
+    'en': 'zero one two three four five six seven eight nine ten twelve fifteen twenty hundred',
+    'pt': 'zero um dois tres quatro cinco seis sete oito nove dez doze quinze vinte cem',
+    'es': 'cero uno dos tres cuatro cinco seis siete ocho nueve diez doce quince veinte cien',
+}[LANGID].split()))
 OLD = {}
 if REDO and os.path.exists(S + '/voices_log.jsonl'):
     for l in open(S + '/voices_log.jsonl'): d = json.loads(l); OLD[d['id']] = d['score']
@@ -35,9 +44,9 @@ for n, j in enumerate(jobs):
     ref_toks = norm(j['text'])
     for take in range(TAKES):
         torch.manual_seed(1000 * n + take + (7919 if REDO else 0))
-        w = tts.generate(j['text'], language_id='fr', audio_prompt_path=ref, exaggeration=v['ex'], cfg_weight=v['cfg'], temperature=0.8)
-        tmp = f"{S}/take_{take}.wav"; ta.save(tmp, w, tts.sr)
-        segs, _ = asr.transcribe(tmp, language='fr', word_timestamps=True, beam_size=1, condition_on_previous_text=False)
+        w = tts.generate(j['text'], language_id=LANGID, audio_prompt_path=ref, exaggeration=v['ex'], cfg_weight=v['cfg'], temperature=0.8)
+        tmp = f"{S}/take_{WI}_{take}.wav"; ta.save(tmp, w, tts.sr)   # un fichier par worker
+        segs, _ = asr.transcribe(tmp, language=LANGID, word_timestamps=True, beam_size=1, condition_on_previous_text=False)
         toks = []   # (jeton normalisé, fin en s)
         for sg in segs:
             for wd in (sg.words or []):

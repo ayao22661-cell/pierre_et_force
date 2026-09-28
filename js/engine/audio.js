@@ -17,7 +17,10 @@
 //
 // Une entrée sans fichier (`files: []`) est simplement muette.
 // ============================================================
-import { isEN } from '../i18n/i18n.js';
+import { LANG } from '../i18n/i18n.js';
+
+/** Langues doublées en plus du français (voix/<langue>/…). */
+const VOICE_LANGS = ['en', 'pt', 'es'];
 
 const BASE = 'assets/audio/';
 
@@ -161,9 +164,10 @@ class AudioEngine{
     const path = 'voix/' + file + '.mp3';
     const token = {};
     this._voiceToken = token;
-    // En anglais : la voix anglaise (voix/en/…), sinon la voix française.
-    const load = isEN
-      ? Promise.resolve(this._load('voix/en/' + file + '.mp3')).then(b => b || this._load(path))
+    // En anglais, portugais ou espagnol : la voix dans cette langue
+    // (voix/<langue>/…), sinon la voix française.
+    const load = VOICE_LANGS.includes(LANG)
+      ? Promise.resolve(this._load('voix/' + LANG + '/' + file + '.mp3')).then(b => b || this._load(path))
       : Promise.resolve(this._load(path));
     return load.then(buf => new Promise(done => {
       if(!buf || this._voiceToken !== token || (this.speaking && o.polite)) return done();

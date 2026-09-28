@@ -51,3 +51,8 @@ Synthèse hors ligne, fichiers intégrés au jeu. Détails : tools/voix/README.m
 - Timbres de référence : Multilingual LibriSpeech (français), OpenSLR 94 —
   licence CC-BY 4.0 (Pratap et al., 2020), via le modèle Piper
   `fr_FR-mls-medium` (rhasspy/piper-voices).
+- Langues : français (`voix/`), anglais (`voix/en/`), portugais du Brésil
+  (`voix/pt/`) et espagnol (`voix/es/`). Chaque personnage garde le même
+  timbre de référence dans toutes les langues (clonage multilingue).
+- Contrôle qualité : transcription automatique faster-whisper (modèle
+  Whisper « small », OpenAI, licence MIT) dans la langue de la réplique.

@@ -7,8 +7,9 @@
 //     traduction depuis <langue>-ui.js ;
 //   - le contenu (missions, personnages, compétences…) est remplacé au
 //     démarrage par celui de <langue>-content.js (voir boot.js).
-// Les voix existent en français et en anglais ; en portugais et en
-// espagnol, on entend la voix française, sous-titrée.
+// Les voix existent en français, anglais, portugais et espagnol
+// (assets/audio/voix/<langue>/) ; une réplique manquante retombe sur la
+// voix française.
 // Le choix est retenu sur l'appareil ; par défaut, la langue du téléphone.
 // ============================================================
 import { EN_UI } from './en-ui.js';
