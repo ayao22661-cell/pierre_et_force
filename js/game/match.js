@@ -11,7 +11,7 @@ import { MOVES } from './duel.js';
 import { audio } from '../engine/audio.js';
 import { COMBAT_VOICES } from '../data/voices.js';
 import { WEAPON_BY_KEY } from '../data/weapons.js';
-import { t as tr, isEN, shortName } from '../i18n/i18n.js';
+import { t as tr, isFR, shortName } from '../i18n/i18n.js';
 
 const THEME_DEFAULT = { g1:'#3a2c1e', g2:'#463524', lane:'#6a5138', acc:'#c9a24a', wall:'#1c140c' };
 
@@ -66,10 +66,10 @@ export class Match{
       if(this.paused) return;
       this.keys[k] = true;
       // AZERTY en français, QWERTY en anglais (W y lance le 2e sort).
-      const slot = (isEN ? { q: 0, w: 1, e: 2, r: 3 } : { a: 0, z: 1, e: 2, r: 3 })[k];
+      const slot = (!isFR ? { q: 0, w: 1, e: 2, r: 3 } : { a: 0, z: 1, e: 2, r: 3 })[k];
       if(slot !== undefined) this.sim.requestCast(this.sim.player, slot);
       // Espace (ou W) : coup de base à la main.
-      if(k === ' ' || k === 'spacebar' || (k === 'w' && !isEN)){ e.preventDefault(); this.basicAttack(); }
+      if(k === ' ' || k === 'spacebar' || (k === 'w' && isFR)){ e.preventDefault(); this.basicAttack(); }
       // Mode Combat : coup lourd, garde (maintenue) et esquive.
       if(this.sim.mode === 'duel'){
         if(k === 'k'){ e.preventDefault(); this.sim.duelStrike('heavy'); }

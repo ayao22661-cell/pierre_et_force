@@ -1,12 +1,14 @@
 // ============================================================
 // DÉMARRAGE DE LA LANGUE — importé en tout premier par main.js.
-// En anglais, remplace le texte des données (campagne, fiches, sorts,
+// Hors français, remplace le texte des données (campagne, fiches, sorts,
 // objets…) avant que le reste du jeu ne les lise. Chaque texte est
 // repéré par son chemin : « CAMPAIGN/@acte1/missions/@m1/name » — un
 // segment « @id » désigne l'élément d'une liste qui porte cet id.
 // ============================================================
-import { isEN } from './i18n.js';
+import { LANG } from './i18n.js';
 import { EN_CONTENT } from './en-content.js';
+import { PT_CONTENT } from './pt-content.js';
+import { ES_CONTENT } from './es-content.js';
 import { CAMPAIGN } from '../data/campaign.js';
 import { CAST } from '../data/cast.js';
 import { CHAMPS, ACTE_FOES } from '../data/champions.js';
@@ -24,8 +26,9 @@ function step(obj, seg){
   return obj[seg];
 }
 
-if(isEN){
-  for(const [path, text] of Object.entries(EN_CONTENT)){
+const CONTENT = { en: EN_CONTENT, pt: PT_CONTENT, es: ES_CONTENT }[LANG];
+if(CONTENT){
+  for(const [path, text] of Object.entries(CONTENT)){
     const segs = path.split('/');
     let obj = ROOTS[segs[0]];
     for(let i = 1; i < segs.length - 1 && obj != null; i++) obj = step(obj, segs[i]);
