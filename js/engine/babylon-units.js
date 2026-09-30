@@ -1468,9 +1468,20 @@ export class BabylonUnits{
     if(m) return m;
     if(!(mat instanceof BABYLON.PBRMaterial)) return mat;
     // Même rendu pour tous : ni plastique brillant, ni métal, reflets modérés.
+    // Les GLB (Hunyuan) embarquent une texture métal/rugosité dont la
+    // rugosité vaut ~0,08 : quasi un miroir, d'où l'aspect « sachet
+    // plastique ». On l'écarte : matière mate, non métallique, reflets faibles.
     const prep = (c) => {
-      if(!c.metallicTexture){ c.metallic = 0; c.roughness = Math.max(c.roughness ?? 1, 0.6); }
-      c.environmentIntensity = Math.min(c.environmentIntensity ?? 1, 0.8);
+      c.metallicTexture = null;
+      c.metallic = 0;
+      c.roughness = 0.88;
+      c.useRoughnessFromMetallicTextureAlpha = false;
+      c.useRoughnessFromMetallicTextureGreen = false;
+      c.useMetallnessFromMetallicTextureBlue = false;
+      c.specularIntensity = 0.35;          // reflet spéculaire discret
+      c.environmentIntensity = Math.min(c.environmentIntensity ?? 1, 0.45);
+      if(c.clearCoat) c.clearCoat.isEnabled = false;
+      if(c.sheen) c.sheen.isEnabled = false;
       return c;
     };
     m = prep(mat.clone(mat.name + '_' + side));
