@@ -1474,12 +1474,12 @@ export class BabylonUnits{
     const prep = (c) => {
       c.metallicTexture = null;
       c.metallic = 0;
-      c.roughness = 0.88;
+      c.roughness = 1;
       c.useRoughnessFromMetallicTextureAlpha = false;
       c.useRoughnessFromMetallicTextureGreen = false;
       c.useMetallnessFromMetallicTextureBlue = false;
-      c.specularIntensity = 0.35;          // reflet spéculaire discret
-      c.environmentIntensity = Math.min(c.environmentIntensity ?? 1, 0.45);
+      c.specularIntensity = 0.12;          // reflet spéculaire très discret
+      c.environmentIntensity = Math.min(c.environmentIntensity ?? 1, 0.22);
       if(c.clearCoat) c.clearCoat.isEnabled = false;
       if(c.sheen) c.sheen.isEnabled = false;
       return c;
