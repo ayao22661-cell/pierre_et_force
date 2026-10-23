@@ -168,6 +168,20 @@ async function pickSlot(){
 // Son : le navigateur n'autorise l'audio qu'après un geste du joueur.
 // Chaque bouton cliqué fait son petit bruit d'interface.
 document.addEventListener('pointerdown', () => audio.unlock(), { once: true, capture: true });
+
+// Le jeu se joue à l'horizontale. Dans l'appli Android, l'orientation est
+// fixée par le manifeste (android:screenOrientation="sensorLandscape") ;
+// dans un navigateur, on tente de la verrouiller (plein écran requis sur
+// la plupart des téléphones), sinon un message demande de tourner l'écran.
+{
+  const rotate = document.createElement('div');
+  rotate.className = 'pf-rotate';
+  rotate.innerHTML = '<div class="pf-rotate-ico">⟳</div><div>' + t("Tourne ton téléphone à l'horizontale") + '</div>';
+  document.body.appendChild(rotate);
+  document.addEventListener('pointerdown', () => {
+    try{ screen.orientation?.lock?.('landscape')?.catch?.(() => {}); }catch(e){}
+  }, { once: true, capture: true });
+}
 document.addEventListener('click', (ev) => { if(ev.target.closest('button')) audio.sfx('ui_clic'); }, true);
 audio.music('menu');
 

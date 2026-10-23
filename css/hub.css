@@ -799,3 +799,48 @@ button{ font:inherit; color:inherit; }
   .mcard-grid .mcard{ aspect-ratio:4/3; }
   .mcard-name{ font-size:14px; }
 }
+
+/* Téléphone à l'horizontale : écran de sélection sur deux colonnes
+   (ton personnage | allié ou adversaire), tout visible sans défiler. */
+@media (orientation:landscape) and (max-height:560px){
+  #screen-deploy{ padding:6px 12px; gap:6px; }
+  #screen-deploy > .deploy-section:first-of-type{ padding-top:6px; padding-bottom:6px; }
+  .deploy-body{ grid-template-columns:1fr 1fr; align-content:start; gap:8px; }
+  .deploy-body > .deploy-section{ padding:8px 10px; }
+  .deploy-body > .deploy-section:has(#deploy-brief){ grid-column:1 / -1; order:3; }
+  .deploy-free .deploy-body > .deploy-section:has(#deploy-brief){ display:none; }
+  .hero-banner{ padding:6px 8px; gap:10px; }
+  .hero-banner-img{ width:52px; height:66px; }
+  .hero-banner-name{ font-size:16px; letter-spacing:2px; }
+  .hero-banner-title{ font-size:10px; }
+  #deploy-player{ margin-top:6px !important; }
+  .champ-tile{ width:60px; }
+  .champ-tile-img, .champ-tile-overlay{ width:60px; height:72px; }
+  .deploy-footer .pf-btn-brand{ padding:10px 18px; }
+}
+
+/* ══════════════════════════════════════════════════════════════
+   COMBAT AU TÉLÉPHONE, À L'HORIZONTALE
+   Des cibles faites pour le pouce : gros coup léger rond, frappes
+   et sorts d'au moins 60 px, bien espacés ; le panneau PV/mana,
+   compact, ne gêne plus le joystick (pouce gauche).
+   ══════════════════════════════════════════════════════════════ */
+@media (orientation:landscape) and (max-height:560px){
+  .hud-bottom{ padding:0 calc(10px + var(--pf-safe-r, 0px)) calc(8px + var(--pf-safe-b)) calc(10px + var(--pf-safe-l, 0px)); }
+  .hud-portrait{ pointer-events:none; padding:5px 8px; gap:6px; opacity:.92; }
+  .hud-portrait .hud-face{ display:none; }
+  .hud-bars{ width:120px; }
+  .hud-actions{ gap:12px; touch-action:none; }
+  .hud-basic-row{ align-items:center; gap:12px; padding-right:0; }
+  .hud-basic-row .spell-slot.basic-slot{ width:80px; height:80px; order:2; }
+  .hud-basic-row .spell-slot.basic-slot .spell-ico{ width:40px; height:40px; }
+  .duel-slot{ width:64px !important; height:64px !important; border-radius:50% !important; }
+  .duel-slot .spell-ico{ width:26px; height:26px; margin-bottom:8px; }
+  .duel-slot .duel-label{ bottom:9px; font-size:9px; }
+  .duel-slot .key{ display:none; }
+  .hud-spells{ gap:12px; padding:8px 10px 12px; background:rgba(7,8,15,.55); }
+  .hud-spells .spell-slot{ width:60px; height:60px; }
+  .hud-spells .spell-slot .spell-ico{ width:28px; height:28px; }
+  .spell-slot{ touch-action:none; -webkit-tap-highlight-color:transparent; user-select:none; }
+  .spell-slot:active{ transform:scale(.92); }
+}

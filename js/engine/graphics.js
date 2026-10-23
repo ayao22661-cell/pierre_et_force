@@ -224,8 +224,8 @@ export class Graphics{
       p.samples = msaa ? (this.tier === 'haute' ? 4 : 2) : 1;
       p.fxaaEnabled = !msaa;
       p.bloomEnabled = T.bloom;
-      p.bloomThreshold = 0.72;
-      p.bloomWeight = 0.32;
+      p.bloomThreshold = 0.88;
+      p.bloomWeight = 0.2;
       p.bloomKernel = 48;
       p.bloomScale = 0.5;
       p.imageProcessingEnabled = true;
@@ -240,7 +240,7 @@ export class Graphics{
 
     if(T.glow){
       this.glow = new BABYLON.GlowLayer('pf_glow', this.scene, { mainTextureRatio: 0.4, blurKernelSize: 32 });
-      this.glow.intensity = 0.6;
+      this.glow.intensity = 0.4;
     }
     const sun = this.scene.getLightByName('sun');
     if(T.shadows && sun){

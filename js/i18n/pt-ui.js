@@ -7,6 +7,7 @@ export const PT_UI = {
 "ALLIÉ (1 max)": "ALIADO (máx. 1)",
 "Alliés": "Aliados",
 "BOUTIQUE": "LOJA",
+"Tourne ton téléphone à l'horizontale": "Gire o celular na horizontal",
 "COMMENCER": "COMEÇAR",
 "ENTRER EN COMBAT": "ENTRAR EM COMBATE",
 "Empire": "Império",

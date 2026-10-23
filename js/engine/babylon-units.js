@@ -41,9 +41,9 @@ const NO_SHADOW = new Set(['SKYGGE']);
 // des modèles venus d'horizons différents, et la couleur dit tout de suite
 // qui est qui (doré : le joueur, bleu : ses alliés, rouge : l'ennemi).
 const RIM = {
-  p: { c: [1.0, 0.82, 0.42], k: 1.05 },
-  0: { c: [0.55, 0.78, 1.0], k: 0.85 },
-  1: { c: [1.0, 0.36, 0.28], k: 1.0 },
+  p: { c: [1.0, 0.82, 0.42], k: 0.45 },
+  0: { c: [0.55, 0.78, 1.0], k: 0.35 },
+  1: { c: [1.0, 0.36, 0.28], k: 0.42 },
 };
 class PfRimPlugin extends BABYLON.MaterialPluginBase{
   constructor(material, rim){
@@ -80,11 +80,11 @@ class PfRimPlugin extends BABYLON.MaterialPluginBase{
         #ifdef PF_RIM
           // 2. Couleurs : même saturation et même contraste pour tous.
           float pfL2 = dot(finalColor.rgb, vec3(0.299, 0.587, 0.114));
-          finalColor.rgb = mix(vec3(pfL2), finalColor.rgb, 1.12);
-          finalColor.rgb = max((finalColor.rgb - 0.5) * 1.04 + 0.5, 0.0);
+          finalColor.rgb = mix(vec3(pfL2), finalColor.rgb, 1.04);
+          finalColor.rgb = max((finalColor.rgb - 0.5) * 1.0 + 0.5, 0.0) * 0.92;
           // 3. Liseré de contour à la couleur du camp.
           float pfF = 1.0 - clamp(dot(normalize(normalW), normalize(vEyePosition.xyz - vPositionW)), 0.0, 1.0);
-          finalColor.rgb += pfRimColor * pow(pfF, 2.2) * pfRim;
+          finalColor.rgb += pfRimColor * pow(pfF, 3.0) * pfRim;
         #endif
       `,
     };
