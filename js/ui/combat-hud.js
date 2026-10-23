@@ -119,7 +119,8 @@ export class CombatHud{
       const pips = el('div', 'spell-slot-pips');
       for(let r = 0; r < max; r++) pips.appendChild(el('span', 'spell-pip'));
       slot.appendChild(pips);
-      slot.addEventListener('click', () => this.match.castSlot(i));
+      // Au premier contact du doigt (pas au relâchement) : plus réactif.
+      slot.addEventListener('pointerdown', (ev) => { ev.preventDefault(); this.match.castSlot(i); });
       spells.appendChild(slot);
       this.spellEls.push({ el: slot, cdEl: cd, sweepEl: sweep, pipsEl: pips, cost: a.cost || 0, maxRank: max, slot: i });
     });

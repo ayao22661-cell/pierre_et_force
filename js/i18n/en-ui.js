@@ -7,6 +7,7 @@ export const EN_UI = {
 "ALLIÉ (1 max)": "ALLY (1 max)",
 "Alliés": "Allies",
 "BOUTIQUE": "SHOP",
+"Tourne ton téléphone à l'horizontale": "Turn your phone sideways",
 "COMMENCER": "START",
 "ENTRER EN COMBAT": "ENTER COMBAT",
 "Empire": "Empire",

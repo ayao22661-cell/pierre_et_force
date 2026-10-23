@@ -215,3 +215,16 @@ html, body{
 ::-webkit-scrollbar{ width:4px; height:4px; }
 ::-webkit-scrollbar-thumb{ background: var(--pf-panel-border-lit); border-radius:2px; }
 ::-webkit-scrollbar-track{ background:transparent; }
+
+/* Téléphone tenu à la verticale : le jeu se joue à l'horizontale. */
+.pf-rotate{ display:none; }
+@media (orientation:portrait) and (max-width:600px){
+  .pf-rotate{
+    display:flex; flex-direction:column; align-items:center; justify-content:center; gap:14px;
+    position:fixed; inset:0; z-index:1000; padding:24px; text-align:center;
+    background:#07080f; color:var(--pf-text);
+    font-family:var(--pf-font-display); font-size:22px; letter-spacing:2px;
+  }
+  .pf-rotate-ico{ font-size:64px; color:var(--pf-gold); animation:pf-rotate-turn 2s ease-in-out infinite; }
+}
+@keyframes pf-rotate-turn{ 0%,30%{ transform:rotate(0); } 60%,100%{ transform:rotate(-90deg); } }

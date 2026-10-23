@@ -24,7 +24,10 @@ export function renderDeploy(mission, modeLabel, save, onLaunch){
   const state = { champ: save.lastChamp && CHAMPS[save.lastChamp] ? save.lastChamp : 'TARINE', allies: [] };
   // Combat libre : la rangée des alliés devient celle de l'adversaire.
   const free = !!mission.free;
-  const foePool = free ? opponentsFaced(save) : [];
+  // Adversaire : tout personnage débloqué (jouable par le joueur) ou déjà
+  // affronté dans la campagne et les duels.
+  const unlocked = PLAYABLE.filter(k => save.allies_unlocked.includes(k) || k === 'TARINE');
+  const foePool = free ? [...new Set([...opponentsFaced(save), ...unlocked])].filter(k => CHAMPS[k]) : [];
   if(free) state.foe = foePool.includes(save.lastFoe) ? save.lastFoe : foePool[0];
   document.getElementById('deploy-allies-title').textContent = free ? tr('TON ADVERSAIRE') : tr('ALLIÉ (1 max)');
   // Combat libre : cartes animées façon sélection de champion (voir
@@ -42,7 +45,7 @@ export function renderDeploy(mission, modeLabel, save, onLaunch){
   };
 
   // Champions jouables par le joueur lui-même : tous les débloqués.
-  const playerPool = PLAYABLE.filter(k => save.allies_unlocked.includes(k) || k === 'TARINE');
+  const playerPool = unlocked;
 
   // Alliés proposables (distincts du champion joueur courant).
   const allyPool = Array.from(new Set([...(mission.allies_dispo||[]), ...(mission.allies_requis||[])]))
